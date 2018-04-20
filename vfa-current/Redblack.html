@@ -1,0 +1,1028 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Redblack: Implementation and Proof of Red-Black Trees</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: Verified Functional Algorithms</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Redblack<span class="subtitle">Implementation and Proof of Red-Black Trees</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+<a name="lab105"></a><h1 class="section">Required Reading</h1>
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+ (1) General background on red-black trees, 
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Section 3.3 of  _Algorithms, Fourth Edition_,
+       by Sedgewick and Wayne, Addison Wesley 2011;  or
+
+</li>
+<li> Chapter 13 of _Introduction to Algorithms, 3rd Edition_,
+       by Cormen, Leiserson, and Rivest, MIT Press 2009
+
+</li>
+<li> or Wikipedia.
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ (2) an explanation of the particular implementation we use here.
+ Red-Black Trees in a Functional Setting, by Chris Okasaki. 
+<b>Journal of Functional Programming_, 9(4):471-477, July 1999. 
+ <a href="http://www.westpoint.edu/eecs/SiteAssets/SitePages/Faculty20Documents/Okasaki/jfp99redblack.pdf"><span class="inlineref">http://www.westpoint.edu/eecs/SiteAssets/SitePages/Faculty20Documents/Okasaki/jfp99redblack.pdf</span></a>
+
+<div class="paragraph"> </div>
+
+ (3) Optional reading:
+  Efficient Verified Red-Black Trees, by Andrew W. Appel, September 2011. 
+  <a href="http://www.cs.princeton.edu/~appel/papers/redblack.pdf"><span class="inlineref">http://www.cs.princeton.edu/~appel/papers/redblack.pdf</span></a>
+
+<div class="paragraph"> </div>
+
+ Red-black trees are a form of binary search tree (BST), but with
+     _balance_.   Recall that the _depth_ of a node in a tree is the
+    distance from the root to that node.  The _height_ of a tree is
+    the depth of the deepest node.  The <span class="inlinecode"><span class="id" type="var">insert</span></span> or <span class="inlinecode"><span class="id" type="var">lookup</span></span> function
+    of the BST algorithm (Chapter <a href="SearchTree.html"><span class="inlineref">SearchTree</span></a>) takes time 
+    proportional to the depth of the node that is found (or inserted).
+    To make these functions run fast, we want trees where the
+    worst-case depth (or the average depth) is as small as possible.
+
+<div class="paragraph"> </div>
+
+    In a perfectly balanced tree of N nodes, every node has depth less
+    than or or equal to log N, using logarithms base 2.   In an 
+    approximately balanced tree, every node has depth less than or
+    equal to 2 log N.  That's good enough to make <span class="inlinecode"><span class="id" type="var">insert</span></span> and <span class="inlinecode"><span class="id" type="var">lookup</span></span>
+    run in time proportional to log N.
+
+<div class="paragraph"> </div>
+
+    The trick is to mark the nodes Red and Black, and by these marks
+    to know when to locally rebalance the tree.  For more explanation
+    and pictures, see the Required Reading above.
+
+<div class="paragraph"> </div>
+
+ We will use the same framework as in Extract.v:  keys are Ocaml
+   integers. We don't repeat the <span class="inlinecode"><span class="id" type="var">Extract</span></span> commands, because they are
+   imported implicitly from Extract.v 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Extract</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Lists.List</span>.<br/>
+<span class="id" type="keyword">Export</span> <span class="id" type="var">ListNotations</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">int</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">color</span> := <span class="id" type="var">Red</span> | <span class="id" type="var">Black</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Section</span> <span class="id" type="var">TREES</span>.<br/>
+<span class="id" type="keyword">Variable</span> <span class="id" type="var">V</span> : <span class="id" type="keyword">Type</span>.<br/>
+<span class="id" type="keyword">Variable</span> <span class="id" type="var">default</span>: <span class="id" type="var">V</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">tree</span>  : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;| <span class="id" type="var">E</span> : <span class="id" type="var">tree</span> <br/>
+&nbsp;| <span class="id" type="var">T</span>: <span class="id" type="var">color</span> → <span class="id" type="var">tree</span> → <span class="id" type="var">key</span> → <span class="id" type="var">V</span> → <span class="id" type="var">tree</span> → <span class="id" type="var">tree</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty_tree</span> := <span class="id" type="var">E</span>.<br/>
+</div>
+
+<div class="doc">
+lookup is exactly as in our (unbalanced) search-tree algorithm in
+  Extract.v, except that the <span class="inlinecode"><span class="id" type="var">T</span></span> constructor carries a <span class="inlinecode"><span class="id" type="var">color</span></span> component,
+  which we can ignore here. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">lookup</span> (<span class="id" type="var">x</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">t</span> : <span class="id" type="var">tree</span>) : <span class="id" type="var">V</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">E</span> ⇒ <span class="id" type="var">default</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">tr</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">k</span> <span class="id" type="keyword">then</span> <span class="id" type="var">lookup</span> <span class="id" type="var">x</span> <span class="id" type="var">tl</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="keyword">if</span> <span class="id" type="var">ltb</span> <span class="id" type="var">k</span> <span class="id" type="var">x</span> <span class="id" type="keyword">then</span> <span class="id" type="var">lookup</span> <span class="id" type="var">x</span> <span class="id" type="var">tr</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">v</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">balance</span></span> function is copied directly from Okasaki's paper.
+  Now, the nice thing about machine-checked proof in Coq is that you
+  can prove this correct without actually understanding it!
+  So, do read Okasaki's paper, but don't worry too much about the details
+  of this <span class="inlinecode"><span class="id" type="var">balance</span></span> function.
+
+<div class="paragraph"> </div>
+
+  In contrast, Sedgewick has proposed _left-leaning red-black trees_,
+  which have a simpler balance function (but a more complicated invariant).
+  He does this in order to make the proof of correctness easier: there
+  are fewer cases in the <span class="inlinecode"><span class="id" type="var">balance</span></span> function, and therefore fewer cases
+  in the case-analysis of the proof of correctness of <span class="inlinecode"><span class="id" type="var">balance</span></span>.  But as you
+  will see, our proofs about <span class="inlinecode"><span class="id" type="var">balance</span></span> will have automated case analyses,
+  so we don't care how many cases there are! 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">balance</span> <span class="id" type="var">rb</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">t<sub>2</sub></span> :=<br/>
+&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">rb</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Red</span> ⇒ <span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">t<sub>2</sub></span><br/>
+&nbsp;| <span class="id" type="var">_</span> ⇒ <br/>
+&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">Red</span> (<span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">b</span>) <span class="id" type="var">y</span> <span class="id" type="var">vy</span> <span class="id" type="var">c</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T</span> <span class="id" type="var">Red</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">b</span>) <span class="id" type="var">y</span> <span class="id" type="var">vy</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">c</span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">t<sub>2</sub></span>)<br/>
+&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> (<span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">b</span> <span class="id" type="var">y</span> <span class="id" type="var">vy</span> <span class="id" type="var">c</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T</span> <span class="id" type="var">Red</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">b</span>) <span class="id" type="var">y</span> <span class="id" type="var">vy</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">c</span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">t<sub>2</sub></span>)<br/>
+&nbsp;| <span class="id" type="var">a</span> ⇒ <span class="id" type="keyword">match</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">Red</span> (<span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">b</span> <span class="id" type="var">y</span> <span class="id" type="var">vy</span> <span class="id" type="var">c</span>) <span class="id" type="var">z</span> <span class="id" type="var">vz</span> <span class="id" type="var">d</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T</span> <span class="id" type="var">Red</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">b</span>) <span class="id" type="var">y</span> <span class="id" type="var">vy</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">c</span> <span class="id" type="var">z</span> <span class="id" type="var">vz</span> <span class="id" type="var">d</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">b</span> <span class="id" type="var">y</span> <span class="id" type="var">vy</span> (<span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">c</span> <span class="id" type="var">z</span> <span class="id" type="var">vz</span> <span class="id" type="var">d</span>)  ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T</span> <span class="id" type="var">Red</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">b</span>) <span class="id" type="var">y</span> <span class="id" type="var">vy</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">c</span> <span class="id" type="var">z</span> <span class="id" type="var">vz</span> <span class="id" type="var">d</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">t<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">makeBlack</span> <span class="id" type="var">t</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">E</span> ⇒ <span class="id" type="var">E</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">b</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span> :=<br/>
+&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;| <span class="id" type="var">E</span> ⇒ <span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">E</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">E</span><br/>
+&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">c</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span> <span class="id" type="var">vy</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">balance</span> <span class="id" type="var">c</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">a</span>) <span class="id" type="var">y</span> <span class="id" type="var">vy</span> <span class="id" type="var">b</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="keyword">if</span> <span class="id" type="var">ltb</span> <span class="id" type="var">y</span> <span class="id" type="var">x</span> <span class="id" type="keyword">then</span> <span class="id" type="var">balance</span> <span class="id" type="var">c</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span> <span class="id" type="var">vy</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">b</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">T</span> <span class="id" type="var">c</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">b</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span> := <span class="id" type="var">makeBlack</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>).<br/>
+</div>
+
+<div class="doc">
+Now that the program has been defined, it's time to prove its properties.
+   A red-black tree has two kinds of properties:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" type="var">SearchTree</span></span>: the keys in each left subtree are all less than the
+       node's key, and the keys in each right subtree are greater
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">Balanced</span></span>:  there is the same number of black nodes on any path from
+     the root to each leaf; and there are never two red nodes in a row.
+
+</li>
+</ul>
+  First, we'll treat the <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> property. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Logic.FunctionalExtensionality</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">ZArith</span>.<br/>
+<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">Z_scope</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab106"></a><h1 class="section">Proof Automation for Case-Analysis Proofs.</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">T_neq_E</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">r</span>, <span class="id" type="var">T</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">r</span> ≠ <span class="id" type="var">E</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">intro</span> <span class="id" type="var">Hx</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hx</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Several of the proofs for red-black trees require a big case analysis
+   over all the clauses of the <span class="inlinecode"><span class="id" type="var">balance</span></span> function. These proofs are very tedious
+   to do "by hand," but are easy to automate. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">ins_not_E</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>, <span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span> ≠ <span class="id" type="var">E</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span>; <span class="id" type="tactic">simpl</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="var">remember</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s<sub>1</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">a<sub>1</sub></span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">balance</span>.<br/>
+</div>
+
+<div class="doc">
+Here we go!  Let's just "destruct" on the topmost case.
+   Right, here it's <span class="inlinecode"><span class="id" type="var">ltb</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">k</span></span>.  We can use <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> instead of <span class="inlinecode"><span class="id" type="var">bdestruct</span></span>
+   because we don't need to remember whether <span class="inlinecode"><span class="id" type="var">x</span>&lt;<span class="id" type="var">k</span></span> or <span class="inlinecode"><span class="id" type="var">x</span>≥<span class="id" type="var">k</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">k</span>).<br/>
+<span class="comment">(*&nbsp;The&nbsp;topmost&nbsp;test&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span>...</span>,&nbsp;so&nbsp;just&nbsp;<span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span>&nbsp;*)</span><br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span>.<br/>
+<span class="comment">(*&nbsp;This&nbsp;one&nbsp;is&nbsp;easy.&nbsp;*)</span><br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="comment">(*&nbsp;The&nbsp;topmost&nbsp;test&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">a<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">with</span>...</span>,&nbsp;so&nbsp;just&nbsp;<span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">a<sub>1</sub></span></span>&nbsp;*)</span><br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">a<sub>1</sub></span>.<br/>
+<span class="comment">(*&nbsp;The&nbsp;topmost&nbsp;test&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">s<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">with</span>...</span>,&nbsp;so&nbsp;just&nbsp;<span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">s<sub>2</sub></span></span>&nbsp;*)</span><br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">s<sub>2</sub></span>.<br/>
+<span class="comment">(*&nbsp;This&nbsp;one&nbsp;is&nbsp;easy&nbsp;by&nbsp;inversion.&nbsp;*)</span><br/>
+<span class="id" type="tactic">intro</span> <span class="id" type="var">Hx</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hx</span>.<br/>
+</div>
+
+<div class="doc">
+How long will this go on?  A long time!  But it will terminate.
+    Just keep typing.  Better yet, let's automate.
+    The following tactic applies whenever the current goal looks like,
+      <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode">?<span class="id" type="var">c</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode"><span class="id" type="var">Red</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" type="var">Black</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">_</span></span>  <span class="inlinecode"><span class="id" type="keyword">end</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"></span>,
+     and what it does in that case is, <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+| |- <span class="id" type="keyword">match</span> ?<span class="id" type="var">c</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Red</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">Black</span> ⇒ <span class="id" type="var">_</span>  <span class="id" type="keyword">end</span> ≠ <span class="id" type="var">_</span>⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+ The following tactic applies whenever the current goal looks like,
+
+<div class="paragraph"> </div>
+
+     <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode">?<span class="id" type="var">s</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode"><span class="id" type="var">E</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="keyword">end</span></span>  <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">_</span></span>,
+
+<div class="paragraph"> </div>
+
+     and what it does in that case is, <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">s</span></span> 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| |- <span class="id" type="keyword">match</span> ?<span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <span class="id" type="var">E</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>  ≠ <span class="id" type="var">_</span>⇒<span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Let's apply that tactic again, and then try it on the subgoals, recursively.
+    Recall that the <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> tactical keeps trying the same tactic on subgoals. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">repeat</span> <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| |- <span class="id" type="keyword">match</span> ?<span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <span class="id" type="var">E</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>  ≠ <span class="id" type="var">_</span>⇒<span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| |- <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ≠ <span class="id" type="var">E</span> ⇒ <span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Let's start the proof all over again. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Abort</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">ins_not_E</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>, <span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span> ≠ <span class="id" type="var">E</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span>; <span class="id" type="tactic">simpl</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="var">remember</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s<sub>1</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">a<sub>1</sub></span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">balance</span>.<br/>
+</div>
+
+<div class="doc">
+This is the beginning of the big case analysis.  This time,
+  let's combine several tactics together: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">repeat</span> <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| |- (<span class="id" type="keyword">if</span> ?<span class="id" type="var">x</span> <span class="id" type="keyword">then</span> <span class="id" type="var">_</span> <span class="id" type="keyword">else</span> <span class="id" type="var">_</span>) ≠ <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="keyword">match</span> ?<span class="id" type="var">c</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Red</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">Black</span> ⇒ <span class="id" type="var">_</span>  <span class="id" type="keyword">end</span> ≠ <span class="id" type="var">_</span>⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="keyword">match</span> ?<span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <span class="id" type="var">E</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>  ≠ <span class="id" type="var">_</span>⇒<span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+What we have left is 117 cases, every one of which can be proved
+  the same way: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="comment">(*&nbsp;Only&nbsp;111&nbsp;cases&nbsp;to&nbsp;go...&nbsp;*)</span><br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="comment">(*&nbsp;Only&nbsp;107&nbsp;cases&nbsp;to&nbsp;go...&nbsp;*)</span><br/>
+<span class="id" type="keyword">Abort</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">ins_not_E</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>, <span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span> ≠ <span class="id" type="var">E</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span>; <span class="id" type="tactic">simpl</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span>.<br/>
+<span class="id" type="var">remember</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s<sub>1</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">a<sub>1</sub></span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">balance</span>.<br/>
+</div>
+
+<div class="doc">
+This is the beginning of the big case analysis.  This time,
+  we add one more clause to the <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> command: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">repeat</span> <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| |- (<span class="id" type="keyword">if</span> ?<span class="id" type="var">x</span> <span class="id" type="keyword">then</span> <span class="id" type="var">_</span> <span class="id" type="keyword">else</span> <span class="id" type="var">_</span>) ≠ <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="keyword">match</span> ?<span class="id" type="var">c</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Red</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">Black</span> ⇒ <span class="id" type="var">_</span>  <span class="id" type="keyword">end</span> ≠ <span class="id" type="var">_</span>⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="keyword">match</span> ?<span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <span class="id" type="var">E</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>  ≠ <span class="id" type="var">_</span>⇒<span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ≠ <span class="id" type="var">E</span> ⇒ <span class="id" type="tactic">apply</span> <span class="id" type="var">T_neq_E</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab107"></a><h1 class="section">The SearchTree Property</h1>
+
+<div class="paragraph"> </div>
+
+ The SearchTree property for red-black trees is exactly the
+   same as for ordinary searchtrees (we just ignore the color <span class="inlinecode"><span class="id" type="var">c</span></span>
+   of each node). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">SearchTree'</span> : <span class="id" type="var">Z</span> → <span class="id" type="var">tree</span> → <span class="id" type="var">Z</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">ST_E</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">lo</span> <span class="id" type="var">hi</span>, <span class="id" type="var">lo</span> ≤ <span class="id" type="var">hi</span> → <span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">E</span> <span class="id" type="var">hi</span><br/>
+| <span class="id" type="var">ST_T</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">lo</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">r</span> <span class="id" type="var">hi</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">l</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span> + 1) <span class="id" type="var">r</span> <span class="id" type="var">hi</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> (<span class="id" type="var">T</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">r</span>) <span class="id" type="var">hi</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">SearchTree</span>: <span class="id" type="var">tree</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">ST_intro</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">lo</span> <span class="id" type="var">hi</span>, <span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">t</span> <span class="id" type="var">hi</span> → <span class="id" type="var">SearchTree</span> <span class="id" type="var">t</span>.<br/>
+</div>
+
+<div class="doc">
+Now we prove that if <span class="inlinecode"><span class="id" type="var">t</span></span> is a SearchTree, then the rebalanced 
+     version of <span class="inlinecode"><span class="id" type="var">t</span></span> is also a SearchTree. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">balance_SearchTree</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span>  <span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">s<sub>2</sub></span> <span class="id" type="var">lo</span> <span class="id" type="var">hi</span>, <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">s<sub>1</sub></span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span> + 1) <span class="id" type="var">s<sub>2</sub></span> <span class="id" type="var">hi</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> (<span class="id" type="var">balance</span> <span class="id" type="var">c</span> <span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">s<sub>2</sub></span>) <span class="id" type="var">hi</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">balance</span>.<br/>
+</div>
+
+<div class="doc">
+Use proof automation for this case analysis. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">repeat</span>  <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;|  |- <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> (<span class="id" type="keyword">match</span> ?<span class="id" type="var">c</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Red</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">Black</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>) <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;|  |- <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> (<span class="id" type="keyword">match</span> ?<span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <span class="id" type="var">E</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>) <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+58 cases to consider! 
+</div>
+<div class="code code-tight">
+
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;To&nbsp;prove&nbsp;this&nbsp;one,&nbsp;we&nbsp;have&nbsp;to&nbsp;do&nbsp;<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>&nbsp;on&nbsp;&nbsp;the&nbsp;proof&nbsp;goals&nbsp;above&nbsp;the&nbsp;line.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">inv</span> <span class="id" type="var">H</span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>8</sub></span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>9</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">inv</span> <span class="id" type="var">H</span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>8</sub></span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>9</sub></span>. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">inv</span> <span class="id" type="var">H</span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>8</sub></span>. <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>9</sub></span>. <span class="id" type="tactic">auto</span>.<br/>
+</div>
+
+<div class="doc">
+There's a pattern here.  Whenever we have a hypothesis above the line
+    that looks like,
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li>  H: SearchTree' _ E _    
+
+</li>
+<li>  H: SearchTree' _ (T _ _ _ _ _) _
+
+
+</li>
+</ul>
+   we should invert it.   Let's build that idea into our proof automation.
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Abort</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">balance_SearchTree</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span>  <span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">s<sub>2</sub></span> <span class="id" type="var">lo</span> <span class="id" type="var">hi</span>, <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">s<sub>1</sub></span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span> + 1) <span class="id" type="var">s<sub>2</sub></span> <span class="id" type="var">hi</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> (<span class="id" type="var">balance</span> <span class="id" type="var">c</span> <span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">s<sub>2</sub></span>) <span class="id" type="var">hi</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">balance</span>.<br/>
+</div>
+
+<div class="doc">
+Use proof automation for this case analysis. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">repeat</span>  <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> (<span class="id" type="keyword">match</span> ?<span class="id" type="var">c</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Red</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">Black</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>) <span class="id" type="var">_</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> (<span class="id" type="keyword">match</span> ?<span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <span class="id" type="var">E</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>) <span class="id" type="var">_</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H</span>: <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> <span class="id" type="var">E</span> <span class="id" type="var">_</span>   |- <span class="id" type="var">_</span>  ⇒ <span class="id" type="var">inv</span> <span class="id" type="var">H</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H</span>: <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> (<span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">_</span>   |- <span class="id" type="var">_</span>  ⇒ <span class="id" type="var">inv</span> <span class="id" type="var">H</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+58 cases to consider! 
+</div>
+<div class="code code-tight">
+
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+* <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+</div>
+
+<div class="doc">
+Do we see a pattern here?  We can add that to our automation! 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Abort</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">balance_SearchTree</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span>  <span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">s<sub>2</sub></span> <span class="id" type="var">lo</span> <span class="id" type="var">hi</span>, <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">s<sub>1</sub></span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span> + 1) <span class="id" type="var">s<sub>2</sub></span> <span class="id" type="var">hi</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> (<span class="id" type="var">balance</span> <span class="id" type="var">c</span> <span class="id" type="var">s<sub>1</sub></span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">s<sub>2</sub></span>) <span class="id" type="var">hi</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">balance</span>.<br/>
+</div>
+
+<div class="doc">
+Use proof automation for this case analysis. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">repeat</span>  <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> (<span class="id" type="keyword">match</span> ?<span class="id" type="var">c</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Red</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">Black</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>) <span class="id" type="var">_</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> (<span class="id" type="keyword">match</span> ?<span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <span class="id" type="var">E</span> ⇒ <span class="id" type="var">_</span> | <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">_</span> <span class="id" type="keyword">end</span>) <span class="id" type="var">_</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">s</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H</span>: <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> <span class="id" type="var">E</span> <span class="id" type="var">_</span>   |- <span class="id" type="var">_</span>  ⇒ <span class="id" type="var">inv</span> <span class="id" type="var">H</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H</span>: <span class="id" type="var">SearchTree'</span> <span class="id" type="var">_</span> (<span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>) <span class="id" type="var">_</span>   |- <span class="id" type="var">_</span>  ⇒ <span class="id" type="var">inv</span> <span class="id" type="var">H</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>;<br/>
+&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>).<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab108"></a><h4 class="section">Exercise: 2 stars (ins_SearchTree)</h4>
+ This one is pretty easy, even without proof automation.
+  Copy-paste your proof of insert_SearchTree from Extract.v.
+  You will need to apply <span class="inlinecode"><span class="id" type="var">balance_SearchTree</span></span> in two places.
+ 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">ins_SearchTree</span>: <br/>
+&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span> <span class="id" type="var">lo</span> <span class="id" type="var">hi</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">lo</span> ≤ <span class="id" type="var">int2Z</span> <span class="id" type="var">x</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">int2Z</span> <span class="id" type="var">x</span> &lt; <span class="id" type="var">hi</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">s</span> <span class="id" type="var">hi</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>) <span class="id" type="var">hi</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab109"></a><h4 class="section">Exercise: 2 stars (valid)</h4>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">empty_tree_SearchTree</span>: <span class="id" type="var">SearchTree</span> <span class="id" type="var">empty_tree</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">SearchTree'_le</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">lo</span> <span class="id" type="var">t</span> <span class="id" type="var">hi</span>, <span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">t</span> <span class="id" type="var">hi</span> → <span class="id" type="var">lo</span> ≤ <span class="id" type="var">hi</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">induction</span> 1; <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">expand_range_SearchTree'</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">s</span> <span class="id" type="var">lo</span> <span class="id" type="var">hi</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo</span> <span class="id" type="var">s</span> <span class="id" type="var">hi</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">lo'</span> <span class="id" type="var">hi'</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">lo'</span> ≤ <span class="id" type="var">lo</span> → <span class="id" type="var">hi</span> ≤ <span class="id" type="var">hi'</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree'</span> <span class="id" type="var">lo'</span> <span class="id" type="var">s</span> <span class="id" type="var">hi'</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">induction</span> 1; <span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="var">constructor</span>.<br/>
+<span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="var">constructor</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">IHSearchTree'1</span>; <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">IHSearchTree'2</span>; <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_SearchTree</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree</span> <span class="id" type="var">s</span> → <span class="id" type="var">SearchTree</span> (<span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">Import</span> <span class="id" type="var">IntMaps</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">combine</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">pivot</span>: <span class="id" type="var">Z</span>) (<span class="id" type="var">m<sub>1</sub></span> <span class="id" type="var">m<sub>2</sub></span>: <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">Z.ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">pivot</span>  <span class="id" type="keyword">then</span> <span class="id" type="var">m<sub>1</sub></span> <span class="id" type="var">x</span> <span class="id" type="keyword">else</span> <span class="id" type="var">m<sub>2</sub></span> <span class="id" type="var">x</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">Abs</span>:  <span class="id" type="var">tree</span> → <span class="id" type="var">total_map</span> <span class="id" type="var">V</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">Abs_E</span>: <span class="id" type="var">Abs</span> <span class="id" type="var">E</span> (<span class="id" type="var">t_empty</span> <span class="id" type="var">default</span>)<br/>
+| <span class="id" type="var">Abs_T</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">r</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">l</span> <span class="id" type="var">a</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">r</span> <span class="id" type="var">b</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">T</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">r</span>)  (<span class="id" type="var">t_update</span> (<span class="id" type="var">combine</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) <span class="id" type="var">a</span> <span class="id" type="var">b</span>) (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) <span class="id" type="var">vk</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">empty_tree_relate</span>: <span class="id" type="var">Abs</span> <span class="id" type="var">empty_tree</span> (<span class="id" type="var">t_empty</span> <span class="id" type="var">default</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="var">constructor</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab110"></a><h4 class="section">Exercise: 3 stars (lookup_relate)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">lookup_relate</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> ,   <span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> → <span class="id" type="var">lookup</span> <span class="id" type="var">k</span> <span class="id" type="var">t</span> =  <span class="id" type="var">cts</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;Copy&nbsp;your&nbsp;proof&nbsp;from&nbsp;Extract.v,&nbsp;and&nbsp;adapt&nbsp;it.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Abs_helper</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">m'</span> <span class="id" type="var">t</span> <span class="id" type="var">m</span>, <span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">m'</span> →    <span class="id" type="var">m'</span> = <span class="id" type="var">m</span> →     <span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">m</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">contents_equivalent_prover</span> :=<br/>
+&nbsp;<span class="id" type="tactic">extensionality</span> <span class="id" type="var">x</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">t_update</span>, <span class="id" type="var">combine</span>, <span class="id" type="var">t_empty</span>;<br/>
+&nbsp;<span class="id" type="tactic">repeat</span> <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| |- <span class="id" type="var">context</span> [<span class="id" type="keyword">if</span> ?<span class="id" type="var">A</span> <span class="id" type="keyword">then</span> <span class="id" type="var">_</span> <span class="id" type="keyword">else</span> <span class="id" type="var">_</span>] ⇒ <span class="id" type="var">bdestruct</span> <span class="id" type="var">A</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>;<br/>
+&nbsp;<span class="id" type="tactic">auto</span>;<br/>
+&nbsp;<span class="id" type="tactic">omega</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab111"></a><h4 class="section">Exercise: 4 stars (balance_relate)</h4>
+ You will need proof automation for this one.  Study the methods used
+  in <span class="inlinecode"><span class="id" type="var">ins_not_E</span></span> and <span class="inlinecode"><span class="id" type="var">balance_SearchTree</span></span>, and try them here.
+  Add one clause at a time to your <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">balance_relate</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">r</span> <span class="id" type="var">m</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree</span> (<span class="id" type="var">T</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">r</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">T</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">r</span>) <span class="id" type="var">m</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">balance</span> <span class="id" type="var">c</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">vk</span> <span class="id" type="var">r</span>) <span class="id" type="var">m</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">balance</span>.<br/>
+<span class="id" type="tactic">repeat</span> <span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;| <span class="id" type="var">H</span>: <span class="id" type="var">Abs</span> <span class="id" type="var">E</span> <span class="id" type="var">_</span> |- <span class="id" type="var">_</span> ⇒ <span class="id" type="var">inv</span> <span class="id" type="var">H</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Add these clauses, one at a time, to your <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> tactic,
+   and try it out:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li>1. Whenever a clause <span class="inlinecode"><span class="id" type="var">H</span>:</span> <span class="inlinecode"><span class="id" type="var">Abs</span></span> <span class="inlinecode"><span class="id" type="var">E</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> is above the line, invert it by <span class="inlinecode"><span class="id" type="var">inv</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span>.
+             Take note: with just this one clause, how many subgoals remain?
+
+</li>
+<li>2. Whenever <span class="inlinecode"><span class="id" type="var">Abs</span></span> <span class="inlinecode">(<span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span>)</span> <span class="inlinecode"><span class="id" type="var">_</span></span> is above the line, invert it.
+             Take note: with just these two clause, how many subgoals remain?
+
+</li>
+<li>3. Whenever <span class="inlinecode"><span class="id" type="var">SearchTree'</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">E</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> is above the line, invert it.
+             Take note after this step and each step: how many subgoals remain?
+
+</li>
+<li>4. Same for <span class="inlinecode"><span class="id" type="var">SearchTree'</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">(<span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span>)</span> <span class="inlinecode"><span class="id" type="var">_</span></span>.
+
+</li>
+<li>5. When <span class="inlinecode"><span class="id" type="var">Abs</span></span> <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode"><span class="id" type="var">Red</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" type="var">Black</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="keyword">end</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> is below the line,
+          <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span>.
+
+</li>
+<li>6. When <span class="inlinecode"><span class="id" type="var">Abs</span></span> <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">s</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode"><span class="id" type="var">E</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">...</span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="keyword">end</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> is below the line,
+          <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">s</span></span>.
+
+</li>
+<li>7. Whenever <span class="inlinecode"><span class="id" type="var">Abs</span></span> <span class="inlinecode">(<span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span>)</span> <span class="inlinecode"><span class="id" type="var">_</span></span> is below the line, 
+                  prove it by <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">Abs_T</span></span>.   This won't always work;
+         Sometimes the "cts" in the proof goal does not exactly match the form
+         of the "cts" required by the <span class="inlinecode"><span class="id" type="var">Abs_T</span></span> constructor.  But it's all right if
+         a clause fails; in that case, the <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> will just try the next clause.
+          Take note, as usual: how many clauses remain?
+
+</li>
+<li>8.  Whenever <span class="inlinecode"><span class="id" type="var">Abs</span></span> <span class="inlinecode"><span class="id" type="var">E</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> is below the line, solve it by <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">Abs_E</span></span>.
+
+</li>
+<li>9.  Whenever the current proof goal matches a hypothesis above the line,
+          just use it.  That is, just add this clause:
+       | |- _ =&gt; assumption
+
+</li>
+<li>10.  At this point, if all has gone well, you should have exactly 21 subgoals.
+       Each one should be of the form, <span class="inlinecode"></span>  <span class="inlinecode"><span class="id" type="var">Abs</span></span> <span class="inlinecode">(<span class="id" type="var">T</span></span> <span class="inlinecode">...)</span> <span class="inlinecode">(<span class="id" type="var">t_update</span>...)</span> <span class="inlinecode"></span>
+       What you want to do is replace (t_update...) with a different "contents"
+       that matches the form required by the Abs_T constructor.
+       In the first proof goal, do this: <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> <span class="inlinecode"><span class="id" type="var">Abs_helper</span></span>.
+       Notice that you have two subgoals.
+       The first subgoal you can prove by:
+           apply Abs_T. apply Abs_T. apply Abs_E. apply Abs_E. 
+           apply Abs_T. eassumption. eassumption.
+       Step through that, one at a time, to see what it's doing.
+       Now, undo those 7 commands, and do this instead:
+            repeat econstructor; eassumption.
+       That solves the subgoal in exactly the same way.
+       Now, wrap this all up, by adding this clause to your <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span>:
+       | |- _ =&gt;  eapply Abs_helper; <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> <span class="inlinecode"><span class="id" type="var">econstructor</span>;</span> <span class="inlinecode"><span class="id" type="var">eassumption</span></span> <span class="inlinecode">|</span> <span class="inlinecode"></span>
+
+</li>
+<li>11.  You should still have exactly 21 subgoals, each one of the form,
+             <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">t_update</span>...</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t_update</span>...</span> <span class="inlinecode"></span>.  Notice above the line you have some 
+           assumptions of the form,  <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">H</span>:</span> <span class="inlinecode"><span class="id" type="var">SearchTree'</span></span> <span class="inlinecode"><span class="id" type="var">lo</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">hi</span></span> <span class="inlinecode"></span>.  For this equality 
+         proof, we'll need to know that <span class="inlinecode"><span class="id" type="var">lo</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">hi</span></span>.  So, add a clause at the end 
+        of your <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> to apply SearchTree</b>le in any such assumption,
+        when below the line the proof goal is an equality <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"></span>.
+
+</li>
+<li>12.  Still exactly 21 subgoals.  In the first subgoal, try:
+          <span class="inlinecode"><span class="id" type="var">contents_equivalent_prover</span></span>.   That should solve the goal.
+          Look above, at <span class="inlinecode"><span class="id" type="keyword">Ltac</span></span> <span class="inlinecode"><span class="id" type="var">contents_equivalent_prover</span></span>, to see how it works.
+          Now, add a clause to  <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> that does this for all the subgoals.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li>Qed! 
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+Extend this list, so that the nth entry shows how many subgoals
+    were remaining after you followed the nth instruction in the list above.
+    Your list should be exactly 13 elements long; there was one subgoal 
+    *before* step 1, after all. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">how_many_subgoals_remaining</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[1; 1; 1; 1; 1; 2<br/>
+&nbsp;<br/>
+&nbsp;&nbsp;].<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab112"></a><h4 class="section">Exercise: 3 stars (ins_relate)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ins_relate</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree</span> <span class="id" type="var">t</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">ins</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) (<span class="id" type="var">t_update</span> <span class="id" type="var">cts</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) <span class="id" type="var">v</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;Copy&nbsp;your&nbsp;proof&nbsp;from&nbsp;SearchTree.v,&nbsp;and&nbsp;adapt&nbsp;it.&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No&nbsp;need&nbsp;for&nbsp;fancy&nbsp;proof&nbsp;automation.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">makeBlack_relate</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">makeBlack</span> <span class="id" type="var">t</span>) <span class="id" type="var">cts</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">t</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H</span>; <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">insert_relate</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">SearchTree</span> <span class="id" type="var">t</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">insert</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) (<span class="id" type="var">t_update</span> <span class="id" type="var">cts</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) <span class="id" type="var">v</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">insert</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">makeBlack_relate</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">ins_relate</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+OK, we're almost done!  We have proved all these main theorems: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">empty_tree_SearchTree</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">empty_tree_relate</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">lookup_relate</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">insert_SearchTree</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">insert_relate</span>.<br/>
+</div>
+
+<div class="doc">
+Together these imply that this implementation of red-black trees
+     (1) preserves the representation invariant, and
+     (2) respects the abstraction relation. 
+<div class="paragraph"> </div>
+
+<a name="lab113"></a><h4 class="section">Exercise: 4 stars, optional (elements)</h4>
+ Prove the correctness of the <span class="inlinecode"><span class="id" type="var">elements</span></span> function.  Because <span class="inlinecode"><span class="id" type="var">elements</span></span>
+    does not pay attention to colors, and does not rebalance the tree,
+    then its proof should be a simple copy-paste from SearchTree.v,
+    with only minor edits. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">elements'</span> (<span class="id" type="var">s</span>: <span class="id" type="var">tree</span>) (<span class="id" type="var">base</span>: <span class="id" type="var">list</span> (<span class="id" type="var">key</span>*<span class="id" type="var">V</span>)) : <span class="id" type="var">list</span> (<span class="id" type="var">key</span> * <span class="id" type="var">V</span>) :=<br/>
+&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">s</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;| <span class="id" type="var">E</span> ⇒ <span class="id" type="var">base</span><br/>
+&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">_</span> <span class="id" type="var">a</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="var">elements'</span> <span class="id" type="var">a</span> ((<span class="id" type="var">k</span>,<span class="id" type="var">v</span>) :: <span class="id" type="var">elements'</span> <span class="id" type="var">b</span> <span class="id" type="var">base</span>)<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">elements</span> (<span class="id" type="var">s</span>: <span class="id" type="var">tree</span>) : <span class="id" type="var">list</span> (<span class="id" type="var">key</span> * <span class="id" type="var">V</span>) := <span class="id" type="var">elements'</span> <span class="id" type="var">s</span> <span class="id" type="var">nil</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">elements_property</span> (<span class="id" type="var">t</span>: <span class="id" type="var">tree</span>) (<span class="id" type="var">cts</span>: <span class="id" type="var">total_map</span> <span class="id" type="var">V</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">In</span> (<span class="id" type="var">k</span>,<span class="id" type="var">v</span>) (<span class="id" type="var">elements</span> <span class="id" type="var">t</span>) → <span class="id" type="var">cts</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) = <span class="id" type="var">v</span>) ∧ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">cts</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) ≠ <span class="id" type="var">default</span> → <span class="id" type="var">In</span> (<span class="id" type="var">k</span>, <span class="id" type="var">cts</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>)) (<span class="id" type="var">elements</span> <span class="id" type="var">t</span>)).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">elements_relate</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span>,  <br/>
+&nbsp;&nbsp;<span class="id" type="var">SearchTree</span> <span class="id" type="var">t</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> → <br/>
+&nbsp;&nbsp;<span class="id" type="var">elements_property</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab114"></a><h1 class="section">Proving Efficiency</h1>
+
+<div class="paragraph"> </div>
+
+ Red-black trees are supposed to be more efficient than ordinary search trees,
+   because they stay balanced.  In a perfectly balanced tree, any two leaves
+   have exactly the same depth, or the difference in depth is at most 1.
+   In an approximately balanced tree, no leaf is more than twice as deep as
+   another leaf.   Red-black trees are approximately balanced.
+   Consequently, no node is more then 2logN deep, and the run time for
+   insert or lookup is bounded by a constant times 2logN.
+
+<div class="paragraph"> </div>
+
+   We can't prove anything _directly_ about the run time, because we don't
+   have a cost model for Coq functions.  But we can prove that the trees
+   stay approximately balanced; this tells us important information about
+   their efficiency. 
+<div class="paragraph"> </div>
+
+<a name="lab115"></a><h4 class="section">Exercise: 4 stars (is_redblack_properties)</h4>
+ The relation <span class="inlinecode"><span class="id" type="var">is_redblack</span></span> ensures that there are exactly <span class="inlinecode"><span class="id" type="var">n</span></span> black 
+   nodes in every path from the root to a leaf, and that there are never
+   two red nodes in a row. 
+</div>
+<div class="code code-tight">
+
+&nbsp;<span class="id" type="keyword">Inductive</span> <span class="id" type="var">is_redblack</span> : <span class="id" type="var">tree</span> → <span class="id" type="var">color</span> → <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;| <span class="id" type="var">IsRB_leaf</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span>, <span class="id" type="var">is_redblack</span> <span class="id" type="var">E</span> <span class="id" type="var">c</span> 0<br/>
+&nbsp;| <span class="id" type="var">IsRB_r</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">tr</span> <span class="id" type="var">n</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> <span class="id" type="var">tl</span> <span class="id" type="var">Red</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> <span class="id" type="var">tr</span> <span class="id" type="var">Red</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> (<span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">tr</span>) <span class="id" type="var">Black</span> <span class="id" type="var">n</span><br/>
+&nbsp;| <span class="id" type="var">IsRB_b</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">tr</span> <span class="id" type="var">n</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> <span class="id" type="var">tl</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> <span class="id" type="var">tr</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">tr</span>) <span class="id" type="var">c</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">is_redblack_toblack</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">s</span> <span class="id" type="var">n</span>, <span class="id" type="var">is_redblack</span> <span class="id" type="var">s</span> <span class="id" type="var">Red</span> <span class="id" type="var">n</span> → <span class="id" type="var">is_redblack</span> <span class="id" type="var">s</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">makeblack_fiddle</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">s</span> <span class="id" type="var">n</span>, <span class="id" type="var">is_redblack</span> <span class="id" type="var">s</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">n</span>, <span class="id" type="var">is_redblack</span> (<span class="id" type="var">makeBlack</span> <span class="id" type="var">s</span>) <span class="id" type="var">Red</span> <span class="id" type="var">n</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">nearly_redblack</span></span> expresses, "the tree is a red-black tree, except that
+  it's nonempty and it is permitted to have two red nodes in a row at 
+  the very root (only)."   
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">nearly_redblack</span> : <span class="id" type="var">tree</span> → <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">nrRB_r</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">tr</span> <span class="id" type="var">n</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> <span class="id" type="var">tl</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> <span class="id" type="var">tr</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">nearly_redblack</span> (<span class="id" type="var">T</span> <span class="id" type="var">Red</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">tr</span>) <span class="id" type="var">n</span><br/>
+| <span class="id" type="var">nrRB_b</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">tr</span> <span class="id" type="var">n</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> <span class="id" type="var">tl</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_redblack</span> <span class="id" type="var">tr</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">nearly_redblack</span> (<span class="id" type="var">T</span> <span class="id" type="var">Black</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">kv</span> <span class="id" type="var">tr</span>) (<span class="id" type="var">S</span> <span class="id" type="var">n</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">ins_is_redblack</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span> <span class="id" type="var">n</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">is_redblack</span> <span class="id" type="var">s</span> <span class="id" type="var">Black</span> <span class="id" type="var">n</span> → <span class="id" type="var">nearly_redblack</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>) <span class="id" type="var">n</span>) ∧<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">is_redblack</span> <span class="id" type="var">s</span> <span class="id" type="var">Red</span> <span class="id" type="var">n</span> → <span class="id" type="var">is_redblack</span> (<span class="id" type="var">ins</span> <span class="id" type="var">x</span> <span class="id" type="var">vx</span> <span class="id" type="var">s</span>) <span class="id" type="var">Black</span> <span class="id" type="var">n</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">induction</span> <span class="id" type="var">s</span>; <span class="id" type="tactic">intro</span> <span class="id" type="var">n</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">split</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="var">inv</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">repeat</span> <span class="id" type="var">constructor</span>; <span class="id" type="tactic">auto</span>.<br/>
+*<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">IHs1</span> <span class="id" type="var">n</span>); <span class="id" type="tactic">clear</span> <span class="id" type="var">IHs1</span>.<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">IHs2</span> <span class="id" type="var">n</span>); <span class="id" type="tactic">clear</span> <span class="id" type="var">IHs2</span>.<br/>
+<span class="id" type="var">specialize</span> (<span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">H<sub>6</sub></span>).<br/>
+<span class="id" type="var">specialize</span> (<span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">H<sub>7</sub></span>).<br/>
+<span class="id" type="tactic">clear</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>1</sub></span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">balance</span>.<br/>
+</div>
+
+<div class="doc">
+You will need proof automation, in a similar style to
+   the proofs of <span class="inlinecode"><span class="id" type="var">ins_not_E</span></span> and <span class="inlinecode"><span class="id" type="var">balance_relate</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_is_redblack</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">xv</span> <span class="id" type="var">s</span> <span class="id" type="var">n</span>, <span class="id" type="var">is_redblack</span> <span class="id" type="var">s</span> <span class="id" type="var">Red</span> <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">n'</span>, <span class="id" type="var">is_redblack</span> (<span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">xv</span> <span class="id" type="var">s</span>) <span class="id" type="var">Red</span> <span class="id" type="var">n'</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Just&nbsp;apply&nbsp;a&nbsp;couple&nbsp;of&nbsp;lemmas:&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ins_is_redblack&nbsp;and&nbsp;makeblack_fiddle&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">TREES</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab116"></a><h1 class="section">Extracting and Measuring Red-Black Trees</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="var">Extraction</span> "redblack.ml" <span class="id" type="var">empty_tree</span> <span class="id" type="var">insert</span> <span class="id" type="var">lookup</span> <span class="id" type="var">elements</span>.<br/>
+</div>
+
+<div class="doc">
+You can run this inside the ocaml top level by:
+<pre>
+#use "redblack.ml";;
+#use "test_searchtree.ml";;
+run_tests();;
+</pre>
+
+<div class="paragraph"> </div>
+
+On my machine, in the byte-code interpreter this prints,
+<pre>
+Insert and lookup 1000000 random integers in 0.889 seconds.
+Insert and lookup 20000 random integers in 0.016 seconds.
+Insert and lookup 20000 consecutive integers in 0.015 seconds.
+</pre>
+
+<div class="paragraph"> </div>
+
+You can compile and run this with the ocaml native-code compiler by:
+<pre>
+ocamlopt redblack.mli redblack.ml -open Redblack test_searchtree.ml -o test_redblack
+./test_redblack
+</pre>
+
+<div class="paragraph"> </div>
+
+On my machine this prints,
+<pre>
+Insert and lookup 1000000 random integers in 0.436 seconds.
+Insert and lookup 20000 random integers in 0. seconds.
+Insert and lookup 20000 consecutive integers in 0. seconds.
+</pre>
+
+<div class="paragraph"> </div>
+
+<a name="lab117"></a><h1 class="section">Success!</h1>
+ The benchmark measurements above (and in Extract.v) demonstrate that:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> On random insertions, red-black trees are slightly faster than ordinary BSTs
+     (red-black 0.436 seconds, vs ordinary 0.468 seconds)
+
+</li>
+<li> On consecutive insertions, red-black trees are _much_ faster than ordinary BSTs
+     (red-black 0. seconds, vs ordinary 0.374 seconds)
+
+</li>
+</ul>
+  In particular, red-black trees are almost exactly as fast on the
+     consecutive insertions (0.015 seconds) as on the random (0.016 seconds).
+
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Typechecking: A Typechecker for STLC</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 2: Programming Language Foundations</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Typechecking<span class="subtitle">A Typechecker for STLC</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ The <span class="inlinecode"><span class="id" type="var">has_type</span></span> relation of the STLC defines what it means for a
+    term to belong to a type (in some context).  But it doesn't, by
+    itself, give us an algorithm for _checking_ whether or not a term
+    is well typed.
+
+<div class="paragraph"> </div>
+
+    Fortunately, the rules defining <span class="inlinecode"><span class="id" type="var">has_type</span></span> are _syntax directed_
+ that is, for every syntactic form of the language, there is
+    just one rule that can be used to give a type to terms of that
+    form.  This makes it straightforward to translate the typing rules
+    into clauses of a typechecking _function_ that takes a term and a
+    context and either returns the term's type or else signals that
+    the term is not typable.  
+<div class="paragraph"> </div>
+
+ This short chapter constructs such a function and proves it
+    correct. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Bool.Bool</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Smallstep</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Stlc</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="var">MoreStlc</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">STLCTypes</span>.<br/>
+<span class="id" type="keyword">Export</span> <span class="id" type="var">STLC</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab332"></a><h1 class="section">Comparing Types</h1>
+
+<div class="paragraph"> </div>
+
+ First, we need a function to compare two types for equality... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">beq_ty</span> (<span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>:<span class="id" type="var">ty</span>) : <span class="id" type="var">bool</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T<sub>1</sub></span>,<span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TBool</span>, <span class="id" type="var">TBool</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>, <span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>21</sub></span> <span class="id" type="var">T<sub>22</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">andb</span> (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>21</sub></span>) (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>12</sub></span> <span class="id" type="var">T<sub>22</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span>,_ ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+... and we need to establish the usual two-way connection between
+    the boolean result returned by <span class="inlinecode"><span class="id" type="var">beq_ty</span></span> and the logical
+    proposition that its inputs are equal. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">beq_ty_refl</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">T<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>1</sub></span> = <span class="id" type="var">true</span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">T<sub>1</sub></span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">T<sub>1</sub></span>; <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHT1_1</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHT1_2</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">beq_ty__eq</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> = <span class="id" type="var">true</span> → <span class="id" type="var">T<sub>1</sub></span> = <span class="id" type="var">T<sub>2</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">T<sub>1</sub></span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">T<sub>1</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="var">Hbeq</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">T<sub>2</sub></span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hbeq</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T<sub>1</sub>=TBool&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T<sub>1</sub>=TArrow&nbsp;T1_1&nbsp;T1_2&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">andb_true_iff</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">Hbeq1</span> <span class="id" type="var">Hbeq2</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHT1_1</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hbeq1</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">IHT1_2</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hbeq2</span>. <span class="id" type="tactic">subst</span>... <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+<span class="id" type="keyword">End</span> <span class="id" type="var">STLCTypes</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab333"></a><h1 class="section">The Typechecker</h1>
+
+<div class="paragraph"> </div>
+
+ The typechecker works by walking over the structure of the given
+    term, returning either <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> or <span class="inlinecode"><span class="id" type="var">None</span></span>.  Each time we make a
+    recursive call to find out the types of the subterms, we need to
+    pattern-match on the results to make sure that they are not
+    <span class="inlinecode"><span class="id" type="var">None</span></span>.  Also, in the <span class="inlinecode"><span class="id" type="var">tapp</span></span> case, we use pattern matching to
+    extract the left- and right-hand sides of the function's arrow
+    type (and fail if the type of the function is not <span class="inlinecode"><span class="id" type="var">TArrow</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>
+    for some <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> and <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">FirstTry</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">STLCTypes</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">type_check</span> (<span class="id" type="var">Gamma</span>:<span class="id" type="var">context</span>) (<span class="id" type="var">t</span>:<span class="id" type="var">tm</span>) : <span class="id" type="var">option</span> <span class="id" type="var">ty</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tvar</span> <span class="id" type="var">x</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tabs</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type_check</span> (<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span>) <span class="id" type="var">t<sub>12</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">T<sub>12</sub></span> ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span>, <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>),<span class="id" type="var">Some</span> <span class="id" type="var">T<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">then</span> <span class="id" type="var">Some</span> <span class="id" type="var">T<sub>12</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>,_ ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ttrue</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Some</span> <span class="id" type="var">TBool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tfalse</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Some</span> <span class="id" type="var">TBool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tif</span> <span class="id" type="var">guard</span> <span class="id" type="var">t</span> <span class="id" type="var">f</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">guard</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">TBool</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span>, <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">f</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">T<sub>1</sub></span>, <span class="id" type="var">Some</span> <span class="id" type="var">T<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">then</span> <span class="id" type="var">Some</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>,_ ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">FirstTry</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab334"></a><h1 class="section">Digression: Improving the Notation</h1>
+
+<div class="paragraph"> </div>
+
+ Before we consider the properties of this algorithm, let's write
+    it out again in a cleaner way, using "monadic" notations in the
+    style of Haskell to streamline the plumbing of options.  First, we
+    define a notation for composing two potentially failing (i.e.,
+    option-returning) computations: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> " x &lt;- e<sub>1</sub> ;; e<sub>2</sub>"<br/>
+&nbsp;&nbsp;&nbsp;:= (<span class="id" type="keyword">match</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">e<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>)<br/>
+&nbsp;&nbsp;&nbsp;(<span class="id" type="var">right</span> <span class="id" type="var">associativity</span>, <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 60).<br/>
+</div>
+
+<div class="doc">
+Second, we define <span class="inlinecode"><span class="id" type="keyword">return</span></span> and <span class="inlinecode"><span class="id" type="tactic">fail</span></span> as synonyms for <span class="inlinecode"><span class="id" type="var">Some</span></span> and
+    <span class="inlinecode"><span class="id" type="var">None</span></span>: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> " 'return' e "<br/>
+&nbsp;&nbsp;:= (<span class="id" type="var">Some</span> <span class="id" type="var">e</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 60).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Notation</span> " 'fail' "<br/>
+&nbsp;&nbsp;:= <span class="id" type="var">None</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">STLCChecker</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">STLCTypes</span>.<br/>
+</div>
+
+<div class="doc">
+Now we can write the same type-checking function in a more
+    "imperative" style using these notations. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">type_check</span> (<span class="id" type="var">Gamma</span>:<span class="id" type="var">context</span>) (<span class="id" type="var">t</span>:<span class="id" type="var">tm</span>) : <span class="id" type="var">option</span> <span class="id" type="var">ty</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tvar</span> <span class="id" type="var">x</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">T</span> ⇒ <span class="id" type="keyword">return</span> <span class="id" type="var">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span>   ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tabs</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>12</sub></span> &lt;- <span class="id" type="var">type_check</span> (<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span>) <span class="id" type="var">t<sub>12</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">return</span> (<span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>2</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">then</span> <span class="id" type="keyword">return</span> <span class="id" type="var">T<sub>12</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ttrue</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">return</span> <span class="id" type="var">TBool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tfalse</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">return</span> <span class="id" type="var">TBool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tif</span> <span class="id" type="var">guard</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Tguard</span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">guard</span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>2</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">Tguard</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">then</span> <span class="id" type="keyword">return</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab335"></a><h1 class="section">Properties</h1>
+
+<div class="paragraph"> </div>
+
+ To verify that th typechecking algorithm is correct, we show that
+    it is _sound_ and _complete_ for the original <span class="inlinecode"><span class="id" type="var">has_type</span></span>
+    relation &mdash; that is, <span class="inlinecode"><span class="id" type="var">type_check</span></span> and <span class="inlinecode"><span class="id" type="var">has_type</span></span> define the same
+    partial function. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">type_checking_sound</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> = <span class="id" type="var">Some</span> <span class="id" type="var">T</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>.<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">t</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> <span class="id" type="var">Htc</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Htc</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tvar&nbsp;*)</span> <span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">x</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">Gamma</span> <span class="id" type="var">x</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">T'</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tapp&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">TO<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TO<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">T<sub>1</sub></span>|]; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="keyword">as</span> [|<span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>]; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">TO<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TO<sub>2</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">T<sub>2</sub></span>|]; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>2</sub></span>) <span class="id" type="var">eqn</span>: <span class="id" type="var">Heqb</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">beq_ty__eq</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heqb</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tabs&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">x</span>. <span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">T<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>1</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">G'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">type_check</span> <span class="id" type="var">G'</span> <span class="id" type="var">t<sub>0</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">TO<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TO<sub>2</sub></span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;ttrue&nbsp;*)</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tfalse&nbsp;*)</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tif&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">TOc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">TO<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>3</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">TO<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TOc</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">Tc</span>|]; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">Tc</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TO<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">T<sub>1</sub></span>|]; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TO<sub>2</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">T<sub>2</sub></span>|]; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqb</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">beq_ty__eq</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heqb</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">subst</span>...<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">type_checking_complete</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> → <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> = <span class="id" type="var">Some</span> <span class="id" type="var">T</span>.<br/>
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">Hty</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Hty</span>; <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Var&nbsp;*)</span> <span class="id" type="tactic">destruct</span> (<span class="id" type="var">Gamma</span> <span class="id" type="var">x<sub>0</sub></span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Abs&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_App&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty1</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> (<span class="id" type="var">beq_ty_refl</span> <span class="id" type="var">T<sub>11</sub></span>)...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_True&nbsp;*)</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_False&nbsp;*)</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_If&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty1</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty3</span>. <span class="id" type="tactic">rewrite</span> (<span class="id" type="var">beq_ty_refl</span> <span class="id" type="var">T</span>)...<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">STLCChecker</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab336"></a><h1 class="section">Exercises</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab337"></a><h4 class="section">Exercise: 5 stars (typechecker_extensions)</h4>
+ In this exercise we'll extend the typechecker to deal with the
+    extended features discussed in chapter <a href="MoreStlc.html"><span class="inlineref">MoreStlc</span></a>.  Your job
+    is to fill in the omitted cases in the following. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">TypecheckerExtensions</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">MoreStlc</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">STLCExtended</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">beq_ty</span> (<span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>: <span class="id" type="var">ty</span>) : <span class="id" type="var">bool</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T<sub>1</sub></span>,<span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TNat</span>, <span class="id" type="var">TNat</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TUnit</span>, <span class="id" type="var">TUnit</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>, <span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>21</sub></span> <span class="id" type="var">T<sub>22</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">andb</span> (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>21</sub></span>) (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>12</sub></span> <span class="id" type="var">T<sub>22</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TProd</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>, <span class="id" type="var">TProd</span> <span class="id" type="var">T<sub>21</sub></span> <span class="id" type="var">T<sub>22</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">andb</span> (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>21</sub></span>) (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>12</sub></span> <span class="id" type="var">T<sub>22</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TSum</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>, <span class="id" type="var">TSum</span> <span class="id" type="var">T<sub>21</sub></span> <span class="id" type="var">T<sub>22</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">andb</span> (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>21</sub></span>) (<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>12</sub></span> <span class="id" type="var">T<sub>22</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TList</span> <span class="id" type="var">T<sub>11</sub></span>, <span class="id" type="var">TList</span> <span class="id" type="var">T<sub>21</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>21</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span>,_ ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">beq_ty_refl</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">T<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>1</sub></span> = <span class="id" type="var">true</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">T<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">T<sub>1</sub></span>; <span class="id" type="tactic">simpl</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="tactic">reflexivity</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHT1_1</span>; <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHT1_2</span>; <span class="id" type="tactic">reflexivity</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHT1</span>; <span class="id" type="tactic">reflexivity</span>). <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">beq_ty__eq</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> = <span class="id" type="var">true</span> → <span class="id" type="var">T<sub>1</sub></span> = <span class="id" type="var">T<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">T<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">T<sub>1</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="var">Hbeq</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">T<sub>2</sub></span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hbeq</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="tactic">reflexivity</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> <span class="id" type="var">andb_true_iff</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">Hbeq1</span> <span class="id" type="var">Hbeq2</span>];<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHT1_1</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hbeq1</span>; <span class="id" type="tactic">apply</span> <span class="id" type="var">IHT1_2</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hbeq2</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">auto</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">apply</span> <span class="id" type="var">IHT1</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hbeq</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">auto</span>).<br/>
+&nbsp;<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">type_check</span> (<span class="id" type="var">Gamma</span>:<span class="id" type="var">context</span>) (<span class="id" type="var">t</span>:<span class="id" type="var">tm</span>) : <span class="id" type="var">option</span> <span class="id" type="var">ty</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tvar</span> <span class="id" type="var">x</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">T</span> ⇒ <span class="id" type="keyword">return</span> <span class="id" type="var">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span>   ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tabs</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>12</sub></span> &lt;- <span class="id" type="var">type_check</span> (<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span>) <span class="id" type="var">t<sub>12</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">return</span> (<span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>2</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">then</span> <span class="id" type="keyword">return</span> <span class="id" type="var">T<sub>12</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tnat</span> <span class="id" type="var">_</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">return</span> <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒ <span class="id" type="keyword">return</span> <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tpred</span> <span class="id" type="var">t<sub>1</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒ <span class="id" type="keyword">return</span> <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tmult</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>2</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T<sub>1</sub></span>, <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span>, <span class="id" type="var">TNat</span> ⇒ <span class="id" type="keyword">return</span> <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>,_        ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tif0</span> <span class="id" type="var">guard</span> <span class="id" type="var">t</span> <span class="id" type="var">f</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Tguard</span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">guard</span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T<sub>2</sub></span> &lt;- <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">f</span> ;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">Tguard</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="keyword">then</span> <span class="id" type="keyword">return</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tlcase</span> <span class="id" type="var">t<sub>0</sub></span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">x<sub>21</sub></span> <span class="id" type="var">x<sub>22</sub></span> <span class="id" type="var">t<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>0</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">TList</span> <span class="id" type="var">T</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">type_check</span> (<span class="id" type="var">update</span> (<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x<sub>22</sub></span> (<span class="id" type="var">TList</span> <span class="id" type="var">T</span>)) <span class="id" type="var">x<sub>21</sub></span> <span class="id" type="var">T</span>) <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">T<sub>1</sub>'</span>, <span class="id" type="var">Some</span> <span class="id" type="var">T<sub>2</sub>'</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beq_ty</span> <span class="id" type="var">T<sub>1</sub>'</span> <span class="id" type="var">T<sub>2</sub>'</span> <span class="id" type="keyword">then</span> <span class="id" type="var">Some</span> <span class="id" type="var">T<sub>1</sub>'</span> <span class="id" type="keyword">else</span> <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>,_ ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span>  <span class="comment">(*&nbsp;...&nbsp;and&nbsp;delete&nbsp;this&nbsp;line&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Just for fun, we'll do the soundness proof with just a bit more
+    automation than above, using these "mega-tactics": 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">TO</span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TO</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">T</span>|]; <br/>
+&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>; <span class="id" type="tactic">try</span> (<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">eauto</span>); <span class="id" type="tactic">try</span> (<span class="id" type="tactic">subst</span>; <span class="id" type="tactic">eauto</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">analyze</span> <span class="id" type="var">T</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">T</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>| | | <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>| <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>| <span class="id" type="var">T<sub>1</sub></span>]; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">fully_invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">TX</span> := <span class="id" type="tactic">fresh</span> <span class="id" type="var">T</span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">TO</span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TO</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">TX</span>|]; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">TX</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>| | | <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>| <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>| <span class="id" type="var">T<sub>1</sub></span>];<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>; <span class="id" type="tactic">try</span> (<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">eauto</span>); <span class="id" type="tactic">try</span> (<span class="id" type="tactic">subst</span>; <span class="id" type="tactic">eauto</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">case_equality</span> <span class="id" type="var">S</span> <span class="id" type="var">T</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_ty</span> <span class="id" type="var">S</span> <span class="id" type="var">T</span>) <span class="id" type="var">eqn</span>: <span class="id" type="var">Heqb</span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">apply</span> <span class="id" type="var">beq_ty__eq</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heqb</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">eauto</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">type_checking_sound</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> = <span class="id" type="var">Some</span> <span class="id" type="var">T</span> → <span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>.<br/>
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">t</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> <span class="id" type="var">Htc</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Htc</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tvar&nbsp;*)</span> <span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">x</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">Gamma</span> <span class="id" type="var">x</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">T'</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tapp&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">T<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">T<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">analyze</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">case_equality</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tabs&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">x</span>. <span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">T<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>1</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">Gamma'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma'</span> <span class="id" type="var">t<sub>0</sub></span> <span class="id" type="var">T<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tnat&nbsp;*)</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tsucc&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">t<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">fully_invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tpred&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">t<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">fully_invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tmult&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">T<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">T<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">analyze</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>; <span class="id" type="var">analyze</span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="var">T<sub>21</sub></span> <span class="id" type="var">T<sub>22</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tif0&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">T<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">T<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>3</sub></span> <span class="id" type="var">T<sub>3</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">T<sub>1</sub></span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">case_equality</span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="var">T<sub>3</sub></span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tlcase&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">x<sub>31</sub></span>. <span class="id" type="tactic">rename</span> <span class="id" type="var">s<sub>0</sub></span> <span class="id" type="var">into</span> <span class="id" type="var">x<sub>32</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">fully_invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">T<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="var">update</span> (<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x<sub>32</sub></span> (<span class="id" type="var">TList</span> <span class="id" type="var">T<sub>11</sub></span>)) <span class="id" type="var">x<sub>31</sub></span> <span class="id" type="var">T<sub>11</sub></span>) <span class="id" type="keyword">as</span> <span class="id" type="var">Gamma'2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">invert_typecheck</span> <span class="id" type="var">Gamma'2</span> <span class="id" type="var">t<sub>3</sub></span> <span class="id" type="var">T<sub>3</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">case_equality</span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="var">T<sub>3</sub></span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">type_checking_complete</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> → <span class="id" type="var">type_check</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> = <span class="id" type="var">Some</span> <span class="id" type="var">T</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">Hty</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Hty</span>; <span class="id" type="tactic">simpl</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty1</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty2</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHHty3</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> (<span class="id" type="var">beq_ty_refl</span> <span class="id" type="var">T</span>)); <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> (<span class="id" type="var">beq_ty_refl</span> <span class="id" type="var">T<sub>1</sub></span>)); <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">rewrite</span> (<span class="id" type="var">beq_ty_refl</span> <span class="id" type="var">T<sub>2</sub></span>)); <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> (<span class="id" type="var">Gamma</span> <span class="id" type="var">x</span>); <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>. <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">Admitted</span>. <span class="comment">(*&nbsp;...&nbsp;and&nbsp;delete&nbsp;this&nbsp;line&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;<br/>
+Qed.&nbsp;<span class="comment">(*&nbsp;...&nbsp;and&nbsp;uncomment&nbsp;this&nbsp;one&nbsp;*)</span><br/>
+*)</span><br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">TypecheckerExtensions</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab338"></a><h4 class="section">Exercise: 5 stars, optional (stlc_step_function)</h4>
+ Above, we showed how to write a typechecking function and prove it
+    sound and complete for the typing relation.  Do the same for the
+    operational semantics &mdash; i.e., write a function <span class="inlinecode"><span class="id" type="var">stepf</span></span> of type
+    <span class="inlinecode"><span class="id" type="var">tm</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">tm</span></span> and prove that it is sound and complete with
+    respect to <span class="inlinecode"><span class="id" type="var">step</span></span> from chapter <a href="MoreStlc.html"><span class="inlineref">MoreStlc</span></a>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">StepFunction</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">TypecheckerExtensions</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">StepFunction</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab339"></a><h4 class="section">Exercise: 5 stars, optional (stlc_impl)</h4>
+ Using the Imp parser described in the <a href="https://www.cis.upenn.edu/~bcpierce/sf/lf-current/ImpParser.html"><span class="inlineref">ImpParser</span></a> chapter
+    of _Logical Foundations_ as a guide, build a parser for extended
+    Stlc programs.  Combine it with the typechecking and stepping
+    functions from the above exercises to yield a complete typechecker
+    and interpreter for this language. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">StlcImpl</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">StepFunction</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">StlcImpl</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+  
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

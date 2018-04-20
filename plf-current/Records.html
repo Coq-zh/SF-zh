@@ -1,0 +1,1061 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Records: Adding Records to STLC</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 2: Programming Language Foundations</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Records<span class="subtitle">Adding Records to STLC</span></h1>
+
+
+<div class="code code-tight">
+
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Imp</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Smallstep</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Stlc</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab340"></a><h1 class="section">Adding Records</h1>
+
+<div class="paragraph"> </div>
+
+ We saw in chapter <a href="MoreStlc.html"><span class="inlineref">MoreStlc</span></a> how records can be treated as just
+    syntactic sugar for nested uses of products.  This is OK for
+    simple examples, but the encoding is informal (in reality, if we
+    actually treated records this way, it would be carried out in the
+    parser, which we are eliding here), and anyway it is not very
+    efficient.  So it is also interesting to see how records can be
+    treated as first-class citizens of the language.  This chapter
+    shows how.
+
+<div class="paragraph"> </div>
+
+    Recall the informal definitions we gave before: 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+    Syntax:
+<pre>
+       t <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          Terms:
+           | {i<sub>1</sub>=t<sub>1</sub>, ..., in=tn}         record
+           | t.i                         projection
+           | ...
+
+       v <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          Values:
+           | {i<sub>1</sub>=v<sub>1</sub>, ..., in=vn}         record value
+           | ...
+
+       T <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          Types:
+           | {i<sub>1</sub>:T<sub>1</sub>, ..., in:Tn}         record type
+           | ...
+</pre>
+   Reduction:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">ti&nbsp;==>&nbsp;ti'</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_Rcd) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">{i<sub>1</sub>=v<sub>1</sub>,&nbsp;...,&nbsp;im=vm,&nbsp;in=tn,&nbsp;...}&nbsp;==>&nbsp;{i<sub>1</sub>=v<sub>1</sub>,&nbsp;...,&nbsp;im=vm,&nbsp;in=tn',&nbsp;...}</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_Proj1) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">t<sub>1</sub>.i&nbsp;==>&nbsp;t<sub>1</sub>'.i</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_ProjRcd) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">{...,&nbsp;i=vi,&nbsp;...}.i&nbsp;==>&nbsp;vi</td>
+  <td></td>
+</td>
+</table></center>   Typing:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">Gamma&nbsp;|-&nbsp;t<sub>1</sub>&nbsp;:&nbsp;T<sub>1</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gamma&nbsp;|-&nbsp;tn&nbsp;:&nbsp;Tn</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_Rcd) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Gamma&nbsp;|-&nbsp;{i<sub>1</sub>=t<sub>1</sub>,&nbsp;...,&nbsp;in=tn}&nbsp;:&nbsp;{i<sub>1</sub>:T<sub>1</sub>,&nbsp;...,&nbsp;in:Tn}</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">Gamma&nbsp;|-&nbsp;t&nbsp;:&nbsp;{...,&nbsp;i:Ti,&nbsp;...}</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_Proj) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Gamma&nbsp;|-&nbsp;t.i&nbsp;:&nbsp;Ti</td>
+  <td></td>
+</td>
+</table></center>
+</div>
+
+<div class="doc">
+<a name="lab341"></a><h1 class="section">Formalizing Records</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">STLCExtendedRecords</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab342"></a><h3 class="section">Syntax and Operational Semantics</h3>
+
+<div class="paragraph"> </div>
+
+ The most obvious way to formalize the syntax of record types would
+    be this: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">FirstTry</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">alist</span> (<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) := <span class="id" type="var">list</span> (<span class="id" type="var">string</span> * <span class="id" type="var">X</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">ty</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TBase</span>     : <span class="id" type="var">string</span> → <span class="id" type="var">ty</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TArrow</span>    : <span class="id" type="var">ty</span> → <span class="id" type="var">ty</span> → <span class="id" type="var">ty</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TRcd</span>      : (<span class="id" type="var">alist</span> <span class="id" type="var">ty</span>) → <span class="id" type="var">ty</span>.<br/>
+</div>
+
+<div class="doc">
+Unfortunately, we encounter here a limitation in Coq: this type
+    does not automatically give us the induction principle we expect:
+    the induction hypothesis in the <span class="inlinecode"><span class="id" type="var">TRcd</span></span> case doesn't give us
+    any information about the <span class="inlinecode"><span class="id" type="var">ty</span></span> elements of the list, making it
+    useless for the proofs we want to do.  
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;Check&nbsp;ty_ind.<br/>
+&nbsp;&nbsp;&nbsp;====&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;ty_ind&nbsp;:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forall&nbsp;P&nbsp;:&nbsp;ty&nbsp;-&gt;&nbsp;Prop,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(forall&nbsp;i&nbsp;:&nbsp;id,&nbsp;P&nbsp;(TBase&nbsp;i))&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(forall&nbsp;t&nbsp;:&nbsp;ty,&nbsp;P&nbsp;t&nbsp;-&gt;&nbsp;forall&nbsp;t<sub>0</sub>&nbsp;:&nbsp;ty,&nbsp;P&nbsp;t<sub>0</sub>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;&nbsp;P&nbsp;(TArrow&nbsp;t&nbsp;t<sub>0</sub>))&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(forall&nbsp;a&nbsp;:&nbsp;alist&nbsp;ty,&nbsp;P&nbsp;(TRcd&nbsp;a))&nbsp;-&gt;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;???&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forall&nbsp;t&nbsp;:&nbsp;ty,&nbsp;P&nbsp;t<br/>
+*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">FirstTry</span>.<br/>
+</div>
+
+<div class="doc">
+It is possible to get a better induction principle out of Coq, but
+    the details of how this is done are not very pretty, and the
+    principle we obtain is not as intuitive to use as the ones Coq
+    generates automatically for simple <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> definitions.
+
+<div class="paragraph"> </div>
+
+    Fortunately, there is a different way of formalizing records that
+    is, in some ways, even simpler and more natural: instead of using
+    the standard Coq <span class="inlinecode"><span class="id" type="var">list</span></span> type, we can essentially incorporate its
+    constructors ("nil" and "cons") in the syntax of our types. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">ty</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TBase</span> : <span class="id" type="var">string</span> → <span class="id" type="var">ty</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TArrow</span> : <span class="id" type="var">ty</span> → <span class="id" type="var">ty</span> → <span class="id" type="var">ty</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TRNil</span> : <span class="id" type="var">ty</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TRCons</span> : <span class="id" type="var">string</span> → <span class="id" type="var">ty</span> → <span class="id" type="var">ty</span> → <span class="id" type="var">ty</span>.<br/>
+</div>
+
+<div class="doc">
+Similarly, at the level of terms, we have constructors <span class="inlinecode"><span class="id" type="var">trnil</span></span>,
+    for the empty record, and <span class="inlinecode"><span class="id" type="var">trcons</span></span>, which adds a single field to
+    the front of a list of fields. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">tm</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">tvar</span> : <span class="id" type="var">string</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tapp</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tabs</span> : <span class="id" type="var">string</span> → <span class="id" type="var">ty</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;records&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tproj</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">string</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">trnil</span> :  <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">trcons</span> : <span class="id" type="var">string</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span>.<br/>
+</div>
+
+<div class="doc">
+Some examples... 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">string_scope</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">a</span> := "a".<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">f</span> := "f".<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">g</span> := "g".<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">l</span> := "l".<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">A</span> := (<span class="id" type="var">TBase</span> "A").<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">B</span> := (<span class="id" type="var">TBase</span> "B").<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">k</span> := "k".<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">i<sub>1</sub></span> := "i<sub>1</sub>".<br/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">i<sub>2</sub></span> := "i<sub>2</sub>".<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode">{</span> <span class="inlinecode"><span class="id" type="var">i<sub>1</sub></span>:<span class="id" type="var">A</span></span> <span class="inlinecode">}</span> 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;Check&nbsp;(TRCons&nbsp;i<sub>1</sub>&nbsp;A&nbsp;TRNil).&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode">{</span> <span class="inlinecode"><span class="id" type="var">i<sub>1</sub></span>:<span class="id" type="var">A</span>→<span class="id" type="var">B</span>,</span> <span class="inlinecode"><span class="id" type="var">i<sub>2</sub></span>:<span class="id" type="var">A</span></span> <span class="inlinecode">}</span> 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;Check&nbsp;(TRCons&nbsp;i<sub>1</sub>&nbsp;(TArrow&nbsp;A&nbsp;B)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(TRCons&nbsp;i<sub>2</sub>&nbsp;A&nbsp;TRNil)).&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab343"></a><h3 class="section">Well-Formedness</h3>
+
+<div class="paragraph"> </div>
+
+ One issue with generalizing the abstract syntax for records from
+    lists to the nil/cons presentation is that it introduces the
+    possibility of writing strange types like this... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">weird_type</span> := <span class="id" type="var">TRCons</span> <span class="id" type="var">X</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span>.<br/>
+</div>
+
+<div class="doc">
+where the "tail" of a record type is not actually a record type! 
+<div class="paragraph"> </div>
+
+ We'll structure our typing judgement so that no ill-formed types
+    like <span class="inlinecode"><span class="id" type="var">weird_type</span></span> are ever assigned to terms.  To support this, we
+    define predicates <span class="inlinecode"><span class="id" type="var">record_ty</span></span> and <span class="inlinecode"><span class="id" type="var">record_tm</span></span>, which identify
+    record types and terms, and <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> which rules out the
+    ill-formed types. 
+<div class="paragraph"> </div>
+
+ First, a type is a record type if it is built with just <span class="inlinecode"><span class="id" type="var">TRNil</span></span>
+    and <span class="inlinecode"><span class="id" type="var">TRCons</span></span> at the outermost level. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">record_ty</span> : <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">RTnil</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">record_ty</span> <span class="id" type="var">TRNil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">RTcons</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">record_ty</span> (<span class="id" type="var">TRCons</span> <span class="id" type="var">i</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>).<br/>
+</div>
+
+<div class="doc">
+With this, we can define well-formed types. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">well_formed_ty</span> : <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">wfTBase</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> (<span class="id" type="var">TBase</span> <span class="id" type="var">i</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">wfTArrow</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">T<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">T<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> (<span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">wfTRNil</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">TRNil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">wfTRCons</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">T<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">T<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">record_ty</span> <span class="id" type="var">T<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> (<span class="id" type="var">TRCons</span> <span class="id" type="var">i</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">record_ty</span> <span class="id" type="var">well_formed_ty</span>.<br/>
+</div>
+
+<div class="doc">
+Note that <span class="inlinecode"><span class="id" type="var">record_ty</span></span> is not recursive &mdash; it just checks the
+    outermost constructor.  The <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> property, on the
+    other hand, verifies that the whole type is well formed in the
+    sense that the tail of every record (the second argument to
+    <span class="inlinecode"><span class="id" type="var">TRCons</span></span>) is a record.
+
+<div class="paragraph"> </div>
+
+    Of course, we should also be concerned about ill-formed terms, not
+    just types; but typechecking can rules those out without the help
+    of an extra <span class="inlinecode"><span class="id" type="var">well_formed_tm</span></span> definition because it already
+    examines the structure of terms.  All we need is an analog of
+    <span class="inlinecode"><span class="id" type="var">record_ty</span></span> saying that a term is a record term if it is built
+    with <span class="inlinecode"><span class="id" type="var">trnil</span></span> and <span class="inlinecode"><span class="id" type="var">trcons</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">record_tm</span> : <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">rtnil</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">record_tm</span> <span class="id" type="var">trnil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">rtcons</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">record_tm</span> (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">record_tm</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab344"></a><h3 class="section">Substitution</h3>
+
+<div class="paragraph"> </div>
+
+ Substitution extends easily. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="tactic">subst</span> (<span class="id" type="var">x</span>:<span class="id" type="var">string</span>) (<span class="id" type="var">s</span>:<span class="id" type="var">tm</span>) (<span class="id" type="var">t</span>:<span class="id" type="var">tm</span>) : <span class="id" type="var">tm</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tvar</span> <span class="id" type="var">y</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">beq_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">s</span> <span class="id" type="keyword">else</span> <span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tabs</span> <span class="id" type="var">y</span> <span class="id" type="var">T</span> <span class="id" type="var">t<sub>1</sub></span> ⇒ <span class="id" type="var">tabs</span> <span class="id" type="var">y</span> <span class="id" type="var">T</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">if</span> <span class="id" type="var">beq_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="keyword">else</span> (<span class="id" type="tactic">subst</span> <span class="id" type="var">x</span> <span class="id" type="var">s</span> <span class="id" type="var">t<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> ⇒ <span class="id" type="var">tapp</span> (<span class="id" type="tactic">subst</span> <span class="id" type="var">x</span> <span class="id" type="var">s</span> <span class="id" type="var">t<sub>1</sub></span>) (<span class="id" type="tactic">subst</span> <span class="id" type="var">x</span> <span class="id" type="var">s</span> <span class="id" type="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">tproj</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">i</span> ⇒ <span class="id" type="var">tproj</span> (<span class="id" type="tactic">subst</span> <span class="id" type="var">x</span> <span class="id" type="var">s</span> <span class="id" type="var">t<sub>1</sub></span>) <span class="id" type="var">i</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">trnil</span> ⇒ <span class="id" type="var">trnil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">tr<sub>1</sub></span> ⇒ <span class="id" type="var">trcons</span> <span class="id" type="var">i</span> (<span class="id" type="tactic">subst</span> <span class="id" type="var">x</span> <span class="id" type="var">s</span> <span class="id" type="var">t<sub>1</sub></span>) (<span class="id" type="tactic">subst</span> <span class="id" type="var">x</span> <span class="id" type="var">s</span> <span class="id" type="var">tr<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Notation</span> "'[' x ':=' s ']' t" := (<span class="id" type="tactic">subst</span> <span class="id" type="var">x</span> <span class="id" type="var">s</span> <span class="id" type="var">t</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+</div>
+
+<div class="doc">
+<a name="lab345"></a><h3 class="section">Reduction</h3>
+
+<div class="paragraph"> </div>
+
+ A record is a value if all of its fields are. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">value</span> : <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">v_abs</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> (<span class="id" type="var">tabs</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">v_rnil</span> : <span class="id" type="var">value</span> <span class="id" type="var">trnil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">v_rcons</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">vr</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">v<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">vr</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">vr</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">value</span>.<br/>
+</div>
+
+<div class="doc">
+To define reduction, we'll need a utility function for extracting
+    one field from record term: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">tlookup</span> (<span class="id" type="var">i</span>:<span class="id" type="var">string</span>) (<span class="id" type="var">tr</span>:<span class="id" type="var">tm</span>) : <span class="id" type="var">option</span> <span class="id" type="var">tm</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">tr</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">trcons</span> <span class="id" type="var">i'</span> <span class="id" type="var">t</span> <span class="id" type="var">tr'</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">beq_string</span> <span class="id" type="var">i</span> <span class="id" type="var">i'</span> <span class="id" type="keyword">then</span> <span class="id" type="var">Some</span> <span class="id" type="var">t</span> <span class="id" type="keyword">else</span> <span class="id" type="var">tlookup</span> <span class="id" type="var">i</span> <span class="id" type="var">tr'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">step</span></span> function uses this term-level lookup function in the
+    projection rule. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Reserved Notation</span> "t<sub>1</sub> '==&gt;' t<sub>2</sub>" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">step</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_AppAbs</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span> <span class="id" type="var">v<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">v<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tapp</span> (<span class="id" type="var">tabs</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span>) <span class="id" type="var">v<sub>2</sub></span>) ==&gt; ([<span class="id" type="var">x</span>:=<span class="id" type="var">v<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_App1</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) ==&gt; (<span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_App2</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>2</sub>'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">v<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>2</sub></span> ==&gt; <span class="id" type="var">t<sub>2</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tapp</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) ==&gt; (<span class="id" type="var">tapp</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub>'</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Proj1</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">i</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tproj</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">i</span>) ==&gt; (<span class="id" type="var">tproj</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">i</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_ProjRcd</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">tr</span> <span class="id" type="var">i</span> <span class="id" type="var">vi</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">tr</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tlookup</span> <span class="id" type="var">i</span> <span class="id" type="var">tr</span> = <span class="id" type="var">Some</span> <span class="id" type="var">vi</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tproj</span> <span class="id" type="var">tr</span> <span class="id" type="var">i</span>) ==&gt; <span class="id" type="var">vi</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Rcd_Head</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">tr<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">tr<sub>2</sub></span>) ==&gt; (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">tr<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Rcd_Tail</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">tr<sub>2</sub></span> <span class="id" type="var">tr<sub>2</sub>'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">v<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tr<sub>2</sub></span> ==&gt; <span class="id" type="var">tr<sub>2</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">tr<sub>2</sub></span>) ==&gt; (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">tr<sub>2</sub>'</span>)<br/>
+<br/>
+<span class="id" type="keyword">where</span> "t<sub>1</sub> '==&gt;' t<sub>2</sub>" := (<span class="id" type="var">step</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">multistep</span> := (<span class="id" type="var">multi</span> <span class="id" type="var">step</span>).<br/>
+<span class="id" type="keyword">Notation</span> "t<sub>1</sub> '==&gt;*' t<sub>2</sub>" := (<span class="id" type="var">multistep</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">step</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab346"></a><h3 class="section">Typing</h3>
+
+<div class="paragraph"> </div>
+
+ Next we define the typing rules.  These are nearly direct
+    transcriptions of the inference rules shown above: the only
+    significant difference is the use of <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span>.  In the
+    informal presentation we used a grammar that only allowed
+    well-formed record types, so we didn't have to add a separate
+    check.
+
+<div class="paragraph"> </div>
+
+    One sanity condition that we'd like to maintain is that, whenever
+    <span class="inlinecode"><span class="id" type="var">has_type</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> holds, will also be the case that
+    <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span>, so that <span class="inlinecode"><span class="id" type="var">has_type</span></span> never assigns ill-formed
+    types to terms.  In fact, we prove this theorem below.  However,
+    we don't want to clutter the definition of <span class="inlinecode"><span class="id" type="var">has_type</span></span> with
+    unnecessary uses of <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span>.  Instead, we place
+    <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> checks only where needed: where an inductive call
+    to <span class="inlinecode"><span class="id" type="var">has_type</span></span> won't already be checking the well-formedness of a
+    type.  For example, we check <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> in the <span class="inlinecode"><span class="id" type="var">T_Var</span></span>
+    case, because there is no inductive <span class="inlinecode"><span class="id" type="var">has_type</span></span> call that would
+    enforce this.  Similarly, in the <span class="inlinecode"><span class="id" type="var">T_Abs</span></span> case, we require a proof
+    of <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> because the inductive call to <span class="inlinecode"><span class="id" type="var">has_type</span></span>
+    only guarantees that <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span> is well-formed. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">Tlookup</span> (<span class="id" type="var">i</span>:<span class="id" type="var">string</span>) (<span class="id" type="var">Tr</span>:<span class="id" type="var">ty</span>) : <span class="id" type="var">option</span> <span class="id" type="var">ty</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">Tr</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TRCons</span> <span class="id" type="var">i'</span> <span class="id" type="var">T</span> <span class="id" type="var">Tr'</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">beq_string</span> <span class="id" type="var">i</span> <span class="id" type="var">i'</span> <span class="id" type="keyword">then</span> <span class="id" type="var">Some</span> <span class="id" type="var">T</span> <span class="id" type="keyword">else</span> <span class="id" type="var">Tlookup</span> <span class="id" type="var">i</span> <span class="id" type="var">Tr'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">context</span> := <span class="id" type="var">partial_map</span> <span class="id" type="var">ty</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Reserved Notation</span> "Gamma '|-' t '&#x2208;' T" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type</span> : <span class="id" type="var">context</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Var</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- (<span class="id" type="var">tvar</span> <span class="id" type="var">x</span>) &#x2208; <span class="id" type="var">T</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Abs</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span> <span class="id" type="var">t<sub>12</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">T<sub>11</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span>) |- <span class="id" type="var">t<sub>12</sub></span> &#x2208; <span class="id" type="var">T<sub>12</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- (<span class="id" type="var">tabs</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span>) &#x2208; (<span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">T<sub>12</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_App</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">t<sub>1</sub></span> &#x2208; (<span class="id" type="var">TArrow</span> <span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">t<sub>2</sub></span> &#x2208; <span class="id" type="var">T<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- (<span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) &#x2208; <span class="id" type="var">T<sub>2</sub></span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;records:&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Proj</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span> <span class="id" type="var">Ti</span> <span class="id" type="var">Tr</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">Tr</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Tlookup</span> <span class="id" type="var">i</span> <span class="id" type="var">Tr</span> = <span class="id" type="var">Some</span> <span class="id" type="var">Ti</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- (<span class="id" type="var">tproj</span> <span class="id" type="var">t</span> <span class="id" type="var">i</span>) &#x2208; <span class="id" type="var">Ti</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_RNil</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">trnil</span> &#x2208; <span class="id" type="var">TRNil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_RCons</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">tr</span> <span class="id" type="var">Tr</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">tr</span> &#x2208; <span class="id" type="var">Tr</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">record_ty</span> <span class="id" type="var">Tr</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">record_tm</span> <span class="id" type="var">tr</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span> <span class="id" type="var">tr</span>) &#x2208; (<span class="id" type="var">TRCons</span> <span class="id" type="var">i</span> <span class="id" type="var">T</span> <span class="id" type="var">Tr</span>)<br/>
+<br/>
+<span class="id" type="keyword">where</span> "Gamma '|-' t '&#x2208;' T" := (<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">has_type</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab347"></a><h2 class="section">Examples</h2>
+
+<div class="paragraph"> </div>
+
+<a name="lab348"></a><h4 class="section">Exercise: 2 stars (examples)</h4>
+ Finish the proofs below.  Feel free to use Coq's automation
+    features in this proof.  However, if you are not confident about
+    how the type system works, you may want to carry out the proofs
+    first using the basic features (<span class="inlinecode"><span class="id" type="tactic">apply</span></span> instead of <span class="inlinecode"><span class="id" type="tactic">eapply</span></span>, in
+    particular) and then perhaps compress it using automation.  Before
+    starting to prove anything, make sure you understand what it is
+    saying.
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;GRADE_THEOREM&nbsp;0.5:&nbsp;typing_example_2&nbsp;*)</span><br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">typing_example_2</span> :<br/>
+&nbsp;&nbsp;<span class="id" type="var">empty</span> |-<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tapp</span> (<span class="id" type="var">tabs</span> <span class="id" type="var">a</span> (<span class="id" type="var">TRCons</span> <span class="id" type="var">i<sub>1</sub></span> (<span class="id" type="var">TArrow</span> <span class="id" type="var">A</span> <span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">TRCons</span> <span class="id" type="var">i<sub>2</sub></span> (<span class="id" type="var">TArrow</span> <span class="id" type="var">B</span> <span class="id" type="var">B</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">TRNil</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tproj</span> (<span class="id" type="var">tvar</span> <span class="id" type="var">a</span>) <span class="id" type="var">i<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">trcons</span> <span class="id" type="var">i<sub>1</sub></span> (<span class="id" type="var">tabs</span> <span class="id" type="var">a</span> <span class="id" type="var">A</span> (<span class="id" type="var">tvar</span> <span class="id" type="var">a</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">trcons</span> <span class="id" type="var">i<sub>2</sub></span> (<span class="id" type="var">tabs</span> <span class="id" type="var">a</span> <span class="id" type="var">B</span> (<span class="id" type="var">tvar</span> <span class="id" type="var">a</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">trnil</span>))) &#x2208;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">TArrow</span> <span class="id" type="var">B</span> <span class="id" type="var">B</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;GRADE_THEOREM&nbsp;0.5:&nbsp;typing_nonexample&nbsp;*)</span><br/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">typing_nonexample</span> :<br/>
+&nbsp;&nbsp;¬ <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">update</span> <span class="id" type="var">empty</span> <span class="id" type="var">a</span> (<span class="id" type="var">TRCons</span> <span class="id" type="var">i<sub>2</sub></span> (<span class="id" type="var">TArrow</span> <span class="id" type="var">A</span> <span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">TRNil</span>)) |-<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">trcons</span> <span class="id" type="var">i<sub>1</sub></span> (<span class="id" type="var">tabs</span> <span class="id" type="var">a</span> <span class="id" type="var">B</span> (<span class="id" type="var">tvar</span> <span class="id" type="var">a</span>)) (<span class="id" type="var">tvar</span> <span class="id" type="var">a</span>)) &#x2208;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">typing_nonexample_2</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">y</span>,<br/>
+&nbsp;&nbsp;¬ <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">update</span> <span class="id" type="var">empty</span> <span class="id" type="var">y</span> <span class="id" type="var">A</span>) |-<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tapp</span> (<span class="id" type="var">tabs</span> <span class="id" type="var">a</span> (<span class="id" type="var">TRCons</span> <span class="id" type="var">i<sub>1</sub></span> <span class="id" type="var">A</span> <span class="id" type="var">TRNil</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tproj</span> (<span class="id" type="var">tvar</span> <span class="id" type="var">a</span>) <span class="id" type="var">i<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">trcons</span> <span class="id" type="var">i<sub>1</sub></span> (<span class="id" type="var">tvar</span> <span class="id" type="var">y</span>) (<span class="id" type="var">trcons</span> <span class="id" type="var">i<sub>2</sub></span> (<span class="id" type="var">tvar</span> <span class="id" type="var">y</span>) <span class="id" type="var">trnil</span>))) &#x2208;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">T</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab349"></a><h2 class="section">Properties of Typing</h2>
+
+<div class="paragraph"> </div>
+
+ The proofs of progress and preservation for this system are
+    essentially the same as for the pure simply typed lambda-calculus,
+    but we need to add some technical lemmas involving records. 
+</div>
+
+<div class="doc">
+<a name="lab350"></a><h3 class="section">Well-Formedness</h3>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wf_rcd_lookup</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">T</span> <span class="id" type="var">Ti</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">Tlookup</span> <span class="id" type="var">i</span> <span class="id" type="var">T</span> = <span class="id" type="var">Some</span> <span class="id" type="var">Ti</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">well_formed_ty</span> <span class="id" type="var">Ti</span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">i</span> <span class="id" type="var">T</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">T</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;TRCons&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">Tlookup</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_string</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span>)...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">subst</span>... <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">step_preserves_record_tm</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">tr</span> <span class="id" type="var">tr'</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">record_tm</span> <span class="id" type="var">tr</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">tr</span> ==&gt; <span class="id" type="var">tr'</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">record_tm</span> <span class="id" type="var">tr'</span>.<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">tr</span> <span class="id" type="var">tr'</span> <span class="id" type="var">Hrt</span> <span class="id" type="var">Hstp</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hrt</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hstp</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">has_type__wf</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> → <span class="id" type="var">well_formed_ty</span> <span class="id" type="var">T</span>.<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">Htyp</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Htyp</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_App&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">IHHtyp1</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Proj&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">wf_rcd_lookup</span>...<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab351"></a><h3 class="section">Field Lookup</h3>
+
+<div class="paragraph"> </div>
+
+ Lemma: If <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> returns <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>,
+     then <span class="inlinecode"><span class="id" type="var">tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">v</span></span> returns <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">ti</span></span> for some term <span class="inlinecode"><span class="id" type="var">ti</span></span> such
+     that <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">ti</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>.
+
+<div class="paragraph"> </div>
+
+    Proof: By induction on the typing derivation <span class="inlinecode"><span class="id" type="var">Htyp</span></span>.  Since
+      <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>, <span class="inlinecode"><span class="id" type="var">T</span></span> must be a record type, this and
+      the fact that <span class="inlinecode"><span class="id" type="var">v</span></span> is a value eliminate most cases by inspection,
+      leaving only the <span class="inlinecode"><span class="id" type="var">T_RCons</span></span> case.
+
+<div class="paragraph"> </div>
+
+      If the last step in the typing derivation is by <span class="inlinecode"><span class="id" type="var">T_RCons</span></span>, then
+      <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">trcons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> and <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">TRCons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span></span> for some <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>,
+      <span class="inlinecode"><span class="id" type="var">t</span></span>, <span class="inlinecode"><span class="id" type="var">tr</span></span>, <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">Tr</span></span>.
+
+<div class="paragraph"> </div>
+
+      This leaves two possiblities to consider - either <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">i</span></span> or
+      not.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>, then since <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">(<span class="id" type="var">TRCons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span>
+        <span class="inlinecode"><span class="id" type="var">Ti</span></span> we have <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>.  It follows that <span class="inlinecode"><span class="id" type="var">t</span></span> itself satisfies
+        the theorem.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> On the other hand, suppose <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>.  Then
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+<span class="id" type="var">Tlookup</span>&nbsp;<span class="id" type="var">i</span>&nbsp;<span class="id" type="var">T</span>&nbsp;=&nbsp;<span class="id" type="var">Tlookup</span>&nbsp;<span class="id" type="var">i</span>&nbsp;<span class="id" type="var">Tr</span>
+<div class="paragraph"> </div>
+
+</div>
+        and
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+<span class="id" type="var">tlookup</span>&nbsp;<span class="id" type="var">i</span>&nbsp;<span class="id" type="var">t</span>&nbsp;=&nbsp;<span class="id" type="var">tlookup</span>&nbsp;<span class="id" type="var">i</span>&nbsp;<span class="id" type="var">tr</span>,
+<div class="paragraph"> </div>
+
+</div>
+        so the result follows from the induction hypothesis. <span class="proofbox">&#9744;</span> 
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    Here is the formal statement:
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">lookup_field_in_value</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span> <span class="id" type="var">i</span> <span class="id" type="var">Ti</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">v</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">empty</span> |- <span class="id" type="var">v</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">Tlookup</span> <span class="id" type="var">i</span> <span class="id" type="var">T</span> = <span class="id" type="var">Some</span> <span class="id" type="var">Ti</span> →<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">ti</span>, <span class="id" type="var">tlookup</span> <span class="id" type="var">i</span> <span class="id" type="var">v</span> = <span class="id" type="var">Some</span> <span class="id" type="var">ti</span> ∧ <span class="id" type="var">empty</span> |- <span class="id" type="var">ti</span> &#x2208; <span class="id" type="var">Ti</span>.<br/>
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span> <span class="id" type="var">i</span> <span class="id" type="var">Ti</span> <span class="id" type="var">Hval</span> <span class="id" type="var">Htyp</span> <span class="id" type="var">Hget</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">remember</span> (@<span class="id" type="var">empty</span> <span class="id" type="var">ty</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">Gamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Htyp</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_RCons&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hget</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_string</span> <span class="id" type="var">i</span> <span class="id" type="var">i<sub>0</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;i&nbsp;is&nbsp;first&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hget</span>. <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;get&nbsp;tail&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHtyp2</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">vi</span> [<span class="id" type="var">Hgeti</span> <span class="id" type="var">Htypi</span>]]...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Hval</span>... <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab352"></a><h3 class="section">Progress</h3>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="tactic">progress</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">empty</span> |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">t</span> ∨ <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t'</span>, <span class="id" type="var">t</span> ==&gt; <span class="id" type="var">t'</span>.<br/>
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Theorem:&nbsp;Suppose&nbsp;empty&nbsp;|-&nbsp;t&nbsp;:&nbsp;T.&nbsp;&nbsp;Then&nbsp;either<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.&nbsp;t&nbsp;is&nbsp;a&nbsp;value,&nbsp;or<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.&nbsp;t&nbsp;==&gt;&nbsp;t'&nbsp;for&nbsp;some&nbsp;t'.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proof:&nbsp;By&nbsp;induction&nbsp;on&nbsp;the&nbsp;given&nbsp;typing&nbsp;derivation.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">Ht</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">remember</span> (@<span class="id" type="var">empty</span> <span class="id" type="var">ty</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">Gamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">HeqGamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Ht</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">HeqGamma</span>; <span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Var&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;final&nbsp;rule&nbsp;in&nbsp;the&nbsp;given&nbsp;typing&nbsp;derivation&nbsp;cannot&nbsp;be&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_Var</span></span>,&nbsp;since&nbsp;it&nbsp;can&nbsp;never&nbsp;be&nbsp;the&nbsp;case&nbsp;that&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span>&nbsp;(since&nbsp;the&nbsp;context&nbsp;is&nbsp;empty).&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Abs&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>&nbsp;rule&nbsp;was&nbsp;the&nbsp;last&nbsp;used,&nbsp;then&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span>,&nbsp;which&nbsp;is&nbsp;a&nbsp;value.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_App&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;applied&nbsp;was&nbsp;T_App,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>,&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;we&nbsp;know&nbsp;from&nbsp;the&nbsp;form&nbsp;of&nbsp;the&nbsp;rule&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By&nbsp;the&nbsp;induction&nbsp;hypothesis,&nbsp;each&nbsp;of&nbsp;t<sub>1</sub>&nbsp;and&nbsp;t<sub>2</sub>&nbsp;either&nbsp;is&nbsp;a&nbsp;value<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;can&nbsp;take&nbsp;a&nbsp;step.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt1</span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt2</span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;t<sub>2</sub>&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;both&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>&nbsp;are&nbsp;values,&nbsp;then&nbsp;we&nbsp;know&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span>,&nbsp;since&nbsp;abstractions&nbsp;are&nbsp;the&nbsp;only&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;values&nbsp;that&nbsp;can&nbsp;have&nbsp;an&nbsp;arrow&nbsp;type.&nbsp;&nbsp;But<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode">(<span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span>)</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">t<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span></span>&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_AppAbs</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> ([<span class="id" type="var">x</span>:=<span class="id" type="var">t<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span>)...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;t<sub>2</sub>&nbsp;steps&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>&nbsp;is&nbsp;a&nbsp;value&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>,&nbsp;then&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App2</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t<sub>2</sub>'</span> <span class="id" type="var">Hstp</span>]. <span style='font-size:120%;'>&exist;</span> (<span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub>'</span>)...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;steps&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Finally,&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App1</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">Hstp</span>]. <span style='font-size:120%;'>&exist;</span> (<span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span>)...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Proj&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;in&nbsp;the&nbsp;given&nbsp;derivation&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>,&nbsp;then<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">tproj</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode">(<span class="id" type="var">TRcd</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span>)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By&nbsp;the&nbsp;IH,&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;either&nbsp;is&nbsp;a&nbsp;value&nbsp;or&nbsp;takes&nbsp;a&nbsp;step.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rcd&nbsp;is&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;is&nbsp;a&nbsp;value,&nbsp;then&nbsp;we&nbsp;may&nbsp;use&nbsp;lemma<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">lookup_field_in_value</span></span>&nbsp;to&nbsp;show&nbsp;<span class="inlinecode"><span class="id" type="var">tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">ti</span></span>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;some&nbsp;<span class="inlinecode"><span class="id" type="var">ti</span></span>&nbsp;which&nbsp;gives&nbsp;us&nbsp;<span class="inlinecode"><span class="id" type="var">tproj</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">ti</span></span>&nbsp;by&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_ProjRcd</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">lookup_field_in_value</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">Ht</span> <span class="id" type="var">H</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> [<span class="id" type="var">ti</span> [<span class="id" type="var">Hlkup</span> <span class="id" type="var">_</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">ti</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rcd_steps&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;On&nbsp;the&nbsp;other&nbsp;hand,&nbsp;if&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>,&nbsp;then&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">tproj</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">tproj</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Proj1</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t'</span> <span class="id" type="var">Hstp</span>]. <span style='font-size:120%;'>&exist;</span> (<span class="id" type="var">tproj</span> <span class="id" type="var">t'</span> <span class="id" type="var">i</span>)...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_RNil&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;in&nbsp;the&nbsp;given&nbsp;derivation&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="var">T_RNil</span></span>,&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">trnil</span></span>,&nbsp;which&nbsp;is&nbsp;a&nbsp;value.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_RCons&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">trcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">Tr</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By&nbsp;the&nbsp;IH,&nbsp;each&nbsp;of&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;either&nbsp;is&nbsp;a&nbsp;value&nbsp;or&nbsp;can&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;take&nbsp;a&nbsp;step.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt1</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;head&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt2</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;tail&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;are&nbsp;both&nbsp;values,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">trcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;a&nbsp;value&nbsp;as&nbsp;well.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;tail&nbsp;steps&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;is&nbsp;a&nbsp;value&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">tr'</span></span>,&nbsp;then<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">trcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">trcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr'</span></span>&nbsp;by<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Tail</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">tr'</span> <span class="id" type="var">Hstp</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span> <span class="id" type="var">tr'</span>)...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;head&nbsp;steps&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>,&nbsp;then<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">trcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">trcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Head</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t'</span> <span class="id" type="var">Hstp</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t'</span> <span class="id" type="var">tr</span>)... <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab353"></a><h3 class="section">Context Invariance</h3>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">appears_free_in</span> : <span class="id" type="var">string</span> → <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">afi_var</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> (<span class="id" type="var">tvar</span> <span class="id" type="var">x</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">afi_app1</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> → <span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> (<span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">afi_app2</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>2</sub></span> → <span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> (<span class="id" type="var">tapp</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">afi_abs</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">y</span> ≠ <span class="id" type="var">x</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>12</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> (<span class="id" type="var">tabs</span> <span class="id" type="var">y</span> <span class="id" type="var">T<sub>11</sub></span> <span class="id" type="var">t<sub>12</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">afi_proj</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span> <span class="id" type="var">i</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> (<span class="id" type="var">tproj</span> <span class="id" type="var">t</span> <span class="id" type="var">i</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">afi_rhead</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">i</span> <span class="id" type="var">ti</span> <span class="id" type="var">tr</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> <span class="id" type="var">ti</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">ti</span> <span class="id" type="var">tr</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">afi_rtail</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">i</span> <span class="id" type="var">ti</span> <span class="id" type="var">tr</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> <span class="id" type="var">tr</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> (<span class="id" type="var">trcons</span> <span class="id" type="var">i</span> <span class="id" type="var">ti</span> <span class="id" type="var">tr</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">appears_free_in</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">context_invariance</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">Gamma'</span> <span class="id" type="var">t</span> <span class="id" type="var">S</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">S</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>, <span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span> → <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> = <span class="id" type="var">Gamma'</span> <span class="id" type="var">x</span>)  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma'</span> |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">S</span>.<br/>
+<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
+<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma'</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma'</span> <span class="id" type="var">Heqv</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Var&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_Var</span>... <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">Heqv</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Abs&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_Abs</span>... <span class="id" type="tactic">apply</span> <span class="id" type="var">IHhas_type</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">y</span> <span class="id" type="var">Hafi</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>, <span class="id" type="var">t_update</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_stringP</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>)...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_App&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_App</span> <span class="id" type="keyword">with</span> <span class="id" type="var">T<sub>1</sub></span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_RCons&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_RCons</span>... <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">free_in_context</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">appears_free_in</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">T'</span>, <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">T'</span>.<br/>
+<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
+<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">Hafi</span> <span class="id" type="var">Htyp</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Htyp</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hafi</span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Abs&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHtyp</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">T'</span> <span class="id" type="var">Hctx</span>]... <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">T'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>, <span class="id" type="var">t_update</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hctx</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">false_beq_string</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hctx</span>...<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab354"></a><h3 class="section">Preservation</h3>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">substitution_preserves_typing</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">U</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span> <span class="id" type="var">S</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">update</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">U</span>) |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">S</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">empty</span> |- <span class="id" type="var">v</span> &#x2208; <span class="id" type="var">U</span>   →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> |- ([<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t</span>) &#x2208; <span class="id" type="var">S</span>.<br/>
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Theorem:&nbsp;If&nbsp;Gamma,x:U&nbsp;|-&nbsp;t&nbsp;:&nbsp;S&nbsp;and&nbsp;empty&nbsp;|-&nbsp;v&nbsp;:&nbsp;U,&nbsp;then<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gamma&nbsp;|-&nbsp;(<span class="inlinecode"><span class="id" type="var">x</span>:=<span class="id" type="var">v</span></span>t)&nbsp;S.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">U</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span> <span class="id" type="var">S</span> <span class="id" type="var">Htypt</span> <span class="id" type="var">Htypv</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">S</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Proof:&nbsp;By&nbsp;induction&nbsp;on&nbsp;the&nbsp;term&nbsp;t.&nbsp;&nbsp;Most&nbsp;cases&nbsp;follow&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directly&nbsp;from&nbsp;the&nbsp;IH,&nbsp;with&nbsp;the&nbsp;exception&nbsp;of&nbsp;tvar,&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tabs,&nbsp;trcons.&nbsp;The&nbsp;former&nbsp;aren't&nbsp;automatic&nbsp;because&nbsp;we&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;must&nbsp;reason&nbsp;about&nbsp;how&nbsp;the&nbsp;variables&nbsp;interact.&nbsp;In&nbsp;the&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;of&nbsp;trcons,&nbsp;we&nbsp;must&nbsp;do&nbsp;a&nbsp;little&nbsp;extra&nbsp;work&nbsp;to&nbsp;show&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;substituting&nbsp;into&nbsp;a&nbsp;term&nbsp;doesn't&nbsp;change&nbsp;whether&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;record&nbsp;term.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">t</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">S</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">Htypt</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Htypt</span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tvar&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;t&nbsp;=&nbsp;y,&nbsp;we&nbsp;know&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">x</span>:<span class="id" type="var">U</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and,&nbsp;by&nbsp;inversion,&nbsp;<span class="inlinecode"><span class="id" type="var">update</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">U</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>.&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;want&nbsp;to&nbsp;show&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span>.<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;There&nbsp;are&nbsp;two&nbsp;cases&nbsp;to&nbsp;consider:&nbsp;either&nbsp;<span class="inlinecode"><span class="id" type="var">x</span>=<span class="id" type="var">y</span></span>&nbsp;or&nbsp;<span class="inlinecode"><span class="id" type="var">x</span>≠<span class="id" type="var">y</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>, <span class="id" type="var">t_update</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_stringP</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">Hxy</span>|<span class="id" type="var">Hxy</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x=y&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>,&nbsp;then&nbsp;we&nbsp;know&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">U</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">S</span></span>,&nbsp;and&nbsp;that&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">v</span></span>.&nbsp;So&nbsp;what&nbsp;we&nbsp;really&nbsp;must&nbsp;show&nbsp;is&nbsp;that&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>.&nbsp;&nbsp;We&nbsp;have<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;already&nbsp;proven&nbsp;a&nbsp;more&nbsp;general&nbsp;version&nbsp;of&nbsp;this&nbsp;theorem,&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;called&nbsp;context&nbsp;invariance!&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">context_invariance</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">Hcontra</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">free_in_context</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">S</span> <span class="id" type="var">empty</span> <span class="id" type="var">Hcontra</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> [<span class="id" type="var">T'</span> <span class="id" type="var">HT'</span>]...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HT'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x&lt;&gt;y&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>&nbsp;and&nbsp;the&nbsp;substitution<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;has&nbsp;no&nbsp;effect.&nbsp;&nbsp;We&nbsp;can&nbsp;show&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span>&nbsp;by&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_Var</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_Var</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;tabs&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">T<sub>11</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span>,&nbsp;then&nbsp;we&nbsp;know&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">x</span>:<span class="id" type="var">U</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span>→<span class="id" type="var">T<sub>12</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">x</span>:<span class="id" type="var">U</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;As&nbsp;our&nbsp;IH,&nbsp;we&nbsp;know&nbsp;that&nbsp;forall&nbsp;S&nbsp;Gamma,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">x</span>:<span class="id" type="var">U</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>.<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;can&nbsp;calculate&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode">(<span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">beq_string</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span>)</span> <span class="inlinecode"></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;we&nbsp;must&nbsp;show&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span>→<span class="id" type="var">T<sub>12</sub></span></span>.&nbsp;&nbsp;We&nbsp;know<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;we&nbsp;will&nbsp;do&nbsp;so&nbsp;using&nbsp;<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>,&nbsp;so&nbsp;it&nbsp;remains&nbsp;to&nbsp;be&nbsp;shown&nbsp;that:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">beq_string</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;consider&nbsp;two&nbsp;cases:&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_Abs</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_stringP</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">Hxy</span>|<span class="id" type="var">Hxy</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x=y&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>,&nbsp;then&nbsp;the&nbsp;substitution&nbsp;has&nbsp;no&nbsp;effect.&nbsp;&nbsp;Context<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;invariance&nbsp;shows&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">y</span>:<span class="id" type="var">U</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span>&nbsp;are<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;equivalent.&nbsp;&nbsp;Since&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;under&nbsp;the&nbsp;former&nbsp;context,&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this&nbsp;is&nbsp;also&nbsp;the&nbsp;case&nbsp;under&nbsp;the&nbsp;latter.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">context_invariance</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">Hafi</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>, <span class="id" type="var">t_update</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_string</span> <span class="id" type="var">y</span> <span class="id" type="var">x</span>)...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x&lt;&gt;y&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>,&nbsp;then&nbsp;the&nbsp;IH&nbsp;and&nbsp;context&nbsp;invariance&nbsp;allow&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;us&nbsp;to&nbsp;show&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">x</span>:<span class="id" type="var">U</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span>,<span class="id" type="var">x</span>:<span class="id" type="var">U</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode">|-</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHt</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">context_invariance</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">z</span> <span class="id" type="var">Hafi</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>, <span class="id" type="var">t_update</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beq_stringP</span> <span class="id" type="var">y</span> <span class="id" type="var">z</span>)...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">false_beq_string</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;trcons&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_RCons</span>... <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>7</sub></span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">simpl</span>...<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">preservation</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">empty</span> |- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t</span> ==&gt; <span class="id" type="var">t'</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">empty</span> |- <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Theorem:&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>,&nbsp;then&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">remember</span> (@<span class="id" type="var">empty</span> <span class="id" type="var">ty</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">Gamma</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">HeqGamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">t'</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;Proof:&nbsp;By&nbsp;induction&nbsp;on&nbsp;the&nbsp;given&nbsp;typing&nbsp;derivation.&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Many&nbsp;cases&nbsp;are&nbsp;contradictory&nbsp;(<span class="inlinecode"><span class="id" type="var">T_Var</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>)&nbsp;or&nbsp;follow&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directly&nbsp;from&nbsp;the&nbsp;IH&nbsp;(<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>).&nbsp;&nbsp;We&nbsp;show&nbsp;just&nbsp;the&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interesting&nbsp;ones.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">HT</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t'</span> <span class="id" type="var">HeqGamma</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_App&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;used&nbsp;was&nbsp;<span class="inlinecode"><span class="id" type="var">T_App</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>,&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;three&nbsp;rules&nbsp;could&nbsp;have&nbsp;been&nbsp;used&nbsp;to&nbsp;show&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>:&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App1</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App2</span></span>,&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">ST_AppAbs</span></span>.&nbsp;In&nbsp;the&nbsp;first&nbsp;two&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cases,&nbsp;the&nbsp;result&nbsp;follows&nbsp;directly&nbsp;from&nbsp;the&nbsp;IH.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_AppAbs&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;For&nbsp;the&nbsp;third&nbsp;case,&nbsp;suppose<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span>.&nbsp;&nbsp;We&nbsp;must&nbsp;show&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;know&nbsp;by&nbsp;assumption&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span>→<span class="id" type="var">T<sub>2</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;by&nbsp;inversion<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">T<sub>1</sub></span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;have&nbsp;already&nbsp;proven&nbsp;that&nbsp;substitution_preserves_typing&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;assumption,&nbsp;so&nbsp;we&nbsp;are&nbsp;done.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">substitution_preserves_typing</span> <span class="id" type="keyword">with</span> <span class="id" type="var">T<sub>1</sub></span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HT<sub>1</sub></span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Proj&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;was&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">tproj</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>.&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Two&nbsp;rules&nbsp;could&nbsp;have&nbsp;caused&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>:&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj1</span></span>&nbsp;and&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_ProjRcd</span></span>.&nbsp;&nbsp;The&nbsp;typing&nbsp;of&nbsp;<span class="inlinecode"><span class="id" type="var">t'</span></span>&nbsp;follows&nbsp;from&nbsp;the&nbsp;IH&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;the&nbsp;former&nbsp;case,&nbsp;so&nbsp;we&nbsp;only&nbsp;consider&nbsp;<span class="inlinecode"><span class="id" type="var">T_ProjRcd</span></span>.<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Here&nbsp;we&nbsp;have&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;is&nbsp;a&nbsp;record&nbsp;value.&nbsp;&nbsp;Since&nbsp;rule&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>&nbsp;was&nbsp;used,&nbsp;we&nbsp;know&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Tr</span></span>&nbsp;and&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>&nbsp;for&nbsp;some&nbsp;<span class="inlinecode"><span class="id" type="var">i</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">Tr</span></span>.&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;may&nbsp;therefore&nbsp;apply&nbsp;lemma&nbsp;<span class="inlinecode"><span class="id" type="var">lookup_field_in_value</span></span>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;find&nbsp;the&nbsp;record&nbsp;element&nbsp;this&nbsp;projection&nbsp;steps&nbsp;to.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">lookup_field_in_value</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">HT</span> <span class="id" type="var">H</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> [<span class="id" type="var">vi</span> [<span class="id" type="var">Hget</span> <span class="id" type="var">Htyp</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>4</sub></span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hget</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hget</span>. <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_RCons&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;was&nbsp;<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">trcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;some&nbsp;<span class="inlinecode"><span class="id" type="var">i</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;such&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">record_tm</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>.&nbsp;&nbsp;If&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;step&nbsp;is&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Head</span></span>,&nbsp;the&nbsp;result&nbsp;is&nbsp;immediate&nbsp;by&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;IH.&nbsp;&nbsp;If&nbsp;the&nbsp;step&nbsp;is&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Tail</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;some&nbsp;<span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span>&nbsp;and&nbsp;we&nbsp;must&nbsp;also&nbsp;use&nbsp;lemma&nbsp;<span class="inlinecode"><span class="id" type="var">step_preserves_record_tm</span></span>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;show&nbsp;<span class="inlinecode"><span class="id" type="var">record_tm</span></span> <span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_RCons</span>... <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_preserves_record_tm</span>...<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">STLCExtendedRecords</span>.<br/>
+</div>
+
+</div>
+
+
+
+</div>
+
+</body>
+</html>

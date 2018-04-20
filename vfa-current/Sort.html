@@ -1,0 +1,437 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Sort: Insertion Sort</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: Verified Functional Algorithms</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Sort<span class="subtitle">Insertion Sort</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ Sorting can be done in O(N log N) time by various
+    algorithms (quicksort, mergesort, heapsort, etc.).  But for
+    smallish inputs, a simple quadratic-time algorithm such as
+    insertion sort can actually be faster.  And it's certainly easier
+    to implement &mdash; and to prove correct. 
+<div class="paragraph"> </div>
+
+<a name="lab21"></a><h1 class="section">Recommended Reading</h1>
+
+<div class="paragraph"> </div>
+
+ If you don't already know how insertion sort works, see Wikipedia
+    or read any standard textbook; for example:
+
+<div class="paragraph"> </div>
+
+   Sections 2.0 and 2.1 of _Algorithms, Fourth Edition_,
+       by Sedgewick and Wayne, Addison Wesley 2011;  or
+
+<div class="paragraph"> </div>
+
+   Section 2.1 of _Introduction to Algorithms, 3rd Edition_,
+       by Cormen, Leiserson, and Rivest, MIT Press 2009. 
+</div>
+
+<div class="doc">
+<a name="lab22"></a><h1 class="section">The Insertion-Sort Program</h1>
+
+<div class="paragraph"> </div>
+
+ Insertion sort is usually presented as an imperative program
+   operating on arrays.  But it works just as well as a functional
+   program operating on linked lists! 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> (<span class="id" type="var">i</span>:<span class="id" type="var">nat</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">i</span>::<span class="id" type="var">nil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">i</span> &lt;=? <span class="id" type="var">h</span> <span class="id" type="keyword">then</span> <span class="id" type="var">i</span>::<span class="id" type="var">h</span>::<span class="id" type="var">t</span> <span class="id" type="keyword">else</span> <span class="id" type="var">h</span> :: <span class="id" type="var">insert</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">sort</span> (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">nil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="var">insert</span> <span class="id" type="var">h</span> (<span class="id" type="var">sort</span> <span class="id" type="var">t</span>)<br/>
+<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">sort_pi</span>: <span class="id" type="var">sort</span> [3;1;4;1;5;9;2;6;5;3;5]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= [1;1;2;3;3;4;5;5;5;6;9].<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+What Sedgewick/Wayne and Cormen/Leiserson/Rivest don't acknowlege
+    is that the arrays-and-swaps model of sorting is not the only one
+    in the world.  We are writing _functional programs_, where our
+    sequences are (typically) represented as linked lists, and where
+    we do _not_ destructively splice elements into those lists.
+    Instead, we build new lists that (sometimes) share structure with
+    the old ones.
+
+<div class="paragraph"> </div>
+
+    So, for example: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">insert</span> 7 [1; 3; 4; 8; 12; 14; 18].<br/>
+<span class="comment">(*&nbsp;=&nbsp;<span class="inlinecode">1;</span> <span class="inlinecode">3;</span> <span class="inlinecode">4;</span> <span class="inlinecode">7;</span> <span class="inlinecode">8;</span> <span class="inlinecode">12;</span> <span class="inlinecode">14;</span> <span class="inlinecode">18</span>&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+The tail of this list, <span class="inlinecode">12::14::18::<span class="id" type="var">nil</span></span>, is not disturbed or
+   rebuilt by the <span class="inlinecode"><span class="id" type="var">insert</span></span> algorithm.  The nodes <span class="inlinecode">1::3::4::7::_</span> are
+   new, constructed by <span class="inlinecode"><span class="id" type="var">insert</span></span>.  The first three nodes of the old
+   list, <span class="inlinecode">1::3::4::_</span> will likely be garbage-collected, if no other
+   data structure is still pointing at them.  Thus, in this typical
+   case,
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Time cost = 4X
+
+</li>
+<li> Space cost = (4-3)Y = Y
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+   where X and Y are constants, independent of the length of the tail.
+   The value Y is the number of bytes in one list node: 2 to 4 words,
+   depending on how the implementation handles constructor-tags.
+   We write (4-3) to indicate that four list nodes are constructed,
+   while three list nodes become eligible for garbage collection.  
+
+<div class="paragraph"> </div>
+
+   We will not _prove_ such things about the time and space cost, but
+   they are _true_ anyway, and we should keep them in
+   consideration. 
+</div>
+
+<div class="doc">
+<a name="lab23"></a><h1 class="section">Specification of Correctness</h1>
+
+<div class="paragraph"> </div>
+
+ A sorting algorithm must rearrange the elements into a list that
+    is totally ordered. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">sorted</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> := <br/>
+| <span class="id" type="var">sorted_nil</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> <span class="id" type="var">nil</span><br/>
+| <span class="id" type="var">sorted_1</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> (<span class="id" type="var">x</span>::<span class="id" type="var">nil</span>)<br/>
+| <span class="id" type="var">sorted_cons</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">l</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">x</span> ≤ <span class="id" type="var">y</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">y</span>::<span class="id" type="var">l</span>) → <span class="id" type="var">sorted</span> (<span class="id" type="var">x</span>::<span class="id" type="var">y</span>::<span class="id" type="var">l</span>).<br/>
+</div>
+
+<div class="doc">
+Is this really the right definition of what it means for a list to
+    be sorted?  One might have thought that it should go more like this: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">sorted'</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) :=<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span>, <span class="id" type="var">i</span> &lt; <span class="id" type="var">j</span> &lt; <span class="id" type="var">length</span> <span class="id" type="var">al</span> → <span class="id" type="var">nth</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span> 0 ≤ <span class="id" type="var">nth</span> <span class="id" type="var">j</span> <span class="id" type="var">al</span> 0.<br/>
+</div>
+
+<div class="doc">
+This is a reasonable definition too.  It should be equivalent.
+    Later on, we'll prove that the two definitions really are
+    equivalent.  For now, let's use the first one to define what it
+    means to be a correct sorting algorthm. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_a_sorting_algorithm</span> (<span class="id" type="var">f</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span> → <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span>, <span class="id" type="var">Permutation</span> <span class="id" type="var">al</span> (<span class="id" type="var">f</span> <span class="id" type="var">al</span>) ∧ <span class="id" type="var">sorted</span> (<span class="id" type="var">f</span> <span class="id" type="var">al</span>).<br/>
+</div>
+
+<div class="doc">
+The result <span class="inlinecode">(<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">al</span>)</span> should not only be a <span class="inlinecode"><span class="id" type="var">sorted</span></span> sequence,
+    but it should be some rearrangement (Permutation) of the input sequence. 
+</div>
+
+<div class="doc">
+<a name="lab24"></a><h1 class="section">Proof of Correctness</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab25"></a><h4 class="section">Exercise: 3 stars (insert_perm)</h4>
+ Prove the following auxiliary lemma, <span class="inlinecode"><span class="id" type="var">insert_perm</span></span>, which will be
+    useful for proving <span class="inlinecode"><span class="id" type="var">sort_perm</span></span> below.  Your proof will be by
+    induction, but you'll need some of the permutation facts from the
+    library, so first remind yourself by doing <span class="inlinecode"><span class="id" type="var">Search</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Search</span> <span class="id" type="var">Permutation</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_perm</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>, <span class="id" type="var">Permutation</span> (<span class="id" type="var">x</span>::<span class="id" type="var">l</span>) (<span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab26"></a><h4 class="section">Exercise: 3 stars (sort_perm)</h4>
+ Now prove that sort is a permutation. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">sort_perm</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">l</span>, <span class="id" type="var">Permutation</span> <span class="id" type="var">l</span> (<span class="id" type="var">sort</span> <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab27"></a><h4 class="section">Exercise: 4 stars (insert_sorted)</h4>
+ This one is a bit tricky.  However, there just a single induction
+   right at the beginning, and you do _not_ need to use <span class="inlinecode"><span class="id" type="var">insert_perm</span></span>
+   or <span class="inlinecode"><span class="id" type="var">sort_perm</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_sorted</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>, <span class="id" type="var">sorted</span> <span class="id" type="var">l</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">insert</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab28"></a><h4 class="section">Exercise: 2 stars (sort_sorted)</h4>
+ This one is easy.   
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">sort_sorted</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">l</span>, <span class="id" type="var">sorted</span> (<span class="id" type="var">sort</span> <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ Now we wrap it all up.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">insertion_sort_correct</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_a_sorting_algorithm</span> <span class="id" type="var">sort</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">sort_perm</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">sort_sorted</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab29"></a><h1 class="section">Making Sure the Specification is Right</h1>
+
+<div class="paragraph"> </div>
+
+ It's really important to get the _specification_ right.  You can
+    prove that your program satisfies its specification (and Coq will
+    check that proof for you), but you can't prove that you have the
+    right specification.  Therefore, we take the trouble to write two
+    different specifications of sortedness (<span class="inlinecode"><span class="id" type="var">sorted</span></span> and <span class="inlinecode"><span class="id" type="var">sorted'</span></span>),
+    and prove that they mean the same thing.  This increases our
+    confidence that we have the right specification, though of course
+    it doesn't _prove_ that we do. 
+<div class="paragraph"> </div>
+
+<a name="lab30"></a><h4 class="section">Exercise: 4 stars, optional (sorted_sorted')</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">sorted_sorted'</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span>, <span class="id" type="var">sorted</span> <span class="id" type="var">al</span> → <span class="id" type="var">sorted'</span> <span class="id" type="var">al</span>.<br/>
+</div>
+
+<div class="doc">
+Hint: Instead of doing induction on the list <span class="inlinecode"><span class="id" type="var">al</span></span>, do induction
+    on the _sortedness_ of <span class="inlinecode"><span class="id" type="var">al</span></span>. This proof is a bit tricky, so
+    you may have to think about how to approach it, and try out
+    one or two different ideas.
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab31"></a><h4 class="section">Exercise: 3 stars, optional (sorted</b>sorted)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">sorted'_sorted</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span>, <span class="id" type="var">sorted'</span> <span class="id" type="var">al</span> → <span class="id" type="var">sorted</span> <span class="id" type="var">al</span>.<br/>
+</div>
+
+<div class="doc">
+Here, you can't do induction on the sorted'-ness of the list,
+    because <span class="inlinecode"><span class="id" type="var">sorted'</span></span> is not an inductive predicate. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab32"></a><h1 class="section">Proving Correctness from the Alternate Spec</h1>
+
+<div class="paragraph"> </div>
+
+ Depending on how you write the specification of a program, it can
+    be _much_ harder or easier to prove correctness.  We saw that the
+    predicates <span class="inlinecode"><span class="id" type="var">sorted</span></span> and <span class="inlinecode"><span class="id" type="var">sorted'</span></span> are equivalent; but it is really
+    difficult to prove correctness of insertion sort directly from
+    <span class="inlinecode"><span class="id" type="var">sorted'</span></span>.
+
+<div class="paragraph"> </div>
+
+    Try it yourself, if you dare!  I managed it, but my proof is quite
+    long and complicated.  I found that I needed all these facts:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" type="var">insert_perm</span></span>, <span class="inlinecode"><span class="id" type="var">sort_perm</span></span>
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">Forall_perm</span></span>, <span class="inlinecode"><span class="id" type="var">Permutation_length</span></span>
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">Permutation_sym</span></span>, <span class="inlinecode"><span class="id" type="var">Permutation_trans</span></span>
+
+</li>
+<li> a new lemma <span class="inlinecode"><span class="id" type="var">Forall_nth</span></span>, stated below.
+
+</li>
+</ul>
+    Maybe you will find a better way that's not so complicated.
+
+<div class="paragraph"> </div>
+
+    DO NOT USE <span class="inlinecode"><span class="id" type="var">sorted_sorted'</span></span>, <span class="inlinecode"><span class="id" type="var">sorted'_sorted</span></span>, <span class="inlinecode"><span class="id" type="var">insert_sorted</span></span>, or
+    <span class="inlinecode"><span class="id" type="var">sort_sorted</span></span> in these proofs! 
+<div class="paragraph"> </div>
+
+<a name="lab33"></a><h4 class="section">Exercise: 3 stars, optional (Forall_nth)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Forall_nth</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">P</span>: <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>) <span class="id" type="var">d</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">A</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Forall</span> <span class="id" type="var">P</span> <span class="id" type="var">al</span> ↔ (<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span>,  <span class="id" type="var">i</span> &lt; <span class="id" type="var">length</span> <span class="id" type="var">al</span> → <span class="id" type="var">P</span> (<span class="id" type="var">nth</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span> <span class="id" type="var">d</span>)).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab34"></a><h4 class="section">Exercise: 4 stars, optional (insert_sorted')</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_sorted'</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>, <span class="id" type="var">sorted'</span> <span class="id" type="var">l</span> → <span class="id" type="var">sorted'</span> (<span class="id" type="var">insert</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab35"></a><h4 class="section">Exercise: 4 stars, optional (insert_sorted')</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">sort_sorted'</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">l</span>, <span class="id" type="var">sorted'</span> (<span class="id" type="var">sort</span> <span class="id" type="var">l</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab36"></a><h2 class="section">The Moral of This Story</h2>
+
+<div class="paragraph"> </div>
+
+ The proofs of <span class="inlinecode"><span class="id" type="var">insert_sorted</span></span> and <span class="inlinecode"><span class="id" type="var">sort_sorted</span></span> were easy; the
+    proofs of <span class="inlinecode"><span class="id" type="var">insert_sorted'</span></span> and <span class="inlinecode"><span class="id" type="var">sort_sorted'</span></span> were difficult; and
+    yet <span class="inlinecode"><span class="id" type="var">sorted</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" type="var">sorted'</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span>.  _Different formulations of the
+    functional specification can lead to great differences in the
+    difficulty of the correctness proofs_.
+
+<div class="paragraph"> </div>
+
+   Suppose someone required you to prove <span class="inlinecode"><span class="id" type="var">sort_sorted'</span></span>, and never
+   mentioned the <span class="inlinecode"><span class="id" type="var">sorted</span></span> predicate to you.  Instead of proving
+   <span class="inlinecode"><span class="id" type="var">sort_sorted'</span></span> directly, it would be much easier to design a new
+   predicate (<span class="inlinecode"><span class="id" type="var">sorted</span></span>), and then prove <span class="inlinecode"><span class="id" type="var">sort_sorted</span></span> and
+   <span class="inlinecode"><span class="id" type="var">sorted_sorted'</span></span>. 
+<div class="paragraph"> </div>
+
+  
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

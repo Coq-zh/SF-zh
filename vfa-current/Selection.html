@@ -1,0 +1,398 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Selection: Selection Sort, With Specification and Proof of Correctness</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: Verified Functional Algorithms</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Selection<span class="subtitle">Selection Sort, With Specification and Proof of Correctness</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+  This sorting algorithm works by choosing (and deleting) the smallest
+  element, then doing it again, and so on.  It takes O(N^2) time.
+
+<div class="paragraph"> </div>
+
+  You should never* use a selection sort.  If you want a simple
+  quadratic-time sorting algorithm (for small input sizes) you should
+  use insertion sort.  Insertion sort is simpler to implement, runs
+  faster, and is simpler to prove correct.   We use selection sort here
+  only to illustrate the proof techniques.  
+
+<div class="paragraph"> </div>
+
+     *Well, hardly ever.  If the cost of "moving" an element is _much_
+  larger than the cost of comparing two keys, then selection sort is 
+  better than insertion sort.  But this consideration does not apply in our 
+  setting, where the elements are  represented as pointers into the
+  heap, and only the pointers need to be moved.
+
+<div class="paragraph"> </div>
+
+  What you should really never use is bubble sort.  Bubble sort
+  would be the wrong way to go.  Everybody knows that!
+  <a href="https://www.youtube.com/watch?v=k4RRi_ntQc8"><span class="inlineref">https://www.youtube.com/watch?v=k4RRi_ntQc8</span></a>
+
+<div class="paragraph"> </div>
+
+<a name="lab51"></a><h1 class="section">The Selection-Sort Program</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/>
+</div>
+
+<div class="doc">
+Find (and delete) the smallest element in a list. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">select</span> (<span class="id" type="var">x</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">nat</span> * <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
+|  <span class="id" type="var">nil</span> ⇒ (<span class="id" type="var">x</span>, <span class="id" type="var">nil</span>)<br/>
+|  <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">x</span> &lt;=? <span class="id" type="var">h</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="keyword">let</span> (<span class="id" type="var">j</span>, <span class="id" type="var">l'</span>) := <span class="id" type="var">select</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span> <span class="id" type="keyword">in</span> (<span class="id" type="var">j</span>, <span class="id" type="var">h</span>::<span class="id" type="var">l'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="keyword">let</span> (<span class="id" type="var">j</span>,<span class="id" type="var">l'</span>) := <span class="id" type="var">select</span> <span class="id" type="var">h</span> <span class="id" type="var">t</span> <span class="id" type="keyword">in</span> (<span class="id" type="var">j</span>, <span class="id" type="var">x</span>::<span class="id" type="var">l'</span>)<br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Now, selection-sort works by repeatedly extracting the smallest element, 
+   and making a list of the results. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;Uncomment&nbsp;this&nbsp;function,&nbsp;and&nbsp;try&nbsp;it.<br/>
+Fixpoint&nbsp;selsort&nbsp;l&nbsp;:=<br/>
+match&nbsp;l&nbsp;with<br/>
+|&nbsp;i::r&nbsp;=&gt;&nbsp;let&nbsp;(j,r')&nbsp;:=&nbsp;select&nbsp;i&nbsp;r<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;j&nbsp;::&nbsp;selsort&nbsp;r'<br/>
+|&nbsp;nil&nbsp;=&gt;&nbsp;nil<br/>
+end.<br/>
+*)</span><br/>
+</div>
+
+<div class="doc">
+<b>Error: Recursive call to selsort has principal argument equal 
+  to <span class="inlinecode"><span class="id" type="var">r'</span></span> instead of <span class="inlinecode"><span class="id" type="var">r</span></span>_.  That is, the recursion is not _structural_, since 
+  the list r' is not a structural sublist of (i::r).  One way to fix the 
+  problem is to use Coq's <span class="inlinecode"><span class="id" type="var">Function</span></span> feature, and prove that
+  <span class="inlinecode"><span class="id" type="var">length</span>(<span class="id" type="var">r'</span>)&lt;<span class="id" type="var">length</span>(<span class="id" type="var">i</span>::<span class="id" type="var">r</span>)</span>.  Later in this chapter, we'll show that approach.
+
+<div class="paragraph"> </div>
+
+  Instead, here we solve this problem is by providing "fuel", an additional
+  argument that has no use in the algorithm except to bound the
+  amount of recursion.  The <span class="inlinecode"><span class="id" type="var">n</span></span> argument, below, is the fuel. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">selsort</span> <span class="id" type="var">l</span> <span class="id" type="var">n</span> {<span class="id" type="keyword">struct</span> <span class="id" type="var">n</span>} :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">l</span>, <span class="id" type="var">n</span> <span class="id" type="keyword">with</span><br/>
+| <span class="id" type="var">x</span>::<span class="id" type="var">r</span>, <span class="id" type="var">S</span> <span class="id" type="var">n'</span> ⇒ <span class="id" type="keyword">let</span> (<span class="id" type="var">y</span>,<span class="id" type="var">r'</span>) := <span class="id" type="var">select</span> <span class="id" type="var">x</span> <span class="id" type="var">r</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">in</span> <span class="id" type="var">y</span> :: <span class="id" type="var">selsort</span> <span class="id" type="var">r'</span> <span class="id" type="var">n'</span><br/>
+| <span class="id" type="var">nil</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">nil</span><br/>
+| <span class="id" type="var">_</span>::_, <span class="id" type="var">O</span> ⇒ <span class="id" type="var">nil</span>  <span class="comment">(*&nbsp;Oops!&nbsp;&nbsp;Ran&nbsp;out&nbsp;of&nbsp;fuel!&nbsp;*)</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+What happens if we run out of fuel before we reach the end
+   of the list?  Then WE GET THE WRONG ANSWER. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">out_of_gas</span>: <span class="id" type="var">selsort</span> [3;1;4;1;5] 3 ≠ [1;1;3;4;5].<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">simpl</span>.<br/>
+<span class="id" type="tactic">intro</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+What happens if we have have too much fuel?  No problem. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">too_much_gas</span>: <span class="id" type="var">selsort</span> [3;1;4;1;5] 10 = [1;1;3;4;5].<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">simpl</span>.<br/>
+<span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The selection_sort algorithm provides just enough fuel. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">selection_sort</span> <span class="id" type="var">l</span> := <span class="id" type="var">selsort</span> <span class="id" type="var">l</span> (<span class="id" type="var">length</span> <span class="id" type="var">l</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">sort_pi</span>: <span class="id" type="var">selection_sort</span> [3;1;4;1;5;9;2;6;5;3;5] = [1;1;2;3;3;4;5;5;5;6;9].<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">selection_sort</span>.<br/>
+<span class="id" type="tactic">simpl</span>.<br/>
+<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Specification of correctness of a sorting algorithm:
+   it rearranges the elements into a list that is totally ordered. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">sorted</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> := <br/>
+&nbsp;| <span class="id" type="var">sorted_nil</span>: <span class="id" type="var">sorted</span> <span class="id" type="var">nil</span><br/>
+&nbsp;| <span class="id" type="var">sorted_1</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span>, <span class="id" type="var">sorted</span> (<span class="id" type="var">i</span>::<span class="id" type="var">nil</span>)<br/>
+&nbsp;| <span class="id" type="var">sorted_cons</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span> <span class="id" type="var">l</span>, <span class="id" type="var">i</span> ≤ <span class="id" type="var">j</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">j</span>::<span class="id" type="var">l</span>) → <span class="id" type="var">sorted</span> (<span class="id" type="var">i</span>::<span class="id" type="var">j</span>::<span class="id" type="var">l</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_a_sorting_algorithm</span> (<span class="id" type="var">f</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span> → <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span>, <span class="id" type="var">Permutation</span> <span class="id" type="var">al</span> (<span class="id" type="var">f</span> <span class="id" type="var">al</span>) ∧ <span class="id" type="var">sorted</span> (<span class="id" type="var">f</span> <span class="id" type="var">al</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab52"></a><h1 class="section">Proof of Correctness of Selection sort</h1>
+
+<div class="paragraph"> </div>
+
+ Here's what we want to prove. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">selection_sort_correct</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_a_sorting_algorithm</span> <span class="id" type="var">selection_sort</span>.<br/>
+</div>
+
+<div class="doc">
+We'll start by working on part 1, permutations. 
+<div class="paragraph"> </div>
+
+<a name="lab53"></a><h4 class="section">Exercise: 3 stars (select_perm)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">select_perm</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>, <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">y</span>,<span class="id" type="var">r</span>) := <span class="id" type="var">select</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Permutation</span> (<span class="id" type="var">x</span>::<span class="id" type="var">l</span>) (<span class="id" type="var">y</span>::<span class="id" type="var">r</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+</div>
+
+<div class="doc">
+NOTE: If you wish, you may <span class="inlinecode"><span class="id" type="keyword">Require</span></span> <span class="inlinecode"><span class="id" type="keyword">Import</span></span> <span class="inlinecode"><span class="id" type="var">Multiset</span></span> and use the  multiset
+  method, along with the theorem <span class="inlinecode"><span class="id" type="var">contents_perm</span></span>.  If you do,
+  you'll still leave the statement of this theorem unchanged. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>; <span class="id" type="var">revert</span> <span class="id" type="var">x</span>.<br/>
+<span class="id" type="tactic">induction</span> <span class="id" type="var">l</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab54"></a><h4 class="section">Exercise: 3 stars (selection_sort_perm)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">selsort_perm</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">l</span>, <span class="id" type="var">length</span> <span class="id" type="var">l</span> = <span class="id" type="var">n</span> → <span class="id" type="var">Permutation</span> <span class="id" type="var">l</span> (<span class="id" type="var">selsort</span> <span class="id" type="var">l</span> <span class="id" type="var">n</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+</div>
+
+<div class="doc">
+NOTE: If you wish, you may <span class="inlinecode"><span class="id" type="keyword">Require</span></span> <span class="inlinecode"><span class="id" type="keyword">Import</span></span> <span class="inlinecode"><span class="id" type="var">Multiset</span></span> and use the  multiset
+  method, along with the theorem <span class="inlinecode"><span class="id" type="var">same_contents_iff_perm</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">selection_sort_perm</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">l</span>, <span class="id" type="var">Permutation</span> <span class="id" type="var">l</span> (<span class="id" type="var">selection_sort</span> <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab55"></a><h4 class="section">Exercise: 3 stars (select_smallest)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">select_smallest_aux</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">al</span> <span class="id" type="var">y</span> <span class="id" type="var">bl</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Forall</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">z</span> ⇒ <span class="id" type="var">y</span> ≤ <span class="id" type="var">z</span>) <span class="id" type="var">bl</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">select</span> <span class="id" type="var">x</span> <span class="id" type="var">al</span> = (<span class="id" type="var">y</span>,<span class="id" type="var">bl</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">y</span> ≤ <span class="id" type="var">x</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;Hint:&nbsp;no&nbsp;induction&nbsp;needed&nbsp;in&nbsp;this&nbsp;lemma.&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;Just&nbsp;use&nbsp;existing&nbsp;lemmas&nbsp;about&nbsp;select,&nbsp;along&nbsp;with&nbsp;<span class="inlinecode"><span class="id" type="var">Forall_perm</span></span>&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">select_smallest</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">al</span> <span class="id" type="var">y</span> <span class="id" type="var">bl</span>, <span class="id" type="var">select</span> <span class="id" type="var">x</span> <span class="id" type="var">al</span> = (<span class="id" type="var">y</span>,<span class="id" type="var">bl</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Forall</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">z</span> ⇒ <span class="id" type="var">y</span> ≤ <span class="id" type="var">z</span>) <span class="id" type="var">bl</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">al</span>; <span class="id" type="var">revert</span> <span class="id" type="var">x</span>; <span class="id" type="tactic">induction</span> <span class="id" type="var">al</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *.<br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">admit</span>.<br/>
+<span class="id" type="var">bdestruct</span> (<span class="id" type="var">x</span> &lt;=? <span class="id" type="var">a</span>).<br/>
+*<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">select</span> <span class="id" type="var">x</span> <span class="id" type="var">al</span>) <span class="id" type="var">eqn</span>:?<span class="id" type="var">H</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab56"></a><h4 class="section">Exercise: 3 stars (selection_sort_sorted)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">selection_sort_sorted_aux</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>  <span class="id" type="var">y</span> <span class="id" type="var">bl</span>, <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> (<span class="id" type="var">selsort</span> <span class="id" type="var">bl</span> (<span class="id" type="var">length</span> <span class="id" type="var">bl</span>)) →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Forall</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">z</span> : <span class="id" type="var">nat</span> ⇒ <span class="id" type="var">y</span> ≤ <span class="id" type="var">z</span>) <span class="id" type="var">bl</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> (<span class="id" type="var">y</span> :: <span class="id" type="var">selsort</span> <span class="id" type="var">bl</span> (<span class="id" type="var">length</span> <span class="id" type="var">bl</span>)).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;Hint:&nbsp;no&nbsp;induction&nbsp;needed.&nbsp;&nbsp;Use&nbsp;lemmas&nbsp;selsort_perm&nbsp;and&nbsp;Forall_perm.*)</span><br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">selection_sort_sorted</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span>, <span class="id" type="var">sorted</span> (<span class="id" type="var">selection_sort</span> <span class="id" type="var">al</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">selection_sort</span>.<br/>
+<span class="comment">(*&nbsp;Hint:&nbsp;do&nbsp;induction&nbsp;on&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">length</span></span>&nbsp;of&nbsp;al.&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;In&nbsp;the&nbsp;inductive&nbsp;case,&nbsp;use&nbsp;<span class="inlinecode"><span class="id" type="var">select_smallest</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">select_perm</span></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">selection_sort_sorted_aux</span></span>.&nbsp;*)</span><br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ Now we wrap it all up.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">selection_sort_is_correct</span>: <span class="id" type="var">selection_sort_correct</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">selection_sort_perm</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">selection_sort_sorted</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab57"></a><h1 class="section">Recursive Functions That are Not Structurally Recursive</h1>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="keyword">Fixpoint</span></span> in Coq allows for recursive functions where some
+  parameter is structurally recursive: in every call, the argument
+  passed at that parameter position is an immediate substructure
+  of the corresponding formal parameter.  For recursive functions
+  where that is not the case &mdash; but for which you can still prove
+  that they terminate &mdash; you can use a more advanced feature of
+  Coq, called <span class="inlinecode"><span class="id" type="var">Function</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Recdef</span>. <span class="comment">(*&nbsp;needed&nbsp;for&nbsp;<span class="inlinecode"><span class="id" type="var">Function</span></span>&nbsp;feature&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Function</span> <span class="id" type="var">selsort'</span> <span class="id" type="var">l</span> {<span class="id" type="keyword">measure</span> <span class="id" type="var">length</span> <span class="id" type="var">l</span>} :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
+| <span class="id" type="var">x</span>::<span class="id" type="var">r</span> ⇒ <span class="id" type="keyword">let</span> (<span class="id" type="var">y</span>,<span class="id" type="var">r'</span>) := <span class="id" type="var">select</span> <span class="id" type="var">x</span> <span class="id" type="var">r</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">in</span> <span class="id" type="var">y</span> :: <span class="id" type="var">selsort'</span> <span class="id" type="var">r'</span><br/>
+| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">nil</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+When you use <span class="inlinecode"><span class="id" type="var">Function</span></span> with <span class="inlinecode"><span class="id" type="keyword">measure</span></span>, it's your
+  obligation to prove that the measure actually decreases,
+  before you can use the function. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">select_perm</span> <span class="id" type="var">x</span> <span class="id" type="var">r</span>).<br/>
+<span class="id" type="tactic">rewrite</span> <span class="id" type="var">teq0</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">Permutation_length</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
+<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> *; <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="keyword">Defined</span>. <span class="comment">(*&nbsp;Use&nbsp;<span class="inlinecode"><span class="id" type="keyword">Defined</span></span>&nbsp;instead&nbsp;of&nbsp;<span class="inlinecode"><span class="id" type="keyword">Qed</span></span>,&nbsp;otherwise&nbsp;you<br/>
+&nbsp;&nbsp;can't&nbsp;compute&nbsp;with&nbsp;the&nbsp;function&nbsp;in&nbsp;Coq.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab58"></a><h4 class="section">Exercise: 3 stars (selsort</b>perm)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">selsort'_perm</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">l</span>, <span class="id" type="var">length</span> <span class="id" type="var">l</span> = <span class="id" type="var">n</span> → <span class="id" type="var">Permutation</span> <span class="id" type="var">l</span> (<span class="id" type="var">selsort'</span> <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+</div>
+
+<div class="doc">
+NOTE: If you wish, you may <span class="inlinecode"><span class="id" type="keyword">Require</span></span> <span class="inlinecode"><span class="id" type="keyword">Import</span></span> <span class="inlinecode"><span class="id" type="var">Multiset</span></span>
+  and use the  multiset method, along with the
+  theorem <span class="inlinecode"><span class="id" type="var">same_contents_iff_perm</span></span>. 
+<div class="paragraph"> </div>
+
+ Important!  Don't unfold <span class="inlinecode"><span class="id" type="var">selsort'</span></span>, or in general, never
+  unfold anything defined with <span class="inlinecode"><span class="id" type="var">Function</span></span>. Instead, use the
+  recursion equation <span class="inlinecode"><span class="id" type="var">selsort'_equation</span></span> that is automatically
+  defined by the <span class="inlinecode"><span class="id" type="var">Function</span></span> command. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">selsort'</span> [3;1;4;1;5;9;2;6;5].<br/>
+</div>
+
+</div>
+
+
+
+</div>
+
+</body>
+</html>

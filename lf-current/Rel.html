@@ -1,0 +1,595 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Rel: 关系的性质</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 1: Logical Foundations</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Rel<span class="subtitle">关系的性质</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ 本章为可选章节，主要讲述了在 Coq 定义二元关系的一些基本方法和相关定理的证明。
+    关键定义会在实际用到的地方复述（<b>编程语言基础</b>中的<a href="https://www.cis.upenn.edu/~bcpierce/sf/plf-current/Smallstep.html"><span class="inlineref">Smallstep</span></a>一章），
+    因此熟悉这些概念的读者可以略读或跳过本章。不过，这些内容也是对 Coq
+    的证明功能很好的练习，因此在读完 <span class="inlinecode"><span class="id" type="var">IndProp</span></span> 一章后，
+    阅读本章也许会对你有所帮助。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">IndProp</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab290"></a><h1 class="section">Relations</h1>
+
+<div class="paragraph"> </div>
+
+ 集合 <span class="inlinecode"><span class="id" type="var">X</span></span> 上的二元<b>关系（Relation）</b>指所有由两个 <span class="inlinecode"><span class="id" type="var">X</span></span> 中的元素参数化的命题，
+    即，有关一对 <span class="inlinecode"><span class="id" type="var">X</span></span> 中的元素的命题。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">relation</span> (<span class="id" type="var">X</span>: <span class="id" type="keyword">Type</span>) := <span class="id" type="var">X</span> → <span class="id" type="var">X</span> → <span class="id" type="keyword">Prop</span>.<br/>
+</div>
+
+<div class="doc">
+令人困惑的是，「关系」原本是个更为通用的词语，然而 Coq 标准库中的「关系」
+    却单指这一种「某个集合中的元素之间二元关系」。为了与标准库保持一致，
+    我们将会沿用这一定义。然而「关系」一词除了指这一意义以外，
+    也可以指代任何数量的，可能是不同集合之间的更一般的关系。
+    在讨论中使用「关系」一词时，应该在上下文中解释具体所指的含义。
+<div class="paragraph"> </div>
+
+ 一个关系的例子是 <span class="inlinecode"><span class="id" type="var">nat</span></span> 上的 <span class="inlinecode"><span class="id" type="var">le</span></span>，即「小于或等于」关系，我们通常写作
+    <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span>。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">le</span>.<br/>
+<span class="comment">(*&nbsp;====&gt;&nbsp;Inductive&nbsp;le&nbsp;(n&nbsp;:&nbsp;nat)&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;Prop&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;le_n&nbsp;:&nbsp;n&nbsp;&lt;=&nbsp;n<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;le_S&nbsp;:&nbsp;forall&nbsp;m&nbsp;:&nbsp;nat,&nbsp;n&nbsp;&lt;=&nbsp;m&nbsp;-&gt;&nbsp;n&nbsp;&lt;=&nbsp;S&nbsp;m&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">le</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">le</span> : <span class="id" type="var">relation</span> <span class="id" type="var">nat</span>.<br/>
+</div>
+
+<div class="doc">
+（为什么我们不直接写成 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> <span class="inlinecode"><span class="id" type="var">le</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">relation</span></span> <span class="inlinecode"><span class="id" type="var">nat</span>...</span> 呢？
+    这是因为我们想要将第一个 <span class="inlinecode"><span class="id" type="var">nat</span></span> 放在 <span class="inlinecode">:</span> 的左侧，这能让 Coq 为 <span class="inlinecode">≤</span>
+    更为友好的的归纳法则。） 
+</div>
+
+<div class="doc">
+<a name="lab291"></a><h1 class="section">基本性质</h1>
+
+<div class="paragraph"> </div>
+
+ 学过本科离散数学课的人都知道，与关系相关的东西有很多，
+    包括对关系的性质（如自反性、传递性等），关于某类关系的一般定理，
+    如何从一种关系构造出另一种关系等等。例如： 
+<div class="paragraph"> </div>
+
+<a name="lab292"></a><h3 class="section">偏函数</h3>
+
+<div class="paragraph"> </div>
+
+ 对于集合 <span class="inlinecode"><span class="id" type="var">X</span></span> 上的关系 <span class="inlinecode"><span class="id" type="var">R</span></span> ，如果对于任何 <span class="inlinecode"><span class="id" type="var">x</span></span> 最多只有一个 <span class="inlinecode"><span class="id" type="var">y</span></span>
+    使得 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> 成立 &mdash; 即，<span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span> 同时成立蕴含 <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span>，
+    则称 <span class="inlinecode"><span class="id" type="var">R</span></span> 为<b>偏函数</b>。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">partial_function</span> {<span class="id" type="var">X</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y<sub>1</sub></span> <span class="id" type="var">y<sub>2</sub></span> : <span class="id" type="var">X</span>, <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y<sub>1</sub></span> → <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y<sub>2</sub></span> → <span class="id" type="var">y<sub>1</sub></span> = <span class="id" type="var">y<sub>2</sub></span>.<br/>
+</div>
+
+<div class="doc">
+例如，之前定义的 <span class="inlinecode"><span class="id" type="var">next_nat</span></span> 关系就是个偏函数。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">next_nat</span>.<br/>
+<span class="comment">(*&nbsp;====&gt;&nbsp;Inductive&nbsp;next_nat&nbsp;(n&nbsp;:&nbsp;nat)&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;Prop&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nn&nbsp;:&nbsp;next_nat&nbsp;n&nbsp;(S&nbsp;n)&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">next_nat</span> : <span class="id" type="var">relation</span> <span class="id" type="var">nat</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">next_nat_partial_function</span> :<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">partial_function</span> <span class="id" type="var">next_nat</span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">partial_function</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y<sub>1</sub></span> <span class="id" type="var">y<sub>2</sub></span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+然而，数值上的 <span class="inlinecode">≤</span> 关系并不是个偏函数。（利用反证法，假设 <span class="inlinecode">≤</span>
+    是一个偏函数。然而根据其定义我们有 <span class="inlinecode">0</span> <span class="inlinecode">≤</span> <span class="inlinecode">0</span> 和 <span class="inlinecode">0</span> <span class="inlinecode">≤</span> <span class="inlinecode">1</span>，这样会推出
+    <span class="inlinecode">0</span> <span class="inlinecode">=</span> <span class="inlinecode">1</span>。这是不可能的，所以原假设不成立。） 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_not_a_partial_function</span> :<br/>
+&nbsp;&nbsp;¬ (<span class="id" type="var">partial_function</span> <span class="id" type="var">le</span>).<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">not</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">partial_function</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">Hc</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (0 = 1) <span class="id" type="keyword">as</span> <span class="id" type="var">Nonsense</span>. {<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">Hc</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">x</span> := 0).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">le_n</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">le_S</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">le_n</span>. }<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">Nonsense</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab293"></a><h4 class="section">Exercise: 2 stars, optional (total_relation_not_partial)</h4>
+ 请证明之前定义的 <span class="inlinecode"><span class="id" type="var">total_relation</span></span> 不是偏函数。 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab294"></a><h4 class="section">Exercise: 2 stars, optional (empty_relation_partial)</h4>
+ 请证明之前定义的 <span class="inlinecode"><span class="id" type="var">empty_relation</span></span> 是偏函数。 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab295"></a><h3 class="section">自反关系</h3>
+
+<div class="paragraph"> </div>
+
+ 集合 <span class="inlinecode"><span class="id" type="var">X</span></span> 上的<b>自反关系</b>是指 <span class="inlinecode"><span class="id" type="var">X</span></span> 的每个元素都与其自身相关。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">reflexive</span> {<span class="id" type="var">X</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> : <span class="id" type="var">X</span>, <span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">a</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_reflexive</span> :<br/>
+&nbsp;&nbsp;<span class="id" type="var">reflexive</span> <span class="id" type="var">le</span>.<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">reflexive</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">n</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">le_n</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab296"></a><h3 class="section">传递关系</h3>
+
+<div class="paragraph"> </div>
+
+ 如果 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> 和 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> 成立时 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> 也成立，则称 <span class="inlinecode"><span class="id" type="var">R</span></span> 为<b>传递关系</b>。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">transitive</span> {<span class="id" type="var">X</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> : <span class="id" type="var">X</span>, (<span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>) → (<span class="id" type="var">R</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>) → (<span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">c</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_trans</span> :<br/>
+&nbsp;&nbsp;<span class="id" type="var">transitive</span> <span class="id" type="var">le</span>.<br/>
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">o</span> <span class="id" type="var">Hnm</span> <span class="id" type="var">Hmo</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Hmo</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;le_n&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">Hnm</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;le_S&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">le_S</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">IHHmo</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">lt_trans</span>:<br/>
+&nbsp;&nbsp;<span class="id" type="var">transitive</span> <span class="id" type="var">lt</span>.<br/>
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">lt</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">transitive</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">o</span> <span class="id" type="var">Hnm</span> <span class="id" type="var">Hmo</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">le_S</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hnm</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">le_trans</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">a</span> := (<span class="id" type="var">S</span> <span class="id" type="var">n</span>)) (<span class="id" type="var">b</span> := (<span class="id" type="var">S</span> <span class="id" type="var">m</span>)) (<span class="id" type="var">c</span> := <span class="id" type="var">o</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">Hnm</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">Hmo</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab297"></a><h4 class="section">Exercise: 2 stars, optional (le_trans_hard_way)</h4>
+ 我们也可以不用 <span class="inlinecode"><span class="id" type="var">le_trans</span></span>，直接通过归纳法来证明 <span class="inlinecode"><span class="id" type="var">lt_trans</span></span>，
+    不过这会耗费更多精力。请完成以下定理的证明。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">lt_trans'</span> :<br/>
+&nbsp;&nbsp;<span class="id" type="var">transitive</span> <span class="id" type="var">lt</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;根据&nbsp;<span class="inlinecode"><span class="id" type="var">m</span></span>&nbsp;小于&nbsp;<span class="inlinecode"><span class="id" type="var">o</span></span>&nbsp;的证据用归纳法证明它。&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">lt</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">transitive</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">o</span> <span class="id" type="var">Hnm</span> <span class="id" type="var">Hmo</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Hmo</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">m'</span> <span class="id" type="var">Hm'o</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab298"></a><h4 class="section">Exercise: 2 stars, optional (lt_trans'')</h4>
+ 再将此定理证明一遍，不过这次要对 <span class="inlinecode"><span class="id" type="var">o</span></span> 使用归纳法。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">lt_trans''</span> :<br/>
+&nbsp;&nbsp;<span class="id" type="var">transitive</span> <span class="id" type="var">lt</span>.<br/>
+<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
+<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">lt</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">transitive</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">o</span> <span class="id" type="var">Hnm</span> <span class="id" type="var">Hmo</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">o</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">o'</span>].<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">le</span></span> 的传递性反过来也能用于证明一些之后会用到的事实，
+    例如后面对反对称性的证明： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_Sn_le</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>, <span class="id" type="var">S</span> <span class="id" type="var">n</span> ≤ <span class="id" type="var">m</span> → <span class="id" type="var">n</span> ≤ <span class="id" type="var">m</span>.<br/>
+<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
+<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">le_trans</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>).<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">le_S</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">le_n</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab299"></a><h4 class="section">Exercise: 1 star, optional (le_S_n)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_S_n</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">S</span> <span class="id" type="var">n</span> ≤ <span class="id" type="var">S</span> <span class="id" type="var">m</span>) → (<span class="id" type="var">n</span> ≤ <span class="id" type="var">m</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab300"></a><h4 class="section">Exercise: 2 stars, optional (le_Sn_n_inf)</h4>
+ 请提写出以下定理的非形式化证明：
+
+<div class="paragraph"> </div>
+
+    Theorem: For every <span class="inlinecode"><span class="id" type="var">n</span></span>, <span class="inlinecode">¬</span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span>
+
+<div class="paragraph"> </div>
+
+    此定理的形式化证明在下面作为可选的练习，
+    不过在做形式化证明之前请先尝试写出非形式化的证明。
+
+<div class="paragraph"> </div>
+
+    证明： 
+</div>
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab301"></a><h4 class="section">Exercise: 1 star, optional (le_Sn_n)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_Sn_n</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>,<br/>
+&nbsp;&nbsp;¬ (<span class="id" type="var">S</span> <span class="id" type="var">n</span> ≤ <span class="id" type="var">n</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ 在后面的章节中，我们主要会用到自反性和传递性。不过，
+    我们先看一些其它的概念，作为在 Coq 中对关系进行操作的练习... 
+<div class="paragraph"> </div>
+
+<a name="lab302"></a><h3 class="section">对称关系与反对称惯性</h3>
+
+<div class="paragraph"> </div>
+
+ 如果 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> 蕴含 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span>，那么 <span class="inlinecode"><span class="id" type="var">R</span></span> 就是<b>对称关系</b>。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">symmetric</span> {<span class="id" type="var">X</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> : <span class="id" type="var">X</span>, (<span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>) → (<span class="id" type="var">R</span> <span class="id" type="var">b</span> <span class="id" type="var">a</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab303"></a><h4 class="section">Exercise: 2 stars, optional (le_not_symmetric)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_not_symmetric</span> :<br/>
+&nbsp;&nbsp;¬ (<span class="id" type="var">symmetric</span> <span class="id" type="var">le</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ 如果 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> 和 <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> 成立时有 <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">b</span></span>，那么 <span class="inlinecode"><span class="id" type="var">R</span></span> 就是<b>反对称关系</b>。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">antisymmetric</span> {<span class="id" type="var">X</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> : <span class="id" type="var">X</span>, (<span class="id" type="var">R</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>) → (<span class="id" type="var">R</span> <span class="id" type="var">b</span> <span class="id" type="var">a</span>) → <span class="id" type="var">a</span> = <span class="id" type="var">b</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab304"></a><h4 class="section">Exercise: 2 stars, optional (le_antisymmetric)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_antisymmetric</span> :<br/>
+&nbsp;&nbsp;<span class="id" type="var">antisymmetric</span> <span class="id" type="var">le</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab305"></a><h4 class="section">Exercise: 2 stars, optional (le_step)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_step</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">n</span> &lt; <span class="id" type="var">m</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">m</span> ≤ <span class="id" type="var">S</span> <span class="id" type="var">p</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">n</span> ≤ <span class="id" type="var">p</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab306"></a><h3 class="section">等价关系</h3>
+
+<div class="paragraph"> </div>
+
+ 如果一个关系满足自反性、对称性和传递性，那么它就是<b>等价关系</b>。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">equivalence</span> {<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">reflexive</span> <span class="id" type="var">R</span>) ∧ (<span class="id" type="var">symmetric</span> <span class="id" type="var">R</span>) ∧ (<span class="id" type="var">transitive</span> <span class="id" type="var">R</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab307"></a><h3 class="section">偏序惯性与预序关系</h3>
+
+<div class="paragraph"> </div>
+
+ 如果某个关系满足自反性、<b>反</b>对称性和传递性，那么它就一个是<b>偏序关系</b>。
+    在 Coq 标准库中，它被简短地称作「order」。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">order</span> {<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">reflexive</span> <span class="id" type="var">R</span>) ∧ (<span class="id" type="var">antisymmetric</span> <span class="id" type="var">R</span>) ∧ (<span class="id" type="var">transitive</span> <span class="id" type="var">R</span>).<br/>
+</div>
+
+<div class="doc">
+预序和偏序差不多，不过它无需满足反对称性。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">preorder</span> {<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">reflexive</span> <span class="id" type="var">R</span>) ∧ (<span class="id" type="var">transitive</span> <span class="id" type="var">R</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">le_order</span> :<br/>
+&nbsp;&nbsp;<span class="id" type="var">order</span> <span class="id" type="var">le</span>.<br/>
+<div class="togglescript" id="proofcontrol8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')"><span class="show"></span></div>
+<div class="proofscript" id="proof8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">order</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;refl&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">le_reflexive</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;antisym&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">le_antisymmetric</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;transitive.&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">le_trans</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab308"></a><h1 class="section">自反传递闭包</h1>
+
+<div class="paragraph"> </div>
+
+ 关系 <span class="inlinecode"><span class="id" type="var">R</span></span> 的<b>自反传递闭包</b>是最小的包含 <span class="inlinecode"><span class="id" type="var">R</span></span> 的自反传递关系。
+    在 Coq 标准库的 Relations 模块中，此概念定义如下：
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">clos_refl_trans</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">A</span>) : <span class="id" type="var">relation</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">rt_step</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>, <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> → <span class="id" type="var">clos_refl_trans</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">rt_refl</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>, <span class="id" type="var">clos_refl_trans</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">rt_trans</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">z</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">clos_refl_trans</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">clos_refl_trans</span> <span class="id" type="var">R</span> <span class="id" type="var">y</span> <span class="id" type="var">z</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">clos_refl_trans</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">z</span>.<br/>
+</div>
+
+<div class="doc">
+例如，<span class="inlinecode"><span class="id" type="var">next_nat</span></span> 关系的自反传递闭包实际上就是 <span class="inlinecode"><span class="id" type="var">le</span></span>。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">next_nat_closure_is_le</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">n</span> ≤ <span class="id" type="var">m</span>) ↔ ((<span class="id" type="var">clos_refl_trans</span> <span class="id" type="var">next_nat</span>) <span class="id" type="var">n</span> <span class="id" type="var">m</span>).<br/>
+<div class="togglescript" id="proofcontrol9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')"><span class="show"></span></div>
+<div class="proofscript" id="proof9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;-&gt;&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;le_n&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">rt_refl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;le_S&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">rt_trans</span> <span class="id" type="keyword">with</span> <span class="id" type="var">m</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">IHle</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">rt_step</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">nn</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;&lt;-&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rt_step&nbsp;*)</span> <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">le_S</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">le_n</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rt_refl&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">le_n</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rt_trans&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">le_trans</span> <span class="id" type="keyword">with</span> <span class="id" type="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHclos_refl_trans1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHclos_refl_trans2</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+以上对自反传递闭包的定义十分自然：它直接将自反传递闭包定义为「包含
+    <span class="inlinecode"><span class="id" type="var">R</span></span> 的，同时满足自反性和传递性的最小的关系」。
+    然而此定义对于证明来说不是很方便，因为 <span class="inlinecode"><span class="id" type="var">rt_trans</span></span> 的「非确定性」
+    有时会让归纳变得很棘手。下面是最常用的定义： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">clos_refl_trans_1n</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">R</span> : <span class="id" type="var">relation</span> <span class="id" type="var">A</span>) (<span class="id" type="var">x</span> : <span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">rt1n_refl</span> : <span class="id" type="var">clos_refl_trans_1n</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">rt1n_trans</span> (<span class="id" type="var">y</span> <span class="id" type="var">z</span> : <span class="id" type="var">A</span>) :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> → <span class="id" type="var">clos_refl_trans_1n</span> <span class="id" type="var">R</span> <span class="id" type="var">y</span> <span class="id" type="var">z</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">clos_refl_trans_1n</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">z</span>.<br/>
+</div>
+
+<div class="doc">
+这一新的定义将 <span class="inlinecode"><span class="id" type="var">rt_step</span></span> 和 <span class="inlinecode"><span class="id" type="var">rt_trans</span></span> 合并成一条。在此规则的假设中
+    <span class="inlinecode"><span class="id" type="var">R</span></span> 只用了一次，这会上归纳法则更简单。
+
+<div class="paragraph"> </div>
+
+    在使用这一定义并继续之前，我们需要检查这两个定义确实定义了相同的关系...
+
+<div class="paragraph"> </div>
+
+    首先，我们来证明 <span class="inlinecode"><span class="id" type="var">clos_refl_trans_1n</span></span> 模仿了两个「缺失」
+    的 <span class="inlinecode"><span class="id" type="var">clos_refl_trans</span></span> 构造子的行为。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">rsc_R</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">R</span>:<span class="id" type="var">relation</span> <span class="id" type="var">X</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> → <span class="id" type="var">clos_refl_trans_1n</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>.<br/>
+<div class="togglescript" id="proofcontrol10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')"><span class="show"></span></div>
+<div class="proofscript" id="proof10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">X</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">rt1n_trans</span> <span class="id" type="keyword">with</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">rt1n_refl</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab309"></a><h4 class="section">Exercise: 2 stars, optional (rsc_trans)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">rsc_trans</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">z</span> : <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">clos_refl_trans_1n</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">clos_refl_trans_1n</span> <span class="id" type="var">R</span> <span class="id" type="var">y</span> <span class="id" type="var">z</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">clos_refl_trans_1n</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">z</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ 接着再用这些事实来证明这两个定义的自反性、
+    传递性封闭确实定义了同样的关系。 
+<div class="paragraph"> </div>
+
+<a name="lab310"></a><h4 class="section">Exercise: 3 stars, optional (rtc_rsc_coincide)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">rtc_rsc_coincide</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">R</span>: <span class="id" type="var">relation</span> <span class="id" type="var">X</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">clos_refl_trans</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> ↔ <span class="id" type="var">clos_refl_trans_1n</span> <span class="id" type="var">R</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+</div>
+
+
+
+</div>
+
+</body>
+</html>

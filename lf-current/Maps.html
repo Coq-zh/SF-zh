@@ -1,0 +1,542 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Maps: 全映射与偏映射</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 1: Logical Foundations</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Maps<span class="subtitle">全映射与偏映射</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ <b>映射（Map）</b>（或<b>字典（Dictionary）</b>）是一种非常普遍的数据结构，
+    在编程语言理论中尤甚，而之后的章节中我们会多次用到它。
+    映射也适合运用之前学过的概念进行研究，包括如何在高阶函数之外构建数据结构
+    （见 <span class="inlinecode"><span class="id" type="var">Basics</span></span> 和 <span class="inlinecode"><span class="id" type="var">Poly</span></span>）以及通过互映来精简证明（见 <span class="inlinecode"><span class="id" type="var">IndProp</span></span>）。
+
+<div class="paragraph"> </div>
+
+    我们会定义两种映射：在查找的键不存在时，<b>全映射</b>会返回「默认」元素，
+    而<b>偏映射</b>则会返回一个 <span class="inlinecode"><span class="id" type="var">option</span></span> 来指示成功还是失败。后者根据前者来定义，
+    它使用 <span class="inlinecode"><span class="id" type="var">None</span></span> 默认元素。 
+</div>
+
+<div class="doc">
+<a name="lab245"></a><h1 class="section">Coq 标准库</h1>
+
+<div class="paragraph"> </div>
+
+ 开始前的小插话...
+
+<div class="paragraph"> </div>
+
+    和我们目前学过的章节不同，本章无需通过 <span class="inlinecode"><span class="id" type="keyword">Require</span></span> <span class="inlinecode"><span class="id" type="keyword">Import</span></span> 导入之前的章节
+    （自然也就不会间接导入更早的章节）。从本章开始，我们我们将直接从
+    Coq 标准库中导入需要的定义和定理。然而应该不会注意到多大差别，
+    因为我们一直小心地将自己的定义和定理的命名与标准库中的部分保持一致，
+    无论它们在哪里重复。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Arith.Arith</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Bool.Bool</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">Coq.Strings.String</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Logic.FunctionalExtensionality</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Lists.List</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
+</div>
+
+<div class="doc">
+标准库的文档见
+    <a href="http://coq.inria.fr/library/">http://coq.inria.fr/library/</a>。
+
+<div class="paragraph"> </div>
+
+    <span class="inlinecode"><span class="id" type="var">Search</span></span> 命令可用于查找涉及具体类型对象的定理。我们花点时间来熟悉一下它。 
+</div>
+
+<div class="doc">
+<a name="lab246"></a><h1 class="section">标识符</h1>
+
+<div class="paragraph"> </div>
+
+ 首先，我们需要知道用来索引映射的键的类型。为此，我们只需使用 <span class="inlinecode"><span class="id" type="var">string</span></span>。 
+<div class="paragraph"> </div>
+
+ 为比较字符串，我们定义了函数 <span class="inlinecode"><span class="id" type="var">beq_string</span></span>，它在内部使用了 Coq
+    字符串标准库中的 <span class="inlinecode"><span class="id" type="var">string_dec</span></span> 函数。接下来我们确定它的基本性质。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">beq_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">string_dec</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">true</span> <span class="id" type="keyword">else</span> <span class="id" type="var">false</span>.<br/>
+</div>
+
+<div class="doc">
+（函数 <span class="inlinecode"><span class="id" type="var">string_dec</span></span> 来自于 Coq 的字符串标准库。如果你查看
+    <span class="inlinecode"><span class="id" type="var">string_dec</span></span> 的结果类型，就会发现其返回值的类型并不是 <span class="inlinecode"><span class="id" type="var">bool</span></span>，
+    而是一个形如 <span class="inlinecode">{<span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{<span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span>}</span> 的类型，叫做 <span class="inlinecode"><span class="id" type="var">sumbool</span></span> 类型，
+    它可以看做「带有证据的布尔类型」。形式上来说，一个 <span class="inlinecode"><span class="id" type="var">sumbool</span></span>
+    类型的元素要么是两个东西相等的证明，要么就是它们不相等的证明，
+    与一个标签一起来指出具体是哪一个。不过就目前来说，你可以把它当做一个
+    花哨的 <span class="inlinecode"><span class="id" type="var">bool</span></span>。） 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">beq_string_refl</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">s</span>, <span class="id" type="var">true</span> = <span class="id" type="var">beq_string</span> <span class="id" type="var">s</span> <span class="id" type="var">s</span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">s</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">beq_string</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">string_dec</span> <span class="id" type="var">s</span> <span class="id" type="var">s</span>) <span class="id" type="keyword">as</span> [|<span class="id" type="var">Hs</span>].<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> <span class="id" type="var">Hs</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+以下 <span class="inlinecode"><span class="id" type="var">beq_string</span></span> 的有用的性质来自于一个关于字符串的类似引理： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">beq_string_true_iff</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">string</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">beq_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> = <span class="id" type="var">true</span> ↔ <span class="id" type="var">x</span> = <span class="id" type="var">y</span>.<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">beq_string</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">string_dec</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>) <span class="id" type="keyword">as</span> [|<span class="id" type="var">Hs</span>].<br/>
+&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">intros</span> <span class="id" type="var">contra</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">contra</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">intros</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">Hs</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+类似地： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">beq_string_false_iff</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">string</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">beq_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> = <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;↔ <span class="id" type="var">x</span> ≠ <span class="id" type="var">y</span>.<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">beq_string_true_iff</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">not_true_iff_false</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+以下有用的变体只需改写就能得到： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">false_beq_string</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">string</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">x</span> ≠ <span class="id" type="var">y</span> → <span class="id" type="var">beq_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> = <span class="id" type="var">false</span>.<br/>
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">beq_string_false_iff</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab247"></a><h1 class="section">全映射</h1>
+
+<div class="paragraph"> </div>
+
+ 在本章中，我们的主要任务就是构建一个偏映射的定义，其行为类似于我们之前在
+    <a href="Lists.html"><span class="inlineref">Lists</span></a>一章中看到的那个，再加上伴随其行为的引理。
+
+<div class="paragraph"> </div>
+
+    不过这一次，我们将使用<b>函数</b>而非「键-值」对的列表来构建映射。
+    这种表示方法的优点在于它提供了映射更具<b>外延性</b>的视角，
+    即以相同方式回应查询的两个映射将被表示为完全相同的东西（即一摸一样的函数），
+    而非只是「等价」的数据结构。这反过来简化了使用映射的证明。 
+<div class="paragraph"> </div>
+
+ 我们会分两步构建偏映射。首先，我们定义一个<b>全映射</b>类型，
+    它在某个映射中查找不存在的键时会返回默认值。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">total_map</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) := <span class="id" type="var">string</span> → <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+直观上来说，一个元素类型为 <span class="inlinecode"><span class="id" type="var">A</span></span> 的全映射不过就是个根据 <span class="inlinecode"><span class="id" type="var">string</span></span>
+    来查找 <span class="inlinecode"><span class="id" type="var">A</span></span> 的函数。 
+<div class="paragraph"> </div>
+
+ 给定函数 <span class="inlinecode"><span class="id" type="var">t_empty</span></span> 一个默认元素，它会产生一个空的全映射。
+    此映射在应用到任何字符串时都会返回默认元素。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">t_empty</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">v</span>).<br/>
+</div>
+
+<div class="doc">
+更有趣的是 <span class="inlinecode"><span class="id" type="var">update</span></span> 函数，它和之前一样，接受一个映射 <span class="inlinecode"><span class="id" type="var">m</span></span>、一个键 <span class="inlinecode"><span class="id" type="var">x</span></span>
+    以及一个值 <span class="inlinecode"><span class="id" type="var">v</span></span>，并返回一个将 <span class="inlinecode"><span class="id" type="var">x</span></span> 映射到 <span class="inlinecode"><span class="id" type="var">v</span></span> 的新映射；其它键则与
+    <span class="inlinecode"><span class="id" type="var">m</span></span> 中原来的保持一致。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">t_update</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> : <span class="id" type="var">string</span>) (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x'</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">beq_string</span> <span class="id" type="var">x</span> <span class="id" type="var">x'</span> <span class="id" type="keyword">then</span> <span class="id" type="var">v</span> <span class="id" type="keyword">else</span> <span class="id" type="var">m</span> <span class="id" type="var">x'</span>.<br/>
+</div>
+
+<div class="doc">
+此定义是个高阶编程的好例子：<span class="inlinecode"><span class="id" type="var">t_update</span></span> 接受一个<b>函数</b> <span class="inlinecode"><span class="id" type="var">m</span></span>
+    并产生一个新的函数 <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">x'</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode">...</span>，它的表现与所需的映射一致。 
+<div class="paragraph"> </div>
+
+ 例如，我们可以构建一个从 <span class="inlinecode"><span class="id" type="var">string</span></span> 到 <span class="inlinecode"><span class="id" type="var">bool</span></span> 的映射，其中 <span class="inlinecode">"<span class="id" type="var">foo</span>"</span>
+    和 <span class="inlinecode">"<span class="id" type="var">bar</span>"</span> 映射到 <span class="inlinecode"><span class="id" type="var">true</span></span>，其它键则映射到 <span class="inlinecode"><span class="id" type="var">false</span></span>，就像这样： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">examplemap</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">t_update</span> (<span class="id" type="var">t_update</span> (<span class="id" type="var">t_empty</span> <span class="id" type="var">false</span>) "foo" <span class="id" type="var">true</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"bar" <span class="id" type="var">true</span>.<br/>
+</div>
+
+<div class="doc">
+接下来，我们引入一些新的记法来方便映射的使用。 
+<div class="paragraph"> </div>
+
+ 首先，我们会使用以下记法，根据一个默认值来创建空的全映射。 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Notation</span> "{ <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> d }" := (<span class="id" type="var">t_empty</span> <span class="id" type="var">d</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 0).<br/>
+</div>
+
+<div class="doc">
+然后，我们引入一种方便的记法，通过一些绑定来扩展现有的映射。 
+<div class="paragraph"> </div>
+
+ （这种记法的定义有点丑，因为 Coq 的记法机制不太适应递归记法，
+    这是我们能做到最好的了。) 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> "m '&amp;' { a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x }" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">t_update</span> <span class="id" type="var">m</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' { a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y }" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">t_update</span> (<span class="id" type="var">m</span> &amp; { <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> }) <span class="id" type="var">b</span> <span class="id" type="var">y</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' { a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y ; c <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> z }" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">t_update</span> (<span class="id" type="var">m</span> &amp; { <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> ; <span class="id" type="var">b</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">y</span> }) <span class="id" type="var">c</span> <span class="id" type="var">z</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' { a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y ; c <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> z ; d <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> t }" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">t_update</span> (<span class="id" type="var">m</span> &amp; { <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> ; <span class="id" type="var">b</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">y</span> ; <span class="id" type="var">c</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">z</span> }) <span class="id" type="var">d</span> <span class="id" type="var">t</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' { a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y ; c <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> z ; d <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> t ; e <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> u }" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">t_update</span> (<span class="id" type="var">m</span> &amp; { <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> ; <span class="id" type="var">b</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">y</span> ; <span class="id" type="var">c</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">z</span> ; <span class="id" type="var">d</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">t</span> }) <span class="id" type="var">e</span> <span class="id" type="var">u</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' { a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y ; c <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> z ; d <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> t ; e <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> u ; f <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> v }" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">t_update</span> (<span class="id" type="var">m</span> &amp; { <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> ; <span class="id" type="var">b</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">y</span> ; <span class="id" type="var">c</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">z</span> ; <span class="id" type="var">d</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">t</span> ; <span class="id" type="var">e</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">u</span> }) <span class="id" type="var">f</span> <span class="id" type="var">v</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+</div>
+
+<div class="doc">
+前面的 <span class="inlinecode"><span class="id" type="var">examplemap</span></span> 现在可以定义如下： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">examplemap'</span> :=<br/>
+&nbsp;&nbsp;{ <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">false</span> } &amp; { "foo" <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">true</span> ; "bar" <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">true</span> }.<br/>
+</div>
+
+<div class="doc">
+到这里就完成了全映射的定义。注意我们无需定义 <span class="inlinecode"><span class="id" type="var">find</span></span> 操作，
+    因为它不过就是个函数应用！ 
+</div>
+
+<div class="doc">
+为了在后面的章节中使用映射，我们需要一些关于其表现的基本事实。 
+<div class="paragraph"> </div>
+
+ 即便你没有进行下面的练习，也要确保透彻地理解以下引理的陈述！ 
+<div class="paragraph"> </div>
+
+ （其中有些证明需要函数的外延性公理，我们在<a href="Logic.html"><span class="inlineref">Logic</span></a>一节中讨论过它）。 
+<div class="paragraph"> </div>
+
+<a name="lab248"></a><h4 class="section">Exercise: 1 star, optional (t_apply_empty)</h4>
+ 首先，空映射对于所有的键都会返回默认元素（即，空映射总是返回默认元素）： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">t_apply_empty</span>:  <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>: <span class="id" type="var">string</span>) (<span class="id" type="var">v</span>: <span class="id" type="var">A</span>), { <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v</span> } <span class="id" type="var">x</span> = <span class="id" type="var">v</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab249"></a><h4 class="section">Exercise: 2 stars, optional (t_update_eq)</h4>
+ 接着，如果将映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 的键 <span class="inlinecode"><span class="id" type="var">x</span></span> 关联的值更新为 <span class="inlinecode"><span class="id" type="var">v</span></span>，然后在 <span class="inlinecode"><span class="id" type="var">update</span></span>
+    产生的新映射中查找 <span class="inlinecode"><span class="id" type="var">x</span></span>，就会得到 <span class="inlinecode"><span class="id" type="var">v</span></span>（即，更新某个键的映射，
+    查找它就会得到更新后的值）： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">t_update_eq</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> (<span class="id" type="var">m</span>: <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> <span class="id" type="var">v</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">m</span> &amp; {<span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v</span>}) <span class="id" type="var">x</span> = <span class="id" type="var">v</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab250"></a><h4 class="section">Exercise: 2 stars, optional (t_update_neq)</h4>
+ 此外，如果将映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 的键 <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> 更新后在返回的结果中查找<b>另一个</b>键
+    <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span>，那么得到的结果与在 <span class="inlinecode"><span class="id" type="var">m</span></span> 中查找它的结果相同
+    （即，更新某个键的映射，不影响其它键的映射）： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">t_update_neq</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) <span class="id" type="var">v</span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">x<sub>1</sub></span> ≠ <span class="id" type="var">x<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">m</span> &amp; {<span class="id" type="var">x<sub>1</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v</span>}) <span class="id" type="var">x<sub>2</sub></span> = <span class="id" type="var">m</span> <span class="id" type="var">x<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab251"></a><h4 class="section">Exercise: 2 stars, optional (t_update_shadow)</h4>
+ 如果将映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 的键 <span class="inlinecode"><span class="id" type="var">x</span></span> 关联的值更新为 <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> 后，又将同一个键 <span class="inlinecode"><span class="id" type="var">x</span></span>
+    更新为另一个值 <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span>，那么产生的映射与仅将第二次 <span class="inlinecode"><span class="id" type="var">update</span></span> 应用于 <span class="inlinecode"><span class="id" type="var">m</span></span>
+    所得到的映射表现一致（即二者应用到同一键时产生的结果相同）： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">t_update_shadow</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> (<span class="id" type="var">m</span>: <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">m</span> &amp; {<span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>2</sub></span>} = <span class="id" type="var">m</span> &amp; {<span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>2</sub></span>}.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ 对于最后两个全映射的引理而言，用<a href="IndProp.html"><span class="inlineref">IndProp</span></a>一章中引入的互映法
+    （Reflection idioms）来证明会十分方便。我们首先通过证明基本的<b>互映引理</b>，
+    将 <span class="inlinecode"><span class="id" type="var">id</span></span> 上的相等性命题与布尔函数 <span class="inlinecode"><span class="id" type="var">beq_id</span></span> 关联起来。
+<div class="paragraph"> </div>
+
+<a name="lab252"></a><h4 class="section">Exercise: 2 stars, optional (beq_stringP)</h4>
+ 请仿照<a href="IndProp.html"><span class="inlineref">IndProp</span></a>一章中对 <span class="inlinecode"><span class="id" type="var">beq_natP</span></span> 的证明来证明以下引理： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">beq_stringP</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>, <span class="id" type="var">reflect</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>) (<span class="id" type="var">beq_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ 现在，给定 <span class="inlinecode"><span class="id" type="var">string</span></span> 类型的字符串 <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span>，我们可以在使用
+    <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" type="var">beq_stringP</span></span> <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span>)</span> 对 <span class="inlinecode"><span class="id" type="var">beq_string</span></span> <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span>
+    的结果进行分类讨论的同时，生成关于 <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span> （在 <span class="inlinecode">=</span> 的意义上）
+    的相等性的假设。 
+<div class="paragraph"> </div>
+
+<a name="lab253"></a><h4 class="section">Exercise: 2 stars (t_update_same)</h4>
+ 请仿照<a href="IndProp.html"><span class="inlineref">IndProp</span></a>一章中的示例，用 <span class="inlinecode"><span class="id" type="var">beq_stringP</span></span> 来证明以下定理，
+    它陈述了：如果我们用映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 中已经与键 <span class="inlinecode"><span class="id" type="var">x</span></span> 相关联的值更新了 <span class="inlinecode"><span class="id" type="var">x</span></span>，
+    那么其结果与 <span class="inlinecode"><span class="id" type="var">m</span></span> 相等： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">t_update_same</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">X</span> <span class="id" type="var">x</span> (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">m</span> &amp; { <span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> } = <span class="id" type="var">m</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab254"></a><h4 class="section">Exercise: 3 stars, recommended (t_update_permute)</h4>
+ 使用 <span class="inlinecode"><span class="id" type="var">beq_stringP</span></span> 来证明最后一个 <span class="inlinecode"><span class="id" type="var">update</span></span> 函数的性质：
+    如果我们更新了映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 中两个不同的键，那么更新的顺序无关紧要。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">t_update_permute</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">x<sub>2</sub></span> ≠ <span class="id" type="var">x<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">m</span> &amp; { <span class="id" type="var">x<sub>2</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">x<sub>1</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>1</sub></span> }<br/>
+&nbsp;&nbsp;=  <span class="id" type="var">m</span> &amp; { <span class="id" type="var">x<sub>1</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">x<sub>2</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>2</sub></span> }.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+
+<div class="doc">
+<a name="lab255"></a><h1 class="section">偏映射</h1>
+
+<div class="paragraph"> </div>
+
+ 最后，我们在全映射之上定义<b>偏映射</b>。元素类型为 <span class="inlinecode"><span class="id" type="var">A</span></span> 的偏映射不过就是个
+    元素类型为 <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>，默认元素为 <span class="inlinecode"><span class="id" type="var">None</span></span> 的全映射。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">partial_map</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) := <span class="id" type="var">total_map</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>} : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">t_empty</span> <span class="id" type="var">None</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">update</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> : <span class="id" type="var">string</span>) (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">m</span> &amp; { <span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> (<span class="id" type="var">Some</span> <span class="id" type="var">v</span>) }.<br/>
+</div>
+
+<div class="doc">
+我们用双花括号为偏映射引入类似的记法。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> "m '&amp;' <span style='letter-spacing:-.4em;'>{</span>{ a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x <span style='letter-spacing:-.4em;'>}</span>}" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">update</span> <span class="id" type="var">m</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' <span style='letter-spacing:-.4em;'>{</span>{ a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y <span style='letter-spacing:-.4em;'>}</span>}" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">update</span> (<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{ <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> <span style='letter-spacing:-.4em;'>}</span>}) <span class="id" type="var">b</span> <span class="id" type="var">y</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' <span style='letter-spacing:-.4em;'>{</span>{ a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y ; c <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> z <span style='letter-spacing:-.4em;'>}</span>}" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">update</span> (<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{ <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> ; <span class="id" type="var">b</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">y</span> <span style='letter-spacing:-.4em;'>}</span>}) <span class="id" type="var">c</span> <span class="id" type="var">z</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' <span style='letter-spacing:-.4em;'>{</span>{ a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y ; c <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> z ; d <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> t <span style='letter-spacing:-.4em;'>}</span>}" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">update</span> (<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{ <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> ; <span class="id" type="var">b</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">y</span> ; <span class="id" type="var">c</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">z</span> <span style='letter-spacing:-.4em;'>}</span>}) <span class="id" type="var">d</span> <span class="id" type="var">t</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' <span style='letter-spacing:-.4em;'>{</span>{ a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y ; c <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> z ; d <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> t ; e <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> u <span style='letter-spacing:-.4em;'>}</span>}" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">update</span> (<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{ <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> ; <span class="id" type="var">b</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">y</span> ; <span class="id" type="var">c</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">z</span> ; <span class="id" type="var">d</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">t</span> <span style='letter-spacing:-.4em;'>}</span>}) <span class="id" type="var">e</span> <span class="id" type="var">u</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+<span class="id" type="keyword">Notation</span> "m '&amp;' <span style='letter-spacing:-.4em;'>{</span>{ a <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> x ; b <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> y ; c <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> z ; d <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> t ; e <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> u ; f <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> v <span style='letter-spacing:-.4em;'>}</span>}" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">update</span> (<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{ <span class="id" type="var">a</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">x</span> ; <span class="id" type="var">b</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">y</span> ; <span class="id" type="var">c</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">z</span> ; <span class="id" type="var">d</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">t</span> ; <span class="id" type="var">e</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">u</span> <span style='letter-spacing:-.4em;'>}</span>}) <span class="id" type="var">f</span> <span class="id" type="var">v</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 20).<br/>
+</div>
+
+<div class="doc">
+现在我们将所有关于全映射的基本引理直接转换成对应的偏映射引理。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">apply_empty</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>: <span class="id" type="var">string</span>),  @<span class="id" type="var">empty</span> <span class="id" type="var">A</span> <span class="id" type="var">x</span> = <span class="id" type="var">None</span>.<br/>
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">empty</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">t_apply_empty</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">update_eq</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> (<span class="id" type="var">m</span>: <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> <span class="id" type="var">v</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{ <span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v</span> <span style='letter-spacing:-.4em;'>}</span>}) <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">v</span>.<br/>
+<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
+<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">t_update_eq</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">update_neq</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) <span class="id" type="var">v</span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">x<sub>2</sub></span> ≠ <span class="id" type="var">x<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{ <span class="id" type="var">x<sub>2</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v</span> <span style='letter-spacing:-.4em;'>}</span>}) <span class="id" type="var">x<sub>1</sub></span> = <span class="id" type="var">m</span> <span class="id" type="var">x<sub>1</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
+<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">X</span> <span class="id" type="var">v</span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> <span class="id" type="var">m</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">t_update_neq</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">update_shadow</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> (<span class="id" type="var">m</span>: <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{ <span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>2</sub></span> <span style='letter-spacing:-.4em;'>}</span>} = <span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>2</sub></span><span style='letter-spacing:-.4em;'>}</span>}.<br/>
+<div class="togglescript" id="proofcontrol8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')"><span class="show"></span></div>
+<div class="proofscript" id="proof8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">A</span> <span class="id" type="var">m</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">x<sub>1</sub></span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">t_update_shadow</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">update_same</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">X</span> <span class="id" type="var">v</span> <span class="id" type="var">x</span> (<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">m</span> <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">v</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">x</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v</span><span style='letter-spacing:-.4em;'>}</span>} = <span class="id" type="var">m</span>.<br/>
+<div class="togglescript" id="proofcontrol9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')"><span class="show"></span></div>
+<div class="proofscript" id="proof9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">X</span> <span class="id" type="var">v</span> <span class="id" type="var">x</span> <span class="id" type="var">m</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_same</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">update_permute</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">x<sub>2</sub></span> ≠ <span class="id" type="var">x<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">x<sub>2</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">x<sub>1</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>1</sub></span><span style='letter-spacing:-.4em;'>}</span>}<br/>
+&nbsp;&nbsp;= <span class="id" type="var">m</span> &amp; <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">x<sub>1</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">x<sub>2</sub></span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> <span class="id" type="var">v<sub>2</sub></span><span style='letter-spacing:-.4em;'>}</span>}.<br/>
+<div class="togglescript" id="proofcontrol10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')"><span class="show"></span></div>
+<div class="proofscript" id="proof10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">X</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> <span class="id" type="var">m</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_permute</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

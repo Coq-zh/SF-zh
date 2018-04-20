@@ -1,0 +1,615 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Binom: Binomial Queues</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: Verified Functional Algorithms</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Binom<span class="subtitle">Binomial Queues</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ Implementation and correctness proof of fast mergeable priority queues
+   using binomial queues. 
+
+<div class="paragraph"> </div>
+
+  Operation <span class="inlinecode"><span class="id" type="var">empty</span></span> is constant time,  <span class="inlinecode"><span class="id" type="var">insert</span></span>, <span class="inlinecode"><span class="id" type="var">delete_max</span></span>, and <span class="inlinecode"><span class="id" type="var">merge</span></span>
+  are logN time.  (Well, except that comparisons on <span class="inlinecode"><span class="id" type="var">nat</span></span> take linear time.
+  Read the <a href="Extract.html"><span class="inlineref">Extract</span></a> chapter to see what can be done about that.) 
+<div class="paragraph"> </div>
+
+<a name="lab154"></a><h1 class="section">Required Reading</h1>
+
+<div class="paragraph"> </div>
+
+  Binomial Queues <a href="http://www.cs.princeton.edu/~appel/Binom.pdf"><span class="inlineref">http://www.cs.princeton.edu/~appel/Binom.pdf</span></a>
+  by Andrew W. Appel, 2016.
+
+<div class="paragraph"> </div>
+
+  Binomial Queues <a href="http://www.cs.princeton.edu/~appel/BQ.pdf"><span class="inlineref">http://www.cs.princeton.edu/~appel/BQ.pdf</span></a>
+  Section 9.7 of _Algorithms 3rd Edition in Java, Parts 1-4: 
+    Fundamentals, Data Structures, Sorting, and Searching_,
+  by Robert Sedgewick.  Addison-Wesley, 2002.
+
+<div class="paragraph"> </div>
+
+<a name="lab155"></a><h1 class="section">The Program</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Priqueue</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">BinomQueue</span> &lt;: <span class="id" type="var">PRIQUEUE</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">tree</span> : <span class="id" type="keyword">Type</span> :=<br/>
+|  <span class="id" type="var">Node</span>: <span class="id" type="var">key</span> → <span class="id" type="var">tree</span> → <span class="id" type="var">tree</span> → <span class="id" type="var">tree</span><br/>
+|  <span class="id" type="var">Leaf</span> : <span class="id" type="var">tree</span>.<br/>
+</div>
+
+<div class="doc">
+A priority queue (using the binomial queues data structure) is a
+   list of trees.  The <span class="inlinecode"><span class="id" type="var">i</span></span>'th element of the list is either <span class="inlinecode"><span class="id" type="var">Leaf</span></span> or
+   it is a power-of-2-heap with exactly <span class="inlinecode">2^<span class="id" type="var">i</span></span> nodes.
+
+<div class="paragraph"> </div>
+
+  This program will make sense to you if you've read the Sedgewick
+  reading; otherwise it is rather mysterious.
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">priqueue</span> := <span class="id" type="var">list</span> <span class="id" type="var">tree</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> : <span class="id" type="var">priqueue</span> := <span class="id" type="var">nil</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">smash</span> (<span class="id" type="var">t</span> <span class="id" type="var">u</span>:  <span class="id" type="var">tree</span>) : <span class="id" type="var">tree</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> , <span class="id" type="var">u</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;|  <span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">Leaf</span>, <span class="id" type="var">Node</span> <span class="id" type="var">y</span> <span class="id" type="var">u<sub>1</sub></span> <span class="id" type="var">Leaf</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span>  <span class="id" type="var">x</span> &gt;? <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">Node</span> <span class="id" type="var">x</span> (<span class="id" type="var">Node</span> <span class="id" type="var">y</span> <span class="id" type="var">u<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub></span>) <span class="id" type="var">Leaf</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">Node</span> <span class="id" type="var">y</span> (<span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">u<sub>1</sub></span>) <span class="id" type="var">Leaf</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> , <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Leaf</span>  <span class="comment">(*&nbsp;arbitrary&nbsp;bogus&nbsp;tree&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">carry</span> (<span class="id" type="var">q</span>: <span class="id" type="var">list</span> <span class="id" type="var">tree</span>) (<span class="id" type="var">t</span>: <span class="id" type="var">tree</span>) : <span class="id" type="var">list</span> <span class="id" type="var">tree</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">q</span>, <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span>, <span class="id" type="var">Leaf</span>        ⇒ <span class="id" type="var">nil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span>, <span class="id" type="var">_</span>            ⇒ <span class="id" type="var">t</span> :: <span class="id" type="var">nil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Leaf</span> :: <span class="id" type="var">q'</span>, <span class="id" type="var">_</span>  ⇒ <span class="id" type="var">t</span> :: <span class="id" type="var">q'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">u</span> :: <span class="id" type="var">q'</span>, <span class="id" type="var">Leaf</span>  ⇒ <span class="id" type="var">u</span> :: <span class="id" type="var">q'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">u</span> :: <span class="id" type="var">q'</span>, <span class="id" type="var">_</span>       ⇒ <span class="id" type="var">Leaf</span> :: <span class="id" type="var">carry</span> <span class="id" type="var">q'</span> (<span class="id" type="var">smash</span> <span class="id" type="var">t</span> <span class="id" type="var">u</span>)<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">insert</span> (<span class="id" type="var">x</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">q</span>: <span class="id" type="var">priqueue</span>) : <span class="id" type="var">priqueue</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">carry</span> <span class="id" type="var">q</span> (<span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">Leaf</span> <span class="id" type="var">Leaf</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">fold_left</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">q</span> ⇒<span class="id" type="var">insert</span> <span class="id" type="var">q</span> <span class="id" type="var">x</span>) [3;1;4;1;5;9;2;3;5] <span class="id" type="var">empty</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+    = [Node 5 Leaf Leaf;
+       Leaf;
+       Leaf;
+       Node 9
+          (Node 4 (Node 3 (Node 1 Leaf Leaf) (Node 1 Leaf Leaf))
+             (Node 3 (Node 2 Leaf Leaf) (Node 5 Leaf Leaf))) 
+          Leaf]
+     : priqueue 
+</pre>
+ 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">join</span> (<span class="id" type="var">p</span> <span class="id" type="var">q</span>: <span class="id" type="var">priqueue</span>) (<span class="id" type="var">c</span>: <span class="id" type="var">tree</span>) : <span class="id" type="var">priqueue</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">p</span>, <span class="id" type="var">q</span>, <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[], <span class="id" type="var">_</span> , <span class="id" type="var">_</span>            ⇒ <span class="id" type="var">carry</span> <span class="id" type="var">q</span> <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span>, [], <span class="id" type="var">_</span>             ⇒ <span class="id" type="var">carry</span> <span class="id" type="var">p</span> <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Leaf</span>::<span class="id" type="var">p'</span>, <span class="id" type="var">Leaf</span>::<span class="id" type="var">q'</span>, <span class="id" type="var">_</span>              ⇒ <span class="id" type="var">c</span> :: <span class="id" type="var">join</span> <span class="id" type="var">p'</span> <span class="id" type="var">q'</span> <span class="id" type="var">Leaf</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Leaf</span>::<span class="id" type="var">p'</span>, <span class="id" type="var">q<sub>1</sub></span>::<span class="id" type="var">q'</span>, <span class="id" type="var">Leaf</span>            ⇒ <span class="id" type="var">q<sub>1</sub></span> :: <span class="id" type="var">join</span> <span class="id" type="var">p'</span> <span class="id" type="var">q'</span> <span class="id" type="var">Leaf</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Leaf</span>::<span class="id" type="var">p'</span>, <span class="id" type="var">q<sub>1</sub></span>::<span class="id" type="var">q'</span>, <span class="id" type="var">Node</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>  ⇒ <span class="id" type="var">Leaf</span> :: <span class="id" type="var">join</span> <span class="id" type="var">p'</span> <span class="id" type="var">q'</span> (<span class="id" type="var">smash</span> <span class="id" type="var">c</span> <span class="id" type="var">q<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">p<sub>1</sub></span>::<span class="id" type="var">p'</span>, <span class="id" type="var">Leaf</span>::<span class="id" type="var">q'</span>, <span class="id" type="var">Leaf</span>            ⇒ <span class="id" type="var">p<sub>1</sub></span> :: <span class="id" type="var">join</span> <span class="id" type="var">p'</span> <span class="id" type="var">q'</span> <span class="id" type="var">Leaf</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">p<sub>1</sub></span>::<span class="id" type="var">p'</span>, <span class="id" type="var">Leaf</span>::<span class="id" type="var">q'</span>,<span class="id" type="var">Node</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>   ⇒ <span class="id" type="var">Leaf</span> :: <span class="id" type="var">join</span> <span class="id" type="var">p'</span> <span class="id" type="var">q'</span> (<span class="id" type="var">smash</span> <span class="id" type="var">c</span> <span class="id" type="var">p<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">p<sub>1</sub></span>::<span class="id" type="var">p'</span>, <span class="id" type="var">q<sub>1</sub></span>::<span class="id" type="var">q'</span>, <span class="id" type="var">_</span>                   ⇒ <span class="id" type="var">c</span> :: <span class="id" type="var">join</span> <span class="id" type="var">p'</span> <span class="id" type="var">q'</span> (<span class="id" type="var">smash</span> <span class="id" type="var">p<sub>1</sub></span> <span class="id" type="var">q<sub>1</sub></span>)<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">unzip</span> (<span class="id" type="var">t</span>: <span class="id" type="var">tree</span>) (<span class="id" type="var">cont</span>: <span class="id" type="var">priqueue</span> → <span class="id" type="var">priqueue</span>) : <span class="id" type="var">priqueue</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;|  <span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>   ⇒ <span class="id" type="var">unzip</span> <span class="id" type="var">t<sub>2</sub></span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">q</span> ⇒ <span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">Leaf</span>  :: <span class="id" type="var">cont</span> <span class="id" type="var">q</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">Leaf</span> ⇒ <span class="id" type="var">cont</span> <span class="id" type="var">nil</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">heap_delete_max</span> (<span class="id" type="var">t</span>: <span class="id" type="var">tree</span>) : <span class="id" type="var">priqueue</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">Leaf</span>  ⇒ <span class="id" type="var">unzip</span> <span class="id" type="var">t<sub>1</sub></span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">u</span> ⇒ <span class="id" type="var">u</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">nil</span>   <span class="comment">(*&nbsp;bogus&nbsp;value&nbsp;for&nbsp;ill-formed&nbsp;or&nbsp;empty&nbsp;trees&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">find_max'</span> (<span class="id" type="var">current</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">q</span>: <span class="id" type="var">priqueue</span>) : <span class="id" type="var">key</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">q</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;|  []         ⇒ <span class="id" type="var">current</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Leaf</span>::<span class="id" type="var">q'</span> ⇒ <span class="id" type="var">find_max'</span> <span class="id" type="var">current</span> <span class="id" type="var">q'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> :: <span class="id" type="var">q'</span> ⇒ <span class="id" type="var">find_max'</span> (<span class="id" type="keyword">if</span> <span class="id" type="var">x</span> &gt;? <span class="id" type="var">current</span> <span class="id" type="keyword">then</span> <span class="id" type="var">x</span> <span class="id" type="keyword">else</span> <span class="id" type="var">current</span>) <span class="id" type="var">q'</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">find_max</span> (<span class="id" type="var">q</span>: <span class="id" type="var">priqueue</span>) : <span class="id" type="var">option</span> <span class="id" type="var">key</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">q</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| [] ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Leaf</span>::<span class="id" type="var">q'</span> ⇒ <span class="id" type="var">find_max</span> <span class="id" type="var">q'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> :: <span class="id" type="var">q'</span> ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">find_max'</span> <span class="id" type="var">x</span> <span class="id" type="var">q'</span>)<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">delete_max_aux</span> (<span class="id" type="var">m</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">p</span>: <span class="id" type="var">priqueue</span>) : <span class="id" type="var">priqueue</span> * <span class="id" type="var">priqueue</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">p</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Leaf</span> :: <span class="id" type="var">p'</span>   ⇒ <span class="id" type="keyword">let</span> (<span class="id" type="var">j</span>,<span class="id" type="var">k</span>) := <span class="id" type="var">delete_max_aux</span> <span class="id" type="var">m</span> <span class="id" type="var">p'</span>  <span class="id" type="keyword">in</span> (<span class="id" type="var">Leaf</span>::<span class="id" type="var">j</span>, <span class="id" type="var">k</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">Leaf</span> :: <span class="id" type="var">p'</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">m</span> &gt;? <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> (<span class="id" type="keyword">let</span> (<span class="id" type="var">j</span>,<span class="id" type="var">k</span>) := <span class="id" type="var">delete_max_aux</span> <span class="id" type="var">m</span> <span class="id" type="var">p'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">in</span> (<span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">Leaf</span>::<span class="id" type="var">j</span>,<span class="id" type="var">k</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> (<span class="id" type="var">Leaf</span>::<span class="id" type="var">p'</span>, <span class="id" type="var">heap_delete_max</span> (<span class="id" type="var">Node</span> <span class="id" type="var">x</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">Leaf</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ (<span class="id" type="var">nil</span>, <span class="id" type="var">nil</span>) <span class="comment">(*&nbsp;Bogus&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">delete_max</span> (<span class="id" type="var">q</span>: <span class="id" type="var">priqueue</span>) : <span class="id" type="var">option</span> (<span class="id" type="var">key</span> * <span class="id" type="var">priqueue</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">find_max</span> <span class="id" type="var">q</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span>  <span class="id" type="var">m</span> ⇒ <span class="id" type="keyword">let</span> (<span class="id" type="var">p'</span>,<span class="id" type="var">q'</span>) := <span class="id" type="var">delete_max_aux</span> <span class="id" type="var">m</span> <span class="id" type="var">q</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">in</span> <span class="id" type="var">Some</span> (<span class="id" type="var">m</span>, <span class="id" type="var">join</span> <span class="id" type="var">p'</span> <span class="id" type="var">q'</span> <span class="id" type="var">Leaf</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">merge</span> (<span class="id" type="var">p</span> <span class="id" type="var">q</span>: <span class="id" type="var">priqueue</span>) := <span class="id" type="var">join</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> <span class="id" type="var">Leaf</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab156"></a><h1 class="section">Characterization Predicates</h1>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">t</span></span> is a complete binary tree of depth <span class="inlinecode"><span class="id" type="var">n</span></span>, with every key &lt;= <span class="inlinecode"><span class="id" type="var">m</span></span> 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">pow2heap'</span> (<span class="id" type="var">n</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">t</span>: <span class="id" type="var">tree</span>) :=<br/>
+&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span>, <span class="id" type="var">m</span>, <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;0, <span class="id" type="var">m</span>, <span class="id" type="var">Leaf</span>       ⇒ <span class="id" type="var">True</span><br/>
+&nbsp;&nbsp;| 0, <span class="id" type="var">m</span>, <span class="id" type="var">Node</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>  ⇒ <span class="id" type="var">False</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">_</span>, <span class="id" type="var">m</span>,<span class="id" type="var">Leaf</span>    ⇒ <span class="id" type="var">False</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">n'</span>, <span class="id" type="var">m</span>, <span class="id" type="var">Node</span> <span class="id" type="var">k</span> <span class="id" type="var">l</span> <span class="id" type="var">r</span>  ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">m</span> ≥ <span class="id" type="var">k</span> ∧ <span class="id" type="var">pow2heap'</span> <span class="id" type="var">n'</span> <span class="id" type="var">k</span> <span class="id" type="var">l</span> ∧ <span class="id" type="var">pow2heap'</span> <span class="id" type="var">n'</span> <span class="id" type="var">m</span> <span class="id" type="var">r</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">t</span></span> is a power-of-2 heap of depth <span class="inlinecode"><span class="id" type="var">n</span></span> 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">pow2heap</span> (<span class="id" type="var">n</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">t</span>: <span class="id" type="var">tree</span>) := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Node</span> <span class="id" type="var">m</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">Leaf</span> ⇒ <span class="id" type="var">pow2heap'</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">t<sub>1</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">False</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">l</span></span> is the <span class="inlinecode"><span class="id" type="var">i</span></span>th tail of a binomial heap 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">priq'</span>  (<span class="id" type="var">i</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">tree</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">t</span> :: <span class="id" type="var">l'</span> ⇒ (<span class="id" type="var">t</span>=<span class="id" type="var">Leaf</span> ∨ <span class="id" type="var">pow2heap</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span>) ∧ <span class="id" type="var">priq'</span> (<span class="id" type="var">S</span> <span class="id" type="var">i</span>) <span class="id" type="var">l'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">True</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">q</span></span> is a binomial heap 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">priq</span> (<span class="id" type="var">q</span>: <span class="id" type="var">priqueue</span>) : <span class="id" type="keyword">Prop</span> := <span class="id" type="var">priq'</span> 0 <span class="id" type="var">q</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab157"></a><h1 class="section">Proof of Algorithm Correctness</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab158"></a><h2 class="section">Various Functions Preserve the Representation Invariant</h2>
+
+<div class="paragraph"> </div>
+
+ ...that is, the <span class="inlinecode"><span class="id" type="var">priq</span></span> property, or the closely related property <span class="inlinecode"><span class="id" type="var">pow2heap</span></span>.
+
+<div class="paragraph"> </div>
+
+<a name="lab159"></a><h4 class="section">Exercise: 1 star (empty_priq)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">empty_priq</span>: <span class="id" type="var">priq</span> <span class="id" type="var">empty</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab160"></a><h4 class="section">Exercise: 2 stars (smash_valid)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">smash_valid</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">t</span> <span class="id" type="var">u</span>, <span class="id" type="var">pow2heap</span> <span class="id" type="var">n</span> <span class="id" type="var">t</span> → <span class="id" type="var">pow2heap</span> <span class="id" type="var">n</span> <span class="id" type="var">u</span> → <span class="id" type="var">pow2heap</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>) (<span class="id" type="var">smash</span> <span class="id" type="var">t</span> <span class="id" type="var">u</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab161"></a><h4 class="section">Exercise: 3 stars (carry_valid)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">carry_valid</span>: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">q</span>,  <span class="id" type="var">priq'</span> <span class="id" type="var">n</span> <span class="id" type="var">q</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>, (<span class="id" type="var">t</span>=<span class="id" type="var">Leaf</span> ∨ <span class="id" type="var">pow2heap</span> <span class="id" type="var">n</span> <span class="id" type="var">t</span>) → <span class="id" type="var">priq'</span> <span class="id" type="var">n</span> (<span class="id" type="var">carry</span> <span class="id" type="var">q</span> <span class="id" type="var">t</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab162"></a><h4 class="section">Exercise: 2 stars, optional (insert_valid)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">insert_priq</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">q</span>, <span class="id" type="var">priq</span> <span class="id" type="var">q</span> → <span class="id" type="var">priq</span> (<span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">q</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab163"></a><h4 class="section">Exercise: 3 stars, optional (join_valid)</h4>
+
+</div>
+<div class="code code-space">
+<span class="comment">(*&nbsp;This&nbsp;proof&nbsp;is&nbsp;rather&nbsp;long,&nbsp;but&nbsp;each&nbsp;step&nbsp;is&nbsp;reasonably&nbsp;straightforward.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;There's&nbsp;just&nbsp;one&nbsp;<span class="inlinecode"><span class="id" type="tactic">induction</span></span>&nbsp;to&nbsp;do,&nbsp;right&nbsp;at&nbsp;the&nbsp;beginning.&nbsp;*)</span><br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">join_valid</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> <span class="id" type="var">c</span> <span class="id" type="var">n</span>, <span class="id" type="var">priq'</span> <span class="id" type="var">n</span> <span class="id" type="var">p</span> → <span class="id" type="var">priq'</span> <span class="id" type="var">n</span> <span class="id" type="var">q</span> → (<span class="id" type="var">c</span>=<span class="id" type="var">Leaf</span> ∨ <span class="id" type="var">pow2heap</span> <span class="id" type="var">n</span> <span class="id" type="var">c</span>) → <span class="id" type="var">priq'</span> <span class="id" type="var">n</span> (<span class="id" type="var">join</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> <span class="id" type="var">c</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">merge_priq</span>:  <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>, <span class="id" type="var">priq</span> <span class="id" type="var">p</span> → <span class="id" type="var">priq</span> <span class="id" type="var">q</span> → <span class="id" type="var">priq</span> (<span class="id" type="var">merge</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">merge</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">join_valid</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab164"></a><h4 class="section">Exercise: 5 stars, optional (delete_max_Some_priq)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">delete_max_Some_priq</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> <span class="id" type="var">k</span>, <span class="id" type="var">priq</span> <span class="id" type="var">p</span> → <span class="id" type="var">delete_max</span> <span class="id" type="var">p</span> = <span class="id" type="var">Some</span>(<span class="id" type="var">k</span>,<span class="id" type="var">q</span>) → <span class="id" type="var">priq</span> <span class="id" type="var">q</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab165"></a><h2 class="section">The Abstraction Relation</h2>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">tree_elems</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span>    means that the keys in t are the same as the
+   elements of l (with repetition) 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">tree_elems</span>: <span class="id" type="var">tree</span> → <span class="id" type="var">list</span> <span class="id" type="var">key</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">tree_elems_leaf</span>: <span class="id" type="var">tree_elems</span> <span class="id" type="var">Leaf</span> <span class="id" type="var">nil</span><br/>
+| <span class="id" type="var">tree_elems_node</span>:  <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">bl</span> <span class="id" type="var">br</span> <span class="id" type="var">v</span> <span class="id" type="var">tl</span> <span class="id" type="var">tr</span> <span class="id" type="var">b</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tree_elems</span> <span class="id" type="var">tl</span> <span class="id" type="var">bl</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tree_elems</span> <span class="id" type="var">tr</span> <span class="id" type="var">br</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Permutation</span> <span class="id" type="var">b</span> (<span class="id" type="var">v</span>::<span class="id" type="var">bl</span>++<span class="id" type="var">br</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tree_elems</span> (<span class="id" type="var">Node</span> <span class="id" type="var">v</span> <span class="id" type="var">tl</span> <span class="id" type="var">tr</span>) <span class="id" type="var">b</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab166"></a><h4 class="section">Exercise: 3 stars (priqueue_elems)</h4>
+ Make an inductive definition, similar to <span class="inlinecode"><span class="id" type="var">tree_elems</span></span>, to relate
+  a priority queue  "l"  to a list of all its elements.  
+
+<div class="paragraph"> </div>
+
+  As you can see in the definition of <span class="inlinecode"><span class="id" type="var">tree_elems</span></span>,  a <span class="inlinecode"><span class="id" type="var">tree</span></span> relates to
+  _any_ permutation of its keys, not just a single permutation.
+  You should make your <span class="inlinecode"><span class="id" type="var">priqueue_elems</span></span> relation behave similarly,
+  using (basically) the same technique as in <span class="inlinecode"><span class="id" type="var">tree_elems</span></span>.
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">priqueue_elems</span>: <span class="id" type="var">list</span> <span class="id" type="var">tree</span> → <span class="id" type="var">list</span> <span class="id" type="var">key</span> → <span class="id" type="keyword">Prop</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">Abs</span> (<span class="id" type="var">p</span>: <span class="id" type="var">priqueue</span>) (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">key</span>) := <span class="id" type="var">priqueue_elems</span> <span class="id" type="var">p</span> <span class="id" type="var">al</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab167"></a><h2 class="section">Sanity Checks on the Abstraction Relation</h2>
+
+<div class="paragraph"> </div>
+
+<a name="lab168"></a><h4 class="section">Exercise: 2 stars (tree_elems_ext)</h4>
+ Extensionality theorem for the tree_elems relation 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">tree_elems_ext</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">Permutation</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> → <span class="id" type="var">tree_elems</span> <span class="id" type="var">t</span> <span class="id" type="var">e<sub>1</sub></span> → <span class="id" type="var">tree_elems</span> <span class="id" type="var">t</span> <span class="id" type="var">e<sub>2</sub></span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab169"></a><h4 class="section">Exercise: 2 stars (tree_perm)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">tree_perm</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">tree_elems</span> <span class="id" type="var">t</span> <span class="id" type="var">e<sub>1</sub></span> → <span class="id" type="var">tree_elems</span> <span class="id" type="var">t</span> <span class="id" type="var">e<sub>2</sub></span> → <span class="id" type="var">Permutation</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab170"></a><h4 class="section">Exercise: 2 stars (priqueue_elems_ext)</h4>
+ To prove <span class="inlinecode"><span class="id" type="var">priqueue_elems_ext</span></span>, you should almost be able to cut-and-paste the
+   proof of <span class="inlinecode"><span class="id" type="var">tree_elems_ext</span></span>, with just a few edits.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">priqueue_elems_ext</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">q</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">Permutation</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> → <span class="id" type="var">priqueue_elems</span> <span class="id" type="var">q</span> <span class="id" type="var">e<sub>1</sub></span> → <span class="id" type="var">priqueue_elems</span> <span class="id" type="var">q</span> <span class="id" type="var">e<sub>2</sub></span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab171"></a><h4 class="section">Exercise: 2 stars (abs_perm)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">abs_perm</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span>, <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">priq</span> <span class="id" type="var">p</span> → <span class="id" type="var">Abs</span> <span class="id" type="var">p</span> <span class="id" type="var">al</span> → <span class="id" type="var">Abs</span> <span class="id" type="var">p</span> <span class="id" type="var">bl</span> → <span class="id" type="var">Permutation</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab172"></a><h4 class="section">Exercise: 2 stars (can_relate)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">tree_can_relate</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>, <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">al</span>, <span class="id" type="var">tree_elems</span> <span class="id" type="var">t</span> <span class="id" type="var">al</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">can_relate</span>:  <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span>, <span class="id" type="var">priq</span> <span class="id" type="var">p</span> → <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">al</span>, <span class="id" type="var">Abs</span> <span class="id" type="var">p</span> <span class="id" type="var">al</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab173"></a><h2 class="section">Various Functions Preserve the Abstraction Relation</h2>
+<a name="lab174"></a><h4 class="section">Exercise: 1 star (empty_relate)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">empty_relate</span>:  <span class="id" type="var">Abs</span> <span class="id" type="var">empty</span> <span class="id" type="var">nil</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab175"></a><h4 class="section">Exercise: 3 stars (smash_elems)</h4>
+  Warning:  This proof is rather long. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">smash_elems</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">t</span> <span class="id" type="var">u</span> <span class="id" type="var">bt</span> <span class="id" type="var">bu</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pow2heap</span> <span class="id" type="var">n</span> <span class="id" type="var">t</span> → <span class="id" type="var">pow2heap</span> <span class="id" type="var">n</span> <span class="id" type="var">u</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tree_elems</span> <span class="id" type="var">t</span> <span class="id" type="var">bt</span> → <span class="id" type="var">tree_elems</span> <span class="id" type="var">u</span> <span class="id" type="var">bu</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tree_elems</span> (<span class="id" type="var">smash</span> <span class="id" type="var">t</span> <span class="id" type="var">u</span>) (<span class="id" type="var">bt</span> ++ <span class="id" type="var">bu</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab176"></a><h2 class="section">Optional Exercises</h2>
+
+<div class="paragraph"> </div>
+
+  Some of these proofs are quite long, but they're not especially tricky. 
+<div class="paragraph"> </div>
+
+<a name="lab177"></a><h4 class="section">Exercise: 4 stars, optional (carry_elems)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">carry_elems</span>: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">q</span>,  <span class="id" type="var">priq'</span> <span class="id" type="var">n</span> <span class="id" type="var">q</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>, (<span class="id" type="var">t</span>=<span class="id" type="var">Leaf</span> ∨ <span class="id" type="var">pow2heap</span> <span class="id" type="var">n</span> <span class="id" type="var">t</span>) → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">eq</span> <span class="id" type="var">et</span>, <span class="id" type="var">priqueue_elems</span> <span class="id" type="var">q</span> <span class="id" type="var">eq</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tree_elems</span> <span class="id" type="var">t</span> <span class="id" type="var">et</span> →  <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">priqueue_elems</span> (<span class="id" type="var">carry</span> <span class="id" type="var">q</span> <span class="id" type="var">t</span>) (<span class="id" type="var">eq</span>++<span class="id" type="var">et</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab178"></a><h4 class="section">Exercise: 2 stars, optional (insert_elems)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">insert_relate</span>: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span> <span class="id" type="var">al</span> <span class="id" type="var">k</span>, <span class="id" type="var">priq</span> <span class="id" type="var">p</span> → <span class="id" type="var">Abs</span> <span class="id" type="var">p</span> <span class="id" type="var">al</span> → <span class="id" type="var">Abs</span> (<span class="id" type="var">insert</span> <span class="id" type="var">k</span> <span class="id" type="var">p</span>) (<span class="id" type="var">k</span>::<span class="id" type="var">al</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab179"></a><h4 class="section">Exercise: 4 stars, optional (join_elems)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">join_elems</span>: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> <span class="id" type="var">c</span> <span class="id" type="var">n</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">priq'</span> <span class="id" type="var">n</span> <span class="id" type="var">p</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">priq'</span> <span class="id" type="var">n</span> <span class="id" type="var">q</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">c</span>=<span class="id" type="var">Leaf</span> ∨ <span class="id" type="var">pow2heap</span> <span class="id" type="var">n</span> <span class="id" type="var">c</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">pe</span> <span class="id" type="var">qe</span> <span class="id" type="var">ce</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">priqueue_elems</span> <span class="id" type="var">p</span> <span class="id" type="var">pe</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">priqueue_elems</span> <span class="id" type="var">q</span> <span class="id" type="var">qe</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">tree_elems</span> <span class="id" type="var">c</span> <span class="id" type="var">ce</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">priqueue_elems</span> (<span class="id" type="var">join</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> <span class="id" type="var">c</span>) (<span class="id" type="var">ce</span>++<span class="id" type="var">pe</span>++<span class="id" type="var">qe</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab180"></a><h4 class="section">Exercise: 2 stars, optional (merge_relate)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">merge_relate</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> <span class="id" type="var">pl</span> <span class="id" type="var">ql</span> <span class="id" type="var">al</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">priq</span> <span class="id" type="var">p</span> → <span class="id" type="var">priq</span> <span class="id" type="var">q</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">p</span> <span class="id" type="var">pl</span> → <span class="id" type="var">Abs</span> <span class="id" type="var">q</span> <span class="id" type="var">ql</span> → <span class="id" type="var">Abs</span> (<span class="id" type="var">merge</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>) <span class="id" type="var">al</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Permutation</span> <span class="id" type="var">al</span> (<span class="id" type="var">pl</span>++<span class="id" type="var">ql</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab181"></a><h4 class="section">Exercise: 5 stars, optional (delete_max_None_relate)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">delete_max_None_relate</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span>, <span class="id" type="var">priq</span> <span class="id" type="var">p</span> → (<span class="id" type="var">Abs</span> <span class="id" type="var">p</span> <span class="id" type="var">nil</span> ↔ <span class="id" type="var">delete_max</span> <span class="id" type="var">p</span> = <span class="id" type="var">None</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab182"></a><h4 class="section">Exercise: 5 stars, optional (delete_max_Some_relate)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">delete_max_Some_relate</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">p</span> <span class="id" type="var">q</span>: <span class="id" type="var">priqueue</span>) <span class="id" type="var">k</span> (<span class="id" type="var">pl</span> <span class="id" type="var">ql</span>: <span class="id" type="var">list</span> <span class="id" type="var">key</span>), <span class="id" type="var">priq</span> <span class="id" type="var">p</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">p</span> <span class="id" type="var">pl</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">delete_max</span> <span class="id" type="var">p</span> = <span class="id" type="var">Some</span> (<span class="id" type="var">k</span>,<span class="id" type="var">q</span>) →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">q</span> <span class="id" type="var">ql</span> →<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Permutation</span> <span class="id" type="var">pl</span> (<span class="id" type="var">k</span>::<span class="id" type="var">ql</span>) ∧ <span class="id" type="var">Forall</span> (<span class="id" type="var">ge</span> <span class="id" type="var">k</span>) <span class="id" type="var">ql</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ With the following line, we're done!  We have demonstrated that
+  Binomial Queues are a correct implementation of mergeable
+  priority queues.  That is, we have exhibited a <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="var">BinomQueue</span></span>
+  that satisfies the <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span> <span class="inlinecode"><span class="id" type="var">PRIQUEUE</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">BinomQueue</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab183"></a><h1 class="section">Measurement.</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab184"></a><h4 class="section">Exercise: 5 stars, optional (binom_measurement)</h4>
+ Adapt the program (but not necessarily the proof) to use Ocaml integers
+  as keys, in the style shown in <a href="Extract.html"><span class="inlineref">Extract</span></a>.   Write an ML program to
+  exercise it with random inputs.  Compare the runtime to the implementation
+  from <a href="Priqueue.html"><span class="inlineref">Priqueue</span></a>, also adapted for Ocaml integers. 
+ <span class="proofbox">&#9744;</span> 
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

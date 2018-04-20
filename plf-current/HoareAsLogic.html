@@ -1,0 +1,419 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>HoareAsLogic: Hoare Logic as a Logic</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 2: Programming Language Foundations</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">HoareAsLogic<span class="subtitle">Hoare Logic as a Logic</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ The presentation of Hoare logic in chapter <a href="Hoare.html"><span class="inlineref">Hoare</span></a> could be
+    described as "model-theoretic": the proof rules for each of the
+    constructors were presented as _theorems_ about the evaluation
+    behavior of programs, and proofs of program correctness (validity
+    of Hoare triples) were constructed by combining these theorems
+    directly in Coq.
+
+<div class="paragraph"> </div>
+
+    Another way of presenting Hoare logic is to define a completely
+    separate proof system &mdash; a set of axioms and inference rules that
+    talk about commands, Hoare triples, etc. &mdash; and then say that a
+    proof of a Hoare triple is a valid derivation in _that_ logic.  We
+    can do this by giving an inductive definition of _valid
+    derivations_ in this new logic.
+
+<div class="paragraph"> </div>
+
+    This chapter is optional.  Before reading it, you'll want to read
+    the <a href="https://www.cis.upenn.edu/~bcpierce/sf/lf-current/ProofObjects.html"><span class="inlineref">ProofObjects</span></a> chapter in _Logical
+    Foundations_ (_Software Foundations_, volume 1). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Imp</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Hoare</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab127"></a><h1 class="section">Definitions</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">hoare_proof</span> : <span class="id" type="var">Assertion</span> → <span class="id" type="var">com</span> → <span class="id" type="var">Assertion</span> → <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">H_Skip</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> (<span class="id" type="var">SKIP</span>) <span class="id" type="var">P</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H_Asgn</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Q</span> <span class="id" type="var">V</span> <span class="id" type="var">a</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> (<span class="id" type="var">assn_sub</span> <span class="id" type="var">V</span> <span class="id" type="var">a</span> <span class="id" type="var">Q</span>) (<span class="id" type="var">V</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">a</span>) <span class="id" type="var">Q</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H_Seq</span>  : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span> <span class="id" type="var">d</span> <span class="id" type="var">R</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span> → <span class="id" type="var">hoare_proof</span> <span class="id" type="var">Q</span> <span class="id" type="var">d</span> <span class="id" type="var">R</span> → <span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> (<span class="id" type="var">c</span>;;<span class="id" type="var">d</span>) <span class="id" type="var">R</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H_If</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒ <span class="id" type="var">P</span> <span class="id" type="var">st</span> ∧ <span class="id" type="var">bassn</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span>) <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">Q</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒ <span class="id" type="var">P</span> <span class="id" type="var">st</span> ∧ ~(<span class="id" type="var">bassn</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span>)) <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">Q</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> (<span class="id" type="var">IFB</span> <span class="id" type="var">b</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span>) <span class="id" type="var">Q</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">H_While</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒ <span class="id" type="var">P</span> <span class="id" type="var">st</span> ∧ <span class="id" type="var">bassn</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span>) <span class="id" type="var">c</span> <span class="id" type="var">P</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> (<span class="id" type="var">WHILE</span> <span class="id" type="var">b</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒ <span class="id" type="var">P</span> <span class="id" type="var">st</span> ∧ ¬ (<span class="id" type="var">bassn</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">H_Consequence</span>  : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">P'</span> <span class="id" type="var">Q'</span> : <span class="id" type="var">Assertion</span>) <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P'</span> <span class="id" type="var">c</span> <span class="id" type="var">Q'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span>, <span class="id" type="var">P</span> <span class="id" type="var">st</span> → <span class="id" type="var">P'</span> <span class="id" type="var">st</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span>, <span class="id" type="var">Q'</span> <span class="id" type="var">st</span> → <span class="id" type="var">Q</span> <span class="id" type="var">st</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span>.<br/>
+</div>
+
+<div class="doc">
+We don't need to include axioms corresponding to
+    <span class="inlinecode"><span class="id" type="var">hoare_consequence_pre</span></span> or <span class="inlinecode"><span class="id" type="var">hoare_consequence_post</span></span>, because 
+    these can be proven easily from <span class="inlinecode"><span class="id" type="var">H_Consequence</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">H_Consequence_pre</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">P'</span>: <span class="id" type="var">Assertion</span>) <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P'</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span>, <span class="id" type="var">P</span> <span class="id" type="var">st</span> → <span class="id" type="var">P'</span> <span class="id" type="var">st</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">X</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">H_Consequence_post</span>  : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">Q'</span> : <span class="id" type="var">Assertion</span>) <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span>, <span class="id" type="var">Q'</span> <span class="id" type="var">st</span> → <span class="id" type="var">Q</span> <span class="id" type="var">st</span>) →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span>.<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">X</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+As an example, let's construct a proof object representing a
+    derivation for the hoare triple
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='letter-spacing:-.4em;'>{</span>{(<span class="id" type="var">X</span>=3)&nbsp;[<span class="id" type="var">X</span>&nbsp;<span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span>&nbsp;<span class="id" type="var">X</span>&nbsp;+&nbsp;2]&nbsp;[<span class="id" type="var">X</span>&nbsp;<span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span>&nbsp;<span class="id" type="var">X</span>&nbsp;+&nbsp;1]<span style='letter-spacing:-.4em;'>}</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">X</span><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span><span class="id" type="var">X</span>+1&nbsp;;;&nbsp;<span class="id" type="var">X</span><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span><span class="id" type="var">X</span>+2&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">X</span>=3<span style='letter-spacing:-.4em;'>}</span>}.
+<div class="paragraph"> </div>
+
+</div>
+    We can use Coq's tactics to help us construct the proof object. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">sample_proof</span> :<br/>
+&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;((<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span>:<span class="id" type="var">state</span> ⇒ <span class="id" type="var">st</span> <span class="id" type="var">X</span> = 3) [<span class="id" type="var">X</span> <span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span> <span class="id" type="var">X</span> + 2] [<span class="id" type="var">X</span> <span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span> <span class="id" type="var">X</span> + 1])<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">X</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">X</span> + 1;; <span class="id" type="var">X</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">X</span> + 2)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span>:<span class="id" type="var">state</span> ⇒ <span class="id" type="var">st</span> <span class="id" type="var">X</span> = 3).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Seq</span>; <span class="id" type="tactic">apply</span> <span class="id" type="var">H_Asgn</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*<br/>
+Print&nbsp;sample_proof.<br/>
+<br/>
+====&gt;<br/>
+&nbsp;&nbsp;H_Seq<br/>
+&nbsp;&nbsp;(((fun&nbsp;st&nbsp;:&nbsp;state&nbsp;=&gt;&nbsp;st&nbsp;X&nbsp;=&nbsp;3)&nbsp;<span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">+</span> <span class="inlinecode">2</span>)&nbsp;<span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">+</span> <span class="inlinecode">1</span>)<br/>
+&nbsp;&nbsp;(X&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;X&nbsp;+&nbsp;1)<br/>
+&nbsp;&nbsp;((fun&nbsp;st&nbsp;:&nbsp;state&nbsp;=&gt;&nbsp;st&nbsp;X&nbsp;=&nbsp;3)&nbsp;<span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">+</span> <span class="inlinecode">2</span>)&nbsp;<br/>
+&nbsp;&nbsp;(X&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;X&nbsp;+&nbsp;2)<br/>
+&nbsp;&nbsp;(fun&nbsp;st&nbsp;:&nbsp;state&nbsp;=&gt;&nbsp;st&nbsp;X&nbsp;=&nbsp;3)<br/>
+&nbsp;&nbsp;(H_Asgn<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((fun&nbsp;st&nbsp;:&nbsp;state&nbsp;=&gt;&nbsp;st&nbsp;X&nbsp;=&nbsp;3)&nbsp;<span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">+</span> <span class="inlinecode">2</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;(X&nbsp;+&nbsp;1))<br/>
+&nbsp;&nbsp;(H_Asgn<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(fun&nbsp;st&nbsp;:&nbsp;state&nbsp;=&gt;&nbsp;st&nbsp;X&nbsp;=&nbsp;3)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;X&nbsp;(X&nbsp;+&nbsp;2))<br/>
+*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab128"></a><h1 class="section">Properties</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab129"></a><h4 class="section">Exercise: 2 stars (hoare_proof_sound)</h4>
+ Prove that such proof objects represent true claims. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">hoare_proof_sound</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span> → <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>} <span class="id" type="var">c</span> <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">Q</span><span style='letter-spacing:-.4em;'>}</span>}.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ We can also use Coq's reasoning facilities to prove metatheorems
+    about Hoare Logic.  For example, here are the analogs of two
+    theorems we saw in chapter <a href="Hoare.html"><span class="inlineref">Hoare</span></a> &mdash; this time expressed in terms
+    of the syntax of Hoare Logic derivations (provability) rather than
+    directly in terms of the semantics of Hoare triples.
+
+<div class="paragraph"> </div>
+
+    The first one says that, for every <span class="inlinecode"><span class="id" type="var">P</span></span> and <span class="inlinecode"><span class="id" type="var">c</span></span>, the assertion
+    <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>}</span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">True</span><span style='letter-spacing:-.4em;'>}</span>}</span> is _provable_ in Hoare Logic.  Note that the
+    proof is more complex than the semantic proof in <span class="inlinecode"><span class="id" type="var">Hoare</span></span>: we
+    actually need to perform an induction over the structure of the
+    command <span class="inlinecode"><span class="id" type="var">c</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">H_Post_True_deriv</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">P</span>, <span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">True</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">c</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">intro</span> <span class="id" type="var">P</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;SKIP&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H_Skip</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Proof&nbsp;of&nbsp;True&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">I</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence_pre</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H_Asgn</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">I</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;;;&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence_pre</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Seq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">IHc1</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">True</span>)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHc2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">I</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;IFB&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H_Consequence_pre</span> <span class="id" type="keyword">with</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">True</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H_If</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHc1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHc2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">I</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;WHILE&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_While</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">IHc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>; <span class="id" type="tactic">apply</span> <span class="id" type="var">I</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>; <span class="id" type="tactic">apply</span> <span class="id" type="var">I</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Similarly, we can show that <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">False</span><span style='letter-spacing:-.4em;'>}</span>}</span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">Q</span><span style='letter-spacing:-.4em;'>}</span>}</span> is provable for
+    any <span class="inlinecode"><span class="id" type="var">c</span></span> and <span class="inlinecode"><span class="id" type="var">Q</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">False_and_P_imp</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">False</span> ∧ <span class="id" type="var">P</span> → <span class="id" type="var">Q</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> [<span class="id" type="var">CONTRA</span> <span class="id" type="var">HP</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">CONTRA</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Tactic Notation</span> "pre_false_helper" <span class="id" type="var">constr</span>(<span class="id" type="var">CONSTR</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence_pre</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[<span class="id" type="tactic">eapply</span> <span class="id" type="var">CONSTR</span> | <span class="id" type="tactic">intros</span> ? <span class="id" type="var">CONTRA</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">CONTRA</span>].<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">H_Pre_False_deriv</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span>, <span class="id" type="var">hoare_proof</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">False</span>) <span class="id" type="var">c</span> <span class="id" type="var">Q</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">intro</span> <span class="id" type="var">Q</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;SKIP&nbsp;*)</span> <span class="id" type="var">pre_false_helper</span> <span class="id" type="var">H_Skip</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;*)</span> <span class="id" type="var">pre_false_helper</span> <span class="id" type="var">H_Asgn</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;;;&nbsp;*)</span> <span class="id" type="var">pre_false_helper</span> <span class="id" type="var">H_Seq</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">IHc1</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">IHc2</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;IFB&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H_If</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence_pre</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHc1</span>. <span class="id" type="tactic">intro</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">False_and_P_imp</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHc2</span>. <span class="id" type="tactic">intro</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">False_and_P_imp</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;WHILE&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence_post</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_While</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence_pre</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">False_and_P_imp</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">eapply</span> <span class="id" type="var">False_and_P_imp</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+As a last step, we can show that the set of <span class="inlinecode"><span class="id" type="var">hoare_proof</span></span> axioms
+    is sufficient to prove any true fact about (partial) correctness.
+    More precisely, any semantic Hoare triple that we can prove can
+    also be proved from these axioms.  Such a set of axioms is said to
+    be _relatively complete_.  Our proof is inspired by this one:
+
+<div class="paragraph"> </div>
+
+      <a href="http://www.ps.uni-saarland.de/courses/sem-ws<sub>11</sub>/script/Hoare.html"><span class="inlineref">http://www.ps.uni-saarland.de/courses/sem-ws<sub>11</sub>/script/Hoare.html</span></a>
+
+<div class="paragraph"> </div>
+
+    To carry out the proof, we need to invent some intermediate
+    assertions using a technical device known as _weakest
+    preconditions_.  Given a command <span class="inlinecode"><span class="id" type="var">c</span></span> and a desired postcondition
+    assertion <span class="inlinecode"><span class="id" type="var">Q</span></span>, the weakest precondition <span class="inlinecode"><span class="id" type="var">wp</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span class="id" type="var">Q</span></span> is an assertion
+    <span class="inlinecode"><span class="id" type="var">P</span></span> such that <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>}</span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">Q</span><span style='letter-spacing:-.4em;'>}</span>}</span> holds, and moreover, for any other
+    assertion <span class="inlinecode"><span class="id" type="var">P'</span></span>, if <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P'</span><span style='letter-spacing:-.4em;'>}</span>}</span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">Q</span><span style='letter-spacing:-.4em;'>}</span>}</span> holds then <span class="inlinecode"><span class="id" type="var">P'</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">P</span></span>.  We can
+    more directly define this as follows: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">wp</span> (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) (<span class="id" type="var">Q</span>:<span class="id" type="var">Assertion</span>) : <span class="id" type="var">Assertion</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">s</span> ⇒ <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">s'</span>, <span class="id" type="var">c</span> / <span class="id" type="var">s</span> \\ <span class="id" type="var">s'</span> → <span class="id" type="var">Q</span> <span class="id" type="var">s'</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab130"></a><h4 class="section">Exercise: 1 star (wp_is_precondition)</h4>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wp_is_precondition</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span>,<br/>
+&nbsp;&nbsp;<span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">wp</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span><span style='letter-spacing:-.4em;'>}</span>} <span class="id" type="var">c</span> <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">Q</span><span style='letter-spacing:-.4em;'>}</span>}.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab131"></a><h4 class="section">Exercise: 1 star (wp_is_weakest)</h4>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">wp_is_weakest</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span> <span class="id" type="var">P'</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P'</span><span style='letter-spacing:-.4em;'>}</span>} <span class="id" type="var">c</span> <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">Q</span><span style='letter-spacing:-.4em;'>}</span>} → <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span>, <span class="id" type="var">P'</span> <span class="id" type="var">st</span> → <span class="id" type="var">wp</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span> <span class="id" type="var">st</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+The following utility lemma will also be useful. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">bassn_eval_false</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span>, ¬ <span class="id" type="var">bassn</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span> → <span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span> = <span class="id" type="var">false</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">b</span> <span class="id" type="var">st</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">bassn</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">exfalso</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab132"></a><h4 class="section">Exercise: 5 stars (hoare_proof_complete)</h4>
+ Complete the proof of the theorem. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">hoare_proof_complete</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span>,<br/>
+&nbsp;&nbsp;<span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>} <span class="id" type="var">c</span> <span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">Q</span><span style='letter-spacing:-.4em;'>}</span>} → <span class="id" type="var">hoare_proof</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span> <span class="id" type="var">Q</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">c</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">P</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">HT</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;SKIP&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Skip</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="var">eassumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">st</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">HT</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">E_Skip</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Consequence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">H_Asgn</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intro</span> <span class="id" type="var">st</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">HT</span>. <span class="id" type="var">econstructor</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span>; <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;;;&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H_Seq</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">wp</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">Q</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">IHc1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">H</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">wp</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">st''</span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">HT</span>. <span class="id" type="var">econstructor</span>; <span class="id" type="var">eassumption</span>. <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">IHc2</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ Finally, we might hope that our axiomatic Hoare logic is
+    _decidable_; that is, that there is an (terminating) algorithm (a
+    _decision procedure_) that can determine whether or not a given
+    Hoare triple is valid (derivable).  But such a decision procedure
+    cannot exist!
+
+<div class="paragraph"> </div>
+
+    Consider the triple <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">True</span><span style='letter-spacing:-.4em;'>}</span>}</span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">False</span><span style='letter-spacing:-.4em;'>}</span>}</span>. This triple is valid
+    if and only if <span class="inlinecode"><span class="id" type="var">c</span></span> is non-terminating.  So any algorithm that
+    could determine validity of arbitrary triples could solve the
+    Halting Problem.
+
+<div class="paragraph"> </div>
+
+    Similarly, the triple <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">True</span>}</span> <span class="inlinecode"><span class="id" type="var">SKIP</span></span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>}</span> is valid if and only if
+    <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">s</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">s</span></span> is valid, where <span class="inlinecode"><span class="id" type="var">P</span></span> is an arbitrary assertion of
+    Coq's logic. But it is known that there can be no decision
+    procedure for this logic. 
+
+<div class="paragraph"> </div>
+
+    Overall, this axiomatic style of presentation gives a clearer
+    picture of what it means to "give a proof in Hoare logic."
+    However, it is not entirely satisfactory from the point of view of
+    writing down such proofs in practice: it is quite verbose.  The
+    section of chapter <a href="Hoare2.html"><span class="inlineref">Hoare2</span></a> on formalizing decorated programs
+    shows how we can do even better. 
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

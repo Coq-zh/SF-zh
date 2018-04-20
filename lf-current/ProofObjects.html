@@ -1,0 +1,899 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>ProofObjects: The Curry-Howard Correspondence</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 1: Logical Foundations</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">ProofObjects<span class="subtitle">The Curry-Howard Correspondence</span></h1>
+
+
+<div class="code code-tight">
+
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">IndProp</span>.<br/>
+</div>
+
+<div class="doc">
+<div class="quote">"_Algorithms are the computational content of proofs_."  &mdash;Robert Harper</div> 
+<div class="paragraph"> </div>
+
+ We have seen that Coq has mechanisms both for _programming_,
+    using inductive data types like <span class="inlinecode"><span class="id" type="var">nat</span></span> or <span class="inlinecode"><span class="id" type="var">list</span></span> and functions over
+    these types, and for _proving_ properties of these programs, using
+    inductive propositions (like <span class="inlinecode"><span class="id" type="var">ev</span></span>), implication, universal
+    quantification, and the like.  So far, we have mostly treated
+    these mechanisms as if they were quite separate, and for many
+    purposes this is a good way to think.  But we have also seen hints
+    that Coq's programming and proving facilities are closely related.
+    For example, the keyword <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> is used to declare both data
+    types and propositions, and <span class="inlinecode">→</span> is used both to describe the type
+    of functions on data and logical implication.  This is not just a
+    syntactic accident!  In fact, programs and proofs in Coq are
+    almost the same thing.  In this chapter we will study how this
+    works.
+
+<div class="paragraph"> </div>
+
+    We have already seen the fundamental idea: provability in Coq is
+    represented by concrete _evidence_.  When we construct the proof
+    of a basic proposition, we are actually building a tree of
+    evidence, which can be thought of as a data structure.
+
+<div class="paragraph"> </div>
+
+    If the proposition is an implication like <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">B</span></span>, then its proof
+    will be an evidence _transformer_: a recipe for converting
+    evidence for A into evidence for B.  So at a fundamental level,
+    proofs are simply programs that manipulate evidence. 
+<div class="paragraph"> </div>
+
+ Question: If evidence is data, what are propositions themselves?
+
+<div class="paragraph"> </div>
+
+    Answer: They are types! 
+<div class="paragraph"> </div>
+
+ Look again at the formal definition of the <span class="inlinecode"><span class="id" type="var">ev</span></span> property.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev</span>.<br/>
+<span class="comment">(*&nbsp;==&gt;<br/>
+&nbsp;&nbsp;Inductive&nbsp;ev&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;Prop&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ev_0&nbsp;:&nbsp;ev&nbsp;0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ev_SS&nbsp;:&nbsp;forall&nbsp;n,&nbsp;ev&nbsp;n&nbsp;-&gt;&nbsp;ev&nbsp;(S&nbsp;(S&nbsp;n)).<br/>
+*)</span><br/>
+</div>
+
+<div class="doc">
+Suppose we introduce an alternative pronunciation of "<span class="inlinecode">:</span>".
+    Instead of "has type," we can say "is a proof of."  For example,
+    the second line in the definition of <span class="inlinecode"><span class="id" type="var">ev</span></span> declares that <span class="inlinecode"><span class="id" type="var">ev_0</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">ev</span></span>
+    <span class="inlinecode">0</span>.  Instead of "<span class="inlinecode"><span class="id" type="var">ev_0</span></span> has type <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span>," we can say that "<span class="inlinecode"><span class="id" type="var">ev_0</span></span>
+    is a proof of <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span>." 
+<div class="paragraph"> </div>
+
+ This pun between types and propositions &mdash; between <span class="inlinecode">:</span> as "has type"
+    and <span class="inlinecode">:</span> as "is a proof of" or "is evidence for" &mdash; is called the
+    _Curry-Howard correspondence_.  It proposes a deep connection
+    between the world of logic and the world of computation:
+<pre>
+                 propositions  ~  types
+                 proofs        ~  data values
+</pre>
+    See <a href="Bib.html#Wadler 2015"><span class="inlineref">[Wadler 2015]</span></a> for a brief history and an up-to-date exposition. 
+<div class="paragraph"> </div>
+
+ Many useful insights follow from this connection.  To begin with,
+    it gives us a natural interpretation of the type of the <span class="inlinecode"><span class="id" type="var">ev_SS</span></span>
+    constructor: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">ev_SS</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_SS&nbsp;:&nbsp;forall&nbsp;n,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev&nbsp;n&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev&nbsp;(S&nbsp;(S&nbsp;n))&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+This can be read "<span class="inlinecode"><span class="id" type="var">ev_SS</span></span> is a constructor that takes two
+    arguments &mdash; a number <span class="inlinecode"><span class="id" type="var">n</span></span> and evidence for the proposition <span class="inlinecode"><span class="id" type="var">ev</span></span>
+    <span class="inlinecode"><span class="id" type="var">n</span></span> &mdash; and yields evidence for the proposition <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span>." 
+<div class="paragraph"> </div>
+
+ Now let's look again at a previous proof involving <span class="inlinecode"><span class="id" type="var">ev</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4</span> : <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ev_0</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+As with ordinary data values and functions, we can use the <span class="inlinecode"><span class="id" type="keyword">Print</span></span>
+    command to see the _proof object_ that results from this proof
+    script. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4&nbsp;=&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ev&nbsp;4&nbsp;&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Indeed, we can also write down this proof object _directly_,
+    without the need for a separate proof script: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+The expression <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> <span class="inlinecode">2</span> <span class="inlinecode">(<span class="id" type="var">ev_SS</span></span> <span class="inlinecode">0</span> <span class="inlinecode"><span class="id" type="var">ev_0</span>)</span> can be thought of as
+    instantiating the parameterized constructor <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> with the
+    specific arguments <span class="inlinecode">2</span> and <span class="inlinecode">0</span> plus the corresponding proof
+    objects for its premises <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">2</span> and <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span>.  Alternatively, we can
+    think of <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> as a primitive "evidence constructor" that, when
+    applied to a particular number, wants to be further applied to
+    evidence that that number is even; its type,
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">n</span>,&nbsp;<span class="id" type="var">ev</span>&nbsp;<span class="id" type="var">n</span>&nbsp;→&nbsp;<span class="id" type="var">ev</span>&nbsp;(<span class="id" type="var">S</span>&nbsp;(<span class="id" type="var">S</span>&nbsp;<span class="id" type="var">n</span>)),
+<div class="paragraph"> </div>
+
+</div>
+    expresses this functionality, in the same way that the polymorphic
+    type <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span>,</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> expresses the fact that the constructor
+    <span class="inlinecode"><span class="id" type="var">nil</span></span> can be thought of as a function from types to empty lists
+    with elements of that type. 
+<div class="paragraph"> </div>
+
+ We saw in the <a href="Logic.html"><span class="inlineref">Logic</span></a> chapter that we can use function
+    application syntax to instantiate universally quantified variables
+    in lemmas, as well as to supply evidence for assumptions that
+    these lemmas impose.  For instance: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4'</span>: <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab256"></a><h1 class="section">Proof Scripts</h1>
+
+<div class="paragraph"> </div>
+
+ The _proof objects_ we've been discussing lie at the core of how
+    Coq operates.  When Coq is following a proof script, what is
+    happening internally is that it is gradually constructing a proof
+    object &mdash; a term whose type is the proposition being proved.  The
+    tactics between <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> and <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> tell it how to build up a term
+    of the required type.  To see this process in action, let's use
+    the <span class="inlinecode"><span class="id" type="keyword">Show</span></span> <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> command to display the current state of the proof
+    tree at various points in the following tactic proof. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4''</span> : <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_0</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+At any given moment, Coq has constructed a term with a
+    "hole" (indicated by <span class="inlinecode">?<span class="id" type="keyword">Goal</span></span> here, and so on), and it knows what
+    type of evidence is needed to fill this hole.  
+
+<div class="paragraph"> </div>
+
+    Each hole corresponds to a subgoal, and the proof is
+    finished when there are no more subgoals.  At this point, the
+    evidence we've built stored in the global context under the name
+    given in the <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> command. 
+<div class="paragraph"> </div>
+
+ Tactic proofs are useful and convenient, but they are not
+    essential: in principle, we can always construct the required
+    evidence by hand, as shown above. Then we can use <span class="inlinecode"><span class="id" type="keyword">Definition</span></span>
+    (rather than <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span>) to give a global name directly to this
+    evidence. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_4'''</span> : <span class="id" type="var">ev</span> 4 :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>).<br/>
+</div>
+
+<div class="doc">
+All these different ways of building the proof lead to exactly the
+    same evidence being saved in the global environment. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4'</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4'&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4''</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4''&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4'''</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4'''&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab257"></a><h4 class="section">Exercise: 2 stars (eight_is_even)</h4>
+ Give a tactic proof and a proof object showing that <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">8</span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_8</span> : <span class="id" type="var">ev</span> 8.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_8'</span> : <span class="id" type="var">ev</span> 8 <br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+
+<div class="doc">
+<a name="lab258"></a><h1 class="section">Quantifiers, Implications, Functions</h1>
+
+<div class="paragraph"> </div>
+
+ In Coq's computational universe (where data structures and
+    programs live), there are two sorts of values with arrows in their
+    types: _constructors_ introduced by <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span>ly defined data
+    types, and _functions_.
+
+<div class="paragraph"> </div>
+
+    Similarly, in Coq's logical universe (where we carry out proofs),
+    there are two ways of giving evidence for an implication:
+    constructors introduced by <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span>ly defined propositions,
+    and... functions! 
+<div class="paragraph"> </div>
+
+ For example, consider this statement: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_plus4</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+What is the proof object corresponding to <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span>?
+
+<div class="paragraph"> </div>
+
+    We're looking for an expression whose _type_ is <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span>
+    <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> &mdash; that is, a _function_ that takes two arguments (one
+    number and a piece of evidence) and returns a piece of evidence!
+
+<div class="paragraph"> </div>
+
+    Here it is: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus4'</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) ⇒ <span class="id" type="keyword">fun</span> (<span class="id" type="var">H</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ev_SS</span> (<span class="id" type="var">S</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>)) (<span class="id" type="var">ev_SS</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>).<br/>
+</div>
+
+<div class="doc">
+Recall that <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">blah</span></span> means "the function that, given <span class="inlinecode"><span class="id" type="var">n</span></span>,
+    yields <span class="inlinecode"><span class="id" type="var">blah</span></span>," and that Coq treats <span class="inlinecode">4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span></span> and <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)))</span>
+    as synonyms. Another equivalent way to write this definition is: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus4''</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">H</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">ev_SS</span> (<span class="id" type="var">S</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>)) (<span class="id" type="var">ev_SS</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">ev_plus4''</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;n&nbsp;:&nbsp;nat,&nbsp;ev&nbsp;n&nbsp;-&gt;&nbsp;ev&nbsp;(4&nbsp;+&nbsp;n)&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+When we view the proposition being proved by <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span> as a
+    function type, one interesting point becomes apparent: The second
+    argument's type, <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>, mentions the _value_ of the first
+    argument, <span class="inlinecode"><span class="id" type="var">n</span></span>.
+
+<div class="paragraph"> </div>
+
+    While such _dependent types_ are not found in conventional
+    programming languages, they can be useful in programming too, as
+    the recent flurry of activity in the functional programming
+    community demonstrates. 
+<div class="paragraph"> </div>
+
+ Notice that both implication (<span class="inlinecode">→</span>) and quantification (<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>)
+    correspond to functions on evidence.  In fact, they are really the
+    same thing: <span class="inlinecode">→</span> is just a shorthand for a degenerate use of
+    <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>where there is no dependency, i.e., no need to give a
+    name to the type on the left-hand side of the arrow:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">x</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span>&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">_</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span>&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span class="id" type="var">nat</span>&nbsp;→&nbsp;<span class="id" type="var">nat</span>
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ For example, consider this proposition: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">E</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>), <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+</div>
+
+<div class="doc">
+A proof term inhabiting this proposition would be a function
+    with two arguments: a number <span class="inlinecode"><span class="id" type="var">n</span></span> and some evidence <span class="inlinecode"><span class="id" type="var">E</span></span> that <span class="inlinecode"><span class="id" type="var">n</span></span> is
+    even.  But the name <span class="inlinecode"><span class="id" type="var">E</span></span> for this evidence is not used in the rest
+    of the statement of <span class="inlinecode"><span class="id" type="var">ev_plus2</span></span>, so it's a bit silly to bother
+    making up a name for it.  We could write it like this instead,
+    using the dummy identifier <span class="inlinecode"><span class="id" type="var">_</span></span> in place of a real name: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2'</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">_</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>), <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+</div>
+
+<div class="doc">
+Or, equivalently, we can write it in more familiar notation: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2''</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+</div>
+
+<div class="doc">
+In general, "<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>" is just syntactic sugar for
+    "<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode">(<span class="id" type="var">_</span>:<span class="id" type="var">P</span>),</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>". 
+</div>
+
+<div class="doc">
+<a name="lab259"></a><h1 class="section">Programming with Tactics</h1>
+
+<div class="paragraph"> </div>
+
+ If we can build proofs by giving explicit terms rather than
+    executing tactic scripts, you may be wondering whether we can
+    build _programs_ using _tactics_ rather than explicit terms.
+    Naturally, the answer is yes! 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">add1</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="tactic">intro</span> <span class="id" type="var">n</span>.<br/>
+<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">S</span>.<br/>
+<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">n</span>. <span class="id" type="keyword">Defined</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">add1</span>.<br/>
+<span class="comment">(*&nbsp;==&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;add1&nbsp;=&nbsp;fun&nbsp;n&nbsp;:&nbsp;nat&nbsp;=&gt;&nbsp;S&nbsp;n<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;nat<br/>
+*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Compute</span> <span class="id" type="var">add1</span> 2.<br/>
+<span class="comment">(*&nbsp;==&gt;&nbsp;3&nbsp;:&nbsp;nat&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Notice that we terminate the <span class="inlinecode"><span class="id" type="keyword">Definition</span></span> with a <span class="inlinecode">.</span> rather than
+    with <span class="inlinecode">:=</span> followed by a term.  This tells Coq to enter _proof
+    scripting mode_ to build an object of type <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span>.  Also, we
+    terminate the proof with <span class="inlinecode"><span class="id" type="keyword">Defined</span></span> rather than <span class="inlinecode"><span class="id" type="keyword">Qed</span></span>; this makes
+    the definition _transparent_ so that it can be used in computation
+    like a normally-defined function.  (<span class="inlinecode"><span class="id" type="keyword">Qed</span></span>-defined objects are
+    opaque during computation.)
+
+<div class="paragraph"> </div>
+
+    This feature is mainly useful for writing functions with dependent
+    types, which we won't explore much further in this book.  But it
+    does illustrate the uniformity and orthogonality of the basic
+    ideas in Coq. 
+</div>
+
+<div class="doc">
+<a name="lab260"></a><h1 class="section">Logical Connectives as Inductive Types</h1>
+
+<div class="paragraph"> </div>
+
+ Inductive definitions are powerful enough to express most of the
+    connectives and quantifiers we have seen so far.  Indeed, only
+    universal quantification (and thus implication) is built into Coq;
+    all the others are defined inductively.  We'll see these
+    definitions in this section. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Props</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab261"></a><h2 class="section">Conjunction</h2>
+
+
+<div class="paragraph"> </div>
+
+    To prove that <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span> holds, we must present evidence for both
+    <span class="inlinecode"><span class="id" type="var">P</span></span> and <span class="inlinecode"><span class="id" type="var">Q</span></span>.  Thus, it makes sense to define a proof object for <span class="inlinecode"><span class="id" type="var">P</span></span>
+    <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span> as consisting of a pair of two proofs: one for <span class="inlinecode"><span class="id" type="var">P</span></span> and
+    another one for <span class="inlinecode"><span class="id" type="var">Q</span></span>. This leads to the following definition. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">And</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">and</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">conj</span> : <span class="id" type="var">P</span> → <span class="id" type="var">Q</span> → <span class="id" type="var">and</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">And</span>.<br/>
+</div>
+
+<div class="doc">
+Notice the similarity with the definition of the <span class="inlinecode"><span class="id" type="var">prod</span></span> type,
+    given in chapter <a href="Poly.html"><span class="inlineref">Poly</span></a>; the only difference is that <span class="inlinecode"><span class="id" type="var">prod</span></span> takes
+    <span class="inlinecode"><span class="id" type="keyword">Type</span></span> arguments, whereas <span class="inlinecode"><span class="id" type="var">and</span></span> takes <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> arguments. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">prod</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;<br/>
+&nbsp;&nbsp;&nbsp;Inductive&nbsp;prod&nbsp;(X&nbsp;Y&nbsp;:&nbsp;Type)&nbsp;:&nbsp;Type&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;|&nbsp;pair&nbsp;:&nbsp;X&nbsp;-&gt;&nbsp;Y&nbsp;-&gt;&nbsp;X&nbsp;*&nbsp;Y.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+This should clarify why <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> and <span class="inlinecode"><span class="id" type="tactic">intros</span></span> patterns can be
+    used on a conjunctive hypothesis.  Case analysis allows us to
+    consider all possible ways in which <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span> was proved &mdash; here
+    just one (the <span class="inlinecode"><span class="id" type="var">conj</span></span> constructor).  Similarly, the <span class="inlinecode"><span class="id" type="tactic">split</span></span> tactic
+    actually works for any inductively defined proposition with only
+    one constructor.  In particular, it works for <span class="inlinecode"><span class="id" type="var">and</span></span>: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">and_comm</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> ↔ <span class="id" type="var">Q</span> ∧ <span class="id" type="var">P</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">intros</span> [<span class="id" type="var">HP</span> <span class="id" type="var">HQ</span>]. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">HQ</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">HP</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">intros</span> [<span class="id" type="var">HP</span> <span class="id" type="var">HQ</span>]. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">HQ</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">HP</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+This shows why the inductive definition of <span class="inlinecode"><span class="id" type="var">and</span></span> can be
+    manipulated by tactics as we've been doing.  We can also use it to
+    build proofs directly, using pattern-matching.  For instance: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">and_comm'_aux</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> (<span class="id" type="var">H</span> : <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">H</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">conj</span> <span class="id" type="var">HP</span> <span class="id" type="var">HQ</span> ⇒ <span class="id" type="var">conj</span> <span class="id" type="var">HQ</span> <span class="id" type="var">HP</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">and_comm'</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> ↔ <span class="id" type="var">Q</span> ∧ <span class="id" type="var">P</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">conj</span> (<span class="id" type="var">and_comm'_aux</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>) (<span class="id" type="var">and_comm'_aux</span> <span class="id" type="var">Q</span> <span class="id" type="var">P</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab262"></a><h4 class="section">Exercise: 2 stars, optional (conj_fact)</h4>
+ Construct a proof object demonstrating the following proposition. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">conj_fact</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span>, <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> → <span class="id" type="var">Q</span> ∧ <span class="id" type="var">R</span> → <span class="id" type="var">P</span> ∧ <span class="id" type="var">R</span> <br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab263"></a><h2 class="section">Disjunction</h2>
+
+
+<div class="paragraph"> </div>
+
+    The inductive definition of disjunction uses two constructors, one
+    for each side of the disjunct: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Or</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">or</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">or_introl</span> : <span class="id" type="var">P</span> → <span class="id" type="var">or</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span><br/>
+| <span class="id" type="var">or_intror</span> : <span class="id" type="var">Q</span> → <span class="id" type="var">or</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Or</span>.<br/>
+</div>
+
+<div class="doc">
+This declaration explains the behavior of the <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> tactic on
+    a disjunctive hypothesis, since the generated subgoals match the
+    shape of the <span class="inlinecode"><span class="id" type="var">or_introl</span></span> and <span class="inlinecode"><span class="id" type="var">or_intror</span></span> constructors.
+
+<div class="paragraph"> </div>
+
+    Once again, we can also directly write proof objects for theorems
+    involving <span class="inlinecode"><span class="id" type="var">or</span></span>, without resorting to tactics. 
+<div class="paragraph"> </div>
+
+<a name="lab264"></a><h4 class="section">Exercise: 2 stars, optional (or_commut'')</h4>
+ Try to write down an explicit proof object for <span class="inlinecode"><span class="id" type="var">or_commut</span></span> (without
+    using <span class="inlinecode"><span class="id" type="keyword">Print</span></span> to peek at the ones we already defined!). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">or_comm</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>, <span class="id" type="var">P</span> ∨ <span class="id" type="var">Q</span> → <span class="id" type="var">Q</span> ∨ <span class="id" type="var">P</span> <br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab265"></a><h2 class="section">Existential Quantification</h2>
+
+
+<div class="paragraph"> </div>
+
+    To give evidence for an existential quantifier, we package a
+    witness <span class="inlinecode"><span class="id" type="var">x</span></span> together with a proof that <span class="inlinecode"><span class="id" type="var">x</span></span> satisfies the property
+    <span class="inlinecode"><span class="id" type="var">P</span></span>: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Ex</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">ex</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">P</span> : <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">ex_intro</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> : <span class="id" type="var">A</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">ex</span> <span class="id" type="var">P</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Ex</span>.<br/>
+</div>
+
+<div class="doc">
+This may benefit from a little unpacking.  The core definition is
+    for a type former <span class="inlinecode"><span class="id" type="var">ex</span></span> that can be used to build propositions of
+    the form <span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>, where <span class="inlinecode"><span class="id" type="var">P</span></span> itself is a _function_ from witness
+    values in the type <span class="inlinecode"><span class="id" type="var">A</span></span> to propositions.  The <span class="inlinecode"><span class="id" type="var">ex_intro</span></span>
+    constructor then offers a way of constructing evidence for <span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>,
+    given a witness <span class="inlinecode"><span class="id" type="var">x</span></span> and a proof of <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>. 
+<div class="paragraph"> </div>
+
+ The more familiar form <span class="inlinecode"><span style='font-size:120%;'>&exist;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> desugars to an expression
+    involving <span class="inlinecode"><span class="id" type="var">ex</span></span>: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">ex</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">ev</span> <span class="id" type="var">n</span>).<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;exists&nbsp;n&nbsp;:&nbsp;nat,&nbsp;ev&nbsp;n<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Prop&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Here's how to define an explicit proof object involving <span class="inlinecode"><span class="id" type="var">ex</span></span>: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">some_nat_is_even</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">ex_intro</span> <span class="id" type="var">ev</span> 4 (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
+</div>
+
+<div class="doc">
+<a name="lab266"></a><h4 class="section">Exercise: 2 stars, optional (ex_ev_Sn)</h4>
+ Complete the definition of the following proof object: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ex_ev_Sn</span> : <span class="id" type="var">ex</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">ev</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>)) <br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab267"></a><h2 class="section"><span class="inlinecode"><span class="id" type="var">True</span></span> and <span class="inlinecode"><span class="id" type="var">False</span></span></h2>
+
+<div class="paragraph"> </div>
+
+ The inductive definition of the <span class="inlinecode"><span class="id" type="var">True</span></span> proposition is simple: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">True</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">I</span> : <span class="id" type="var">True</span>.<br/>
+</div>
+
+<div class="doc">
+It has one constructor (so every proof of <span class="inlinecode"><span class="id" type="var">True</span></span> is the same, so
+    being given a proof of <span class="inlinecode"><span class="id" type="var">True</span></span> is not informative.) 
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">False</span></span> is equally simple &mdash; indeed, so simple it may look
+    syntactically wrong at first glance! 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">False</span> : <span class="id" type="keyword">Prop</span> :=.<br/>
+</div>
+
+<div class="doc">
+That is, <span class="inlinecode"><span class="id" type="var">False</span></span> is an inductive type with _no_ constructors &mdash;
+    i.e., no way to build evidence for it. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">Props</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab268"></a><h1 class="section">Equality</h1>
+
+<div class="paragraph"> </div>
+
+ Even Coq's equality relation is not built in.  It has the
+    following inductive definition.  (Actually, the definition in the
+    standard library is a small variant of this, which gives an
+    induction principle that is slightly easier to use.) 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">MyEquality</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">eq</span> {<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>} : <span class="id" type="var">X</span> → <span class="id" type="var">X</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">eq_refl</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>, <span class="id" type="var">eq</span> <span class="id" type="var">x</span> <span class="id" type="var">x</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Notation</span> "x = y" := (<span class="id" type="var">eq</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 70, <span class="id" type="var">no</span> <span class="id" type="var">associativity</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">type_scope</span>.<br/>
+</div>
+
+<div class="doc">
+The way to think about this definition is that, given a set <span class="inlinecode"><span class="id" type="var">X</span></span>,
+    it defines a _family_ of propositions "<span class="inlinecode"><span class="id" type="var">x</span></span> is equal to <span class="inlinecode"><span class="id" type="var">y</span></span>,"
+    indexed by pairs of values (<span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span>) from <span class="inlinecode"><span class="id" type="var">X</span></span>.  There is just
+    one way of constructing evidence for each member of this family:
+    applying the constructor <span class="inlinecode"><span class="id" type="var">eq_refl</span></span> to a type <span class="inlinecode"><span class="id" type="var">X</span></span> and a value <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">:</span>
+    <span class="inlinecode"><span class="id" type="var">X</span></span> yields evidence that <span class="inlinecode"><span class="id" type="var">x</span></span> is equal to <span class="inlinecode"><span class="id" type="var">x</span></span>. 
+<div class="paragraph"> </div>
+
+ We can use <span class="inlinecode"><span class="id" type="var">eq_refl</span></span> to construct evidence that, for example, <span class="inlinecode">2</span> <span class="inlinecode">=</span>
+    <span class="inlinecode">2</span>.  Can we also use it to construct evidence that <span class="inlinecode">1</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> <span class="inlinecode">=</span> <span class="inlinecode">2</span>?
+    Yes, we can.  Indeed, it is the very same piece of evidence!
+
+<div class="paragraph"> </div>
+
+    The reason is that Coq treats as "the same" any two terms that are
+    _convertible_ according to a simple set of computation rules.
+
+<div class="paragraph"> </div>
+
+    These rules, which are similar to those used by <span class="inlinecode"><span class="id" type="var">Compute</span></span>, include
+    evaluation of function application, inlining of definitions, and
+    simplification of <span class="inlinecode"><span class="id" type="keyword">match</span></span>es.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">four</span>: 2 + 2 = 1 + 3.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">eq_refl</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span> tactic that we have used to prove equalities up
+    to now is essentially just short-hand for <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">eq_refl</span></span>.
+
+<div class="paragraph"> </div>
+
+    In tactic-based proofs of equality, the conversion rules are
+    normally hidden in uses of <span class="inlinecode"><span class="id" type="tactic">simpl</span></span> (either explicit or implicit in
+    other tactics such as <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span>).
+
+<div class="paragraph"> </div>
+
+    But you can see them directly at work in the following explicit
+    proof objects: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">four'</span> : 2 + 2 = 1 + 3 :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">eq_refl</span> 4.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">singleton</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>:<span class="id" type="var">X</span>), []++[<span class="id" type="var">x</span>] = <span class="id" type="var">x</span>::[]  :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>:<span class="id" type="var">X</span>) ⇒ <span class="id" type="var">eq_refl</span> [<span class="id" type="var">x</span>].<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">MyEquality</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab269"></a><h4 class="section">Exercise: 2 stars (equality__leibniz_equality)</h4>
+ The inductive definition of equality implies _Leibniz equality_:
+    what we mean when we say "<span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span> are equal" is that every
+    property on <span class="inlinecode"><span class="id" type="var">P</span></span> that is true of <span class="inlinecode"><span class="id" type="var">x</span></span> is also true of <span class="inlinecode"><span class="id" type="var">y</span></span>.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">equality__leibniz_equality</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">x</span> = <span class="id" type="var">y</span> → <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span>:<span class="id" type="var">X</span>→<span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">P</span> <span class="id" type="var">y</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab270"></a><h4 class="section">Exercise: 5 stars, optional (leibniz_equality__equality)</h4>
+ Show that, in fact, the inductive definition of equality is
+    _equivalent_ to Leibniz equality: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">leibniz_equality__equality</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span>:<span class="id" type="var">X</span>→<span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">P</span> <span class="id" type="var">y</span>) → <span class="id" type="var">x</span> = <span class="id" type="var">y</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+
+<div class="doc">
+<a name="lab271"></a><h2 class="section">Inversion, Again</h2>
+
+<div class="paragraph"> </div>
+
+ We've seen <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> used with both equality hypotheses and
+    hypotheses about inductively defined propositions.  Now that we've
+    seen that these are actually the same thing, we're in a position
+    to take a closer look at how <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> behaves.
+
+<div class="paragraph"> </div>
+
+    In general, the <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> tactic...
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> takes a hypothesis <span class="inlinecode"><span class="id" type="var">H</span></span> whose type <span class="inlinecode"><span class="id" type="var">P</span></span> is inductively defined,
+      and
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> for each constructor <span class="inlinecode"><span class="id" type="var">C</span></span> in <span class="inlinecode"><span class="id" type="var">P</span></span>'s definition,
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> generates a new subgoal in which we assume <span class="inlinecode"><span class="id" type="var">H</span></span> was
+        built with <span class="inlinecode"><span class="id" type="var">C</span></span>,
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> adds the arguments (premises) of <span class="inlinecode"><span class="id" type="var">C</span></span> to the context of
+        the subgoal as extra hypotheses,
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> matches the conclusion (result type) of <span class="inlinecode"><span class="id" type="var">C</span></span> against the
+        current goal and calculates a set of equalities that must
+        hold in order for <span class="inlinecode"><span class="id" type="var">C</span></span> to be applicable,
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> adds these equalities to the context (and, for convenience,
+        rewrites them in the goal), and
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> if the equalities are not satisfiable (e.g., they involve
+        things like <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">O</span></span>), immediately solves the subgoal. 
+</li>
+</ul>
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ _Example_: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">or</span></span>, there are
+    two constructors, so two subgoals get generated.  The
+    conclusion (result type) of the constructor (<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>) doesn't
+    place any restrictions on the form of <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode"><span class="id" type="var">Q</span></span>, so we don't get
+    any extra equalities in the context of the subgoal. 
+<div class="paragraph"> </div>
+
+ _Example_: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">and</span></span>, there is
+    only one constructor, so only one subgoal gets generated.  Again,
+    the conclusion (result type) of the constructor (<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>) doesn't
+    place any restrictions on the form of <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode"><span class="id" type="var">Q</span></span>, so we don't get
+    any extra equalities in the context of the subgoal.  The
+    constructor does have two arguments, though, and these can be seen
+    in the context in the subgoal. 
+<div class="paragraph"> </div>
+
+ _Example_: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">eq</span></span>, there is
+    again only one constructor, so only one subgoal gets generated.
+    Now, though, the form of the <span class="inlinecode"><span class="id" type="var">refl_equal</span></span> constructor does give us
+    some extra information: it tells us that the two arguments to <span class="inlinecode"><span class="id" type="var">eq</span></span>
+    must be the same!  The <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> tactic adds this fact to the
+    context. 
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

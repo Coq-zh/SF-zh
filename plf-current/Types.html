@@ -1,0 +1,1245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Types: Type Systems</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/plf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 2: Programming Language Foundations</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Types<span class="subtitle">Type Systems</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ Our next major topic is _type systems_ &mdash; static program
+    analyses that classify expressions according to the "shapes" of
+    their results.  We'll begin with a typed version of the simplest
+    imaginable language, to introduce the basic ideas of types and
+    typing rules and the fundamental theorems about type systems:
+    _type preservation_ and _progress_.  In chapter <a href="Stlc.html"><span class="inlineref">Stlc</span></a> we'll move
+    on to the _simply typed lambda-calculus_, which lives at the core
+    of every modern functional programming language (including
+    Coq!). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Arith.Arith</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Imp</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Smallstep</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">multi</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab170"></a><h1 class="section">Typed Arithmetic Expressions</h1>
+
+<div class="paragraph"> </div>
+
+ To motivate the discussion of type systems, let's begin as
+    usual with a tiny toy language.  We want it to have the potential
+    for programs to go wrong because of runtime type errors, so we
+    need something a tiny bit more complex than the language of
+    constants and addition that we used in chapter <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a>: a
+    single kind of data (e.g., numbers) is too simple, but just two
+    kinds (numbers and booleans) gives us enough material to tell an
+    interesting story.
+
+<div class="paragraph"> </div>
+
+    The language definition is completely routine. 
+</div>
+
+<div class="doc">
+<a name="lab171"></a><h2 class="section">Syntax</h2>
+
+<div class="paragraph"> </div>
+
+ Here is the syntax, informally:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t</span>&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;<span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="keyword">if</span>&nbsp;<span class="id" type="var">t</span>&nbsp;<span class="id" type="keyword">then</span>&nbsp;<span class="id" type="var">t</span>&nbsp;<span class="id" type="keyword">else</span>&nbsp;<span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">succ</span>&nbsp;<span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">pred</span>&nbsp;<span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">iszero</span>&nbsp;<span class="id" type="var">t</span>
+<div class="paragraph"> </div>
+
+</div>
+    And here it is formally: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">tm</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ttrue</span> : <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tfalse</span> : <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tif</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tzero</span> : <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tsucc</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tpred</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">tiszero</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span>.<br/>
+</div>
+
+<div class="doc">
+<b>Values_ are <span class="inlinecode"><span class="id" type="var">true</span></span>, <span class="inlinecode"><span class="id" type="var">false</span></span>, and numeric values... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">bvalue</span> : <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">bv_true</span> : <span class="id" type="var">bvalue</span> <span class="id" type="var">ttrue</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">bv_false</span> : <span class="id" type="var">bvalue</span> <span class="id" type="var">tfalse</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">nvalue</span> : <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">nv_zero</span> : <span class="id" type="var">nvalue</span> <span class="id" type="var">tzero</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nv_succ</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>, <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span> → <span class="id" type="var">nvalue</span> (<span class="id" type="var">tsucc</span> <span class="id" type="var">t</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">value</span> (<span class="id" type="var">t</span>:<span class="id" type="var">tm</span>) := <span class="id" type="var">bvalue</span> <span class="id" type="var">t</span> ∨ <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">bvalue</span> <span class="id" type="var">nvalue</span>.<br/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Unfold</span> <span class="id" type="var">value</span>.<br/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Unfold</span> <span class="id" type="var">update</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab172"></a><h2 class="section">Operational Semantics</h2>
+
+<div class="paragraph"> </div>
+
+ Here is the single-step relation, first informally... 
+<div class="paragraph"> </div>
+
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_IfTrue) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">if&nbsp;true&nbsp;then&nbsp;t<sub>1</sub>&nbsp;else&nbsp;t<sub>2</sub>&nbsp;==>&nbsp;t<sub>1</sub></td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_IfFalse) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">if&nbsp;false&nbsp;then&nbsp;t<sub>1</sub>&nbsp;else&nbsp;t<sub>2</sub>&nbsp;==>&nbsp;t<sub>2</sub></td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_If) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">if&nbsp;t<sub>1</sub>&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub>&nbsp;==>&nbsp;if&nbsp;t<sub>1</sub>'&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub></td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_Succ) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">succ&nbsp;t<sub>1</sub>&nbsp;==>&nbsp;succ&nbsp;t<sub>1</sub>'</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_PredZero) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">pred&nbsp;0&nbsp;==>&nbsp;0</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">numeric&nbsp;value&nbsp;v<sub>1</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_PredSucc) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">pred&nbsp;(succ&nbsp;v<sub>1</sub>)&nbsp;==>&nbsp;v<sub>1</sub></td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_Pred) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">pred&nbsp;t<sub>1</sub>&nbsp;==>&nbsp;pred&nbsp;t<sub>1</sub>'</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_IszeroZero) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">iszero&nbsp;0&nbsp;==>&nbsp;true</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">numeric&nbsp;value&nbsp;v<sub>1</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_IszeroSucc) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">iszero&nbsp;(succ&nbsp;v<sub>1</sub>)&nbsp;==>&nbsp;false</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_Iszero) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">iszero&nbsp;t<sub>1</sub>&nbsp;==>&nbsp;iszero&nbsp;t<sub>1</sub>'</td>
+  <td></td>
+</td>
+</table></center>
+<div class="paragraph"> </div>
+
+ ... and then formally: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Reserved Notation</span> "t<sub>1</sub> '==&gt;' t<sub>2</sub>" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">step</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_IfTrue</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span> <span class="id" type="var">ttrue</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) ==&gt; <span class="id" type="var">t<sub>1</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_IfFalse</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span> <span class="id" type="var">tfalse</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) ==&gt; <span class="id" type="var">t<sub>2</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_If</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>) ==&gt; (<span class="id" type="var">tif</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Succ</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span>) ==&gt; (<span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_PredZero</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tpred</span> <span class="id" type="var">tzero</span>) ==&gt; <span class="id" type="var">tzero</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_PredSucc</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">nvalue</span> <span class="id" type="var">t<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tpred</span> (<span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span>)) ==&gt; <span class="id" type="var">t<sub>1</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Pred</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tpred</span> <span class="id" type="var">t<sub>1</sub></span>) ==&gt; (<span class="id" type="var">tpred</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_IszeroZero</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tiszero</span> <span class="id" type="var">tzero</span>) ==&gt; <span class="id" type="var">ttrue</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_IszeroSucc</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">nvalue</span> <span class="id" type="var">t<sub>1</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tiszero</span> (<span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span>)) ==&gt; <span class="id" type="var">tfalse</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Iszero</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tiszero</span> <span class="id" type="var">t<sub>1</sub></span>) ==&gt; (<span class="id" type="var">tiszero</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
+<br/>
+<span class="id" type="keyword">where</span> "t<sub>1</sub> '==&gt;' t<sub>2</sub>" := (<span class="id" type="var">step</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">step</span>.<br/>
+</div>
+
+<div class="doc">
+Notice that the <span class="inlinecode"><span class="id" type="var">step</span></span> relation doesn't care about whether
+    expressions make global sense &mdash; it just checks that the operation
+    in the _next_ reduction step is being applied to the right kinds
+    of operands.  For example, the term <span class="inlinecode"><span class="id" type="var">succ</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> (i.e., 
+    <span class="inlinecode"><span class="id" type="var">tsucc</span></span> <span class="inlinecode"><span class="id" type="var">ttrue</span></span> in the formal syntax) cannot take a step, but the
+    almost as obviously nonsensical term
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">succ</span>&nbsp;(<span class="id" type="keyword">if</span>&nbsp;<span class="id" type="var">true</span>&nbsp;<span class="id" type="keyword">then</span>&nbsp;<span class="id" type="var">true</span>&nbsp;<span class="id" type="keyword">else</span>&nbsp;<span class="id" type="var">true</span>)
+<div class="paragraph"> </div>
+
+</div>
+    can take a step (once, before becoming stuck). 
+</div>
+
+<div class="doc">
+<a name="lab173"></a><h2 class="section">Normal Forms and Values</h2>
+
+<div class="paragraph"> </div>
+
+ The first interesting thing to notice about this <span class="inlinecode"><span class="id" type="var">step</span></span> relation
+    is that the strong progress theorem from the <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a> chapter
+    fails here.  That is, there are terms that are normal forms (they
+    can't take a step) but not values (because we have not included
+    them in our definition of possible "results of reduction").  Such
+    terms are _stuck_. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> <span class="id" type="var">step_normal_form</span> := (<span class="id" type="var">normal_form</span> <span class="id" type="var">step</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">stuck</span> (<span class="id" type="var">t</span>:<span class="id" type="var">tm</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">step_normal_form</span> <span class="id" type="var">t</span> ∧ ¬ <span class="id" type="var">value</span> <span class="id" type="var">t</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Unfold</span> <span class="id" type="var">stuck</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab174"></a><h4 class="section">Exercise: 2 stars (some_term_is_stuck)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Example</span> <span class="id" type="var">some_term_is_stuck</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t</span>, <span class="id" type="var">stuck</span> <span class="id" type="var">t</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ However, although values and normal forms are _not_ the same in this
+    language, the set of values is included in the set of normal
+    forms.  This is important because it shows we did not accidentally
+    define things so that some value could still take a step. 
+<div class="paragraph"> </div>
+
+<a name="lab175"></a><h4 class="section">Exercise: 3 stars (value_is_nf)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">value_is_nf</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">t</span> → <span class="id" type="var">step_normal_form</span> <span class="id" type="var">t</span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+(Hint: You will reach a point in this proof where you need to
+    use an induction to reason about a term that is known to be a
+    numeric value.  This induction can be performed either over the
+    term itself or over the evidence that it is a numeric value.  The
+    proof goes through in either case, but you will find that one way
+    is quite a bit shorter than the other.  For the sake of the
+    exercise, try to complete the proof both ways.)  <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab176"></a><h4 class="section">Exercise: 3 stars, optional (step_deterministic)</h4>
+ Use <span class="inlinecode"><span class="id" type="var">value_is_nf</span></span> to show that the <span class="inlinecode"><span class="id" type="var">step</span></span> relation is also
+    deterministic. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">step_deterministic</span>:<br/>
+&nbsp;&nbsp;<span class="id" type="var">deterministic</span> <span class="id" type="var">step</span>.<br/>
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+
+<div class="doc">
+<a name="lab177"></a><h2 class="section">Typing</h2>
+
+<div class="paragraph"> </div>
+
+ The next critical observation is that, although this
+    language has stuck terms, they are always nonsensical, mixing
+    booleans and numbers in a way that we don't even _want_ to have a
+    meaning.  We can easily exclude such ill-typed terms by defining a
+    _typing relation_ that relates terms to the types (either numeric
+    or boolean) of their final results.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">ty</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TBool</span> : <span class="id" type="var">ty</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TNat</span> : <span class="id" type="var">ty</span>.<br/>
+</div>
+
+<div class="doc">
+In informal notation, the typing relation is often written
+    <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and pronounced "<span class="inlinecode"><span class="id" type="var">t</span></span> has type <span class="inlinecode"><span class="id" type="var">T</span></span>."  The <span class="inlinecode">|-</span> symbol
+    is called a "turnstile."  Below, we're going to see richer typing
+    relations where one or more additional "context" arguments are
+    written to the left of the turnstile.  For the moment, the context
+    is always empty.  <center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_True) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;true&nbsp;&#x2208;&nbsp;Bool</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_False) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;false&nbsp;&#x2208;&nbsp;Bool</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Bool&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;t<sub>2</sub>&nbsp;&#x2208;&nbsp;T&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;t<sub>3</sub>&nbsp;&#x2208;&nbsp;T</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_If) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;if&nbsp;t<sub>1</sub>&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub>&nbsp;&#x2208;&nbsp;T</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_Zero) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;0&nbsp;&#x2208;&nbsp;Nat</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_Succ) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;succ&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_Pred) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;pred&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_IsZero) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">|-&nbsp;iszero&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Bool</td>
+  <td></td>
+</td>
+</table></center>
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Reserved Notation</span> "'|-' t '&#x2208;' T" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_True</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">ttrue</span> &#x2208; <span class="id" type="var">TBool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_False</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tfalse</span> &#x2208; <span class="id" type="var">TBool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_If</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TBool</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>2</sub></span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>3</sub></span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tif</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span> &#x2208; <span class="id" type="var">T</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Zero</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tzero</span> &#x2208; <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Succ</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Pred</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tpred</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Iszero</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tiszero</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TBool</span><br/>
+<br/>
+<span class="id" type="keyword">where</span> "'|-' t '&#x2208;' T" := (<span class="id" type="var">has_type</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">has_type</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">has_type_1</span> :<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">tif</span> <span class="id" type="var">tfalse</span> <span class="id" type="var">tzero</span> (<span class="id" type="var">tsucc</span> <span class="id" type="var">tzero</span>) &#x2208; <span class="id" type="var">TNat</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_If</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_False</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Zero</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Succ</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Zero</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+(Since we've included all the constructors of the typing relation
+    in the hint database, the <span class="inlinecode"><span class="id" type="tactic">auto</span></span> tactic can actually find this
+    proof automatically.) 
+<div class="paragraph"> </div>
+
+ It's important to realize that the typing relation is a
+    _conservative_ (or _static_) approximation: it does not consider
+    what happens when the term is reduced &mdash; in particular, it does
+    not calculate the type of its normal form. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">has_type_not</span> :<br/>
+&nbsp;&nbsp;¬ (|- <span class="id" type="var">tif</span> <span class="id" type="var">tfalse</span> <span class="id" type="var">tzero</span> <span class="id" type="var">ttrue</span> &#x2208; <span class="id" type="var">TBool</span>).<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Contra</span>. <span class="id" type="var">solve_by_inverts</span> 2. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab178"></a><h4 class="section">Exercise: 1 star, optional (succ_hastype_nat__hastype_nat)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Example</span> <span class="id" type="var">succ_hastype_nat__hastype_nat</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">tsucc</span> <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">TNat</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+
+<div class="doc">
+<a name="lab179"></a><h3 class="section">Canonical forms</h3>
+
+<div class="paragraph"> </div>
+
+ The following two lemmas capture the fundamental property that the
+    definitions of boolean and numeric values agree with the typing
+    relation. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">bool_canonical</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">TBool</span> → <span class="id" type="var">value</span> <span class="id" type="var">t</span> → <span class="id" type="var">bvalue</span> <span class="id" type="var">t</span>.<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">HT</span> <span class="id" type="var">HV</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HV</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HT</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nat_canonical</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">TNat</span> → <span class="id" type="var">value</span> <span class="id" type="var">t</span> → <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span>.<br/>
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">HT</span> <span class="id" type="var">HV</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HV</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HT</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab180"></a><h2 class="section">Progress</h2>
+
+<div class="paragraph"> </div>
+
+ The typing relation enjoys two critical properties.  The first is
+    that well-typed normal forms are not stuck &mdash; or conversely, if a
+    term is well typed, then either it is a value or it can take at
+    least one step.  We call this _progress_. 
+<div class="paragraph"> </div>
+
+<a name="lab181"></a><h4 class="section">Exercise: 3 stars (finish_progress)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="tactic">progress</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">t</span> ∨ <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t'</span>, <span class="id" type="var">t</span> ==&gt; <span class="id" type="var">t'</span>.<br/>
+</div>
+
+<div class="doc">
+Complete the formal proof of the <span class="inlinecode"><span class="id" type="tactic">progress</span></span> property.  (Make sure
+    you understand the parts we've given of the informal proof in the
+    following exercise before starting &mdash; this will save you a lot of
+    time.) 
+</div>
+<div class="code code-tight">
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">HT</span>...<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;cases&nbsp;that&nbsp;were&nbsp;obviously&nbsp;values,&nbsp;like&nbsp;T_True&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_False,&nbsp;were&nbsp;eliminated&nbsp;immediately&nbsp;by&nbsp;auto&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_If&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">IHHT1</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">IHHT1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">bool_canonical</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">HT<sub>1</sub></span>) <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t<sub>2</sub></span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t<sub>3</sub></span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;can&nbsp;take&nbsp;a&nbsp;step&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">H<sub>1</sub></span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> (<span class="id" type="var">tif</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>)...<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab182"></a><h4 class="section">Exercise: 3 stars, advanced (finish_progress_informal)</h4>
+ Complete the corresponding informal proof: 
+<div class="paragraph"> </div>
+
+ _Theorem_: If <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, then either <span class="inlinecode"><span class="id" type="var">t</span></span> is a value or else
+    <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> for some <span class="inlinecode"><span class="id" type="var">t'</span></span>. 
+<div class="paragraph"> </div>
+
+ _Proof_: By induction on a derivation of <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If the last rule in the derivation is <span class="inlinecode"><span class="id" type="var">T_If</span></span>, then <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
+        <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>, with <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>, <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>
+        <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.  By the IH, either <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is a value or else <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> can step
+        to some <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is a value, then by the canonical forms lemmas
+              and the fact that <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span> we have that <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
+              is a <span class="inlinecode"><span class="id" type="var">bvalue</span></span> &mdash; i.e., it is either <span class="inlinecode"><span class="id" type="var">true</span></span> or <span class="inlinecode"><span class="id" type="var">false</span></span>.
+              If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span>, then <span class="inlinecode"><span class="id" type="var">t</span></span> steps to <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> by <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>,
+              while if <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">false</span></span>, then <span class="inlinecode"><span class="id" type="var">t</span></span> steps to <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> by
+              <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>.  Either way, <span class="inlinecode"><span class="id" type="var">t</span></span> can step, which is what
+              we wanted to show.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> itself can take a step, then, by <span class="inlinecode"><span class="id" type="var">ST_If</span></span>, so can
+              <span class="inlinecode"><span class="id" type="var">t</span></span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+</ul>
+
+</li>
+<li> <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+
+</li>
+</ul>
+  <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+ This theorem is more interesting than the strong progress theorem
+    that we saw in the <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a> chapter, where _all_ normal forms
+    were values.  Here a term can be stuck, but only if it is ill
+    typed. 
+</div>
+
+<div class="doc">
+<a name="lab183"></a><h2 class="section">Type Preservation</h2>
+
+<div class="paragraph"> </div>
+
+ The second critical property of typing is that, when a well-typed
+    term takes a step, the result is also a well-typed term. 
+<div class="paragraph"> </div>
+
+<a name="lab184"></a><h4 class="section">Exercise: 2 stars (finish_preservation)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">preservation</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">t</span> ==&gt; <span class="id" type="var">t'</span> →<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
+</div>
+
+<div class="doc">
+Complete the formal proof of the <span class="inlinecode"><span class="id" type="var">preservation</span></span> property.  (Again,
+    make sure you understand the informal proof fragment in the
+    following exercise first.) 
+</div>
+<div class="code code-tight">
+
+<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
+<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span> <span class="id" type="var">HE</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">t'</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">HT</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;every&nbsp;case&nbsp;needs&nbsp;to&nbsp;introduce&nbsp;a&nbsp;couple&nbsp;of&nbsp;things&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t'</span> <span class="id" type="var">HE</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;and&nbsp;we&nbsp;can&nbsp;deal&nbsp;with&nbsp;several&nbsp;impossible<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cases&nbsp;all&nbsp;at&nbsp;once&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_If&nbsp;*)</span> <span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">HE</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_IFTrue&nbsp;*)</span> <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_IfFalse&nbsp;*)</span> <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_If&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">T_If</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHHT1</span>; <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab185"></a><h4 class="section">Exercise: 3 stars, advanced (finish_preservation_informal)</h4>
+ Complete the following informal proof: 
+<div class="paragraph"> </div>
+
+ _Theorem_: If <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>, then <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>. 
+<div class="paragraph"> </div>
+
+ _Proof_: By induction on a derivation of <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If the last rule in the derivation is <span class="inlinecode"><span class="id" type="var">T_If</span></span>, then <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
+        <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>, with <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>, <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>
+        <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.
+
+<div class="paragraph"> </div>
+
+        Inspecting the rules for the small-step reduction relation and
+        remembering that <span class="inlinecode"><span class="id" type="var">t</span></span> has the form <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode">...</span>, we see that the
+        only ones that could have been used to prove <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> are
+        <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>, <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>, or <span class="inlinecode"><span class="id" type="var">ST_If</span></span>.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If the last rule was <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>, then <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>.  But we
+             know that <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, so we are done.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> If the last rule was <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>, then <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>.  But we
+             know that <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, so we are done.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> If the last rule was <span class="inlinecode"><span class="id" type="var">ST_If</span></span>, then <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+             <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>, where <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>.  We know <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span> so,
+             by the IH, <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>.  The <span class="inlinecode"><span class="id" type="var">T_If</span></span> rule then gives us
+             <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, as required.
+
+<div class="paragraph"> </div>
+
+
+</li>
+</ul>
+
+</li>
+<li> <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+
+</li>
+</ul>
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab186"></a><h4 class="section">Exercise: 3 stars (preservation_alternate_proof)</h4>
+ Now prove the same property again by induction on the
+    _evaluation_ derivation instead of on the typing derivation.
+    Begin by carefully reading and thinking about the first few
+    lines of the above proofs to make sure you understand what
+    each one is doing.  The set-up for this proof is similar, but
+    not exactly the same. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">preservation'</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">t</span> ==&gt; <span class="id" type="var">t'</span> →<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ The preservation theorem is often called _subject reduction_,
+    because it tells us what happens when the "subject" of the typing
+    relation is reduced.  This terminology comes from thinking of
+    typing statements as sentences, where the term is the subject and
+    the type is the predicate. 
+</div>
+
+<div class="doc">
+<a name="lab187"></a><h2 class="section">Type Soundness</h2>
+
+<div class="paragraph"> </div>
+
+ Putting progress and preservation together, we see that a
+    well-typed term can never reach a stuck state.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">multistep</span> := (<span class="id" type="var">multi</span> <span class="id" type="var">step</span>).<br/>
+<span class="id" type="keyword">Notation</span> "t<sub>1</sub> '==&gt;*' t<sub>2</sub>" := (<span class="id" type="var">multistep</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Corollary</span> <span class="id" type="var">soundness</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">t</span> ==&gt;* <span class="id" type="var">t'</span> →<br/>
+&nbsp;&nbsp;~(<span class="id" type="var">stuck</span> <span class="id" type="var">t'</span>).<br/>
+<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
+<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span> <span class="id" type="var">P</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">P</span>; <span class="id" type="tactic">intros</span> [<span class="id" type="var">R</span> <span class="id" type="var">S</span>].<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="tactic">progress</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span>); <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHP</span>. <span class="id" type="tactic">apply</span> (<span class="id" type="var">preservation</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span> <span class="id" type="var">H</span>).<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">stuck</span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab188"></a><h1 class="section">Aside: the <span class="inlinecode"><span class="id" type="var">normalize</span></span> Tactic</h1>
+
+<div class="paragraph"> </div>
+
+ When experimenting with definitions of programming languages
+    in Coq, we often want to see what a particular concrete term steps
+    to &mdash; i.e., we want to find proofs for goals of the form <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;*</span>
+    <span class="inlinecode"><span class="id" type="var">t'</span></span>, where <span class="inlinecode"><span class="id" type="var">t</span></span> is a completely concrete term and <span class="inlinecode"><span class="id" type="var">t'</span></span> is unknown.
+    These proofs are quite tedious to do by hand.  Consider, for
+    example, reducing an arithmetic expression using the small-step
+    relation <span class="inlinecode"><span class="id" type="var">astep</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">NormalizePlayground</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">Smallstep</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">step_example1</span> :<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 4))) <br/>
+&nbsp;&nbsp;==&gt;* (<span class="id" type="var">C</span> 10).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_step</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 7)).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ST_Plus2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">v_const</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ST_PlusConstConst</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_step</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">C</span> 10).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ST_PlusConstConst</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_refl</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The proof repeatedly applies <span class="inlinecode"><span class="id" type="var">multi_step</span></span> until the term reaches a
+    normal form.  Fortunately The sub-proofs for the intermediate
+    steps are simple enough that <span class="inlinecode"><span class="id" type="tactic">auto</span></span>, with appropriate hints, can
+    solve them. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">step</span> <span class="id" type="var">value</span>.<br/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">step_example1'</span> :<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 4)))<br/>
+&nbsp;&nbsp;==&gt;* (<span class="id" type="var">C</span> 10).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">multi_step</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">multi_step</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_refl</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The following custom <span class="inlinecode"><span class="id" type="keyword">Tactic</span></span> <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> definition captures this
+    pattern.  In addition, before each step, we print out the current
+    goal, so that we can follow how the term is being reduced. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Tactic Notation</span> "print_goal" :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> |- ?<span class="id" type="var">x</span> ⇒ <span class="id" type="var">idtac</span> <span class="id" type="var">x</span> <span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Tactic Notation</span> "normalize" :=<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="var">print_goal</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">multi_step</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ (<span class="id" type="tactic">eauto</span> 10; <span class="id" type="tactic">fail</span>) | (<span class="id" type="var">instantiate</span>; <span class="id" type="tactic">simpl</span>)]);<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_refl</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">step_example1''</span> :<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 4))) <br/>
+&nbsp;&nbsp;==&gt;* (<span class="id" type="var">C</span> 10).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">normalize</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;<span class="inlinecode"><span class="id" type="var">print_goal</span></span>&nbsp;in&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">normalize</span></span>&nbsp;tactic&nbsp;shows<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;trace&nbsp;of&nbsp;how&nbsp;the&nbsp;expression&nbsp;reduced...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;4))&nbsp;==&gt;*&nbsp;C&nbsp;10)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;7)&nbsp;==&gt;*&nbsp;C&nbsp;10)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C&nbsp;10&nbsp;==&gt;*&nbsp;C&nbsp;10)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+&nbsp;&nbsp;*)</span><br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">normalize</span></span> tactic also provides a simple way to calculate the
+    normal form of a term, by starting with a goal with an existentially
+    bound variable. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">step_example1'''</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">e'</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 4)))<br/>
+&nbsp;&nbsp;==&gt;* <span class="id" type="var">e'</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">ex_intro</span>. <span class="id" type="var">normalize</span>.<br/>
+<span class="comment">(*&nbsp;This&nbsp;time,&nbsp;the&nbsp;trace&nbsp;is:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;4))&nbsp;==&gt;*&nbsp;?e')<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;7)&nbsp;==&gt;*&nbsp;?e')<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C&nbsp;10&nbsp;==&gt;*&nbsp;?e')<br/>
+&nbsp;&nbsp;&nbsp;where&nbsp;?e'&nbsp;is&nbsp;the&nbsp;variable&nbsp;``guessed''&nbsp;by&nbsp;eapply.&nbsp;*)</span><br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab189"></a><h4 class="section">Exercise: 1 star (normalize_ex)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">normalize_ex</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">e'</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 2) (<span class="id" type="var">C</span> 1))) <br/>
+&nbsp;&nbsp;==&gt;* <span class="id" type="var">e'</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab190"></a><h4 class="section">Exercise: 1 star, optional (normalize_ex')</h4>
+ For comparison, prove it using <span class="inlinecode"><span class="id" type="tactic">apply</span></span> instead of <span class="inlinecode"><span class="id" type="tactic">eapply</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">normalize_ex'</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">e'</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 2) (<span class="id" type="var">C</span> 1))) <br/>
+&nbsp;&nbsp;==&gt;* <span class="id" type="var">e'</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">NormalizePlayground</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Tactic Notation</span> "print_goal" :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> |- ?<span class="id" type="var">x</span> ⇒ <span class="id" type="var">idtac</span> <span class="id" type="var">x</span> <span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">Tactic Notation</span> "normalize" :=<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="var">print_goal</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">multi_step</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ (<span class="id" type="tactic">eauto</span> 10; <span class="id" type="tactic">fail</span>) | (<span class="id" type="var">instantiate</span>; <span class="id" type="tactic">simpl</span>)]);<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_refl</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab191"></a><h2 class="section">Additional Exercises</h2>
+
+<div class="paragraph"> </div>
+
+<a name="lab192"></a><h4 class="section">Exercise: 2 stars, recommended (subject_expansion)</h4>
+ Having seen the subject reduction property, one might
+    wonder whether the opposity property &mdash; subject _expansion_ &mdash;
+    also holds.  That is, is it always the case that, if <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>
+    and <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, then <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>?  If so, prove it.  If
+    not, give a counter-example.  (You do not need to prove your
+    counter-example in Coq, but feel free to do so.)
+
+<div class="paragraph"> </div>
+
+    <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab193"></a><h4 class="section">Exercise: 2 stars (variation1)</h4>
+ Suppose, that we add this new rule to the typing relation:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">T_SuccBool</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;<span class="id" type="var">t</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">TBool</span>&nbsp;→<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;<span class="id" type="var">tsucc</span>&nbsp;<span class="id" type="var">t</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">TBool</span>
+<div class="paragraph"> </div>
+
+</div>
+   Which of the following properties remain true in the presence of
+   this rule?  For each one, write either "remains true" or
+   else "becomes false." If a property becomes false, give a
+   counterexample.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Determinism of <span class="inlinecode"><span class="id" type="var">step</span></span>
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Progress
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Preservation
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab194"></a><h4 class="section">Exercise: 2 stars (variation2)</h4>
+ Suppose, instead, that we add this new rule to the <span class="inlinecode"><span class="id" type="var">step</span></span> relation:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ST_Funny1</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span>&nbsp;<span class="id" type="var">ttrue</span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)&nbsp;==&gt;&nbsp;<span class="id" type="var">t<sub>3</sub></span>
+<div class="paragraph"> </div>
+
+</div>
+   Which of the above properties become false in the presence of
+   this rule?  For each one that does, give a counter-example.
+
+<div class="paragraph"> </div>
+
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab195"></a><h4 class="section">Exercise: 2 stars, optional (variation3)</h4>
+ Suppose instead that we add this rule:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ST_Funny2</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;==&gt;&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;→<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span>&nbsp;<span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)&nbsp;==&gt;&nbsp;(<span class="id" type="var">tif</span>&nbsp;<span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)
+<div class="paragraph"> </div>
+
+</div>
+   Which of the above properties become false in the presence of
+   this rule?  For each one that does, give a counter-example.
+
+<div class="paragraph"> </div>
+
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab196"></a><h4 class="section">Exercise: 2 stars, optional (variation4)</h4>
+ Suppose instead that we add this rule:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ST_Funny3</span>&nbsp;:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tpred</span>&nbsp;<span class="id" type="var">tfalse</span>)&nbsp;==&gt;&nbsp;(<span class="id" type="var">tpred</span>&nbsp;(<span class="id" type="var">tpred</span>&nbsp;<span class="id" type="var">tfalse</span>))
+<div class="paragraph"> </div>
+
+</div>
+   Which of the above properties become false in the presence of
+   this rule?  For each one that does, give a counter-example.
+
+<div class="paragraph"> </div>
+
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab197"></a><h4 class="section">Exercise: 2 stars, optional (variation5)</h4>
+ Suppose instead that we add this rule:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">T_Funny4</span>&nbsp;:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;<span class="id" type="var">tzero</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">TBool</span>
+<div class="paragraph"> </div>
+
+</div>
+   Which of the above properties become false in the presence of
+   this rule?  For each one that does, give a counter-example.
+
+<div class="paragraph"> </div>
+
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab198"></a><h4 class="section">Exercise: 2 stars, optional (variation6)</h4>
+ Suppose instead that we add this rule:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">T_Funny5</span>&nbsp;:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;<span class="id" type="var">tpred</span>&nbsp;<span class="id" type="var">tzero</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">TBool</span>
+<div class="paragraph"> </div>
+
+</div>
+   Which of the above properties become false in the presence of
+   this rule?  For each one that does, give a counter-example.
+
+<div class="paragraph"> </div>
+
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab199"></a><h4 class="section">Exercise: 3 stars, optional (more_variations)</h4>
+ Make up some exercises of your own along the same lines as
+    the ones above.  Try to find ways of selectively breaking
+    properties &mdash; i.e., ways of changing the definitions that
+    break just one of the properties and leave the others alone.
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab200"></a><h4 class="section">Exercise: 1 star (remove_predzero)</h4>
+ The reduction rule <span class="inlinecode"><span class="id" type="var">ST_PredZero</span></span> is a bit counter-intuitive: we
+    might feel that it makes more sense for the predecessor of zero to
+    be undefined, rather than being defined to be zero.  Can we
+    achieve this simply by removing the rule from the definition of
+    <span class="inlinecode"><span class="id" type="var">step</span></span>?  Would doing so create any problems elsewhere?
+
+<div class="paragraph"> </div>
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+<a name="lab201"></a><h4 class="section">Exercise: 4 stars, advanced (prog_pres_bigstep)</h4>
+ Suppose our evaluation relation is defined in the big-step style.
+    State appropriate analogs of the progress and preservation
+    properties. (You do not need to prove them.)
+
+<div class="paragraph"> </div>
+
+    Can you see any limitations of either of your properties?
+    Do they allow for nonterminating commands?
+    Why might we prefer the small-step semantics for stating
+    preservation and progress?
+
+<div class="paragraph"> </div>
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+ <span class="proofbox">&#9744;</span> 
+<div class="paragraph"> </div>
+
+  
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

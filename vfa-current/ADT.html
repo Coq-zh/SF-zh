@@ -1,0 +1,560 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>ADT: Abstract Data Types</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: Verified Functional Algorithms</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">ADT<span class="subtitle">Abstract Data Types</span></h1>
+
+
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Omega</span>.<br/>
+</div>
+
+<div class="doc">
+Let's consider the concept of lookup tables, indexed by keys that are
+   numbers, mapping those keys to values of arbitrary (parametric) type.
+   We can express this in Coq as follows: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">TABLE</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">V</span>: <span class="id" type="keyword">Type</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">default</span>: <span class="id" type="var">V</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">table</span>: <span class="id" type="keyword">Type</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">empty</span>: <span class="id" type="var">table</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">get</span>: <span class="id" type="var">key</span> → <span class="id" type="var">table</span> → <span class="id" type="var">V</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="tactic">set</span>: <span class="id" type="var">key</span> → <span class="id" type="var">V</span> → <span class="id" type="var">table</span> → <span class="id" type="var">table</span>.<br/>
+&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">gempty</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span>,   <span class="comment">(*&nbsp;get-empty&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">get</span> <span class="id" type="var">k</span> <span class="id" type="var">empty</span> = <span class="id" type="var">default</span>.<br/>
+&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">gss</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,      <span class="comment">(*&nbsp;get-set-same&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">get</span> <span class="id" type="var">k</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
+&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">gso</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">j</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,    <span class="comment">(*&nbsp;get-set-other&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">j</span> ≠ <span class="id" type="var">k</span> → <span class="id" type="var">get</span> <span class="id" type="var">j</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">get</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">TABLE</span>.<br/>
+</div>
+
+<div class="doc">
+This means:  in any <span class="inlinecode"><span class="id" type="keyword">Module</span></span> that satisfies this <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span>,
+   there's a type <span class="inlinecode"><span class="id" type="var">table</span></span> of lookup-tables, a type <span class="inlinecode"><span class="id" type="var">V</span></span> of values,
+   and operators <span class="inlinecode"><span class="id" type="var">empty</span></span>, <span class="inlinecode"><span class="id" type="var">get</span></span>, <span class="inlinecode"><span class="id" type="tactic">set</span></span> that satisfy the axioms
+   <span class="inlinecode"><span class="id" type="var">gempty</span></span>, <span class="inlinecode"><span class="id" type="var">gss</span></span>, and <span class="inlinecode"><span class="id" type="var">gso</span></span>.
+
+<div class="paragraph"> </div>
+
+  It's easy to make an implementation of <span class="inlinecode"><span class="id" type="var">TABLE</span></span>, using <span class="inlinecode"><span class="id" type="var">Maps</span></span>.
+  Just for example, let's choose <span class="inlinecode"><span class="id" type="var">V</span></span> to be <span class="inlinecode"><span class="id" type="keyword">Type</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">MapsTable</span> &lt;: <span class="id" type="var">TABLE</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">V</span> := <span class="id" type="keyword">Type</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">default</span>: <span class="id" type="var">V</span> := <span class="id" type="keyword">Prop</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">table</span> := <span class="id" type="var">total_map</span> <span class="id" type="var">V</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> : <span class="id" type="var">table</span> := <span class="id" type="var">t_empty</span> <span class="id" type="var">default</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">get</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">V</span> := <span class="id" type="var">m</span> <span class="id" type="var">k</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">set</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">v</span>: <span class="id" type="var">V</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">table</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t_update</span> <span class="id" type="var">m</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span>.<br/>
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gempty</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span>, <span class="id" type="var">get</span> <span class="id" type="var">k</span> <span class="id" type="var">empty</span> = <span class="id" type="var">default</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gss</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">get</span> <span class="id" type="var">k</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">get</span>, <span class="id" type="tactic">set</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_eq</span>. <span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gso</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">j</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>, <span class="id" type="var">j</span>≠<span class="id" type="var">k</span> → <span class="id" type="var">get</span> <span class="id" type="var">j</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">get</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">get</span>, <span class="id" type="tactic">set</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_neq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">MapsTable</span>.<br/>
+</div>
+
+<div class="doc">
+In summary: to make a <span class="inlinecode"><span class="id" type="keyword">Module</span></span> that implements a <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span>,
+   you need to provide a <span class="inlinecode"><span class="id" type="keyword">Definition</span></span> or <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> in the <span class="inlinecode"><span class="id" type="keyword">Module</span></span>,
+   whose type matches the corresponding <span class="inlinecode"><span class="id" type="keyword">Parameter</span></span> or <span class="inlinecode"><span class="id" type="keyword">Axiom</span></span> in the
+   <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span>. 
+<div class="paragraph"> </div>
+
+ Now, let's calculate: put 1 and then 3 into a map, then lookup 1. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">MapsTable.get</span> 1 (<span class="id" type="var">MapsTable.set</span> 3 <span class="id" type="var">unit</span> (<span class="id" type="var">MapsTable.set</span> 1 <span class="id" type="var">bool</span> <span class="id" type="var">MapsTable.empty</span>)).<br/>
+&nbsp;<span class="comment">(*&nbsp;=&nbsp;bool&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+An _Abstract Data Type_ comprises:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> A _type_ with a hidden representation (in this case, <span class="inlinecode"><span class="id" type="var">t</span></span>).
+
+</li>
+<li> Interface functions that operate on that type (<span class="inlinecode"><span class="id" type="var">empty</span></span>, <span class="inlinecode"><span class="id" type="var">get</span></span>, <span class="inlinecode"><span class="id" type="tactic">set</span></span>).
+
+</li>
+<li> Axioms about the interaction of those functions (<span class="inlinecode"><span class="id" type="var">gempty</span></span>, <span class="inlinecode"><span class="id" type="var">gss</span></span>, <span class="inlinecode"><span class="id" type="var">gso</span></span>).
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ So, <span class="inlinecode"><span class="id" type="var">MapsTable</span></span> is an implementation of the <span class="inlinecode"><span class="id" type="var">TABLE</span></span> abstract type.
+
+<div class="paragraph"> </div>
+
+   The problem with <span class="inlinecode"><span class="id" type="var">MapsTable</span></span> is that the <span class="inlinecode"><span class="id" type="var">Maps</span></span> implementation is 
+   very inefficient: linear time per <span class="inlinecode"><span class="id" type="var">get</span></span> operation. If you do a sequence
+   of <span class="inlinecode"><span class="id" type="var">N</span></span> <span class="inlinecode"><span class="id" type="var">get</span></span> and <span class="inlinecode"><span class="id" type="tactic">set</span></span> operations, it can take time quadratic in <span class="inlinecode"><span class="id" type="var">N</span></span>.
+   For a more efficient implementation, let's use our search trees. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">SearchTree</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">TreeTable</span> &lt;: <span class="id" type="var">TABLE</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">V</span> := <span class="id" type="keyword">Type</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">default</span> : <span class="id" type="var">V</span> := <span class="id" type="keyword">Prop</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">table</span> := <span class="id" type="var">tree</span> <span class="id" type="var">V</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> : <span class="id" type="var">table</span> := <span class="id" type="var">empty_tree</span> <span class="id" type="var">V</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">get</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">V</span> := <span class="id" type="var">lookup</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">m</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">set</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">v</span>: <span class="id" type="var">V</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">table</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insert</span> <span class="id" type="var">V</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">m</span>.<br/>
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gempty</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span>, <span class="id" type="var">get</span> <span class="id" type="var">k</span> <span class="id" type="var">empty</span> = <span class="id" type="var">default</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gss</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">get</span> <span class="id" type="var">k</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">get</span>, <span class="id" type="tactic">set</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">unrealistically_strong_can_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">t</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> [<span class="id" type="var">cts</span> <span class="id" type="var">H</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">H<sub>0</sub></span> := <span class="id" type="var">insert_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> <span class="id" type="var">H</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">H<sub>1</sub></span> := <span class="id" type="var">lookup_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>0</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_eq</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab88"></a><h4 class="section">Exercise: 3 stars (TreeTable_gso)</h4>
+ Prove this using techniques similar to the proof of <span class="inlinecode"><span class="id" type="var">gss</span></span> just above. 
+</div>
+<div class="code code-tight">
+
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gso</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">j</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">j</span>≠<span class="id" type="var">k</span> → <span class="id" type="var">get</span> <span class="id" type="var">j</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">get</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+<span class="id" type="keyword">End</span> <span class="id" type="var">TreeTable</span>.<br/>
+</div>
+
+<div class="doc">
+But suppose we don't have an unrealistically strong can-relate theorem? 
+   Remember the type of the "ordinary" can_relate: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">can_relate</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;&nbsp;:&nbsp;forall&nbsp;(V&nbsp;:&nbsp;Type)&nbsp;(default&nbsp;:&nbsp;V)&nbsp;(t&nbsp;:&nbsp;tree&nbsp;V),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;t&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exists&nbsp;cts&nbsp;:&nbsp;total_map&nbsp;V,&nbsp;Abs&nbsp;V&nbsp;default&nbsp;t&nbsp;cts&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+This requires that <span class="inlinecode"><span class="id" type="var">t</span></span> have the <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> property, or in general,
+   any value of type <span class="inlinecode"><span class="id" type="var">table</span></span> should be well-formed, that is, should satisfy
+   the representation invariant.  We must ensure that  the client of an ADT
+   cannot "forge" values, that is, cannot coerce the representation type into
+   the abstract type; especially ill-formed values of the representation type.
+   This "unforgeability" is enforced in some real programming languages:  
+   ML (Standard ML or Ocaml) with its module system; Java, whose Classes 
+   have "private variables" that the client cannot see.
+
+<div class="paragraph"> </div>
+
+<a name="lab89"></a><h1 class="section">A Brief Excursion into Dependent Types</h1>
+
+<div class="paragraph"> </div>
+
+   We can enforce the representation invariant in Coq using dependent types.
+   Suppose <span class="inlinecode"><span class="id" type="var">P</span></span> is a predicate
+   on type <span class="inlinecode"><span class="id" type="var">A</span></span>, that is, <span class="inlinecode"><span class="id" type="var">P</span>:</span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>.  Suppose <span class="inlinecode"><span class="id" type="var">x</span></span> is a value of type <span class="inlinecode"><span class="id" type="var">A</span></span>,
+   and <span class="inlinecode"><span class="id" type="var">proof</span>:</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> is the name of the theorem that <span class="inlinecode"><span class="id" type="var">x</span></span> satisfies <span class="inlinecode"><span class="id" type="var">P</span></span>.
+   Then <span class="inlinecode"></span> <span class="inlinecode">(<span class="id" type="var">exist</span></span> <span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">proof</span>)</span> <span class="inlinecode"></span> is a "package" of two things: <span class="inlinecode"><span class="id" type="var">x</span></span>, along with the
+   proof of <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">x</span>)</span>.  The type of <span class="inlinecode">(<span style='font-size:120%;'>&exist;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">proof</span>)</span> is written as <span class="inlinecode">{<span class="id" type="var">x</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span>}</span>.
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">exist</span>. <span class="comment">(*&nbsp;forall&nbsp;{A&nbsp;:&nbsp;Type}&nbsp;(P&nbsp;:&nbsp;A&nbsp;-&gt;&nbsp;Prop)&nbsp;(x&nbsp;:&nbsp;A),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;x&nbsp;-&gt;&nbsp;{x&nbsp;|&nbsp;P&nbsp;x}&nbsp;&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">proj1_sig</span>. <span class="comment">(*&nbsp;forall&nbsp;{A&nbsp;:&nbsp;Type}&nbsp;{P&nbsp;:&nbsp;A&nbsp;-&gt;&nbsp;Prop},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{x&nbsp;|&nbsp;P&nbsp;x}&nbsp;-&gt;&nbsp;A&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">proj2_sig</span>. <span class="comment">(*&nbsp;forall&nbsp;(A&nbsp;:&nbsp;Type)&nbsp;{P&nbsp;:&nbsp;A&nbsp;-&gt;&nbsp;Prop}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(e&nbsp;:&nbsp;{x&nbsp;|&nbsp;P&nbsp;x}),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;(proj1_sig&nbsp;e)&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+We'll apply that idea to search trees.  The type <span class="inlinecode"><span class="id" type="var">A</span></span> will be <span class="inlinecode"><span class="id" type="var">tree</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span>.
+  The predicate <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">x</span>)</span> will be <span class="inlinecode"><span class="id" type="var">SearchTree</span>(<span class="id" type="var">x</span>)</span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">TreeTable2</span> &lt;: <span class="id" type="var">TABLE</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">V</span> := <span class="id" type="keyword">Type</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">default</span> : <span class="id" type="var">V</span> := <span class="id" type="keyword">Prop</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">table</span> := {<span class="id" type="var">x</span> | <span class="id" type="var">SearchTree</span> <span class="id" type="var">V</span> <span class="id" type="var">x</span>}.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> : <span class="id" type="var">table</span> := <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">exist</span> (<span class="id" type="var">SearchTree</span> <span class="id" type="var">V</span>) (<span class="id" type="var">empty_tree</span> <span class="id" type="var">V</span>) (<span class="id" type="var">empty_tree_SearchTree</span> <span class="id" type="var">V</span>).<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">get</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">V</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">lookup</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> (<span class="id" type="var">proj1_sig</span> <span class="id" type="var">m</span>)).<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">set</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">v</span>: <span class="id" type="var">V</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">table</span> :=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">exist</span> (<span class="id" type="var">SearchTree</span> <span class="id" type="var">V</span>) (<span class="id" type="var">insert</span> <span class="id" type="var">V</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> (<span class="id" type="var">proj1_sig</span> <span class="id" type="var">m</span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">insert_SearchTree</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> (<span class="id" type="var">proj2_sig</span> <span class="id" type="var">m</span>)).<br/><hr class='doublespaceincode'/>
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gempty</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span>, <span class="id" type="var">get</span> <span class="id" type="var">k</span> <span class="id" type="var">empty</span> = <span class="id" type="var">default</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gss</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">get</span> <span class="id" type="var">k</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">get</span>, <span class="id" type="tactic">set</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">table</span> <span class="id" type="keyword">in</span> <span class="id" type="var">t</span>.<br/>
+</div>
+
+<div class="doc">
+Now: <span class="inlinecode"><span class="id" type="var">t</span></span> is a package with two components: 
+     The first component is a tree, and the second component is 
+     a proof that the first component has the SearchTree property.
+    We can destruct <span class="inlinecode"><span class="id" type="var">t</span></span> to see that more clearly. 
+</div>
+<div class="code code-tight">
+
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">t</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">a</span> <span class="id" type="var">Ha</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Watch&nbsp;what&nbsp;this&nbsp;<span class="inlinecode"><span class="id" type="tactic">simpl</span></span>&nbsp;does:&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Now&nbsp;we&nbsp;can&nbsp;use&nbsp;<span class="inlinecode"><span class="id" type="var">can_relate</span></span>&nbsp;instead&nbsp;of&nbsp;<span class="inlinecode"><span class="id" type="var">unrealistically_strong_can_relate</span></span>:&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">can_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">a</span> <span class="id" type="var">Ha</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">cts</span> <span class="id" type="var">H</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">insert_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">a</span> <span class="id" type="var">cts</span> <span class="id" type="var">H</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">lookup_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>0</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_eq</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab90"></a><h4 class="section">Exercise: 3 stars (TreeTable_gso)</h4>
+ Prove this using techniques similar to the proof of <span class="inlinecode"><span class="id" type="var">gss</span></span> just above;
+     don't use <span class="inlinecode"><span class="id" type="var">unrealistically_strong_can_relate</span></span>. 
+</div>
+<div class="code code-tight">
+
+&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gso</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">j</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">j</span>≠<span class="id" type="var">k</span> → <span class="id" type="var">get</span> <span class="id" type="var">j</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">get</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+<span class="id" type="keyword">End</span> <span class="id" type="var">TreeTable2</span>.<br/>
+</div>
+
+<div class="doc">
+(End of the brief excursion into dependent types.) 
+<div class="paragraph"> </div>
+
+<a name="lab91"></a><h1 class="section">Summary of Abstract Data Type Proofs</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Section</span> <span class="id" type="var">ADT_SUMMARY</span>.<br/>
+<span class="id" type="keyword">Variable</span> <span class="id" type="var">V</span>: <span class="id" type="keyword">Type</span>.<br/>
+<span class="id" type="keyword">Variable</span> <span class="id" type="var">default</span>: <span class="id" type="var">V</span>.<br/>
+</div>
+
+<div class="doc">
+Step 1.  Define a _representation invariant_.
+  (In the case of search trees,
+  the representation invariant is the <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> predicate.)
+  Prove that each operation on the data type _preserves_ the 
+  representation invariant.  For example: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> (<span class="id" type="var">empty_tree_SearchTree</span> <span class="id" type="var">V</span>).<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;(empty_tree&nbsp;V)&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> (<span class="id" type="var">insert_SearchTree</span> <span class="id" type="var">V</span>).<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;forall&nbsp;(k&nbsp;:&nbsp;key)&nbsp;(v&nbsp;:&nbsp;V)&nbsp;(t&nbsp;:&nbsp;tree&nbsp;V),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;t&nbsp;-&gt;&nbsp;SearchTree&nbsp;V&nbsp;(insert&nbsp;V&nbsp;k&nbsp;v&nbsp;t)&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Notice two things:  Any operator (such as <span class="inlinecode"><span class="id" type="var">insert</span></span>) that takes a <span class="inlinecode"><span class="id" type="var">tree</span></span> _parameter_
+   can _assume_ that the parameter satisfies the representation invariant.
+   That is, the <span class="inlinecode"><span class="id" type="var">insert_SearchTree</span></span> theorem takes a premise, <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span>.
+
+<div class="paragraph"> </div>
+
+   Any operator that produces a <span class="inlinecode"><span class="id" type="var">tree</span></span> _result_ must prove that the result
+   satisfies the representation invariant.  Thus, the conclusions,
+   <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode">(<span class="id" type="var">empty_tree</span></span> <span class="inlinecode"><span class="id" type="var">V</span>)</span>  and  <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode">(<span class="id" type="var">empty_tree</span></span> <span class="inlinecode"><span class="id" type="var">V</span>)</span>
+   of the two theorems above.
+
+<div class="paragraph"> </div>
+
+   Finally, any operator that produces a result of "base type", has no obligation
+   to prove that the result satisfies the representation invariant; that wouldn't
+   make any sense anyway, because the types wouldn't match.  That is,
+   there's no "lookup_SearchTree" theorem, because <span class="inlinecode"><span class="id" type="var">lookup</span></span> doesn't
+   return a result that's a <span class="inlinecode"><span class="id" type="var">tree</span></span>.
+
+<div class="paragraph"> </div>
+
+   Step 2.  Define an _abstraction relation_.
+     (In the case of search trees, it's the <span class="inlinecode"><span class="id" type="var">Abs</span></span> relation.
+     This relates the data structure to some mathematical
+     value that is (presumably) simpler to reason about. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> (<span class="id" type="var">Abs</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span>). <span class="comment">(*&nbsp;tree&nbsp;V&nbsp;-&gt;&nbsp;total_map&nbsp;V&nbsp;-&gt;&nbsp;Prop&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+For each operator, prove that:  assuming each <span class="inlinecode"><span class="id" type="var">tree</span></span> argument satisfies
+    the representation invariant _and_ the abstraction relation, prove that
+    the results also satisfy the appropriate abstraction relation. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> (<span class="id" type="var">empty_tree_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span>). <span class="comment">(*<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Abs&nbsp;V&nbsp;default&nbsp;(empty_tree&nbsp;V)&nbsp;(t_empty&nbsp;default)&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> (<span class="id" type="var">lookup_relate'</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span>). <span class="comment">(*&nbsp;forall&nbsp;k&nbsp;t&nbsp;cts,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;t&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Abs&nbsp;V&nbsp;default&nbsp;t&nbsp;cts&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lookup&nbsp;V&nbsp;default&nbsp;k&nbsp;t&nbsp;=&nbsp;cts&nbsp;(Id&nbsp;k)&nbsp;&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> (<span class="id" type="var">insert_relate'</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span>). <span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;k&nbsp;v&nbsp;t&nbsp;cts,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;t&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Abs&nbsp;V&nbsp;default&nbsp;t&nbsp;cts&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Abs&nbsp;V&nbsp;default&nbsp;(insert&nbsp;V&nbsp;k&nbsp;v&nbsp;t)&nbsp;(t_update&nbsp;cts&nbsp;(Id&nbsp;k)&nbsp;v)&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Step 3.  Using the representation invariant and the abstraction relation,
+    prove that all the axioms of your ADT are valid.  For example... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">TreeTable2.gso</span>. <span class="comment">(*<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;(j&nbsp;k&nbsp;:&nbsp;TreeTable2.key)&nbsp;(v&nbsp;:&nbsp;TreeTable2.V)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(t&nbsp;:&nbsp;TreeTable2.table),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;j&nbsp;&lt;&gt;&nbsp;k&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TreeTable2.get&nbsp;j&nbsp;(TreeTable2.set&nbsp;k&nbsp;v&nbsp;t)&nbsp;=&nbsp;TreeTable2.get&nbsp;j&nbsp;t&nbsp;&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">ADT_SUMMARY</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab92"></a><h1 class="section">Exercise in Data Abstraction</h1>
+
+<div class="paragraph"> </div>
+
+ The rest of this chapter is optional. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">List</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
+</div>
+
+<div class="doc">
+Here's the Fibonacci function. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">fibonacci</span> (<span class="id" type="var">n</span>: <span class="id" type="var">nat</span>) := <br/>
+&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;| 0 ⇒ 1 <br/>
+&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">i</span> ⇒ <span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span> 0 ⇒ 1 | <span class="id" type="var">S</span> <span class="id" type="var">j</span> ⇒ <span class="id" type="var">fibonacci</span> <span class="id" type="var">i</span> + <span class="id" type="var">fibonacci</span> <span class="id" type="var">j</span> <span class="id" type="keyword">end</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> <span class="id" type="var">fibonacci</span> [0;1;2;3;4;5;6].<br/>
+</div>
+
+<div class="doc">
+Here's a silly little program that computes the Fibonacci function. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="tactic">repeat</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">f</span>: <span class="id" type="var">A</span>→<span class="id" type="var">A</span>) (<span class="id" type="var">x</span>: <span class="id" type="var">A</span>) <span class="id" type="var">n</span> :=<br/>
+&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span> <span class="id" type="var">O</span> ⇒ <span class="id" type="var">x</span> | <span class="id" type="var">S</span> <span class="id" type="var">n'</span> ⇒ <span class="id" type="var">f</span> (<span class="id" type="tactic">repeat</span> <span class="id" type="var">f</span> <span class="id" type="var">x</span> <span class="id" type="var">n'</span>) <span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">step</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
+&nbsp;<span class="id" type="var">List.cons</span> (<span class="id" type="var">nth</span> 0 <span class="id" type="var">al</span> 0 + <span class="id" type="var">nth</span> 1 <span class="id" type="var">al</span> 0) <span class="id" type="var">al</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> (<span class="id" type="tactic">repeat</span> <span class="id" type="var">step</span> [1;0;0]) [0;1;2;3;4;5].<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">fib</span> <span class="id" type="var">n</span> := <span class="id" type="var">nth</span> 0 (<span class="id" type="tactic">repeat</span> <span class="id" type="var">step</span> [1;0;0] <span class="id" type="var">n</span>) 0.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> <span class="id" type="var">fib</span> [0;1;2;3;4;5;6].<br/>
+</div>
+
+<div class="doc">
+Here's a strange "List" module. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">LISTISH</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">list</span>: <span class="id" type="keyword">Type</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">create</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">nat</span> → <span class="id" type="var">nat</span> → <span class="id" type="var">list</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">cons</span>: <span class="id" type="var">nat</span> → <span class="id" type="var">list</span> → <span class="id" type="var">list</span>.<br/>
+&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">nth</span>: <span class="id" type="var">nat</span> → <span class="id" type="var">list</span> → <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">LISTISH</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">L</span> &lt;: <span class="id" type="var">LISTISH</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">list</span> := (<span class="id" type="var">nat</span>*<span class="id" type="var">nat</span>*<span class="id" type="var">nat</span>)%<span class="id" type="var">type</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">create</span> (<span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>: <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> := (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>,<span class="id" type="var">c</span>).<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">cons</span> (<span class="id" type="var">i</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">il</span> : <span class="id" type="var">list</span>) := <span class="id" type="keyword">match</span> <span class="id" type="var">il</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>,<span class="id" type="var">c</span>) ⇒ (<span class="id" type="var">i</span>,<span class="id" type="var">a</span>,<span class="id" type="var">b</span>) <span class="id" type="keyword">end</span>.<br/>
+&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">nth</span> (<span class="id" type="var">n</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">al</span>: <span class="id" type="var">list</span>) := <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">al</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>,<span class="id" type="var">c</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span> 0 ⇒ <span class="id" type="var">a</span> | 1 ⇒ <span class="id" type="var">b</span> | 2 ⇒ <span class="id" type="var">c</span> | <span class="id" type="var">_</span> ⇒ 0 <span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">L</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">sixlist</span> := <span class="id" type="var">L.cons</span> 0 (<span class="id" type="var">L.cons</span> 1 (<span class="id" type="var">L.cons</span> 2 (<span class="id" type="var">L.create</span> 3 4 5))).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">i</span> ⇒ <span class="id" type="var">L.nth</span> <span class="id" type="var">i</span> <span class="id" type="var">sixlist</span>) [0;1;2;3;4;5;6;7].<br/>
+</div>
+
+<div class="doc">
+Module <span class="inlinecode"><span class="id" type="var">L</span></span> implements _approximations_ of lists: it can remember
+    the first three elements, and forget the rest.  Now watch: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">stepish</span> (<span class="id" type="var">al</span>: <span class="id" type="var">L.list</span>) : <span class="id" type="var">L.list</span> :=<br/>
+&nbsp;<span class="id" type="var">L.cons</span> (<span class="id" type="var">L.nth</span> 0 <span class="id" type="var">al</span> + <span class="id" type="var">L.nth</span> 1 <span class="id" type="var">al</span>) <span class="id" type="var">al</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> (<span class="id" type="tactic">repeat</span> <span class="id" type="var">stepish</span> (<span class="id" type="var">L.create</span> 1 0 0)) [0;1;2;3;4;5].<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">fibish</span> <span class="id" type="var">n</span> := <span class="id" type="var">L.nth</span> 0 (<span class="id" type="tactic">repeat</span> <span class="id" type="var">stepish</span>  (<span class="id" type="var">L.create</span> 1 0 0) <span class="id" type="var">n</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> <span class="id" type="var">fibish</span> [0;1;2;3;4;5;6].<br/>
+</div>
+
+<div class="doc">
+This little theorem may be useful in the next exercise. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nth_firstn</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> <span class="id" type="var">d</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">A</span>), <span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span> → <span class="id" type="var">nth</span> <span class="id" type="var">i</span> (<span class="id" type="var">firstn</span> <span class="id" type="var">j</span> <span class="id" type="var">al</span>) <span class="id" type="var">d</span> = <span class="id" type="var">nth</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span> <span class="id" type="var">d</span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">induction</span> <span class="id" type="var">i</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">j</span>,<span class="id" type="var">al</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">auto</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">IHi</span>. <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab93"></a><h4 class="section">Exercise: 4 stars, optional (listish_abstraction)</h4>
+ In this exercise we will not need a _representation invariant_.
+    Define an abstraction relation: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">L_Abs</span>: <span class="id" type="var">L.list</span> → <span class="id" type="var">List.list</span> <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+&nbsp;.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">O_Abs</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span> := <span class="id" type="var">L_Abs</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;State&nbsp;these&nbsp;theorems&nbsp;using&nbsp;O_Abs,&nbsp;not&nbsp;L_Abs.<br/>
+&nbsp;&nbsp;&nbsp;You'll&nbsp;see&nbsp;why&nbsp;below,&nbsp;at&nbsp;"Opaque".&nbsp;*)</span><br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">create_relate</span> : <span class="id" type="var">True</span>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">cons_relate</span> : <span class="id" type="var">True</span>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nth_relate</span> : <span class="id" type="var">True</span>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+Now, we will make these operators opaque.  Therefore, in the rest of 
+   the proofs in this exercise, you will not unfold their definitions.  Instead, 
+   you will just use the theorems <span class="inlinecode"><span class="id" type="var">create_relate</span></span>, <span class="inlinecode"><span class="id" type="var">cons_relate</span></span>, <span class="inlinecode"><span class="id" type="var">nth_relate</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Opaque</span> <span class="id" type="var">L.list</span>.<br/>
+<span class="id" type="var">Opaque</span> <span class="id" type="var">L.create</span>.<br/>
+<span class="id" type="var">Opaque</span> <span class="id" type="var">L.cons</span>.<br/>
+<span class="id" type="var">Opaque</span> <span class="id" type="var">L.nth</span>.<br/>
+<span class="id" type="var">Opaque</span> <span class="id" type="var">O_Abs</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">step_relate</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">O_Abs</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span> → <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">O_Abs</span> (<span class="id" type="var">stepish</span> <span class="id" type="var">al</span>) (<span class="id" type="var">step</span> <span class="id" type="var">al'</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">repeat_step_relate</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span>, <br/>
+&nbsp;<span class="id" type="var">O_Abs</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span> →<br/>
+&nbsp;<span class="id" type="var">O_Abs</span> (<span class="id" type="tactic">repeat</span> <span class="id" type="var">stepish</span> <span class="id" type="var">al</span> <span class="id" type="var">n</span>) (<span class="id" type="tactic">repeat</span> <span class="id" type="var">step</span> <span class="id" type="var">al'</span> <span class="id" type="var">n</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">fibish_correct</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">fibish</span> <span class="id" type="var">n</span> = <span class="id" type="var">fib</span> <span class="id" type="var">n</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;No&nbsp;induction&nbsp;needed&nbsp;in&nbsp;this&nbsp;proof!&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab94"></a><h4 class="section">Exercise: 2 stars, optional (fib_time_complexity)</h4>
+ Suppose you run these three programs call-by-value, that is,
+     as if they were ML programs.  
+    <span class="inlinecode"><span class="id" type="var">fibonacci</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span>
+    <span class="inlinecode"><span class="id" type="var">fib</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span>
+    <span class="inlinecode"><span class="id" type="var">fibish</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span>
+  What is the asymptotic time complexity (big-Oh run time) of each,
+  as a function of N?  Assume that the <span class="inlinecode"><span class="id" type="var">plus</span></span> function runs in constant time.
+  You can use terms like "linear," "N log N," "quadratic," "cubic," "exponential."
+  Explain your answers briefly.
+
+<div class="paragraph"> </div>
+
+  fibonacci:  <span class="comment">(*&nbsp;fill&nbsp;in&nbsp;here&nbsp;*)</span><br/>
+  fib:  <span class="comment">(*&nbsp;fill&nbsp;&nbsp;in&nbsp;here&nbsp;*)</span><br/>
+  fibish: <span class="comment">(*&nbsp;fill&nbsp;in&nbsp;here&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+ <span class="proofbox">&#9744;</span> 
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

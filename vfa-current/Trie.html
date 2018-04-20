@@ -1,0 +1,927 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Trie: Number Representations and Efficient Lookup Tables</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: Verified Functional Algorithms</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Trie<span class="subtitle">Number Representations and Efficient Lookup Tables</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+<a name="lab118"></a><h1 class="section">LogN Penalties in Functional Programming</h1>
+
+<div class="paragraph"> </div>
+
+ Purely functional algorithms sometimes suffer from an asymptotic
+  slowdown of order logN compared to imperative algorithms.  The
+  reason is that imperative programs can do _indexed array update_
+  in constant time, while functional programs cannot.
+
+<div class="paragraph"> </div>
+
+  Let's take an example.  Give an algorithm for detecting duplicate
+  values in a sequence of N integers, each in the range 0..2N.
+  As an imperative program, there's a very simple linear-time algorithm:
+<pre>
+  collisions=0;
+  for (i=0; i&lt;2N; i++)
+     a[i]=0;
+  for (j=0; j&lt;N; j++) {
+     i = input[j];
+     if (a[i] != 0)
+       collisions++;
+     a[i]=1;
+  }
+  return collisions;
+</pre>
+
+<div class="paragraph"> </div>
+
+  In a functional program, we must replace <span class="inlinecode"><span class="id" type="var">a</span>[<span class="id" type="var">i</span>]=1</span> with the update
+  of a finite map.  If we use the inefficient maps in <span class="inlinecode"><span class="id" type="var">Maps.v</span></span>, each
+  lookup and update will take (worst-case) linear time, and the whole
+  algorithm is quadratic time.  If we use balanced binary search trees
+  <span class="inlinecode"><span class="id" type="var">Redblack.v</span></span>, each lookup and update will take (worst-case) logN time,
+  and the whole algorithm takes NlogN.  Comparing O(NlogN) to O(N),
+  we see that there is a logN asymptotic penalty for using a functional
+  implementation of finite maps.  This penalty arises not only in this
+  "duplicates" algorithm, but in any algorithm that relies on random
+  access in arrays.
+
+<div class="paragraph"> </div>
+
+  One way to avoid this problem is to use the imperative (array) features
+  of a not-really-functional language such as ML.  But that's not really
+  a functional program!  In particular, in _Verified Functional Algorithms_
+  we prove program correct by relying on the _tractable proof theory_
+  of purely functional programs; if we use nonfunctional features of ML,
+  then this style of proof will not work.  We'd have to use something like
+  Hoare logic instead (see <span class="inlinecode"><span class="id" type="var">Hoare.v</span></span> in volume 2 of _Software Foundations_),
+  and that is not _nearly_ as nice.
+
+<div class="paragraph"> </div>
+
+  Another choice is to use a purely functional programming language
+  designed for imperative programming:  Haskell with the IO monad.
+  The IO monad provides a pure-functional interface to efficient random-access
+  arrays.  This might be a reasonable approach, but we will not cover it
+  here.
+
+<div class="paragraph"> </div>
+
+  Here, we accept the logN penalty, and focus on making the "constant
+  factors" small: that is, let us at least have efficient functional finite maps.
+
+<div class="paragraph"> </div>
+
+  <a href="Extract.html"><span class="inlineref">Extract</span></a> showed one approach: use Ocaml integers.
+  The advantage: constant-time greater-than comparison.
+  The disadvantages: (1) Need to make sure you axiomatize them correctly
+   in Coq, otherwise your proofs are unsound.  (2) Can't easily axiomatize
+   addition, multiplication, subtraction, because Ocaml integers don't
+   behave like the "mathematical" integers upon 31-bit (or 63-bit) overflow.
+   (3) Can _only_ run the programs in Ocaml, not inside Coq.
+
+<div class="paragraph"> </div>
+
+   So let's examine another approach, which is quite standard inside Coq:
+   use a construction in Coq of arbitrary-precision binary numbers,
+   with logN-time addition, subtraction, and comparison. 
+<div class="paragraph"> </div>
+
+<a name="lab119"></a><h1 class="section">A Simple Program That's Waaaaay Too Slow.</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/>
+<span class="id" type="keyword">Import</span> <span class="id" type="var">FunctionalExtensionality</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">VerySlow</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">loop</span> (<span class="id" type="var">input</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) (<span class="id" type="var">c</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">table</span>: <span class="id" type="var">total_map</span> <span class="id" type="var">bool</span>) : <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">input</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">a</span>::<span class="id" type="var">al</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">table</span> <span class="id" type="var">a</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">loop</span> <span class="id" type="var">al</span> (<span class="id" type="var">c</span>+1) <span class="id" type="var">table</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">loop</span> <span class="id" type="var">al</span> <span class="id" type="var">c</span> (<span class="id" type="var">t_update</span> <span class="id" type="var">table</span> <span class="id" type="var">a</span> <span class="id" type="var">true</span>)<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">collisions</span> (<span class="id" type="var">input</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">nat</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">loop</span> <span class="id" type="var">input</span> 0 (<span class="id" type="var">t_empty</span> <span class="id" type="var">false</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">collisions_pi</span>: <span class="id" type="var">collisions</span> [3;1;4;1;5;9;2;6] = 1.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+This program takes cubic time, O(N^3).   Let's assume that there are
+      few duplicates, or none at all.  There are <span class="inlinecode"><span class="id" type="var">N</span></span> iterations
+      of <span class="inlinecode"><span class="id" type="var">loop</span></span>, each iteration does a <span class="inlinecode"><span class="id" type="var">table</span></span> lookup, most iterations do
+      a <span class="inlinecode"><span class="id" type="var">t_update</span></span> as well, and those operations each do <span class="inlinecode"><span class="id" type="var">N</span></span> comparisons.
+      The average length of the <span class="inlinecode"><span class="id" type="var">table</span></span> (the number of elements) averages
+      only N/2, and (if there are few duplicates) the lookup will have to
+      traverse the entire list, so really in each iteration there will be only
+      <span class="inlinecode"><span class="id" type="var">N</span>/2</span> comparisons instead of <span class="inlinecode"><span class="id" type="var">N</span></span>, but in asymptotic analysis we ignore
+      the constant factors.
+
+<div class="paragraph"> </div>
+
+      So far it seems like this is a quadratic-time algorithm, O(N^2).  But
+      to compare Coq natural numbers for equality takes O(N) time as well: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">beq_nat</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;fix&nbsp;beq_nat&nbsp;(n&nbsp;m&nbsp;:&nbsp;nat)&nbsp;{struct&nbsp;n}&nbsp;:&nbsp;bool&nbsp;:=<br/>
+&nbsp;&nbsp;match&nbsp;n&nbsp;with<br/>
+&nbsp;&nbsp;|&nbsp;0&nbsp;=&gt;&nbsp;match&nbsp;m&nbsp;with&nbsp;0&nbsp;=&gt;&nbsp;true&nbsp;|&nbsp;S&nbsp;_&nbsp;=&gt;&nbsp;false&nbsp;end<br/>
+&nbsp;&nbsp;|&nbsp;S&nbsp;n<sub>1</sub>&nbsp;=&gt;&nbsp;match&nbsp;m&nbsp;with&nbsp;0&nbsp;=&gt;&nbsp;false&nbsp;|&nbsp;S&nbsp;m<sub>1</sub>&nbsp;=&gt;&nbsp;beq_nat&nbsp;n<sub>1</sub>&nbsp;m<sub>1</sub>&nbsp;end<br/>
+&nbsp;&nbsp;end&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Remember, <span class="inlinecode"><span class="id" type="var">nat</span></span> is a unary representation, with a number of <span class="inlinecode"><span class="id" type="var">S</span></span> constructors
+     proportional to the number being represented! 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">VerySlow</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab120"></a><h1 class="section">Efficient Positive Numbers</h1>
+ We can do better; we _must_ do better.  In fact, Coq's integer type,
+     called <span class="inlinecode"><span class="id" type="var">Z</span></span>, is a binary representation (not unary), so that operations
+     such as <span class="inlinecode"><span class="id" type="var">plus</span></span> and <span class="inlinecode"><span class="id" type="var">leq</span></span> take time linear in the number of bits, that is,
+     logarithmic in the value of the numbers.  Here we will explore how <span class="inlinecode"><span class="id" type="var">Z</span></span>
+     is built. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Integers</span>.<br/>
+</div>
+
+<div class="doc">
+We start with positive numbers. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">positive</span> : <span class="id" type="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">xI</span> : <span class="id" type="var">positive</span> → <span class="id" type="var">positive</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">xO</span> : <span class="id" type="var">positive</span> → <span class="id" type="var">positive</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">xH</span> : <span class="id" type="var">positive</span>.<br/>
+</div>
+
+<div class="doc">
+A positive number is either
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li>    1, that is, <span class="inlinecode"><span class="id" type="var">xH</span></span>
+
+</li>
+<li>    0+2n, that is,  <span class="inlinecode"><span class="id" type="var">xO</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>
+
+</li>
+<li>    1+2n, that is,  <span class="inlinecode"><span class="id" type="var">xI</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>.
+
+</li>
+</ul>
+    For example, ten is 0+2(1+2(0+2(1))).
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ten</span> := <span class="id" type="var">xO</span> (<span class="id" type="var">xI</span> (<span class="id" type="var">xO</span> <span class="id" type="var">xH</span>)).<br/>
+</div>
+
+<div class="doc">
+To interpret a <span class="inlinecode"><span class="id" type="var">positive</span></span> number as a <span class="inlinecode"><span class="id" type="var">nat</span></span>, 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">positive2nat</span> (<span class="id" type="var">p</span>: <span class="id" type="var">positive</span>) : <span class="id" type="var">nat</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">p</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">xI</span> <span class="id" type="var">q</span> ⇒ 1 + 2 * <span class="id" type="var">positive2nat</span> <span class="id" type="var">q</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">xO</span> <span class="id" type="var">q</span> ⇒ 0 + 2 * <span class="id" type="var">positive2nat</span> <span class="id" type="var">q</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">xH</span> ⇒ 1<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">positive2nat</span> <span class="id" type="var">ten</span>. <span class="comment">(*&nbsp;=&nbsp;10&nbsp;:&nbsp;nat&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+We can read the binary representation of a positive number
+    as the _backwards_ sequence of <span class="inlinecode"><span class="id" type="var">xO</span></span> (meaning 0) and <span class="inlinecode"><span class="id" type="var">xI</span>/<span class="id" type="var">xH</span></span> (1).
+    Thus, ten is 1010 in binary. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">print_in_binary</span> (<span class="id" type="var">p</span>: <span class="id" type="var">positive</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">p</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">xI</span> <span class="id" type="var">q</span> ⇒ <span class="id" type="var">print_in_binary</span> <span class="id" type="var">q</span> ++ [1]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">xO</span> <span class="id" type="var">q</span> ⇒<span class="id" type="var">print_in_binary</span> <span class="id" type="var">q</span> ++ [0]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">xH</span> ⇒ [1]<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">print_in_binary</span> <span class="id" type="var">ten</span>. <span class="comment">(*&nbsp;&nbsp;=&nbsp;<span class="inlinecode">1;</span> <span class="inlinecode">0;</span> <span class="inlinecode">1;</span> <span class="inlinecode">0</span>&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Another way to see the "binary representation" is to make up
+     postfix notation for <span class="inlinecode"><span class="id" type="var">xI</span></span> and <span class="inlinecode"><span class="id" type="var">xO</span></span>, as follows 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> "p ¬ 1" := (<span class="id" type="var">xI</span> <span class="id" type="var">p</span>)<br/>
+&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 7, <span class="id" type="var">left</span> <span class="id" type="var">associativity</span>, <span class="id" type="var">format</span> "p '¬' '1'").<br/>
+<span class="id" type="keyword">Notation</span> "p ¬ 0" := (<span class="id" type="var">xO</span> <span class="id" type="var">p</span>)<br/>
+&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 7, <span class="id" type="var">left</span> <span class="id" type="var">associativity</span>, <span class="id" type="var">format</span> "p '¬' '0'").<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ten</span>. <span class="comment">(*&nbsp;=&nbsp;xH~0~1~0&nbsp;:&nbsp;positive&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Why are we using positive numbers anyway?  Since the zero was
+    invented 2300 years ago by the Babylonians, it's sort of old-fashioned
+    to use number systems that start at 1.
+
+<div class="paragraph"> </div>
+
+    The answer is that it's highly inconvenient to have number systems
+    with several different representations of the same number.
+    For one thing, we don't want to worry about  00110=110.
+    Then, when we extend this to the integers, with a "minus sign",
+    we don't have to worry about -0 = +0.    
+<div class="paragraph"> </div>
+
+  To find the successor of a binary number&mdash;that is to increment&mdash;
+    we work from low-order to high-order, until we hit a zero bit. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">succ</span> <span class="id" type="var">x</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">x</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">p</span>¬1 ⇒ (<span class="id" type="var">succ</span> <span class="id" type="var">p</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">p</span>¬0 ⇒ <span class="id" type="var">p</span>¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xH</span> ⇒ <span class="id" type="var">xH</span>¬0<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+To add binary numbers, we work from low-order to high-order,
+    keeping track of the carry. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">addc</span> (<span class="id" type="var">carry</span>: <span class="id" type="var">bool</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">positive</span>) {<span class="id" type="keyword">struct</span> <span class="id" type="var">x</span>} : <span class="id" type="var">positive</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">carry</span>, <span class="id" type="var">x</span>, <span class="id" type="var">y</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">p</span>¬1, <span class="id" type="var">q</span>¬1 ⇒ (<span class="id" type="var">addc</span> <span class="id" type="var">true</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">p</span>¬1, <span class="id" type="var">q</span>¬0 ⇒ (<span class="id" type="var">addc</span> <span class="id" type="var">false</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>)¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">p</span>¬1, <span class="id" type="var">xH</span> ⇒ (<span class="id" type="var">succ</span> <span class="id" type="var">p</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">p</span>¬0, <span class="id" type="var">q</span>¬1 ⇒ (<span class="id" type="var">addc</span> <span class="id" type="var">false</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>)¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">p</span>¬0, <span class="id" type="var">q</span>¬0 ⇒ (<span class="id" type="var">addc</span> <span class="id" type="var">false</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">p</span>¬0, <span class="id" type="var">xH</span> ⇒ <span class="id" type="var">p</span>¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">xH</span>, <span class="id" type="var">q</span>¬1 ⇒ (<span class="id" type="var">succ</span> <span class="id" type="var">q</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">xH</span>, <span class="id" type="var">q</span>¬0 ⇒ <span class="id" type="var">q</span>¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">false</span>, <span class="id" type="var">xH</span>, <span class="id" type="var">xH</span> ⇒ <span class="id" type="var">xH</span>¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">p</span>¬1, <span class="id" type="var">q</span>¬1 ⇒ (<span class="id" type="var">addc</span> <span class="id" type="var">true</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>)¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">p</span>¬1, <span class="id" type="var">q</span>¬0 ⇒ (<span class="id" type="var">addc</span> <span class="id" type="var">true</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">p</span>¬1, <span class="id" type="var">xH</span> ⇒ (<span class="id" type="var">succ</span> <span class="id" type="var">p</span>)¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">p</span>¬0, <span class="id" type="var">q</span>¬1 ⇒ (<span class="id" type="var">addc</span> <span class="id" type="var">true</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">p</span>¬0, <span class="id" type="var">q</span>¬0 ⇒ (<span class="id" type="var">addc</span> <span class="id" type="var">false</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>)¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">p</span>¬0, <span class="id" type="var">xH</span> ⇒ (<span class="id" type="var">succ</span> <span class="id" type="var">p</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">xH</span>, <span class="id" type="var">q</span>¬1 ⇒ (<span class="id" type="var">succ</span> <span class="id" type="var">q</span>)¬1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">xH</span>, <span class="id" type="var">q</span>¬0 ⇒ (<span class="id" type="var">succ</span> <span class="id" type="var">q</span>)¬0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">true</span>, <span class="id" type="var">xH</span>, <span class="id" type="var">xH</span> ⇒ <span class="id" type="var">xH</span>¬1<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">add</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">positive</span>) : <span class="id" type="var">positive</span> := <span class="id" type="var">addc</span> <span class="id" type="var">false</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab121"></a><h4 class="section">Exercise: 2 stars (succ_correct)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">succ_correct</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">positive2nat</span> (<span class="id" type="var">succ</span> <span class="id" type="var">p</span>) = <span class="id" type="var">S</span> (<span class="id" type="var">positive2nat</span> <span class="id" type="var">p</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab122"></a><h4 class="section">Exercise: 3 stars (addc_correct)</h4>
+ You may use <span class="inlinecode"><span class="id" type="tactic">omega</span></span> in this proof if you want, along with induction
+    of course.  But really, using <span class="inlinecode"><span class="id" type="tactic">omega</span></span> is an anachronism in a sense:
+    Coq's <span class="inlinecode"><span class="id" type="tactic">omega</span></span> uses theorems about <span class="inlinecode"><span class="id" type="var">Z</span></span> that are proved from theorems about
+    Coq's standard-library <span class="inlinecode"><span class="id" type="var">positive</span></span> that, in turn, rely on a theorem much
+    like this one.  So the authors of the Coq standard library had to
+    do the associative-commutative rearrangement proofs "by hand."
+    But really, here you can use <span class="inlinecode"><span class="id" type="tactic">omega</span></span> without penalty. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">addc_correct</span>: <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">c</span>: <span class="id" type="var">bool</span>) (<span class="id" type="var">p</span> <span class="id" type="var">q</span>: <span class="id" type="var">positive</span>),<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">positive2nat</span> (<span class="id" type="var">addc</span> <span class="id" type="var">c</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>) = <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">if</span> <span class="id" type="var">c</span> <span class="id" type="keyword">then</span> 1 <span class="id" type="keyword">else</span> 0) + <span class="id" type="var">positive2nat</span> <span class="id" type="var">p</span> + <span class="id" type="var">positive2nat</span> <span class="id" type="var">q</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">add_correct</span>: <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">p</span> <span class="id" type="var">q</span>: <span class="id" type="var">positive</span>),<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">positive2nat</span> (<span class="id" type="var">add</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>) = <span class="id" type="var">positive2nat</span> <span class="id" type="var">p</span> + <span class="id" type="var">positive2nat</span> <span class="id" type="var">q</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">add</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">addc_correct</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ Claim:  the <span class="inlinecode"><span class="id" type="var">add</span></span> function on positive numbers takes worst-case time 
+    proportional to the log base 2 of the result.
+
+<div class="paragraph"> </div>
+
+    We can't prove this in Coq, since Coq has no cost model for execution.
+    But we can prove it informally. Notice that <span class="inlinecode"><span class="id" type="var">addc</span></span> is structurally recursive
+   on <span class="inlinecode"><span class="id" type="var">p</span></span>, that is, the number of recursive calls is at most the height of the
+    <span class="inlinecode"><span class="id" type="var">p</span></span> structure; that's equal to log base 2 of <span class="inlinecode"><span class="id" type="var">p</span></span> (rounded up to the nearest 
+    integer). The last call may call <span class="inlinecode"><span class="id" type="var">succ</span></span> <span class="inlinecode"><span class="id" type="var">q</span></span>, which is structurally recursive on <span class="inlinecode"><span class="id" type="var">q</span></span>,
+    but this <span class="inlinecode"><span class="id" type="var">q</span></span> argument is what remained of the original <span class="inlinecode"><span class="id" type="var">q</span></span> after
+    stripping off a number of constructors equal to the height of <span class="inlinecode"><span class="id" type="var">p</span></span>.
+
+<div class="paragraph"> </div>
+
+ To implement comparison algorithms on positives, the recursion
+    (Fixpoint) is easier to implement if we compute not only
+    "less-than / not-less-than", but actually, "less / equal / greater".
+    To express these choices, we use an Inductive data type. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">comparison</span> : <span class="id" type="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Eq</span> : <span class="id" type="var">comparison</span> | <span class="id" type="var">Lt</span> : <span class="id" type="var">comparison</span> | <span class="id" type="var">Gt</span> : <span class="id" type="var">comparison</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab123"></a><h4 class="section">Exercise: 5 stars (compare_correct)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">compare</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> {<span class="id" type="keyword">struct</span> <span class="id" type="var">x</span>}:= <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">x</span>, <span class="id" type="var">y</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">p</span>¬1, <span class="id" type="var">q</span>¬1 ⇒ <span class="id" type="var">compare</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">p</span>¬1, <span class="id" type="var">q</span>¬0 ⇒ <span class="id" type="keyword">match</span> <span class="id" type="var">compare</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Lt</span> ⇒ <span class="id" type="var">Lt</span> | <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Gt</span> <span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">p</span>¬1, <span class="id" type="var">xH</span> ⇒ <span class="id" type="var">Gt</span><br/>
+<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;DELETE&nbsp;THIS&nbsp;CASE!&nbsp;&nbsp;Replace&nbsp;it&nbsp;with&nbsp;cases&nbsp;that&nbsp;actually&nbsp;work.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Lt</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">positive2nat_pos</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span>, <span class="id" type="var">positive2nat</span> <span class="id" type="var">p</span> &gt; 0.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">induction</span> <span class="id" type="var">p</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">compare_correct</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">compare</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Lt</span> ⇒ <span class="id" type="var">positive2nat</span> <span class="id" type="var">x</span> &lt; <span class="id" type="var">positive2nat</span> <span class="id" type="var">y</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Eq</span> ⇒ <span class="id" type="var">positive2nat</span> <span class="id" type="var">x</span> = <span class="id" type="var">positive2nat</span> <span class="id" type="var">y</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Gt</span> ⇒ <span class="id" type="var">positive2nat</span> <span class="id" type="var">x</span> &gt; <span class="id" type="var">positive2nat</span> <span class="id" type="var">y</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">induction</span> <span class="id" type="var">x</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">y</span>; <span class="id" type="tactic">simpl</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ Claim: <span class="inlinecode"><span class="id" type="var">compare</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> takes time proportional to the log base 2 of <span class="inlinecode"><span class="id" type="var">x</span></span>.
+     Proof: it's structurally inductive on the height of <span class="inlinecode"><span class="id" type="var">x</span></span>. 
+<div class="paragraph"> </div>
+
+<a name="lab124"></a><h2 class="section">Coq's Integer Type, <span class="inlinecode"><span class="id" type="var">Z</span></span></h2>
+ Coq's integer type is constructed from positive numbers: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">Z</span> : <span class="id" type="keyword">Set</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">Z<sub>0</sub></span> : <span class="id" type="var">Z</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Zpos</span> : <span class="id" type="var">positive</span> → <span class="id" type="var">Z</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Zneg</span> : <span class="id" type="var">positive</span> → <span class="id" type="var">Z</span>.<br/>
+</div>
+
+<div class="doc">
+We can construct efficient (logN time) algorithms for operations
+   on <span class="inlinecode"><span class="id" type="var">Z</span></span>:  <span class="inlinecode"><span class="id" type="var">add</span></span>, <span class="inlinecode"><span class="id" type="var">subtract</span></span>, <span class="inlinecode"><span class="id" type="var">compare</span></span>, and so on.  These algorithms
+   call upon the efficient algorithms for <span class="inlinecode"><span class="id" type="var">positive</span></span>s.  
+
+<div class="paragraph"> </div>
+
+   We won't show these here, because in this chapter we now turn
+   to efficient maps over positive numbers. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">Integers</span>. <span class="comment">(*&nbsp;Hide&nbsp;away&nbsp;our&nbsp;experiments&nbsp;with&nbsp;<span class="inlinecode"><span class="id" type="var">positive</span></span>&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+These types, <span class="inlinecode"><span class="id" type="var">positive</span></span> and <span class="inlinecode"><span class="id" type="var">Z</span></span>, are part of the Coq standard library.
+   We can access them here, because (above) the <span class="inlinecode"><span class="id" type="keyword">Import</span></span> <span class="inlinecode"><span class="id" type="var">Perm</span></span>
+   has also exported <span class="inlinecode"><span class="id" type="var">ZArith</span></span> to us. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">positive</span>. <span class="comment">(*&nbsp;from&nbsp;the&nbsp;Coq&nbsp;standard&nbsp;library:<br/>
+&nbsp;&nbsp;Inductive&nbsp;positive&nbsp;:&nbsp;Set&nbsp;:=<br/>
+&nbsp;&nbsp;|&nbsp;&nbsp;xI&nbsp;:&nbsp;positive&nbsp;-&gt;&nbsp;positive&nbsp;<br/>
+&nbsp;&nbsp;|&nbsp;xO&nbsp;:&nbsp;positive&nbsp;-&gt;&nbsp;positive&nbsp;<br/>
+&nbsp;&nbsp;|&nbsp;xH&nbsp;:&nbsp;positive&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Pos.compare</span>. <span class="comment">(*&nbsp;&nbsp;&nbsp;:&nbsp;positive&nbsp;-&gt;&nbsp;positive&nbsp;-&gt;&nbsp;comparison&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Pos.add</span>. <span class="comment">(*&nbsp;:&nbsp;positive&nbsp;-&gt;&nbsp;positive&nbsp;-&gt;&nbsp;positive&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Z.add</span>. <span class="comment">(*&nbsp;:&nbsp;Z&nbsp;-&gt;&nbsp;Z&nbsp;-&gt;&nbsp;Z&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab125"></a><h2 class="section">From <span class="inlinecode"><span class="id" type="var">N</span>*<span class="id" type="var">N</span>*<span class="id" type="var">N</span></span> to <span class="inlinecode"><span class="id" type="var">N</span>*<span class="id" type="var">N</span>*<span class="id" type="var">logN</span></span></h2>
+
+<div class="paragraph"> </div>
+
+ This program runs in <span class="inlinecode">(<span class="id" type="var">N</span>^2)*(<span class="id" type="var">log</span></span> <span class="inlinecode"><span class="id" type="var">N</span>)</span> time.  The <span class="inlinecode"><span class="id" type="var">loop</span></span> does <span class="inlinecode"><span class="id" type="var">N</span></span>
+    iterations; the table lookup does <span class="inlinecode"><span class="id" type="var">O</span>(<span class="id" type="var">N</span>)</span> comparisons, and each
+    comparison takes <span class="inlinecode"><span class="id" type="var">O</span>(<span class="id" type="var">log</span></span> <span class="inlinecode"><span class="id" type="var">N</span>)</span> time. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">RatherSlow</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">total_mapz</span> (<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>) := <span class="id" type="var">Z</span> → <span class="id" type="var">A</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">default</span>: <span class="id" type="var">A</span>) : <span class="id" type="var">total_mapz</span> <span class="id" type="var">A</span> := <span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">default</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">update</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">total_mapz</span> <span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> : <span class="id" type="var">Z</span>) (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x'</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">Z.eqb</span> <span class="id" type="var">x</span> <span class="id" type="var">x'</span> <span class="id" type="keyword">then</span> <span class="id" type="var">v</span> <span class="id" type="keyword">else</span> <span class="id" type="var">m</span> <span class="id" type="var">x'</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">loop</span> (<span class="id" type="var">input</span>: <span class="id" type="var">list</span> <span class="id" type="var">Z</span>) (<span class="id" type="var">c</span>: <span class="id" type="var">Z</span>) (<span class="id" type="var">table</span>: <span class="id" type="var">total_mapz</span> <span class="id" type="var">bool</span>) : <span class="id" type="var">Z</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">input</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">a</span>::<span class="id" type="var">al</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">table</span> <span class="id" type="var">a</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">loop</span> <span class="id" type="var">al</span> (<span class="id" type="var">c</span>+1) <span class="id" type="var">table</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">loop</span> <span class="id" type="var">al</span> <span class="id" type="var">c</span> (<span class="id" type="var">update</span> <span class="id" type="var">table</span> <span class="id" type="var">a</span> <span class="id" type="var">true</span>)<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">collisions</span> (<span class="id" type="var">input</span>: <span class="id" type="var">list</span> <span class="id" type="var">Z</span>) := <span class="id" type="var">loop</span> <span class="id" type="var">input</span> 0 (<span class="id" type="var">empty</span> <span class="id" type="var">false</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">collisions_pi</span>: <span class="id" type="var">collisions</span> [3;1;4;1;5;9;2;6]%<span class="id" type="var">Z</span> = 1%<span class="id" type="var">Z</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">RatherSlow</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab126"></a><h2 class="section">From <span class="inlinecode"><span class="id" type="var">N</span>*<span class="id" type="var">N</span>*<span class="id" type="var">logN</span></span> to <span class="inlinecode"><span class="id" type="var">N</span>*<span class="id" type="var">logN</span>*<span class="id" type="var">logN</span></span></h2>
+
+<div class="paragraph"> </div>
+
+ We can use balanced binary search trees (red-black trees), with
+   keys of type <span class="inlinecode"><span class="id" type="var">Z</span></span>.  Then the <span class="inlinecode"><span class="id" type="var">loop</span></span> does <span class="inlinecode"><span class="id" type="var">N</span></span> iterations; the table lookup
+   does <span class="inlinecode"><span class="id" type="var">O</span>(<span class="id" type="var">logN</span>)</span> comparisons, and each comparison takes <span class="inlinecode"><span class="id" type="var">O</span>(<span class="id" type="var">log</span></span> <span class="inlinecode"><span class="id" type="var">N</span>)</span> time. 
+   Overall, the asymptotic run time is <span class="inlinecode"><span class="id" type="var">N</span>*(<span class="id" type="var">logN</span>)^2</span>. 
+<div class="paragraph"> </div>
+
+<a name="lab127"></a><h1 class="section">Tries: Efficient Lookup Tables on Positive Binary Numbers</h1>
+
+<div class="paragraph"> </div>
+
+ Binary search trees are very nice, because they can implement lookup
+    tables from _any_ totally ordered type to any other type.  But when the
+    type of keys is known specifically to be (small-to-medium size) integers,
+    then we can use a more specialized representation.
+
+<div class="paragraph"> </div>
+
+    By analogy, in imperative programming languages (C, Java, ML),
+    when the index of a table is the integers in a certain range,
+    you can use arrays.    When the keys are not integers, you have
+    to use something like hash tables or binary search trees.
+
+<div class="paragraph"> </div>
+
+    A _trie_ is a tree in which the edges are labeled with letters from
+    an alphabet, and you look up a word by following edges labeled
+    by successive letters of the word.  In fact, a trie is a special case
+    of a Deterministic Finite Automaton (DFA) that happens to be a
+    tree rather than a more general graph.
+
+<div class="paragraph"> </div>
+
+   A _binary trie_ is a trie in which the alphabet is just {0,1}.  The "word"
+   is a sequence of bits, that is, a binary number.  To look up the "word"
+   10001, use 0 as a signal to "go left", and 1 as a signal to "go right."
+
+<div class="paragraph"> </div>
+
+   The binary numbers we use will be type <span class="inlinecode"><span class="id" type="var">positive</span></span>:  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">positive</span>.<br/>
+<span class="comment">(*&nbsp;Inductive&nbsp;positive&nbsp;:&nbsp;Set&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;xI&nbsp;:&nbsp;positive&nbsp;-&gt;&nbsp;positive<br/>
+&nbsp;|&nbsp;xO&nbsp;:&nbsp;positive&nbsp;-&gt;&nbsp;positive<br/>
+&nbsp;|&nbsp;xH&nbsp;:&nbsp;positive&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Goal</span>   10%<span class="id" type="var">positive</span> = <span class="id" type="var">xO</span> (<span class="id" type="var">xI</span> (<span class="id" type="var">xO</span> <span class="id" type="var">xH</span>)).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Given a <span class="inlinecode"><span class="id" type="var">positive</span></span> number such as ten, we will go left to right in
+   the <span class="inlinecode"><span class="id" type="var">xO</span>/<span class="id" type="var">xI</span>/</span> <span class="inlinecode"><span class="id" type="var">constructors</span></span> <span class="inlinecode">(<span class="id" type="var">which</span></span> <span class="inlinecode"><span class="id" type="var">is</span></span> <span class="inlinecode"><span class="id" type="var">from</span></span> <span class="inlinecode"><span class="id" type="var">the</span></span> <span class="inlinecode"><span class="id" type="var">low</span>-<span class="id" type="var">order</span></span> <span class="inlinecode"><span class="id" type="var">bit</span></span> <span class="inlinecode"><span class="id" type="var">to</span></span> <span class="inlinecode"><span class="id" type="var">the</span></span> <span class="inlinecode"><span class="id" type="var">high</span>-<span class="id" type="var">order</span></span> <span class="inlinecode"><span class="id" type="var">bit</span>),</span>
+   <span class="inlinecode"><span class="id" type="keyword">using</span></span> <span class="inlinecode">[<span class="id" type="var">xO</span>]</span> <span class="inlinecode"><span class="id" type="keyword">as</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">signal</span></span> <span class="inlinecode"><span class="id" type="var">to</span></span> <span class="inlinecode"><span class="id" type="var">go</span></span> <span class="inlinecode"><span class="id" type="var">left</span>,</span> <span class="inlinecode">[<span class="id" type="var">xI</span>]</span> <span class="inlinecode"><span class="id" type="keyword">as</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">signal</span></span> <span class="inlinecode"><span class="id" type="var">to</span></span> <span class="inlinecode"><span class="id" type="var">go</span></span> <span class="inlinecode"><span class="id" type="var">right</span>,</span>
+   <span class="inlinecode"><span class="id" type="var">and</span></span> <span class="inlinecode">[<span class="id" type="var">xH</span>]</span> <span class="inlinecode"><span class="id" type="keyword">as</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">signal</span></span> <span class="inlinecode"><span class="id" type="var">to</span></span> <span class="inlinecode"><span class="id" type="var">stop</span>.</span> <span class="inlinecode"></span>
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">trie</span> (<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Leaf</span> : <span class="id" type="var">trie</span> <span class="id" type="var">A</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Node</span> : <span class="id" type="var">trie</span> <span class="id" type="var">A</span> → <span class="id" type="var">A</span> → <span class="id" type="var">trie</span> <span class="id" type="var">A</span> → <span class="id" type="var">trie</span> <span class="id" type="var">A</span>.<br/>
+<span class="id" type="var">Arguments</span> <span class="id" type="var">Leaf</span> {<span class="id" type="var">A</span>}.<br/>
+<span class="id" type="var">Arguments</span> <span class="id" type="var">Node</span> {<span class="id" type="var">A</span>} <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">trie_table</span> (<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>) : <span class="id" type="keyword">Type</span> := (<span class="id" type="var">A</span> * <span class="id" type="var">trie</span> <span class="id" type="var">A</span>)%<span class="id" type="var">type</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">default</span>: <span class="id" type="var">A</span>) : <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">default</span>, <span class="id" type="var">Leaf</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">look</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">default</span>: <span class="id" type="var">A</span>) (<span class="id" type="var">i</span>: <span class="id" type="var">positive</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">trie</span> <span class="id" type="var">A</span>): <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">m</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Leaf</span> ⇒ <span class="id" type="var">default</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Node</span> <span class="id" type="var">l</span> <span class="id" type="var">x</span> <span class="id" type="var">r</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xH</span> ⇒ <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xO</span> <span class="id" type="var">i'</span> ⇒ <span class="id" type="var">look</span> <span class="id" type="var">default</span> <span class="id" type="var">i'</span> <span class="id" type="var">l</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xI</span> <span class="id" type="var">i'</span> ⇒ <span class="id" type="var">look</span> <span class="id" type="var">default</span> <span class="id" type="var">i'</span> <span class="id" type="var">r</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">lookup</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">i</span>: <span class="id" type="var">positive</span>) (<span class="id" type="var">t</span>: <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span>) : <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">look</span> (<span class="id" type="var">fst</span> <span class="id" type="var">t</span>) <span class="id" type="var">i</span> (<span class="id" type="var">snd</span> <span class="id" type="var">t</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">ins</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} <span class="id" type="var">default</span> (<span class="id" type="var">i</span>: <span class="id" type="var">positive</span>) (<span class="id" type="var">a</span>: <span class="id" type="var">A</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">trie</span> <span class="id" type="var">A</span>): <span class="id" type="var">trie</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">m</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Leaf</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xH</span> ⇒ <span class="id" type="var">Node</span> <span class="id" type="var">Leaf</span> <span class="id" type="var">a</span> <span class="id" type="var">Leaf</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xO</span> <span class="id" type="var">i'</span> ⇒ <span class="id" type="var">Node</span> (<span class="id" type="var">ins</span> <span class="id" type="var">default</span> <span class="id" type="var">i'</span> <span class="id" type="var">a</span> <span class="id" type="var">Leaf</span>) <span class="id" type="var">default</span> <span class="id" type="var">Leaf</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xI</span> <span class="id" type="var">i'</span> ⇒ <span class="id" type="var">Node</span> <span class="id" type="var">Leaf</span> <span class="id" type="var">default</span> (<span class="id" type="var">ins</span> <span class="id" type="var">default</span> <span class="id" type="var">i'</span> <span class="id" type="var">a</span> <span class="id" type="var">Leaf</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Node</span> <span class="id" type="var">l</span> <span class="id" type="var">o</span> <span class="id" type="var">r</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xH</span> ⇒ <span class="id" type="var">Node</span> <span class="id" type="var">l</span> <span class="id" type="var">a</span> <span class="id" type="var">r</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xO</span> <span class="id" type="var">i'</span> ⇒ <span class="id" type="var">Node</span> (<span class="id" type="var">ins</span> <span class="id" type="var">default</span> <span class="id" type="var">i'</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>) <span class="id" type="var">o</span> <span class="id" type="var">r</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">xI</span> <span class="id" type="var">i'</span> ⇒ <span class="id" type="var">Node</span> <span class="id" type="var">l</span> <span class="id" type="var">o</span> (<span class="id" type="var">ins</span> <span class="id" type="var">default</span> <span class="id" type="var">i'</span> <span class="id" type="var">a</span> <span class="id" type="var">r</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">insert</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">i</span>: <span class="id" type="var">positive</span>) (<span class="id" type="var">a</span>: <span class="id" type="var">A</span>) (<span class="id" type="var">t</span>: <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">fst</span> <span class="id" type="var">t</span>, <span class="id" type="var">ins</span> (<span class="id" type="var">fst</span> <span class="id" type="var">t</span>) <span class="id" type="var">i</span> <span class="id" type="var">a</span> (<span class="id" type="var">snd</span> <span class="id" type="var">t</span>)).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">three_ten</span> : <span class="id" type="var">trie_table</span> <span class="id" type="var">bool</span> :=<br/>
+&nbsp;<span class="id" type="var">insert</span> 3 <span class="id" type="var">true</span> (<span class="id" type="var">insert</span> 10 <span class="id" type="var">true</span> (<span class="id" type="var">empty</span> <span class="id" type="var">false</span>)).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">three_ten</span>.<br/>
+<span class="comment">(*&nbsp;=&nbsp;(false,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Node&nbsp;(Node&nbsp;Leaf&nbsp;false&nbsp;(Node&nbsp;(Node&nbsp;Leaf&nbsp;true&nbsp;Leaf)&nbsp;false&nbsp;Leaf))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Node&nbsp;Leaf&nbsp;true&nbsp;Leaf))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;trie_table&nbsp;bool&nbsp;&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">i</span> ⇒ <span class="id" type="var">lookup</span> <span class="id" type="var">i</span> <span class="id" type="var">three_ten</span>) [3;1;4;1;5]%<span class="id" type="var">positive</span>.<br/>
+<span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;<span class="inlinecode"><span class="id" type="var">true</span>;</span> <span class="inlinecode"><span class="id" type="var">false</span>;</span> <span class="inlinecode"><span class="id" type="var">false</span>;</span> <span class="inlinecode"><span class="id" type="var">false</span>;</span> <span class="inlinecode"><span class="id" type="var">false</span></span>&nbsp;&nbsp;:&nbsp;list&nbsp;bool&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab128"></a><h2 class="section">From <span class="inlinecode"><span class="id" type="var">N</span>*<span class="id" type="var">logN</span>*<span class="id" type="var">logN</span></span> to <span class="inlinecode"><span class="id" type="var">N</span>*<span class="id" type="var">logN</span></span></h2>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">FastEnough</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">loop</span> (<span class="id" type="var">input</span>: <span class="id" type="var">list</span> <span class="id" type="var">positive</span>) (<span class="id" type="var">c</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">table</span>: <span class="id" type="var">trie_table</span> <span class="id" type="var">bool</span>) : <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">input</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">c</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">a</span>::<span class="id" type="var">al</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">lookup</span> <span class="id" type="var">a</span> <span class="id" type="var">table</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">loop</span> <span class="id" type="var">al</span> (1+<span class="id" type="var">c</span>) <span class="id" type="var">table</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">loop</span> <span class="id" type="var">al</span> <span class="id" type="var">c</span> (<span class="id" type="var">insert</span> <span class="id" type="var">a</span> <span class="id" type="var">true</span> <span class="id" type="var">table</span>)<br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">collisions</span> (<span class="id" type="var">input</span>: <span class="id" type="var">list</span> <span class="id" type="var">positive</span>) := <span class="id" type="var">loop</span> <span class="id" type="var">input</span> 0 (<span class="id" type="var">empty</span> <span class="id" type="var">false</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">collisions_pi</span>: <span class="id" type="var">collisions</span> [3;1;4;1;5;9;2;6]%<span class="id" type="var">positive</span> = 1.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">FastEnough</span>.<br/>
+</div>
+
+<div class="doc">
+This program takes <span class="inlinecode"><span class="id" type="var">O</span>(<span class="id" type="var">N</span></span> <span class="inlinecode"><span class="id" type="var">log</span></span> <span class="inlinecode"><span class="id" type="var">N</span>)</span> time:  the loop executes <span class="inlinecode"><span class="id" type="var">N</span></span>
+    iterations, the <span class="inlinecode"><span class="id" type="var">lookup</span></span> takes <span class="inlinecode"><span class="id" type="var">log</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span> time, the <span class="inlinecode"><span class="id" type="var">insert</span></span> takes <span class="inlinecode"><span class="id" type="var">log</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span> time.
+    One might worry about <span class="inlinecode">1+<span class="id" type="var">c</span></span> computed in the natural numbers (unary
+    representation), but this evaluates in one step to <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span>, which
+    takes constant time, no matter how long <span class="inlinecode"><span class="id" type="var">c</span></span> is.  In "real life", one
+    might be advised to use <span class="inlinecode"><span class="id" type="var">Z</span></span> instead of <span class="inlinecode"><span class="id" type="var">nat</span></span> for the <span class="inlinecode"><span class="id" type="var">c</span></span> variables,
+    in which case, <span class="inlinecode">1+<span class="id" type="var">c</span></span> takes worst-case <span class="inlinecode"><span class="id" type="var">log</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span>, and average-case 
+    constant time. 
+<div class="paragraph"> </div>
+
+<a name="lab129"></a><h4 class="section">Exercise: 2 stars (successor_of_Z_constant_time)</h4>
+ Explain why the average-case time for successor of a binary
+     integer, with carry, is constant time.  Assume that the input integer
+     is random (uniform distribution from 1 to N), or assume that
+     we are iterating successor starting at 1, so that each number
+     from 1 to N is touched exactly once &mdash; whichever way you like. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;<span class="inlinecode"><span class="id" type="var">explain</span></span> <span class="inlinecode"><span class="id" type="var">here</span></span><br/>
+*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab130"></a><h1 class="section">Proving the Correctness of Trie Tables</h1>
+
+<div class="paragraph"> </div>
+
+ Trie tables are just another implementation of the <span class="inlinecode"><span class="id" type="var">Maps</span></span> 
+     abstract data type.  What we have to prove is the same as usual for an ADT:
+     define a representation invariant, define an abstraction relation, prove 
+     that the operations respect the invariant and the abstraction relation.
+
+<div class="paragraph"> </div>
+
+     We will indeed do that.  But this time we'll take a different approach.
+     Instead of defining a "natural" abstraction relation based on what
+     we see in the data structure, we'll define an abstraction relation
+     that says, "what you get is what you get."    This will work, but it means
+     we've moved the work into directly proving some things about the 
+     relation between the <span class="inlinecode"><span class="id" type="var">lookup</span></span> and the <span class="inlinecode"><span class="id" type="var">insert</span></span> operators. 
+<div class="paragraph"> </div>
+
+<a name="lab131"></a><h2 class="section">Lemmas About the Relation Between <span class="inlinecode"><span class="id" type="var">lookup</span></span> and <span class="inlinecode"><span class="id" type="var">insert</span></span></h2>
+
+<div class="paragraph"> </div>
+
+<a name="lab132"></a><h4 class="section">Exercise: 1 star (look_leaf)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">look_leaf</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> (<span class="id" type="var">a</span>:<span class="id" type="var">A</span>) <span class="id" type="var">j</span>, <span class="id" type="var">look</span> <span class="id" type="var">a</span> <span class="id" type="var">j</span> <span class="id" type="var">Leaf</span> = <span class="id" type="var">a</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab133"></a><h4 class="section">Exercise: 2 stars (look_ins_same)</h4>
+ This is a rather simple induction. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">look_ins_same</span>: <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} <span class="id" type="var">a</span> <span class="id" type="var">k</span> (<span class="id" type="var">v</span>:<span class="id" type="var">A</span>) <span class="id" type="var">t</span>, <span class="id" type="var">look</span> <span class="id" type="var">a</span> <span class="id" type="var">k</span> (<span class="id" type="var">ins</span> <span class="id" type="var">a</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab134"></a><h4 class="section">Exercise: 3 stars (look_ins_same)</h4>
+ Induction on j? Induction on t?   Do you feel lucky? 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">look_ins_other</span>: <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} <span class="id" type="var">a</span> <span class="id" type="var">j</span> <span class="id" type="var">k</span> (<span class="id" type="var">v</span>:<span class="id" type="var">A</span>) <span class="id" type="var">t</span>, <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">j</span> ≠ <span class="id" type="var">k</span> → <span class="id" type="var">look</span> <span class="id" type="var">a</span> <span class="id" type="var">j</span> (<span class="id" type="var">ins</span> <span class="id" type="var">a</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">look</span> <span class="id" type="var">a</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab135"></a><h2 class="section">Bijection Between <span class="inlinecode"><span class="id" type="var">positive</span></span> and <span class="inlinecode"><span class="id" type="var">nat</span></span>.</h2>
+
+<div class="paragraph"> </div>
+
+ In order to relate <span class="inlinecode"><span class="id" type="var">lookup</span></span> on positives to <span class="inlinecode"><span class="id" type="var">total_map</span></span> on nats,
+   it's helpful to have a bijection between <span class="inlinecode"><span class="id" type="var">positive</span></span> and <span class="inlinecode"><span class="id" type="var">nat</span></span>.
+   We'll relate <span class="inlinecode">1%<span class="id" type="var">positive</span></span> to <span class="inlinecode">0%<span class="id" type="var">nat</span></span>,  <span class="inlinecode">2%<span class="id" type="var">positive</span></span> to <span class="inlinecode">1%<span class="id" type="var">nat</span></span>, and so on. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">nat2pos</span> (<span class="id" type="var">n</span>: <span class="id" type="var">nat</span>) : <span class="id" type="var">positive</span> := <span class="id" type="var">Pos.of_succ_nat</span> <span class="id" type="var">n</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">pos2nat</span> (<span class="id" type="var">n</span>: <span class="id" type="var">positive</span>) : <span class="id" type="var">nat</span> := <span class="id" type="var">pred</span> (<span class="id" type="var">Pos.to_nat</span> <span class="id" type="var">n</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">pos2nat2pos</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span>, <span class="id" type="var">nat2pos</span> (<span class="id" type="var">pos2nat</span> <span class="id" type="var">p</span>) = <span class="id" type="var">p</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;You&nbsp;don't&nbsp;need&nbsp;to&nbsp;read&nbsp;this&nbsp;proof!&nbsp;*)</span><br/>
+<span class="id" type="tactic">intro</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">nat2pos</span>, <span class="id" type="var">pos2nat</span>.<br/>
+<span class="id" type="tactic">rewrite</span> &lt;- (<span class="id" type="var">Pos2Nat.id</span> <span class="id" type="var">p</span>) <span class="id" type="tactic">at</span> 2.<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">Pos.to_nat</span> <span class="id" type="var">p</span>) <span class="id" type="var">eqn</span>:?.<br/>
+<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">Pos2Nat.is_pos</span> <span class="id" type="var">p</span>). <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">Pos.of_nat_succ</span>.<br/>
+<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nat2pos2nat</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span>, <span class="id" type="var">pos2nat</span> (<span class="id" type="var">nat2pos</span> <span class="id" type="var">i</span>) = <span class="id" type="var">i</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;You&nbsp;don't&nbsp;need&nbsp;to&nbsp;read&nbsp;this&nbsp;proof!&nbsp;*)</span><br/>
+<span class="id" type="tactic">intro</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">nat2pos</span>, <span class="id" type="var">pos2nat</span>.<br/>
+<span class="id" type="tactic">rewrite</span> <span class="id" type="var">SuccNat2Pos.id_succ</span>.<br/>
+<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Now, use those two lemmas to prove that it's really a bijection! 
+<div class="paragraph"> </div>
+
+<a name="lab136"></a><h4 class="section">Exercise: 2 stars (pos2nat_bijective)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">pos2nat_injective</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>, <span class="id" type="var">pos2nat</span> <span class="id" type="var">p</span> = <span class="id" type="var">pos2nat</span> <span class="id" type="var">q</span> → <span class="id" type="var">p</span>=<span class="id" type="var">q</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nat2pos_injective</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span>, <span class="id" type="var">nat2pos</span> <span class="id" type="var">i</span> = <span class="id" type="var">nat2pos</span> <span class="id" type="var">j</span> → <span class="id" type="var">i</span>=<span class="id" type="var">j</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab137"></a><h2 class="section">Proving That Tries are a "Table" ADT.</h2>
+
+<div class="paragraph"> </div>
+
+ Representation invariant.  Under what conditions is a trie
+    well-formed?  Fill in the simplest thing you can, to start; then
+    correct it later as necessary. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_trie</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">t</span>: <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span>) : <span class="id" type="keyword">Prop</span><br/>
+<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+Abstraction relation.  This is what we mean by, "what you get is
+    what you get."  That is, the abstraction of a <span class="inlinecode"><span class="id" type="var">trie_table</span></span> is the
+    total function, from naturals to <span class="inlinecode"><span class="id" type="var">A</span></span> values, that you get by
+    running the <span class="inlinecode"><span class="id" type="var">lookup</span></span> function.  Based on this abstraction
+    relation, it'll be trivial to prove <span class="inlinecode"><span class="id" type="var">lookup_relate</span></span>.  But
+    <span class="inlinecode"><span class="id" type="var">insert_relate</span></span> will NOT be trivial. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">abstract</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">t</span>: <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span>) (<span class="id" type="var">n</span>: <span class="id" type="var">nat</span>) : <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">lookup</span> (<span class="id" type="var">nat2pos</span> <span class="id" type="var">n</span>) <span class="id" type="var">t</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">Abs</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">t</span>: <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">abstract</span> <span class="id" type="var">t</span> = <span class="id" type="var">m</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab138"></a><h4 class="section">Exercise: 2 stars (is_trie)</h4>
+ If you picked a _really simple_ representation invariant, these should be easy.
+    Later, if you need to change the representation invariant in order to 
+    get the <span class="inlinecode"><span class="id" type="var">_relate</span></span> proofs to work, then you'll need to fix these proofs. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">empty_is_trie</span>: <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">default</span>: <span class="id" type="var">A</span>), <span class="id" type="var">is_trie</span> (<span class="id" type="var">empty</span> <span class="id" type="var">default</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">insert_is_trie</span>: <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} <span class="id" type="var">i</span> <span class="id" type="var">x</span> (<span class="id" type="var">t</span>: <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span>), <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_trie</span> <span class="id" type="var">t</span> → <span class="id" type="var">is_trie</span> (<span class="id" type="var">insert</span> <span class="id" type="var">i</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab139"></a><h4 class="section">Exercise: 2 stars (empty_relate)</h4>
+ Just unfold a bunch of definitions, use <span class="inlinecode"><span class="id" type="tactic">extensionality</span></span>, and
+    use one of the lemmas you proved above, in the section
+    "Lemmas about the relation between <span class="inlinecode"><span class="id" type="var">lookup</span></span> and <span class="inlinecode"><span class="id" type="var">insert</span></span>." 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">empty_relate</span>: <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">default</span>: <span class="id" type="var">A</span>), <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">empty</span> <span class="id" type="var">default</span>) (<span class="id" type="var">t_empty</span> <span class="id" type="var">default</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab140"></a><h4 class="section">Exercise: 2 stars (lookup_relate)</h4>
+ Given the abstraction relation we've chosen, this one should be really simple. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">lookup_relate</span>: <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} <span class="id" type="var">i</span> (<span class="id" type="var">t</span>: <span class="id" type="var">trie_table</span> <span class="id" type="var">A</span>) <span class="id" type="var">m</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_trie</span> <span class="id" type="var">t</span> → <span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">m</span> → <span class="id" type="var">lookup</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span> = <span class="id" type="var">m</span> (<span class="id" type="var">pos2nat</span> <span class="id" type="var">i</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab141"></a><h4 class="section">Exercise: 3 stars (insert_relate)</h4>
+ Given the abstraction relation we've chosen, this one should NOT be simple.
+   However, you've already done the heavy lifting, with the lemmas
+  <span class="inlinecode"><span class="id" type="var">look_ins_same</span></span> and <span class="inlinecode"><span class="id" type="var">look_ins_other</span></span>.   You will not need induction here.
+  Instead, unfold a bunch of things, use extensionality, and get to a case analysis 
+  on whether <span class="inlinecode"><span class="id" type="var">pos2nat</span></span> <span class="inlinecode"><span class="id" type="var">k</span></span> <span class="inlinecode">=?</span> <span class="inlinecode"><span class="id" type="var">pos2nat</span></span> <span class="inlinecode"><span class="id" type="var">j</span></span>.   To handle that case analysis,
+   use <span class="inlinecode"><span class="id" type="var">bdestruct</span></span>. You may also need <span class="inlinecode"><span class="id" type="var">pos2nat_injective</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">insert_relate</span>: <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} <span class="id" type="var">k</span> (<span class="id" type="var">v</span>: <span class="id" type="var">A</span>) <span class="id" type="var">t</span> <span class="id" type="var">cts</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_trie</span> <span class="id" type="var">t</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">insert</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) (<span class="id" type="var">t_update</span> <span class="id" type="var">cts</span> (<span class="id" type="var">pos2nat</span> <span class="id" type="var">k</span>) <span class="id" type="var">v</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab142"></a><h2 class="section">Sanity Check</h2>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">Abs_three_ten</span>: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">insert</span> 3 <span class="id" type="var">true</span> (<span class="id" type="var">insert</span> 10 <span class="id" type="var">true</span> (<span class="id" type="var">empty</span> <span class="id" type="var">false</span>)))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">t_update</span> (<span class="id" type="var">t_update</span> (<span class="id" type="var">t_empty</span> <span class="id" type="var">false</span>) (<span class="id" type="var">pos2nat</span> 10) <span class="id" type="var">true</span>) (<span class="id" type="var">pos2nat</span> 3) <span class="id" type="var">true</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">try</span> (<span class="id" type="tactic">apply</span> <span class="id" type="var">insert_relate</span>; [<span class="id" type="var">hnf</span>; <span class="id" type="tactic">auto</span> | ]).<br/>
+<span class="id" type="tactic">try</span> (<span class="id" type="tactic">apply</span> <span class="id" type="var">insert_relate</span>; [<span class="id" type="var">hnf</span>; <span class="id" type="tactic">auto</span> | ]).<br/>
+<span class="id" type="tactic">try</span> (<span class="id" type="tactic">apply</span> <span class="id" type="var">empty_relate</span>).<br/>
+<span class="comment">(*&nbsp;Change&nbsp;this&nbsp;to&nbsp;Qed&nbsp;once&nbsp;you&nbsp;have&nbsp;<span class="inlinecode"><span class="id" type="var">is_trie</span></span>&nbsp;defined&nbsp;and&nbsp;working.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab143"></a><h1 class="section">Conclusion</h1>
+ Efficient functional maps with (positive) integer keys are one of the most
+   important data structures in functional programming.  They are used for
+  symbol tables in compilers and static analyzers; to represent directed graphs
+  (the mapping from node-ID to edge-list); and (in general) anywhere that
+  an imperative algorithm uses an array or _requires_ a mutable pointer.
+
+<div class="paragraph"> </div>
+
+  Therefore, these _tries_ on positive numbers are very important in Coq programming.
+  They were introduced by Xavier Leroy and Sandrine Blazy in the CompCert
+  compiler (2006), and are now available in the Coq standard library as the
+  <span class="inlinecode"><span class="id" type="var">PositiveMap</span></span> module, which implements the <span class="inlinecode"><span class="id" type="var">FMaps</span></span> interface.
+  The core implementation of <span class="inlinecode"><span class="id" type="var">PositiveMap</span></span> is just as shown in this chapter,
+  but <span class="inlinecode"><span class="id" type="var">FMaps</span></span> uses different names for the functions <span class="inlinecode"><span class="id" type="var">insert</span></span> and <span class="inlinecode"><span class="id" type="var">lookup</span></span>, 
+  and also provides several other operations on maps.  
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

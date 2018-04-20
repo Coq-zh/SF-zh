@@ -1,0 +1,803 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Auto: 更多的自动化</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 1: Logical Foundations</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Auto<span class="subtitle">更多的自动化</span></h1>
+
+
+<div class="code code-tight">
+
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.omega.Omega</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Imp</span>.<br/>
+</div>
+
+<div class="doc">
+到目前为止，我们大多使用的都是 Coq 策略系统中手动的部分。
+    在本章中，我们会学习更多 Coq 强大的自动化特性：通过 <span class="inlinecode"><span class="id" type="tactic">auto</span></span>
+    策略进行证明搜索，通过 <span class="inlinecode"><span class="id" type="keyword">Ltac</span></span> 前提搜索器进行自动正向推理，以及通过
+    <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">eauto</span></span> 推迟存在性变量的实例化。这些特性配合 Ltac
+    的脚本功能可以极大地缩短证明！如果使用得当，它们还会提高证明的可维护性，
+    在以后修改证明的底层定义时也会更加健壮。对 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">eauto</span></span>
+    更加深入的探讨可参阅<b>《编程语言基础》</b>的 <span class="inlinecode"><span class="id" type="var">UseAuto</span></span> 一章。
+
+<div class="paragraph"> </div>
+
+    还有另一大类自动化方式我们所言不多，即内建的对特定种类问题的决策算法：
+    <span class="inlinecode"><span class="id" type="tactic">omega</span></span> 就是这样的例子，不过还有其它的。这一主题我们会以后再谈。
+
+<div class="paragraph"> </div>
+
+    我们从以下证明开始，加上一些<a href="Imp.html"><span class="inlineref">Imp</span></a>中的小改动。
+    我们将分几个阶段来简化此证明。 
+<div class="paragraph"> </div>
+
+ 首先，我们定义一小段 Ltac 宏，将常用的模式压缩成单个命令。 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">inv</span> <span class="id" type="var">H</span> := <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_Skip&nbsp;*)</span> <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_Ass&nbsp;*)</span> <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_Seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="comment">(*&nbsp;断言的证明&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">IHE1_1</span>; <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span>. }<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHE1_2</span>. <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;E_IfTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHE1</span>. <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;E_IfFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHE1</span>. <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;E_WhileFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;E_WhileTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>4</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>4</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="comment">(*&nbsp;断言的证明&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">IHE1_1</span>; <span class="id" type="tactic">assumption</span>. }<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHE1_2</span>. <span class="id" type="tactic">assumption</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab381"></a><h1 class="section"><span class="inlinecode"><span class="id" type="tactic">auto</span></span> 策略</h1>
+
+<div class="paragraph"> </div>
+
+ 迄今为止，我们的证明脚本大多是按名称来应用相关的假设或引理的，一次一个。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_1</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span>: <span class="id" type="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> → <span class="id" type="var">Q</span>) → (<span class="id" type="var">Q</span> → <span class="id" type="var">R</span>) → <span class="id" type="var">P</span> → <span class="id" type="var">R</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">H<sub>3</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">assumption</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="tactic">auto</span></span> 策略可以<b>搜索</b>一系列能够证明待证目标的应用来免除这些苦役：
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_1'</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span>: <span class="id" type="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> → <span class="id" type="var">Q</span>) → (<span class="id" type="var">Q</span> → <span class="id" type="var">R</span>) → <span class="id" type="var">P</span> → <span class="id" type="var">R</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+任何能够被以下策略的组合解决的待证目标，都能用 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 来解决：
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" type="tactic">intros</span></span>
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="tactic">apply</span></span>（默认使用局部上下文中的前提）。 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ 使用 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 一定是「安全」的，它不会失败，也不会改变当前证明的状态：
+    <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 要么完全解决它，要么什么也不做。 
+<div class="paragraph"> </div>
+
+ 下面是个更有趣的例子，它展示了 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 的强大： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_2</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span> <span class="id" type="var">S</span> <span class="id" type="var">T</span> <span class="id" type="var">U</span> : <span class="id" type="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> → <span class="id" type="var">Q</span>) →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> → <span class="id" type="var">R</span>) →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">T</span> → <span class="id" type="var">R</span>) →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">S</span> → <span class="id" type="var">T</span> → <span class="id" type="var">U</span>) →<br/>
+&nbsp;&nbsp;((<span class="id" type="var">P</span>→<span class="id" type="var">Q</span>) → (<span class="id" type="var">P</span>→<span class="id" type="var">S</span>)) →<br/>
+&nbsp;&nbsp;<span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">P</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">U</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+理论上来说，搜索可能需要任意长的时间，此时可通过参数来控制
+    <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 默认的搜索深度。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_3</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span> <span class="id" type="var">S</span> <span class="id" type="var">T</span> <span class="id" type="var">U</span>: <span class="id" type="keyword">Prop</span>),<br/>
+&nbsp;&nbsp;(<span class="id" type="var">P</span> → <span class="id" type="var">Q</span>) →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">Q</span> → <span class="id" type="var">R</span>) →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">R</span> → <span class="id" type="var">S</span>) →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">S</span> → <span class="id" type="var">T</span>) →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">T</span> → <span class="id" type="var">U</span>) →<br/>
+&nbsp;&nbsp;<span class="id" type="var">P</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">U</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;当&nbsp;<span class="inlinecode"><span class="id" type="tactic">auto</span></span>&nbsp;无法解决此目标时，它就什么也不做&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;可选的参数用来控制它的搜索深度（默认为&nbsp;5）&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span> 6.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+在搜索当前目标的潜在证明时， <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 会同时考虑当前上下文中的前提，
+    以及一个包含其它引理或构造子的<b>提示数据库</b>。
+    某些关于相等性和逻辑运算符的事实默认已经安装到提示数据库中了。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_4</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span> : <span class="id" type="keyword">Prop</span>,<br/>
+&nbsp;&nbsp;<span class="id" type="var">Q</span> →<br/>
+&nbsp;&nbsp;(<span class="id" type="var">Q</span> → <span class="id" type="var">R</span>) →<br/>
+&nbsp;&nbsp;<span class="id" type="var">P</span> ∨ (<span class="id" type="var">Q</span> ∧ <span class="id" type="var">R</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+我们可以为某次 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 的调用扩展提示数据库，只需使用「<span class="inlinecode"><span class="id" type="tactic">auto</span></span> <span class="inlinecode"><span class="id" type="keyword">using</span></span> <span class="inlinecode">...</span>」。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">le_antisym</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>: <span class="id" type="var">nat</span>, (<span class="id" type="var">n</span> ≤ <span class="id" type="var">m</span> ∧ <span class="id" type="var">m</span> ≤ <span class="id" type="var">n</span>) → <span class="id" type="var">n</span> = <span class="id" type="var">m</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">omega</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_6</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">n</span> ≤ <span class="id" type="var">p</span> → (<span class="id" type="var">n</span> ≤ <span class="id" type="var">m</span> ∧ <span class="id" type="var">m</span> ≤ <span class="id" type="var">n</span>)) →<br/>
+&nbsp;&nbsp;<span class="id" type="var">n</span> ≤ <span class="id" type="var">p</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">n</span> = <span class="id" type="var">m</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span> <span class="id" type="keyword">using</span> <span class="id" type="var">le_antisym</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+当然, 在证明过程中经常会用到一些特定的构造子和引理，
+    我们可以将它们加入全局提示数据库中，方法是在顶层使用：
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Hint</span>&nbsp;<span class="id" type="keyword">Resolve</span>&nbsp;<span class="id" type="var">T</span>.
+<div class="paragraph"> </div>
+
+</div>
+    其中 <span class="inlinecode"><span class="id" type="var">T</span></span> 是某个顶层的定理，或者是某个归纳定义的命题
+    （即所有类型都是一个蕴含式）的构造子。我们也可以使用简写
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Hint</span>&nbsp;<span class="id" type="var">Constructors</span>&nbsp;<span class="id" type="var">c</span>.
+<div class="paragraph"> </div>
+
+</div>
+    来告诉 Coq 对归纳定义 <span class="inlinecode"><span class="id" type="var">c</span></span> 的<b>所有</b>构造子都执行 <span class="inlinecode"><span class="id" type="keyword">Hint</span></span> <span class="inlinecode"><span class="id" type="keyword">Resolve</span></span>。
+
+<div class="paragraph"> </div>
+
+    有时我们还需要
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Hint</span>&nbsp;<span class="id" type="keyword">Unfold</span>&nbsp;<span class="id" type="var">d</span>.
+<div class="paragraph"> </div>
+
+</div>
+    其中 <span class="inlinecode"><span class="id" type="var">d</span></span> 是个已定义的符号，这样 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 就知道要展开使用 <span class="inlinecode"><span class="id" type="var">d</span></span>，
+    以此来获得更多使用已知的引理的机会。 
+<div class="paragraph"> </div>
+
+ 我们也可以定义特殊化的提示数据库，让它只在需要时激活。详情见 Coq 参考手册。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Resolve</span> <span class="id" type="var">le_antisym</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_6'</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">n</span>≤ <span class="id" type="var">p</span> → (<span class="id" type="var">n</span> ≤ <span class="id" type="var">m</span> ∧ <span class="id" type="var">m</span> ≤ <span class="id" type="var">n</span>)) →<br/>
+&nbsp;&nbsp;<span class="id" type="var">n</span> ≤ <span class="id" type="var">p</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">n</span> = <span class="id" type="var">m</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span>. <span class="comment">(*&nbsp;从数据库中找出提示&nbsp;*)</span><br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_fortytwo</span> <span class="id" type="var">x</span> := (<span class="id" type="var">x</span> = 42).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_7</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">x</span> ≤ 42 ∧ 42 ≤ <span class="id" type="var">x</span>) → <span class="id" type="var">is_fortytwo</span> <span class="id" type="var">x</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">auto</span>. <span class="comment">(*&nbsp;does&nbsp;nothing&nbsp;*)</span><br/>
+<span class="id" type="keyword">Abort</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Unfold</span> <span class="id" type="var">is_fortytwo</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">auto_example_7'</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">x</span> ≤ 42 ∧ 42 ≤ <span class="id" type="var">x</span>) → <span class="id" type="var">is_fortytwo</span> <span class="id" type="var">x</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+我们来初次尝试简化 <span class="inlinecode"><span class="id" type="var">ceval_deterministic</span></span> 的证明脚本。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic'</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_Seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span> <span class="id" type="tactic">by</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_IfTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_IfFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_WhileFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;E_WhileTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>4</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>4</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span> <span class="id" type="tactic">by</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+如果在证明中我们会反复用到某个策略，呢么可以使用一个 <span class="inlinecode"><span class="id" type="keyword">Proof</span></span>
+    命令的变体将它作为证明中的默认策略。例如 <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span>（其中 <span class="inlinecode"><span class="id" type="var">t</span></span>
+    为任意一个策略）能够让我们在证明中将 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span>...</span> 用作 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span>;<span class="id" type="var">t</span></span> 的简写。
+    作为示范，下面是以上证明的另一个版本，它用到了 <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode"><span class="id" type="tactic">auto</span></span>。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic'_alt</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_Seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_IfTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_IfFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>5</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_WhileFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;E_WhileTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>4</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>4</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>...<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab382"></a><h1 class="section">搜索前提</h1>
+
+<div class="paragraph"> </div>
+
+ 证明变得更简单了，但还是有些烦人的重复。我们先从矛盾的情况着手。
+    这些矛盾都是因为我们同时有
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">H<sub>1</sub></span>:&nbsp;<span class="id" type="var">beval</span>&nbsp;<span class="id" type="var">st</span>&nbsp;<span class="id" type="var">b</span>&nbsp;=&nbsp;<span class="id" type="var">false</span>
+<div class="paragraph"> </div>
+
+</div>
+    和
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">H<sub>2</sub></span>:&nbsp;<span class="id" type="var">beval</span>&nbsp;<span class="id" type="var">st</span>&nbsp;<span class="id" type="var">b</span>&nbsp;=&nbsp;<span class="id" type="var">true</span>
+<div class="paragraph"> </div>
+
+</div>
+    这两个前提。矛盾很显然，但证明却有点麻烦：我们必须找到 <span class="inlinecode"><span class="id" type="var">H<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">H<sub>2</sub></span></span>
+    这两个前提，用一次 <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span> 后再用一次 <span class="inlinecode"><span class="id" type="tactic">inversion</span></span>。我们希望自动化此过程。
+
+<div class="paragraph"> </div>
+
+    （实际上，Coq 有个内建的 <span class="inlinecode"><span class="id" type="tactic">congruence</span></span> 策略来处理这种情况。
+    不过我们暂时先忽略它的存在，为的是示范如何自己构建正向推理的策略。）
+
+<div class="paragraph"> </div>
+
+    第一步，我们可以通过在 Ltac 中编写一个小函数来抽象出有问题的脚本。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">rwinv</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span> := <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">H<sub>2</sub></span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic''</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_Seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span> <span class="id" type="tactic">by</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_IfTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">rwinv</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_IfFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">rwinv</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>5</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_WhileFalse&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">rwinv</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;E_WhileTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">rwinv</span> <span class="id" type="var">H</span> <span class="id" type="var">H<sub>4</sub></span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span> <span class="id" type="tactic">by</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">auto</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+但是这并没有改进多少。我们真正希望的是 Coq 能自己发现发现有关的前提。
+    我们可以使用 Ltac 的 <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode">...</span> <span class="inlinecode"><span class="id" type="keyword">end</span></span> 功能达到此目的。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">find_rwinv</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">H<sub>1</sub></span>: ?<span class="id" type="var">E</span> = <span class="id" type="var">true</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">H<sub>2</sub></span>: ?<span class="id" type="var">E</span> = <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">_</span> ⇒ <span class="id" type="var">rwinv</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> 会查找两个不同的，形如等式的前提，
+    其左式为两个相同的任意表达式 <span class="inlinecode"><span class="id" type="var">E</span></span>，而右式为两个互相矛盾的布尔值。
+    如果找到了这样的前提，就把 <span class="inlinecode"><span class="id" type="var">H<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">H<sub>2</sub></span></span> 绑定为它们的名字，
+    并将 <span class="inlinecode"><span class="id" type="var">rwinv</span></span> 策略应用到 <span class="inlinecode"><span class="id" type="var">H<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">H<sub>2</sub></span></span> 上。
+
+<div class="paragraph"> </div>
+
+    把此策略添加到每一个归纳证明的情况中，就能把所有的矛盾情况都解决了。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic'''</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="tactic">try</span> <span class="id" type="var">find_rwinv</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_Seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span> <span class="id" type="tactic">by</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_WhileTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">st'</span> = <span class="id" type="var">st'0</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">EQ<sub>1</sub></span> <span class="id" type="tactic">by</span> <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span> <span class="id" type="var">st'0</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">auto</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+现在我们来看看剩下的情况。每种情况都应用了带条件的前提以得到一个等式。
+    目前我们把这些等式重述为断言，因此我们必须猜出需要的等式是什么
+    （虽然可以用 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 证明它们）。另一种方式是找出用到的有关前提，
+    然后用它们进行 <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span> 改写，类似于这样： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic''''</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="tactic">try</span> <span class="id" type="var">find_rwinv</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_Seq&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> (<span class="id" type="var">IHE1_1</span> <span class="id" type="var">st'0</span> <span class="id" type="var">H<sub>1</sub></span>) <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_WhileTrue&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> (<span class="id" type="var">IHE1_1</span> <span class="id" type="var">st'0</span> <span class="id" type="var">H<sub>3</sub></span>) <span class="id" type="keyword">in</span> *. <span class="id" type="tactic">auto</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+现在用于改写的相关前提可以自动查找了。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">find_eqn</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">H<sub>1</sub></span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>, ?<span class="id" type="var">P</span> <span class="id" type="var">x</span> → ?<span class="id" type="var">L</span> = ?<span class="id" type="var">R</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">H<sub>2</sub></span>: ?<span class="id" type="var">P</span> ?<span class="id" type="var">X</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">_</span> ⇒ <span class="id" type="tactic">rewrite</span> (<span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">X</span> <span class="id" type="var">H<sub>2</sub></span>) <span class="id" type="keyword">in</span> *<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+模式 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode">?<span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">→</span> <span class="inlinecode">?<span class="id" type="var">L</span></span> <span class="inlinecode">=</span> <span class="inlinecode">?<span class="id" type="var">R</span></span> 会匹配任何任何形如
+    「对于所有的 <span class="inlinecode"><span class="id" type="var">x</span></span>，<b><span class="inlinecode"><span class="id" type="var">x</span></span> 的某些性质</b>蕴含<b>某些等式</b>」的前提。
+    <span class="inlinecode"><span class="id" type="var">x</span></span> 的性质被绑定为模式变量 <span class="inlinecode"><span class="id" type="var">P</span></span>，而该等式的左式和右式会分别绑定为
+    <span class="inlinecode"><span class="id" type="var">L</span></span> 和 <span class="inlinecode"><span class="id" type="var">R</span></span>。此前提的名字会被绑定为 <span class="inlinecode"><span class="id" type="var">H<sub>1</sub></span></span>。之后模式 <span class="inlinecode">?<span class="id" type="var">P</span></span> <span class="inlinecode">?<span class="id" type="var">X</span></span>
+    会匹配任何提供了「<span class="inlinecode"><span class="id" type="var">P</span></span> 对于某个具体的 <span class="inlinecode"><span class="id" type="var">X</span></span> 成立的证据」的前提。
+    如果两个模式均成功，我们会在所有的前提和目标中应用 <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span> 策略改写
+    （即，用 <span class="inlinecode"><span class="id" type="var">X</span></span> 来实例化量化的 <span class="inlinecode"><span class="id" type="var">x</span></span> 并将 <span class="inlinecode"><span class="id" type="var">H<sub>2</sub></span></span> 作为 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 所需的证据提供）。
+
+<div class="paragraph"> </div>
+
+    还剩一个问题：通常，可能有好几对前提都具有这种一般形式，
+    而挑出我们真正需要的好像比较困难。不过关键在于我们要认识到其实可以
+    <b>全试一遍</b>！以下是具体方法：
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> 每一个 <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> 在执行时都会不停地查找可行的一对前提，
+      直到右式 RHS 匹配成功；如果没有这样的一对前提则会失败。
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span> 在得到一个形如 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">X</span></span> 的平凡等式时会失败。
+
+</li>
+<li> 我们可以把整体策略包装在 <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> 中，这样就可以一直进行有用的改写，
+      直到只剩下平凡的了。 
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic'''''</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="tactic">try</span> <span class="id" type="var">find_rwinv</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> <span class="id" type="var">find_eqn</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+这种方法的巨大回报是，面对我们语言的适度变化时，我们的证明脚本会更加健壮。
+    比如，我们可以为该语言增加一个 <span class="inlinecode"><span class="id" type="var">REPEAT</span></span> 命令。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Repeat</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">com</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSkip</span> : <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CAsgn</span> : <span class="id" type="var">string</span> → <span class="id" type="var">aexp</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSeq</span> : <span class="id" type="var">com</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CIf</span> : <span class="id" type="var">bexp</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CWhile</span> : <span class="id" type="var">bexp</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CRepeat</span> : <span class="id" type="var">com</span> → <span class="id" type="var">bexp</span> → <span class="id" type="var">com</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">REPEAT</span></span> 的行为和 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 类似，只是循环条件会在每次循环体执行完
+    <b>之后</b> 执行，且只在循环条件为<b>false</b>时重复执行。
+    因此，循环体至少会被执行一次。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> "'SKIP'" :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">CSkip</span>.<br/>
+<span class="id" type="keyword">Notation</span> "c<sub>1</sub> ; c<sub>2</sub>" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<span class="id" type="keyword">Notation</span> "X '<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>' a" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CAsgn</span> <span class="id" type="var">X</span> <span class="id" type="var">a</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 60).<br/>
+<span class="id" type="keyword">Notation</span> "'WHILE' b 'DO' c 'END'" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<span class="id" type="keyword">Notation</span> "'IFB' e<sub>1</sub> 'THEN' e<sub>2</sub> 'ELSE' e<sub>3</sub> 'FI'" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CIf</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">e<sub>3</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<span class="id" type="keyword">Notation</span> "'REPEAT' e<sub>1</sub> 'UNTIL' b<sub>2</sub> 'END'" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CRepeat</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">b<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">ceval</span> : <span class="id" type="var">state</span> → <span class="id" type="var">com</span> → <span class="id" type="var">state</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_Skip</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> <span class="id" type="var">SKIP</span> <span class="id" type="var">st</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_Ass</span>  : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span> <span class="id" type="var">a<sub>1</sub></span> <span class="id" type="var">n</span> <span class="id" type="var">X</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">aeval</span> <span class="id" type="var">st</span> <span class="id" type="var">a<sub>1</sub></span> = <span class="id" type="var">n</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> (<span class="id" type="var">X</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">a<sub>1</sub></span>) (<span class="id" type="var">t_update</span> <span class="id" type="var">st</span> <span class="id" type="var">X</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_Seq</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">st''</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st'</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">st''</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> (<span class="id" type="var">c<sub>1</sub></span> ; <span class="id" type="var">c<sub>2</sub></span>) <span class="id" type="var">st''</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_IfTrue</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b<sub>1</sub></span> = <span class="id" type="var">true</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> (<span class="id" type="var">IFB</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span>) <span class="id" type="var">st'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_IfFalse</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b<sub>1</sub></span> = <span class="id" type="var">false</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">st'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> (<span class="id" type="var">IFB</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span>) <span class="id" type="var">st'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_WhileFalse</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b<sub>1</sub></span> = <span class="id" type="var">false</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> (<span class="id" type="var">WHILE</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">DO</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">END</span>) <span class="id" type="var">st</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_WhileTrue</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">st''</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b<sub>1</sub></span> = <span class="id" type="var">true</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st'</span> (<span class="id" type="var">WHILE</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">DO</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">END</span>) <span class="id" type="var">st''</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> (<span class="id" type="var">WHILE</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">DO</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">END</span>) <span class="id" type="var">st''</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_RepeatEnd</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beval</span> <span class="id" type="var">st'</span> <span class="id" type="var">b<sub>1</sub></span> = <span class="id" type="var">true</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> (<span class="id" type="var">CRepeat</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">b<sub>1</sub></span>) <span class="id" type="var">st'</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">E_RepeatLoop</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">st''</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">beval</span> <span class="id" type="var">st'</span> <span class="id" type="var">b<sub>1</sub></span> = <span class="id" type="var">false</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st'</span> (<span class="id" type="var">CRepeat</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">b<sub>1</sub></span>) <span class="id" type="var">st''</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> (<span class="id" type="var">CRepeat</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">b<sub>1</sub></span>) <span class="id" type="var">st''</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Notation</span> "c<sub>1</sub> '/' st '\\' st'" := (<span class="id" type="var">ceval</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">st'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40, <span class="id" type="var">st</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 39).<br/>
+</div>
+
+<div class="doc">
+我们对确定性证明的第一次尝试并不成功：<span class="inlinecode"><span class="id" type="var">E_RepeatEnd</span></span> 和 <span class="inlinecode"><span class="id" type="var">E_RepeatLoop</span></span>
+    这两种情况并没有被之前的自动化处理。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="tactic">try</span> <span class="id" type="var">find_rwinv</span>; <span class="id" type="tactic">repeat</span> <span class="id" type="var">find_eqn</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_RepeatEnd&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;false（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">find_rwinv</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;哎呀！为什么刚才&nbsp;<span class="inlinecode"><span class="id" type="var">find_rwinv</span></span>&nbsp;没有为我们解决这个问题呢？<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;因为我们把顺序搞错了。&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;E_RepeatLoop&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;b&nbsp;求值为&nbsp;true（矛盾）&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">find_rwinv</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+幸运的是，我们只需交换 <span class="inlinecode"><span class="id" type="var">find_eqn</span></span> 和 <span class="inlinecode"><span class="id" type="var">find_rwinv</span></span>
+    的调用顺序就能修复这一点。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic'</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>1</sub></span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c</span> / <span class="id" type="var">st</span> \\ <span class="id" type="var">st<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">E<sub>1</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="var">inv</span> <span class="id" type="var">E<sub>2</sub></span>; <span class="id" type="tactic">repeat</span> <span class="id" type="var">find_eqn</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">find_rwinv</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Repeat</span>.<br/>
+</div>
+
+<div class="doc">
+这些例子为了让大家看看 Coq 中的「超级自动化」可以做到什么。
+    <span class="inlinecode"><span class="id" type="keyword">match</span></span> <span class="inlinecode"><span class="id" type="var">goal</span></span> 在使用时的的细节十分复杂，调试也很不方便。
+    但至少在证明时值得加入它来简化证明，避免繁琐的工作，
+    并为未来的修改做好准备。 
+<div class="paragraph"> </div>
+
+<a name="lab383"></a><h2 class="section">变体 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">eauto</span></span></h2>
+
+<div class="paragraph"> </div>
+
+ 作为本章的结尾，我们来介绍一种更加方便的特性：
+    它能够推迟量词的实例化。为了引出此特性，我们来回忆一下<a href="Imp.html"><span class="inlineref">Imp</span></a>
+    中的这个例子： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">ceval_example1</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">X</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> 2;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">IFB</span> <span class="id" type="var">X</span> ≤ 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">THEN</span> <span class="id" type="var">Y</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> 3<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ELSE</span> <span class="id" type="var">Z</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> 4<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">FI</span>)<br/>
+&nbsp;&nbsp;&nbsp;/ { <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 0 }<br/>
+&nbsp;&nbsp;&nbsp;\\ { <span class="id" type="var">X</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 2 ; <span class="id" type="var">Z</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 4 }.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;我们补充了中间状态&nbsp;<span class="inlinecode"><span class="id" type="var">st'</span></span>...&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_Seq</span> <span class="id" type="keyword">with</span> { <span class="id" type="var">X</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 2 }.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">E_Ass</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">E_IfFalse</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">E_Ass</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+在证明的第一步，我们显式地提供了一个略长的表达式来帮助 Coq
+    为 <span class="inlinecode"><span class="id" type="var">E_Seq</span></span> 构造子实例化一个「隐藏」的参数。需要它的原因在于
+    <span class="inlinecode"><span class="id" type="var">E_Seq</span></span> 的定义...
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">E_Seq</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">c<sub>1</sub></span>&nbsp;<span class="id" type="var">c<sub>2</sub></span>&nbsp;<span class="id" type="var">st</span>&nbsp;<span class="id" type="var">st'</span>&nbsp;<span class="id" type="var">st''</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c<sub>1</sub></span>&nbsp;/&nbsp;<span class="id" type="var">st</span>&nbsp;&nbsp;\\&nbsp;<span class="id" type="var">st'</span>&nbsp;→<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">c<sub>2</sub></span>&nbsp;/&nbsp;<span class="id" type="var">st'</span>&nbsp;\\&nbsp;<span class="id" type="var">st''</span>&nbsp;→<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">c<sub>1</sub></span>&nbsp;;;&nbsp;<span class="id" type="var">c<sub>2</sub></span>)&nbsp;/&nbsp;<span class="id" type="var">st</span>&nbsp;\\&nbsp;<span class="id" type="var">st''</span>
+<div class="paragraph"> </div>
+
+</div>
+   它是对 <span class="inlinecode"><span class="id" type="var">st'</span></span> 的量化，而且并没有出现在结论中，因此将其结论与目标状态统一
+   并不能帮助 Coq 为此变量找到合适的值。如果我们忽略 <span class="inlinecode"><span class="id" type="keyword">with</span></span>，这一步就会失败
+   （"Error: Unable to find an instance for the variable <span class="inlinecode"><span class="id" type="var">st'</span></span>"）。
+
+<div class="paragraph"> </div>
+
+   该错误的愚蠢指出在于适合 <span class="inlinecode"><span class="id" type="var">st'</span></span> 的值其实在后面的步骤中会相当明显，
+   就在我们应用 <span class="inlinecode"><span class="id" type="var">E_Ass</span></span> 的地方。如果 Coq 能够等到这一步，就没必要显式地给出该值了。
+   这正是 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 策略所能做到的： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">ceval'_example1</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">X</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> 2;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">IFB</span> <span class="id" type="var">X</span> ≤ 1<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">THEN</span> <span class="id" type="var">Y</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> 3<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ELSE</span> <span class="id" type="var">Z</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> 4<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">FI</span>)<br/>
+&nbsp;&nbsp;&nbsp;/ { <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 0 }<br/>
+&nbsp;&nbsp;&nbsp;\\ { <span class="id" type="var">X</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 2 ; <span class="id" type="var">Z</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 4 }.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">E_Seq</span>. <span class="comment">(*&nbsp;1&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">E_Ass</span>. <span class="comment">(*&nbsp;2&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>. <span class="comment">(*&nbsp;3&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;4&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">E_IfFalse</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">E_Ass</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="tactic">eapply</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span> 的行为和 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span> 一样，只是在它统一完目标状态和
+    <span class="inlinecode"><span class="id" type="var">H</span></span> 的结论之后，它并不会在引入所有变量的过程中，
+    麻烦你去检查它们在统一时是否被赋予了具体的值。
+
+<div class="paragraph"> </div>
+
+    如果你循着上面的证明步骤，就会看到 <span class="inlinecode">1</span> 处的目标状态在生成的两个子目标中，
+    都提到了<b>存在性变量</b> <span class="inlinecode">?<span class="id" type="var">st'</span></span>。下一步，即把我们待带到 <span class="inlinecode">2</span> 处的一步，
+    会把 <span class="inlinecode">?<span class="id" type="var">st'</span></span> 替换成一个具体的值。这个新值包含一个新的存在性变量 <span class="inlinecode">?<span class="id" type="var">n</span></span>，
+    它会被后面 <span class="inlinecode">3</span> 处的 <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span> 步骤依次实例化。当我们开始着手第二个子目标时
+    （<span class="inlinecode">4</span> 处），我们观察到此子目标中出现的 <span class="inlinecode">?<span class="id" type="var">st'</span></span> 已经被替换成了在第一个子目标中给出的值。 
+<div class="paragraph"> </div>
+
+ 我们目前学过的几个策略，包括 <span class="inlinecode"><span style='font-size:120%;'>&exist;</span></span>、<span class="inlinecode"><span class="id" type="var">constructor</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 都有
+    <span class="inlinecode"><span class="id" type="var">e</span>...</span> 开头的变体。例如，下面是一个使用了 <span class="inlinecode"><span class="id" type="tactic">eauto</span></span> 的证明： 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">ceval</span>.<br/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Transparent</span> <span class="id" type="var">state</span>.<br/>
+<span class="id" type="keyword">Hint</span> <span class="id" type="var">Transparent</span> <span class="id" type="var">total_map</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">st<sub>12</sub></span> := { <span class="id" type="var">X</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 1 ; <span class="id" type="var">Y</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 2 }.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">st<sub>21</sub></span> := { <span class="id" type="var">X</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 2 ; <span class="id" type="var">Y</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 1 }.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">eauto_example</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">s'</span>,<br/>
+&nbsp;&nbsp;(<span class="id" type="var">IFB</span> <span class="id" type="var">X</span> ≤ <span class="id" type="var">Y</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">THEN</span> <span class="id" type="var">Z</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">Y</span> - <span class="id" type="var">X</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ELSE</span> <span class="id" type="var">Y</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">X</span> + <span class="id" type="var">Z</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">FI</span>) / <span class="id" type="var">st<sub>21</sub></span> \\ <span class="id" type="var">s'</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">eauto</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="tactic">eauto</span></span> 的策略和 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 一样，除了它会使用 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 而非 <span class="inlinecode"><span class="id" type="tactic">apply</span></span>。
+
+<div class="paragraph"> </div>
+
+    专业提示：有人可能会想，既然 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">eauto</span></span> 比 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">auto</span></span>
+    更强大，那么总是用它们不就好了。不幸的是，它们明显更慢，特别是 <span class="inlinecode"><span class="id" type="tactic">eauto</span></span>。
+    Coq 专家倾向于主要使用 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">auto</span></span>，只在普通的版本无法做这些工作时才使用
+    <span class="inlinecode"><span class="id" type="var">e</span></span> 开头的变体。 
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

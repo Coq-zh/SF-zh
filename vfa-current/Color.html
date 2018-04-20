@@ -1,0 +1,863 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Color: Graph Coloring</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: Verified Functional Algorithms</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Color<span class="subtitle">Graph Coloring</span></h1>
+
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+ Required reading: 
+  <a class=citation href=  http://www.cs.princeton.edu/~appel/Color.pdf >
+  Kempe's graph-coloring algorithm </a>, by Andrew W. Appel, 2016.
+
+<div class="paragraph"> </div>
+
+  Suggested reading:
+  <a class=citation href=  http://www.cs.princeton.edu/~appel/papers/regalloc.pdf >
+  Formal Verification of Coalescing Graph-Coloring Register Allocation  </a>,
+  by Sandrine Blazy, Benoit Robillard, and Andrew W. Appel. 
+  ESOP 2010: 19th European Symposium on Programming, pp. 145-164, March 2010. 
+
+<div class="paragraph"> </div>
+
+   _Coloring_ an undirected graph means, assigning a color to each node,
+  so that any two nodes directly connected by an edge have different colors.
+  The _chromatic number_ of a graph is the minimum number of colors
+  needed to color the graph.  Graph coloring is NP-complete, so there is no
+  polynomial-time algorithm; but we need to do it anyway, for applications
+  such as register allocation in compilers.  So therefore we often use 
+  incomplete algorithms:  ones that work only on certain classes of graphs,
+  or ones that color _most_ but not all of the nodes.  Those algorithms are
+  often good enough for important applications.
+
+<div class="paragraph"> </div>
+
+  In this chapter we will study Kempe's algorithm for K-coloring a graph.
+  It was invented by Alfred Kempe in 1879, for use in his attempt to prove
+  the four-color theorem (that every planar graph is 4-colorable).  His 4-color
+  proof had a bug; but his algorithm continues to be useful:  a (major) variation of
+  it was used in the successful 1976 proof of the 4-color theorem, and in 1979 
+  Kempe's algorithm was adapted by Gregory Chaitin for application to register 
+  allocation. It is the Kempe-Chaitin algorithm that we'll prove here.
+
+<div class="paragraph"> </div>
+
+  We implement a program to K-color an undirected graph, perhaps leaving
+  some nodes uncolored.  In a register-allocation problem, the graph nodes
+  correspond to variables in a program, the colors correspond to registers,
+  and the graph edges are interference constraints:  two nodes connected
+  by an edge cannot be assigned the same color.  Nodes left uncolored are
+  "spilled," that is, a register allocator would implement such nodes in 
+  memory locations instead of in registers.  We desire to have as few
+  uncolored nodes as possible, but this desire is not formally specified.
+
+<div class="paragraph"> </div>
+
+  In this exercise we show a simple and unsophisticated algorithm; the program
+  described by Blazy et al. (cited above) is more sophisticated in several ways,
+  such as the use of "register coalescing" to get better results and the use of 
+  worklists to make it run faster.  
+
+<div class="paragraph"> </div>
+
+  Our algorithm does, at least, make use of efficient data structures for
+  representing undirected graphs, adjacency sets, and so on. 
+<div class="paragraph"> </div>
+
+<a name="lab193"></a><h1 class="section">Preliminaries: Representing Graphs</h1>
+
+<div class="paragraph"> </div>
+
+ In the <a href="Trie.html"><span class="inlineref">Trie</span></a> chapter we saw how to represent efficient maps (lookup tables)
+    where the keys are <span class="inlinecode"><span class="id" type="var">positive</span></span> numbers in Coq.  Those tries are implemented
+    in the Coq standard library as <span class="inlinecode"><span class="id" type="var">FMaps</span></span>, functional maps, and we will use them
+   directly from the standard library.   <span class="inlinecode"><span class="id" type="var">FMaps</span></span> represent _partial functions_, that is,
+   mapping keys to <span class="inlinecode"><span class="id" type="var">option</span>(<span class="id" type="var">t</span>)</span> for whatever <span class="inlinecode"><span class="id" type="var">t</span></span>.
+
+<div class="paragraph"> </div>
+
+   We will also use <span class="inlinecode"><span class="id" type="var">FSets</span></span>, efficient sets of keys; you can _think_ of those as FMaps from 
+   keys to <span class="inlinecode"><span class="id" type="var">unit</span></span>, where <span class="inlinecode"><span class="id" type="var">None</span></span> means absent and <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">tt</span></span> means present; but their
+   implementation is a bit more efficient. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">List</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">FSets</span>. <span class="comment">(*&nbsp;Efficient&nbsp;functional&nbsp;sets&nbsp;*)</span><br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">FMaps</span>. <span class="comment">(*&nbsp;Efficient&nbsp;functional&nbsp;maps&nbsp;*)</span><br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>. <span class="comment">(*&nbsp;to&nbsp;use&nbsp;&lt;?&nbsp;notation&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">bdestruct</span></span>&nbsp;tactic&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+The nodes in our graph will be named by positive numbers.
+  <span class="inlinecode"><span class="id" type="var">FSets</span></span> and <span class="inlinecode"><span class="id" type="var">FMaps</span></span> are interfaces for sets and maps over an element type.
+  One instance is when the element type is <span class="inlinecode"><span class="id" type="var">positive</span></span>, with a particular
+  comparison operator corresponding to easy lookup in tries.  The 
+  Coq module for this element type (with its total order) is <span class="inlinecode"><span class="id" type="var">PositiveOrderedTypeBits</span></span>.
+  We'll use <span class="inlinecode"><span class="id" type="var">E</span></span> as an abbreviation for this module name.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">E</span> := <span class="id" type="var">PositiveOrderedTypeBits</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="keyword">Module</span> <span class="id" type="var">E</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">E.t</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span> <span class="inlinecode"><span class="id" type="var">FSetInterface.S</span></span> gives the API of "functional sets."
+   One instance of this, <span class="inlinecode"><span class="id" type="var">PositiveSet</span></span>, has keys = positive numbers.  We
+   abbreviate this as <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">S</span> &lt;: <span class="id" type="var">FSetInterface.S</span> := <span class="id" type="var">PositiveSet</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="keyword">Module</span> <span class="id" type="var">S</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">S.elt</span>.<br/>
+</div>
+
+<div class="doc">
+And similarly for functional maps over positives 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">M</span> &lt;: <span class="id" type="var">FMapInterface.S</span> := <span class="id" type="var">PositiveMap</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="keyword">Module</span> <span class="id" type="var">M</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">M.E</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab194"></a><h1 class="section">Lemmas About Sets and Maps</h1>
+
+<div class="paragraph"> </div>
+
+ In order to reason about a graph coloring algorithm, we need to 
+   prove lemmas such as, "if you remove an element (one domain-&gt;range binding)
+   from a finite map, then the result is a new finite map whose domain
+   has fewer elements."  (Duh!)  But to prove this, we need to build up
+   some definitions and lemmas.  We start by importing some modules
+   that have some already-proved properties of FMaps. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">WF</span> := <span class="id" type="var">WFacts_fun</span> <span class="id" type="var">E</span> <span class="id" type="var">M</span>. <span class="comment">(*&nbsp;Library&nbsp;of&nbsp;useful&nbsp;lemmas&nbsp;about&nbsp;maps&nbsp;*)</span><br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">WP</span> := <span class="id" type="var">WProperties_fun</span> <span class="id" type="var">E</span> <span class="id" type="var">M</span>. <span class="comment">(*&nbsp;More&nbsp;useful&nbsp;stuff&nbsp;about&nbsp;maps&nbsp;*)</span><br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="keyword">Module</span> <span class="id" type="var">WF</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="keyword">Module</span> <span class="id" type="var">WP</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">E.lt</span>. <span class="comment">(*&nbsp;&nbsp;&nbsp;:&nbsp;positive&nbsp;-&gt;&nbsp;positive&nbsp;-&gt;&nbsp;Prop&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">E.lt</span></span> is a comparison predicate on <span class="inlinecode"><span class="id" type="var">positive</span></span> numbers.  It 
+   is _not_ the usual less-than operator; it is a different ordering
+   that is more compatible with the order that a Positive Trie arranges
+   its keys.  In the application of certain lemmas about maps and sets,
+   we will need the facts that <span class="inlinecode"><span class="id" type="var">E.lt</span></span> is a <span class="inlinecode"><span class="id" type="var">StrictOrder</span></span> (irreflexive and
+   transitive) and respects a congruence over equality (is <span class="inlinecode"><span class="id" type="var">Proper</span></span>
+   for <span class="inlinecode"><span class="id" type="var">eq</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">eq</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">iff</span></span>).   As shown here, we just have to dig up
+   these facts from a submodule of a submodule of a submodule of <span class="inlinecode"><span class="id" type="var">M</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">lt_strict</span>: <span class="id" type="var">StrictOrder</span> <span class="id" type="var">E.lt</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">exact</span> <span class="id" type="var">M.ME.MO.IsTO.lt_strorder</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">lt_proper</span>: <span class="id" type="var">Proper</span> (<span class="id" type="var">eq</span> ==&gt; <span class="id" type="var">eq</span> ==&gt; <span class="id" type="var">iff</span>) <span class="id" type="var">E.lt</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">exact</span> <span class="id" type="var">M.ME.MO.IsTO.lt_compat</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The domain of a map is the set of elements that map to Some(_).  To calculate
+   the domain, we can use <span class="inlinecode"><span class="id" type="var">M.fold</span></span>, an operation that comes with the <span class="inlinecode"><span class="id" type="var">FMaps</span></span> 
+   abstract data type.  It takes a map <span class="inlinecode"><span class="id" type="var">m</span></span>, function <span class="inlinecode"><span class="id" type="var">f</span></span> and base value <span class="inlinecode"><span class="id" type="var">b</span></span>, and calculates 
+   <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> <span class="inlinecode">(<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span> <span class="inlinecode">(<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x<sub>3</sub></span></span> <span class="inlinecode"><span class="id" type="var">y<sub>3</sub></span></span> <span class="inlinecode">(...</span> <span class="inlinecode">(<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">xn</span></span> <span class="inlinecode"><span class="id" type="var">yn</span></span> <span class="inlinecode"><span class="id" type="var">b</span>)...)))</span>, where <span class="inlinecode">(<span class="id" type="var">xi</span>,<span class="id" type="var">yi</span>)</span> are the individual elements
+   of <span class="inlinecode"><span class="id" type="var">m</span></span>.  That is, <span class="inlinecode"><span class="id" type="var">M.find</span></span> <span class="inlinecode"><span class="id" type="var">xi</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">yi</span></span>, for each <span class="inlinecode"><span class="id" type="var">i</span></span>.
+
+<div class="paragraph"> </div>
+
+   So, to compute the domain, we just use an <span class="inlinecode"><span class="id" type="var">f</span></span> function that adds <span class="inlinecode"><span class="id" type="var">xi</span></span> to a set;
+   mapping this over all the nodes will add all the keys in <span class="inlinecode"><span class="id" type="var">m</span></span> to the set <span class="inlinecode"><span class="id" type="var">S.empty</span></span>.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">Mdomain</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">m</span>: <span class="id" type="var">M.t</span> <span class="id" type="var">A</span>) : <span class="id" type="var">S.t</span> := <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">M.fold</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> <span class="id" type="var">_</span> <span class="id" type="var">s</span> ⇒ <span class="id" type="var">S.add</span> <span class="id" type="var">n</span> <span class="id" type="var">s</span>) <span class="id" type="var">m</span> <span class="id" type="var">S.empty</span>.<br/>
+</div>
+
+<div class="doc">
+Example:  Make a map from _node_ (represented as <span class="inlinecode"><span class="id" type="var">positive</span></span>) to 
+      _set of node_ (represented as <span class="inlinecode"><span class="id" type="var">S.t</span></span>), in which nodes <span class="inlinecode">3,9,2</span> each map 
+      to the empty set, and no other nodes map to anything. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">example_map</span> : <span class="id" type="var">M.t</span> <span class="id" type="var">S.t</span> :=<br/>
+(<span class="id" type="var">M.add</span> 3%<span class="id" type="var">positive</span> <span class="id" type="var">S.empty</span> <br/>
+&nbsp;&nbsp;(<span class="id" type="var">M.add</span> 9%<span class="id" type="var">positive</span> <span class="id" type="var">S.empty</span> <br/>
+&nbsp;&nbsp;&nbsp;(<span class="id" type="var">M.add</span> 2%<span class="id" type="var">positive</span> <span class="id" type="var">S.empty</span> (<span class="id" type="var">M.empty</span> <span class="id" type="var">S.t</span>   )))).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">domain_example_map</span>: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">S.elements</span> (<span class="id" type="var">Mdomain</span> <span class="id" type="var">example_map</span>) = [2;9;3]%<span class="id" type="var">positive</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">compute</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab195"></a><h2 class="section">equivlistA</h2>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">equivlistA</span>. <span class="comment">(*&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;fun&nbsp;{A&nbsp;:&nbsp;Type}&nbsp;(eqA&nbsp;:&nbsp;A&nbsp;-&gt;&nbsp;A&nbsp;-&gt;&nbsp;Prop)&nbsp;(l&nbsp;l'&nbsp;:&nbsp;list&nbsp;A)&nbsp;=&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forall&nbsp;x&nbsp;:&nbsp;A,&nbsp;InA&nbsp;eqA&nbsp;x&nbsp;l&nbsp;&lt;-&gt;&nbsp;InA&nbsp;eqA&nbsp;x&nbsp;l'<br/>
+&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;{A:Type},&nbsp;(A-&gt;A-&gt;Prop)&nbsp;-&gt;&nbsp;list&nbsp;A&nbsp;-&gt;&nbsp;list&nbsp;A&nbsp;-&gt;&nbsp;Prop&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Suppose two lists <span class="inlinecode"><span class="id" type="var">al</span>,<span class="id" type="var">bl</span></span> both contain the same elements, not necessarily in the same
+     order.  That is, <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">A</span>,</span> <span class="inlinecode"><span class="id" type="var">In</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" type="var">In</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">bl</span></span>.  In fact from this definition you can
+     see that <span class="inlinecode"><span class="id" type="var">al</span></span> or <span class="inlinecode"><span class="id" type="var">bl</span></span> might even have different numbers of repetitions of certain
+     elements.  Then we say the lists are "equivalent."
+
+<div class="paragraph"> </div>
+
+     We can generalize this.  Suppose instead of <span class="inlinecode"><span class="id" type="var">In</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span>, which says that the value <span class="inlinecode"><span class="id" type="var">x</span></span>
+     is in the list <span class="inlinecode"><span class="id" type="var">al</span></span>, we use a different equivalence relation on that <span class="inlinecode"><span class="id" type="var">A</span></span>.  That is,
+     <span class="inlinecode"><span class="id" type="var">InA</span></span> <span class="inlinecode"><span class="id" type="var">eqA</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span> says that some element of <span class="inlinecode"><span class="id" type="var">al</span></span> is _equivalent_ to <span class="inlinecode"><span class="id" type="var">x</span></span>, using the
+     equivalence relation <span class="inlinecode"><span class="id" type="var">eqA</span></span>.  For example: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">same_mod_10</span> (<span class="id" type="var">i</span> <span class="id" type="var">j</span>: <span class="id" type="var">nat</span>) := <span class="id" type="var">i</span> <span class="id" type="var">mod</span> 10 = <span class="id" type="var">j</span> <span class="id" type="var">mod</span> 10.<br/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">InA_example</span>:  <span class="id" type="var">InA</span> <span class="id" type="var">same_mod_10</span> 27 [3;17;2].<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="var">right</span>. <span class="id" type="var">left</span>. <span class="id" type="tactic">compute</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The predicate <span class="inlinecode"><span class="id" type="var">equivlistA</span></span> <span class="inlinecode"><span class="id" type="var">eqA</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span> <span class="inlinecode"><span class="id" type="var">bl</span></span> says that lists <span class="inlinecode"><span class="id" type="var">al</span></span> and <span class="inlinecode"><span class="id" type="var">bl</span></span> have equivalent
+    sets of elements, using the equivalence relation <span class="inlinecode"><span class="id" type="var">eqA</span></span>.  For example: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Example</span> <span class="id" type="var">equivlistA_example</span>: <span class="id" type="var">equivlistA</span> <span class="id" type="var">same_mod_10</span> [3; 17] [7; 3; 27].<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">split</span>; <span class="id" type="tactic">intro</span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H</span>. <span class="id" type="var">right</span>; <span class="id" type="var">left</span>. <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H</span>. <span class="id" type="var">right</span>; <span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="var">right</span>. <span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H<sub>1</sub></span>.<br/>
+<span class="id" type="var">inv</span> <span class="id" type="var">H<sub>1</sub></span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab196"></a><h2 class="section">SortA_equivlistA_eqlistA</h2>
+ Suppose two lists <span class="inlinecode"><span class="id" type="var">al</span>,<span class="id" type="var">bl</span></span> are "equivalent:" they contain the same set of elements
+    (modulo an equivalence relation <span class="inlinecode"><span class="id" type="var">eqA</span></span> on elements, perhaps in different orders, 
+    and perhaps with different numbers of repetitions).  That is, suppose
+    <span class="inlinecode"><span class="id" type="var">equivlistA</span></span> <span class="inlinecode"><span class="id" type="var">eqA</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span> <span class="inlinecode"><span class="id" type="var">bl</span></span>.
+
+<div class="paragraph"> </div>
+
+    And suppose list <span class="inlinecode"><span class="id" type="var">al</span></span> is sorted, in some strict total order (respecting the same equivalence
+    relation <span class="inlinecode"><span class="id" type="var">eqA</span></span>).  And suppose list <span class="inlinecode"><span class="id" type="var">bl</span></span> is sorted.  Then the lists must be _equal_
+    (modulo <span class="inlinecode"><span class="id" type="var">eqA</span></span>).   
+
+<div class="paragraph"> </div>
+
+    Just to make this easier to think about, suppose <span class="inlinecode"><span class="id" type="var">eqA</span></span> is just ordinary equality.
+    Then if <span class="inlinecode"><span class="id" type="var">al</span></span> and <span class="inlinecode"><span class="id" type="var">bl</span></span> contain the same set of elements (perhaps reordered),
+    and each list is sorted (by _less-than_, not by _less-or-equal_), then they must be equal.  Obviously.
+
+<div class="paragraph"> </div>
+
+    That's what the theorem <span class="inlinecode"><span class="id" type="var">SortA_equivlistA_eqlistA</span></span> says, in the Coq library: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">SortA_equivlistA_eqlistA</span>. <span class="comment">(*<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;(A&nbsp;:&nbsp;Type)&nbsp;(eqA&nbsp;:&nbsp;A&nbsp;-&gt;&nbsp;A&nbsp;-&gt;&nbsp;Prop),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Equivalence&nbsp;eqA&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forall&nbsp;ltA&nbsp;:&nbsp;A&nbsp;-&gt;&nbsp;A&nbsp;-&gt;&nbsp;Prop,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;StrictOrder&nbsp;ltA&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proper&nbsp;(eqA&nbsp;==&gt;&nbsp;eqA&nbsp;==&gt;&nbsp;iff)&nbsp;ltA&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forall&nbsp;l&nbsp;l'&nbsp;:&nbsp;list&nbsp;A,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sorted&nbsp;ltA&nbsp;l&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sorted&nbsp;ltA&nbsp;l'&nbsp;-&gt;&nbsp;equivlistA&nbsp;eqA&nbsp;l&nbsp;l'&nbsp;-&gt;&nbsp;eqlistA&nbsp;eqA&nbsp;l&nbsp;l'&nbsp;&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+That is, suppose <span class="inlinecode"><span class="id" type="var">eqA</span></span> is an equivalence relation on type <span class="inlinecode"><span class="id" type="var">A</span></span>, that is,
+     <span class="inlinecode"><span class="id" type="var">eqA</span></span> is reflexive, symmetric, and transitive.  And suppose <span class="inlinecode"><span class="id" type="var">ltA</span></span> is a strict order,
+     that is, irreflexive and transitive.   And suppose <span class="inlinecode"><span class="id" type="var">ltA</span></span> respects the equivalence
+     relation, that is, if <span class="inlinecode"><span class="id" type="var">eqA</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">x'</span></span> and <span class="inlinecode"><span class="id" type="var">eqA</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">y'</span></span>, then <span class="inlinecode"><span class="id" type="var">ltA</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" type="var">ltA</span></span> <span class="inlinecode"><span class="id" type="var">x'</span></span> <span class="inlinecode"><span class="id" type="var">y'</span></span>.
+     THEN, if <span class="inlinecode"><span class="id" type="var">l</span></span> is sorted (using the comparison <span class="inlinecode"><span class="id" type="var">ltA</span></span>), and l' is sorted,
+     and <span class="inlinecode"><span class="id" type="var">l</span>,<span class="id" type="var">l'</span></span> contain equivalent sets of elements, then <span class="inlinecode"><span class="id" type="var">l</span>,<span class="id" type="var">l'</span></span> must be equal lists,
+     modulo the equivalence relation.
+
+<div class="paragraph"> </div>
+
+    To make this easier to think about, let's use ordinary equality for eqA. 
+    We will be making sets and maps over the "node" type, <span class="inlinecode"><span class="id" type="var">E.t</span></span>, but that's just
+    type <span class="inlinecode"><span class="id" type="var">positive</span></span>.  Therefore, the equivalence <span class="inlinecode"><span class="id" type="var">E.eq</span>:</span> <span class="inlinecode"><span class="id" type="var">E.t</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">E.t</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> is just
+    the same as <span class="inlinecode"><span class="id" type="var">eq</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Goal</span> <span class="id" type="var">E.t</span> = <span class="id" type="var">positive</span>. <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" type="keyword">Goal</span> <span class="id" type="var">E.eq</span> = @<span class="id" type="var">eq</span> <span class="id" type="var">positive</span>. <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+And therefore, <span class="inlinecode"><span class="id" type="var">eqlistA</span></span> <span class="inlinecode"><span class="id" type="var">E.eq</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span> <span class="inlinecode"><span class="id" type="var">bl</span></span> means the same as <span class="inlinecode"><span class="id" type="var">al</span>=<span class="id" type="var">bl</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">eqlistA_Eeq_eq</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span>, <span class="id" type="var">eqlistA</span> <span class="id" type="var">E.eq</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span> ↔ <span class="id" type="var">al</span>=<span class="id" type="var">bl</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">split</span>; <span class="id" type="tactic">intro</span>.<br/>
+* <span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">E.eq</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+* <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">bl</span>. <span class="id" type="var">constructor</span>. <span class="id" type="var">constructor</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">E.eq</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">assumption</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+So now, the theorem:  if <span class="inlinecode"><span class="id" type="var">al</span></span> and <span class="inlinecode"><span class="id" type="var">bl</span></span> are sorted, and contain "the same" elements,
+   then they are equal: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">SortE_equivlistE_eqlistE</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span>, <span class="id" type="var">Sorted</span> <span class="id" type="var">E.lt</span> <span class="id" type="var">al</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Sorted</span> <span class="id" type="var">E.lt</span> <span class="id" type="var">bl</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">equivlistA</span> <span class="id" type="var">E.eq</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span> → <span class="id" type="var">eqlistA</span> <span class="id" type="var">E.eq</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">SortA_equivlistA_eqlistA</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">lt_strict</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">lt_proper</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+If list <span class="inlinecode"><span class="id" type="var">l</span></span> is sorted, and you apply <span class="inlinecode"><span class="id" type="var">List.filter</span></span> to remove the elements on which
+     <span class="inlinecode"><span class="id" type="var">f</span></span> is <span class="inlinecode"><span class="id" type="var">false</span></span>, then the result is still sorted.  Obviously.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">filter_sortE</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">f</span> <span class="id" type="var">l</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Sorted</span> <span class="id" type="var">E.lt</span> <span class="id" type="var">l</span> → <span class="id" type="var">Sorted</span> <span class="id" type="var">E.lt</span> (<span class="id" type="var">List.filter</span> <span class="id" type="var">f</span> <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">filter_sort</span> <span class="id" type="keyword">with</span> <span class="id" type="var">E.eq</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">lt_strict</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">lt_proper</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab197"></a><h2 class="section">S.remove and S.elements</h2>
+ The <span class="inlinecode"><span class="id" type="var">FSets</span></span> interface (and therefore our <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>) provides these two functions: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">S.remove</span>. <span class="comment">(*&nbsp;:&nbsp;S.elt&nbsp;-&gt;&nbsp;S.t&nbsp;-&gt;&nbsp;S.t&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">S.elements</span>. <span class="comment">(*&nbsp;:&nbsp;S.t&nbsp;-&gt;&nbsp;list&nbsp;S.elt&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+In module <span class="inlinecode"><span class="id" type="var">S</span></span>, of course, <span class="inlinecode"><span class="id" type="var">S.elt</span>=<span class="id" type="var">positive</span></span>, as these are sets of positive numbers.
+
+<div class="paragraph"> </div>
+
+    Now, this relationship between <span class="inlinecode"><span class="id" type="var">S.remove</span></span> and <span class="inlinecode"><span class="id" type="var">S.elements</span></span> will soon be useful: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Sremove_elements</span>:  <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">i</span>: <span class="id" type="var">E.t</span>) (<span class="id" type="var">s</span>: <span class="id" type="var">S.t</span>), <br/>
+&nbsp;&nbsp;<span class="id" type="var">S.In</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">S.elements</span> (<span class="id" type="var">S.remove</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span>) = <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.filter</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">E.eq_dec</span> <span class="id" type="var">x</span> <span class="id" type="var">i</span> <span class="id" type="keyword">then</span> <span class="id" type="var">false</span> <span class="id" type="keyword">else</span> <span class="id" type="var">true</span>) (<span class="id" type="var">S.elements</span> <span class="id" type="var">s</span>).<br/>
+<span class="id" type="keyword">Abort</span>. <span class="comment">(*&nbsp;Before&nbsp;we&nbsp;prove&nbsp;that,&nbsp;there&nbsp;is&nbsp;some&nbsp;preliminary&nbsp;work&nbsp;to&nbsp;do.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+That is, if <span class="inlinecode"><span class="id" type="var">i</span></span> is in the set <span class="inlinecode"><span class="id" type="var">s</span></span>, then the elements of <span class="inlinecode"><span class="id" type="var">S.remove</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">s</span></span> is the
+    list that you get by filtering <span class="inlinecode"><span class="id" type="var">i</span></span> out of <span class="inlinecode"><span class="id" type="var">S.elements</span></span> <span class="inlinecode"><span class="id" type="var">s</span></span>.  Go ahead and prove it! 
+<div class="paragraph"> </div>
+
+<a name="lab198"></a><h4 class="section">Exercise: 3 stars (Sremove_elements)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Proper_eq_eq</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">f</span>, <span class="id" type="var">Proper</span> (<span class="id" type="var">E.eq</span> ==&gt; @<span class="id" type="var">eq</span> <span class="id" type="var">bool</span>) <span class="id" type="var">f</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">Proper</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">respectful</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Sremove_elements</span>:  <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">i</span>: <span class="id" type="var">E.t</span>) (<span class="id" type="var">s</span>: <span class="id" type="var">S.t</span>), <br/>
+&nbsp;&nbsp;<span class="id" type="var">S.In</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">S.elements</span> (<span class="id" type="var">S.remove</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span>) = <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.filter</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">E.eq_dec</span> <span class="id" type="var">x</span> <span class="id" type="var">i</span> <span class="id" type="keyword">then</span> <span class="id" type="var">false</span> <span class="id" type="keyword">else</span> <span class="id" type="var">true</span>) (<span class="id" type="var">S.elements</span> <span class="id" type="var">s</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">eqlistA_Eeq_eq</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">SortE_equivlistE_eqlistE</span>.<br/>
+* <span class="comment">(*&nbsp;To&nbsp;prove&nbsp;this&nbsp;one,&nbsp;<span class="inlinecode"><span class="id" type="var">SearchAbout</span></span> <span class="inlinecode"><span class="id" type="var">S.elements</span></span>&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">admit</span>.<br/>
+* <span class="comment">(*&nbsp;Use&nbsp;<span class="inlinecode"><span class="id" type="var">filter_sortE</span></span>&nbsp;to&nbsp;prove&nbsp;this&nbsp;one&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">admit</span>.<br/>
+*<br/>
+<span class="id" type="tactic">intro</span> <span class="id" type="var">j</span>.<br/>
+<span class="id" type="tactic">rewrite</span> <span class="id" type="var">filter_InA</span>; [ | <span class="id" type="tactic">apply</span> <span class="id" type="var">Proper_eq_eq</span>].<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">E.eq_dec</span> <span class="id" type="var">j</span> <span class="id" type="var">i</span>).<br/>
+<span class="comment">(*&nbsp;To&nbsp;prove&nbsp;this&nbsp;one,&nbsp;you'll&nbsp;need&nbsp;&nbsp;S.remove_1,&nbsp;S.remove_2,&nbsp;S.remove_3,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;S.elements_1,&nbsp;S.elements_2.&nbsp;*)</span><br/>
+&nbsp;+ <span class="comment">(*&nbsp;j=i&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">admit</span>.<br/>
+&nbsp;+ <span class="comment">(*&nbsp;j&nbsp;&lt;&gt;&nbsp;i&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">admit</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab199"></a><h2 class="section">Lists of (key,value) Pairs</h2>
+
+<div class="paragraph"> </div>
+
+ The elements of a finite map from positives to type A 
+     (that is, the <span class="inlinecode"><span class="id" type="var">M.elements</span></span> of a <span class="inlinecode"><span class="id" type="var">M.t</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>) is a list of pairs <span class="inlinecode">(<span class="id" type="var">positive</span>*<span class="id" type="var">A</span>)</span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.elements</span>. <span class="comment">(*&nbsp;&nbsp;:&nbsp;forall&nbsp;A&nbsp;:&nbsp;Type,&nbsp;M.t&nbsp;A&nbsp;-&gt;&nbsp;list&nbsp;(positive&nbsp;*&nbsp;A)&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Let's start with a little lemma about lists of pairs:  Suppose <span class="inlinecode"><span class="id" type="var">l</span>:</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode">(<span class="id" type="var">positive</span>*<span class="id" type="var">A</span>)</span>.  
+     Then <span class="inlinecode"><span class="id" type="var">j</span></span> is in <span class="inlinecode"><span class="id" type="var">map</span></span> <span class="inlinecode"><span class="id" type="var">fst</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span>   iff   there is some e such that (j,e) is in l. 
+<div class="paragraph"> </div>
+
+<a name="lab200"></a><h4 class="section">Exercise: 2 stars (InA_map_fst_key)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">InA_map_fst_key</span>:<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> <span class="id" type="var">j</span> <span class="id" type="var">l</span>, <br/>
+&nbsp;<span class="id" type="var">InA</span> <span class="id" type="var">E.eq</span> <span class="id" type="var">j</span> (<span class="id" type="var">map</span> (@<span class="id" type="var">fst</span> <span class="id" type="var">M.E.t</span> <span class="id" type="var">A</span>) <span class="id" type="var">l</span>) ↔ <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">e</span>, <span class="id" type="var">InA</span> (@<span class="id" type="var">M.eq_key_elt</span> <span class="id" type="var">A</span>) (<span class="id" type="var">j</span>,<span class="id" type="var">e</span>) <span class="id" type="var">l</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab201"></a><h4 class="section">Exercise: 3 stars (Sorted_lt_key)</h4>
+ The function <span class="inlinecode"><span class="id" type="var">M.lt_key</span></span> compares two elements of an <span class="inlinecode"><span class="id" type="var">M.elements</span></span> list,
+    that is, two pairs of type <span class="inlinecode"><span class="id" type="var">positive</span>*<span class="id" type="var">A</span></span>, by just comparing their first elements
+    using <span class="inlinecode"><span class="id" type="var">E.lt</span></span>.  Therefore, an elements list (of type <span class="inlinecode"><span class="id" type="var">list</span>(<span class="id" type="var">positive</span>*<span class="id" type="var">A</span>)</span> is <span class="inlinecode"><span class="id" type="var">Sorted</span></span>
+    by <span class="inlinecode"><span class="id" type="var">M.lt_key</span></span> iff its list-of-first-elements is <span class="inlinecode"><span class="id" type="var">Sorted</span></span> by <span class="inlinecode"><span class="id" type="var">E.lt</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Sorted_lt_key</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> (<span class="id" type="var">positive</span>*<span class="id" type="var">A</span>)), <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Sorted</span> (@<span class="id" type="var">M.lt_key</span> <span class="id" type="var">A</span>) <span class="id" type="var">al</span> ↔  <span class="id" type="var">Sorted</span> <span class="id" type="var">E.lt</span> (<span class="id" type="var">map</span> (@<span class="id" type="var">fst</span> <span class="id" type="var">positive</span> <span class="id" type="var">A</span>) <span class="id" type="var">al</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab202"></a><h2 class="section">Cardinality</h2>
+
+<div class="paragraph"> </div>
+
+ The _cardinality_ of a set is the number of distinct elements.
+  The cardinality of a finite map is, essentially, the cardinality of 
+   its domain set. 
+<div class="paragraph"> </div>
+
+<a name="lab203"></a><h4 class="section">Exercise: 4 stars (cardinal_map)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">cardinal_map</span>:  <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span> (<span class="id" type="var">f</span>: <span class="id" type="var">A</span> → <span class="id" type="var">B</span>) <span class="id" type="var">g</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">M.cardinal</span> (<span class="id" type="var">M.map</span> <span class="id" type="var">f</span> <span class="id" type="var">g</span>) = <span class="id" type="var">M.cardinal</span> <span class="id" type="var">g</span>.<br/>
+</div>
+
+<div class="doc">
+Hint:  To prove this theorem, I used these lemmas.  
+     You might find a different way. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.cardinal_1</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.elements_1</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.elements_2</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.elements_3</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">map_length</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">eqlistA_length</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">SortE_equivlistE_eqlistE</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">InA_map_fst_key</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">WF.map_mapsto_iff</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Sorted_lt_key</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab204"></a><h4 class="section">Exercise: 4 stars (Sremove_cardinal_less)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Sremove_cardinal_less</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">S.In</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span> →    <span class="id" type="var">S.cardinal</span> (<span class="id" type="var">S.remove</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span>) &lt; <span class="id" type="var">S.cardinal</span> <span class="id" type="var">s</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">repeat</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">S.cardinal_1</span>.<br/>
+<span class="id" type="tactic">generalize</span> (<span class="id" type="var">Sremove_elements</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H</span>); <span class="id" type="tactic">intro</span>.<br/>
+<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ We have a lemma <span class="inlinecode"><span class="id" type="var">SortA_equivlistA_eqlistA</span></span> that talks about
+    arbitrary equivalence relations and arbitrary total-order relations
+    (as long as they are compatible.  Here is a specialization to
+    a particular equivalence (<span class="inlinecode"><span class="id" type="var">M.eq_key_elt</span></span>) and order (<span class="inlinecode"><span class="id" type="var">M.lt_key</span></span>). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">specialize_SortA_equivlistA_eqlistA</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span>, <br/>
+&nbsp;&nbsp;<span class="id" type="var">Sorted</span> (@<span class="id" type="var">M.lt_key</span> <span class="id" type="var">A</span>) <span class="id" type="var">al</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">Sorted</span> (@<span class="id" type="var">M.lt_key</span> <span class="id" type="var">A</span>) <span class="id" type="var">bl</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">equivlistA</span> (@<span class="id" type="var">M.eq_key_elt</span> <span class="id" type="var">A</span>) <span class="id" type="var">al</span> <span class="id" type="var">bl</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">eqlistA</span> (@<span class="id" type="var">M.eq_key_elt</span> <span class="id" type="var">A</span>) <span class="id" type="var">al</span> <span class="id" type="var">bl</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">SortA_equivlistA_eqlistA</span> <span class="id" type="keyword">with</span> (@<span class="id" type="var">M.lt_key</span> <span class="id" type="var">A</span>); <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">M.eqke_equiv</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">M.ltk_strorder</span>.<br/>
+<span class="id" type="tactic">clear</span>.<br/>
+<span class="id" type="tactic">repeat</span> <span class="id" type="tactic">intro</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">M.lt_key</span>, <span class="id" type="var">M.eq_key_elt</span> <span class="id" type="keyword">in</span> *.<br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span>, <span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span>,<span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Proper_eq_key_elt</span>: <br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span>, <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Proper</span> (@<span class="id" type="var">M.eq_key_elt</span> <span class="id" type="var">A</span> ==&gt; @<span class="id" type="var">M.eq_key_elt</span> <span class="id" type="var">A</span> ==&gt; <span class="id" type="var">iff</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">E.t</span> * <span class="id" type="var">A</span> ⇒ <span class="id" type="var">E.lt</span> (<span class="id" type="var">fst</span> <span class="id" type="var">x</span>) (<span class="id" type="var">fst</span> <span class="id" type="var">y</span>)).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;<span class="id" type="tactic">repeat</span> <span class="id" type="tactic">intro</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span>,<span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span>,<span class="id" type="var">H<sub>0</sub></span>. <span class="id" type="tactic">split</span>; <span class="id" type="tactic">auto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab205"></a><h4 class="section">Exercise: 4 stars (Mremove_elements)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Mremove_elements</span>:  <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span>, <br/>
+&nbsp;&nbsp;<span class="id" type="var">M.In</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eqlistA</span> (@<span class="id" type="var">M.eq_key_elt</span> <span class="id" type="var">A</span>) (<span class="id" type="var">M.elements</span> (<span class="id" type="var">M.remove</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">List.filter</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">E.eq_dec</span> (<span class="id" type="var">fst</span> <span class="id" type="var">x</span>) <span class="id" type="var">i</span> <span class="id" type="keyword">then</span> <span class="id" type="var">false</span> <span class="id" type="keyword">else</span> <span class="id" type="var">true</span>) (<span class="id" type="var">M.elements</span> <span class="id" type="var">s</span>)).<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;Hints:&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">specialize_SortA_equivlistA_eqlistA</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.elements_1</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.elements_2</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.elements_3</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.remove_1</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.eqke_equiv</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">M.ltk_strorder</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Proper_eq_key_elt</span>.<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">filter_InA</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab206"></a><h4 class="section">Exercise: 3 stars (Mremove_cardinal_less)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Mremove_cardinal_less</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> <span class="id" type="var">i</span> (<span class="id" type="var">s</span>: <span class="id" type="var">M.t</span> <span class="id" type="var">A</span>), <span class="id" type="var">M.In</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">M.cardinal</span> (<span class="id" type="var">M.remove</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span>) &lt; <span class="id" type="var">M.cardinal</span> <span class="id" type="var">s</span>.<br/>
+</div>
+
+<div class="doc">
+Look at the proof of <span class="inlinecode"><span class="id" type="var">Sremove_cardinal_less</span></span>, if you succeeded
+   in that, for an idea of how to do this one.   
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab207"></a><h4 class="section">Exercise: 2 stars (two_little_lemmas)</h4>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">fold_right_rev_left</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">A</span> <span class="id" type="var">B</span>: <span class="id" type="keyword">Type</span>) (<span class="id" type="var">f</span>: <span class="id" type="var">A</span> → <span class="id" type="var">B</span> → <span class="id" type="var">A</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">B</span>) (<span class="id" type="var">i</span>: <span class="id" type="var">A</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">fold_left</span> <span class="id" type="var">f</span> <span class="id" type="var">l</span> <span class="id" type="var">i</span> = <span class="id" type="var">fold_right</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> ⇒ <span class="id" type="var">f</span> <span class="id" type="var">y</span> <span class="id" type="var">x</span>) <span class="id" type="var">i</span> (<span class="id" type="var">rev</span> <span class="id" type="var">l</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Snot_in_empty</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, ¬ <span class="id" type="var">S.In</span> <span class="id" type="var">n</span> <span class="id" type="var">S.empty</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab208"></a><h4 class="section">Exercise: 3 stars (Sin_domain)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Sin_domain</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">A</span> <span class="id" type="var">n</span> (<span class="id" type="var">g</span>: <span class="id" type="var">M.t</span> <span class="id" type="var">A</span>), <span class="id" type="var">S.In</span> <span class="id" type="var">n</span> (<span class="id" type="var">Mdomain</span> <span class="id" type="var">g</span>) ↔ <span class="id" type="var">M.In</span> <span class="id" type="var">n</span> <span class="id" type="var">g</span>.<br/>
+</div>
+
+<div class="doc">
+This seems so obvious!  But I didn't find a really simple proof of it. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab209"></a><h1 class="section">Now Begins the Graph Coloring Program</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">node</span> := <span class="id" type="var">E.t</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">nodeset</span> := <span class="id" type="var">S.t</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">nodemap</span>: <span class="id" type="keyword">Type</span> → <span class="id" type="keyword">Type</span> := <span class="id" type="var">M.t</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">graph</span> := <span class="id" type="var">nodemap</span> <span class="id" type="var">nodeset</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">adj</span> (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) (<span class="id" type="var">i</span>: <span class="id" type="var">node</span>) : <span class="id" type="var">nodeset</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">M.find</span> <span class="id" type="var">i</span> <span class="id" type="var">g</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Some</span> <span class="id" type="var">a</span> ⇒ <span class="id" type="var">a</span> | <span class="id" type="var">None</span> ⇒ <span class="id" type="var">S.empty</span> <span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">undirected</span> (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) := <br/>
+&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span>, <span class="id" type="var">S.In</span> <span class="id" type="var">j</span> (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span>) → <span class="id" type="var">S.In</span> <span class="id" type="var">i</span> (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> <span class="id" type="var">j</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">no_selfloop</span> (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) := <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span>, ¬ <span class="id" type="var">S.In</span> <span class="id" type="var">i</span> (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">nodes</span> (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) := <span class="id" type="var">Mdomain</span> <span class="id" type="var">g</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">subset_nodes</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">P</span>: <span class="id" type="var">node</span> → <span class="id" type="var">nodeset</span> → <span class="id" type="var">bool</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) :=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">M.fold</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> <span class="id" type="var">adj</span> <span class="id" type="var">s</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">P</span> <span class="id" type="var">n</span> <span class="id" type="var">adj</span> <span class="id" type="keyword">then</span> <span class="id" type="var">S.add</span> <span class="id" type="var">n</span> <span class="id" type="var">s</span> <span class="id" type="keyword">else</span> <span class="id" type="var">s</span>) <span class="id" type="var">g</span> <span class="id" type="var">S.empty</span>.<br/>
+</div>
+
+<div class="doc">
+A node has "low degree" if the cardinality of its adjacency set is less than <span class="inlinecode"><span class="id" type="var">K</span></span> 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">low_deg</span> (<span class="id" type="var">K</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">n</span>: <span class="id" type="var">node</span>) (<span class="id" type="var">adj</span>: <span class="id" type="var">nodeset</span>) : <span class="id" type="var">bool</span> := <span class="id" type="var">S.cardinal</span> <span class="id" type="var">adj</span> &lt;? <span class="id" type="var">K</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">remove_node</span> (<span class="id" type="var">n</span>: <span class="id" type="var">node</span>) (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) : <span class="id" type="var">graph</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">M.map</span> (<span class="id" type="var">S.remove</span> <span class="id" type="var">n</span>) (<span class="id" type="var">M.remove</span> <span class="id" type="var">n</span> <span class="id" type="var">g</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab210"></a><h2 class="section">Some Proofs in Support of Termination</h2>
+ We need to prove some lemmas related to the termination of the algorithm
+  before we can actually define the <span class="inlinecode"><span class="id" type="var">Function</span></span>. 
+<div class="paragraph"> </div>
+
+<a name="lab211"></a><h4 class="section">Exercise: 3 stars (subset_nodes_sub)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">subset_nodes_sub</span>:  <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">g</span>, <span class="id" type="var">S.Subset</span> (<span class="id" type="var">subset_nodes</span> <span class="id" type="var">P</span> <span class="id" type="var">g</span>) (<span class="id" type="var">nodes</span> <span class="id" type="var">g</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab212"></a><h4 class="section">Exercise: 3 stars (select_terminates)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">select_terminates</span>: <br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">K</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">g</span> : <span class="id" type="var">graph</span>) (<span class="id" type="var">n</span> : <span class="id" type="var">S.elt</span>),<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">S.choose</span> (<span class="id" type="var">subset_nodes</span> (<span class="id" type="var">low_deg</span> <span class="id" type="var">K</span>) <span class="id" type="var">g</span>) = <span class="id" type="var">Some</span> <span class="id" type="var">n</span> → <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">M.cardinal</span> (<span class="id" type="var">remove_node</span> <span class="id" type="var">n</span> <span class="id" type="var">g</span>) &lt; <span class="id" type="var">M.cardinal</span> <span class="id" type="var">g</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab213"></a><h2 class="section">The Rest of the Algorithm</h2>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Recdef</span>. <span class="comment">(*&nbsp;Must&nbsp;import&nbsp;this&nbsp;to&nbsp;use&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">Function</span></span>&nbsp;feature&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Function</span> <span class="id" type="var">select</span> (<span class="id" type="var">K</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) {<span class="id" type="keyword">measure</span> <span class="id" type="var">M.cardinal</span> <span class="id" type="var">g</span>}: <span class="id" type="var">list</span> <span class="id" type="var">node</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">S.choose</span> (<span class="id" type="var">subset_nodes</span> (<span class="id" type="var">low_deg</span> <span class="id" type="var">K</span>) <span class="id" type="var">g</span>) <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">n</span> :: <span class="id" type="var">select</span> <span class="id" type="var">K</span> (<span class="id" type="var">remove_node</span> <span class="id" type="var">n</span> <span class="id" type="var">g</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">nil</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">select_terminates</span>.<br/>
+<span class="id" type="keyword">Defined</span>. <span class="comment">(*&nbsp;Do&nbsp;not&nbsp;use&nbsp;Qed&nbsp;on&nbsp;a&nbsp;Function,&nbsp;otherwise&nbsp;it&nbsp;won't&nbsp;Compute!&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">coloring</span> := <span class="id" type="var">M.t</span> <span class="id" type="var">node</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">colors_of</span> (<span class="id" type="var">f</span>: <span class="id" type="var">coloring</span>) (<span class="id" type="var">s</span>: <span class="id" type="var">S.t</span>) : <span class="id" type="var">S.t</span> := <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">S.fold</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> <span class="id" type="var">s</span> ⇒ <span class="id" type="keyword">match</span> <span class="id" type="var">M.find</span> <span class="id" type="var">n</span> <span class="id" type="var">f</span> <span class="id" type="keyword">with</span> <span class="id" type="var">Some</span> <span class="id" type="var">c</span> ⇒ <span class="id" type="var">S.add</span> <span class="id" type="var">c</span> <span class="id" type="var">s</span> | <span class="id" type="var">None</span> ⇒ <span class="id" type="var">s</span> <span class="id" type="keyword">end</span>) <span class="id" type="var">s</span> <span class="id" type="var">S.empty</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">color1</span> (<span class="id" type="var">palette</span>: <span class="id" type="var">S.t</span>) (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) (<span class="id" type="var">n</span>: <span class="id" type="var">node</span>) (<span class="id" type="var">f</span>: <span class="id" type="var">coloring</span>) : <span class="id" type="var">coloring</span> :=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">S.choose</span> (<span class="id" type="var">S.diff</span> <span class="id" type="var">palette</span> (<span class="id" type="var">colors_of</span> <span class="id" type="var">f</span> (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> <span class="id" type="var">n</span>))) <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">c</span> ⇒ <span class="id" type="var">M.add</span> <span class="id" type="var">n</span> <span class="id" type="var">c</span> <span class="id" type="var">f</span><br/>
+&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">f</span><br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">color</span> (<span class="id" type="var">palette</span>: <span class="id" type="var">S.t</span>) (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) : <span class="id" type="var">coloring</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">fold_right</span> (<span class="id" type="var">color1</span> <span class="id" type="var">palette</span> <span class="id" type="var">g</span>)  (<span class="id" type="var">M.empty</span> <span class="id" type="var">_</span>) (<span class="id" type="var">select</span> (<span class="id" type="var">S.cardinal</span> <span class="id" type="var">palette</span>) <span class="id" type="var">g</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab214"></a><h1 class="section">Proof of Correctness of the Algorithm.</h1>
+
+<div class="paragraph"> </div>
+
+ We want to show that any coloring produced by the <span class="inlinecode"><span class="id" type="var">color</span></span> function actually
+  respects the interference constraints.  This property is called <span class="inlinecode"><span class="id" type="var">coloring_ok</span></span>.  
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">coloring_ok</span> (<span class="id" type="var">palette</span>: <span class="id" type="var">S.t</span>) (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) (<span class="id" type="var">f</span>: <span class="id" type="var">coloring</span>) :=<br/>
+&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span>, <span class="id" type="var">S.In</span> <span class="id" type="var">j</span> (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span>) → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">ci</span>, <span class="id" type="var">M.find</span> <span class="id" type="var">i</span> <span class="id" type="var">f</span> = <span class="id" type="var">Some</span> <span class="id" type="var">ci</span> → <span class="id" type="var">S.In</span> <span class="id" type="var">ci</span> <span class="id" type="var">palette</span>) ∧<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">ci</span> <span class="id" type="var">cj</span>, <span class="id" type="var">M.find</span> <span class="id" type="var">i</span> <span class="id" type="var">f</span> = <span class="id" type="var">Some</span> <span class="id" type="var">ci</span> → <span class="id" type="var">M.find</span> <span class="id" type="var">j</span> <span class="id" type="var">f</span> = <span class="id" type="var">Some</span> <span class="id" type="var">cj</span> → <span class="id" type="var">ci</span>≠<span class="id" type="var">cj</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab215"></a><h4 class="section">Exercise: 2 stars (adj_ext)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">adj_ext</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span>, <span class="id" type="var">E.eq</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span> → <span class="id" type="var">S.eq</span> (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> <span class="id" type="var">i</span>) (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> <span class="id" type="var">j</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab216"></a><h4 class="section">Exercise: 3 stars (in_colors_of_1)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">in_colors_of_1</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span> <span class="id" type="var">f</span> <span class="id" type="var">c</span>, <span class="id" type="var">S.In</span> <span class="id" type="var">i</span> <span class="id" type="var">s</span> → <span class="id" type="var">M.find</span> <span class="id" type="var">i</span> <span class="id" type="var">f</span> = <span class="id" type="var">Some</span> <span class="id" type="var">c</span> → <span class="id" type="var">S.In</span> <span class="id" type="var">c</span> (<span class="id" type="var">colors_of</span> <span class="id" type="var">f</span> <span class="id" type="var">s</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab217"></a><h4 class="section">Exercise: 4 stars (color_correct)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">color_correct</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">palette</span> <span class="id" type="var">g</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">no_selfloop</span> <span class="id" type="var">g</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">undirected</span> <span class="id" type="var">g</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">coloring_ok</span> <span class="id" type="var">palette</span> <span class="id" type="var">g</span> (<span class="id" type="var">color</span> <span class="id" type="var">palette</span> <span class="id" type="var">g</span>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ That concludes the proof that the algorithm is correct. 
+<div class="paragraph"> </div>
+
+<a name="lab218"></a><h1 class="section">Trying Out the Algorithm on an Actual Test Case</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Local</span> <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">positive</span>.<br/>
+<span class="comment">(*&nbsp;now&nbsp;1,2,3,&nbsp;etc.&nbsp;are&nbsp;notation&nbsp;for&nbsp;<span class="inlinecode"><span class="id" type="var">positive</span></span>&nbsp;numbers.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;Let's&nbsp;use&nbsp;only&nbsp;three&nbsp;colors&nbsp;*)</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">palette</span>: <span class="id" type="var">S.t</span> := <span class="id" type="var">fold_right</span> <span class="id" type="var">S.add</span> <span class="id" type="var">S.empty</span> [1; 2; 3].<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">add_edge</span> (<span class="id" type="var">e</span>: (<span class="id" type="var">E.t</span>*<span class="id" type="var">E.t</span>)) (<span class="id" type="var">g</span>: <span class="id" type="var">graph</span>) : <span class="id" type="var">graph</span> :=<br/>
+&nbsp;<span class="id" type="var">M.add</span> (<span class="id" type="var">fst</span> <span class="id" type="var">e</span>) (<span class="id" type="var">S.add</span> (<span class="id" type="var">snd</span> <span class="id" type="var">e</span>) (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> (<span class="id" type="var">fst</span> <span class="id" type="var">e</span>))) <br/>
+&nbsp;&nbsp;(<span class="id" type="var">M.add</span> (<span class="id" type="var">snd</span> <span class="id" type="var">e</span>) (<span class="id" type="var">S.add</span> (<span class="id" type="var">fst</span> <span class="id" type="var">e</span>) (<span class="id" type="var">adj</span> <span class="id" type="var">g</span> (<span class="id" type="var">snd</span> <span class="id" type="var">e</span>))) <span class="id" type="var">g</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">mk_graph</span> (<span class="id" type="var">el</span>: <span class="id" type="var">list</span> (<span class="id" type="var">E.t</span>*<span class="id" type="var">E.t</span>)) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">fold_right</span> <span class="id" type="var">add_edge</span> (<span class="id" type="var">M.empty</span> <span class="id" type="var">_</span>) <span class="id" type="var">el</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">G</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">mk_graph</span> [ (5,6); (6,2); (5,2); (1,5); (1,2); (2,4); (1,4)].<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Compute</span> (<span class="id" type="var">S.elements</span> (<span class="id" type="var">Mdomain</span> <span class="id" type="var">G</span>)). <span class="comment">(*&nbsp;=&nbsp;<span class="inlinecode">4;</span> <span class="inlinecode">2;</span> <span class="inlinecode">6;</span> <span class="inlinecode">1;</span> <span class="inlinecode">5</span>&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Compute</span> (<span class="id" type="var">M.elements</span> (<span class="id" type="var">color</span> <span class="id" type="var">palette</span> <span class="id" type="var">G</span>)). <span class="comment">(*&nbsp;=&nbsp;<span class="inlinecode">(4,</span> <span class="inlinecode">1);</span> <span class="inlinecode">(2,</span> <span class="inlinecode">3);</span> <span class="inlinecode">(6,</span> <span class="inlinecode">2);</span> <span class="inlinecode">(1,</span> <span class="inlinecode">2);</span> <span class="inlinecode">(5,</span> <span class="inlinecode">1)</span>&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+That is our graph coloring:  Node <span class="inlinecode">4</span> is colored with color <span class="inlinecode">1</span>, node <span class="inlinecode">2</span> with color <span class="inlinecode">3</span>,
+  nodes <span class="inlinecode">6</span> and <span class="inlinecode">1</span> with <span class="inlinecode">2</span>, and node <span class="inlinecode">5</span> with color <span class="inlinecode">1</span>. 
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

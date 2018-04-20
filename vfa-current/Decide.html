@@ -1,0 +1,753 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Decide: Programming with Decision Procedures</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: Verified Functional Algorithms</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+   <a href='deps.html'><li class='section_name'>路线</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Decide<span class="subtitle">Programming with Decision Procedures</span></h1>
+
+
+<div class="code code-tight">
+
+<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab185"></a><h1 class="section">Using <span class="inlinecode"><span class="id" type="var">reflect</span></span> to characterize decision procedures</h1>
+
+<div class="paragraph"> </div>
+
+ Thus far in _Verified Functional Algorithms_ we have been using
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> propositions (<span class="inlinecode"><span class="id" type="keyword">Prop</span></span>) such as <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span> (which is Notation for <span class="inlinecode"><span class="id" type="var">lt</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span>)
+
+</li>
+<li> booleans (<span class="inlinecode"><span class="id" type="var">bool</span></span>) such as <span class="inlinecode"><span class="id" type="var">a</span>&lt;?<span class="id" type="var">b</span></span> (which is Notation for <span class="inlinecode"><span class="id" type="var">ltb</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span>). 
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Nat.lt</span>. <span class="comment">(*&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;nat&nbsp;-&gt;&nbsp;Prop&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Nat.ltb</span>. <span class="comment">(*&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;nat&nbsp;-&gt;&nbsp;bool&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+The <a href="Perm.html"><span class="inlineref">Perm</span></a> chapter defined a tactic called <span class="inlinecode"><span class="id" type="var">bdestruct</span></span> that
+    does case analysis on (x &lt;? y) while giving you hypotheses (above
+    the line) of the form (x&lt;y).   This tactic is built using the <span class="inlinecode"><span class="id" type="var">reflect</span></span> 
+    type and the <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span> theorem. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">reflect</span>.<br/>
+<span class="comment">(*&nbsp;Inductive&nbsp;reflect&nbsp;(P&nbsp;:&nbsp;Prop)&nbsp;:&nbsp;bool&nbsp;-&gt;&nbsp;Set&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ReflectT&nbsp;:&nbsp;P&nbsp;-&gt;&nbsp;reflect&nbsp;P&nbsp;true&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ReflectF&nbsp;:&nbsp;~&nbsp;P&nbsp;-&gt;&nbsp;reflect&nbsp;P&nbsp;false&nbsp;&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">blt_reflect</span>. <span class="comment">(*&nbsp;:&nbsp;forall&nbsp;x&nbsp;y,&nbsp;reflect&nbsp;(x&lt;y)&nbsp;(x&nbsp;&lt;?&nbsp;y)&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+The name <span class="inlinecode"><span class="id" type="var">reflect</span></span> for this type is a reference to _computational
+   reflection_,  a technique in logic.  One takes a logical formula, or 
+   proposition, or predicate,  and designs a syntactic embedding of 
+   this formula as an "object value" in the logic.  That is, _reflect_ the
+   formula back into the logic. Then one can design computations 
+   expressible inside the logic that manipulate these syntactic object 
+   values.  Finally, one proves that the computations make transformations
+   that are equivalent to derivations (or equivalences) in the logic.
+
+<div class="paragraph"> </div>
+
+   The first use of computational reflection was by Goedel, in 1931:
+   his syntactic embedding encoded formulas as natural numbers, a 
+   "Goedel numbering."  The second and third uses of reflection were
+   by Church and Turing, in 1936: they encoded (respectively) 
+   lambda-expressions and Turing machines.
+
+<div class="paragraph"> </div>
+
+   In Coq it is easy to do reflection, because the Calculus of Inductive
+   Constructions (CiC) has Inductive data types that can easily encode 
+   syntax trees.  We could, for example, take some of our propositional 
+   operators such as <span class="inlinecode"><span class="id" type="var">and</span></span>, <span class="inlinecode"><span class="id" type="var">or</span></span>, and make an <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> type that is an 
+   encoding of these, and build a computational reasoning system for
+   boolean satisfiability.
+
+<div class="paragraph"> </div>
+
+   But in this chapter I will show something much simpler.  When 
+   reasoning about less-than comparisons on natural numbers, we have
+   the advantage that <span class="inlinecode"><span class="id" type="var">nat</span></span> already an inductive type; it is "pre-reflected,"
+   in some sense.  (The same for <span class="inlinecode"><span class="id" type="var">Z</span></span>, <span class="inlinecode"><span class="id" type="var">list</span></span>, <span class="inlinecode"><span class="id" type="var">bool</span></span>, etc.)  
+<div class="paragraph"> </div>
+
+ Now, let's examine how <span class="inlinecode"><span class="id" type="var">reflect</span></span> expresses the coherence between
+  <span class="inlinecode"><span class="id" type="var">lt</span></span> and <span class="inlinecode"><span class="id" type="var">ltb</span></span>. Suppose we have a value <span class="inlinecode"><span class="id" type="var">v</span></span> whose type is 
+  <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&lt;?7)</span>.  What is <span class="inlinecode"><span class="id" type="var">v</span></span>?  Either it is
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> ReflectT <span class="inlinecode"><span class="id" type="var">P</span></span> (3&lt;?7), where <span class="inlinecode"><span class="id" type="var">P</span></span> is a proof of <span class="inlinecode">3&lt;7</span>,  and <span class="inlinecode">3&lt;?7</span> is <span class="inlinecode"><span class="id" type="var">true</span></span>, or
+
+</li>
+<li> ReflectF <span class="inlinecode"><span class="id" type="var">Q</span></span> (3&lt;?7), where <span class="inlinecode"><span class="id" type="var">Q</span></span> is a proof of <span class="inlinecode">~(3&lt;7)</span>, and <span class="inlinecode">3&lt;?7</span> is <span class="inlinecode"><span class="id" type="var">false</span></span>.
+
+</li>
+</ul>
+  In the case of <span class="inlinecode">3,7</span>, we are well advised to use <span class="inlinecode"><span class="id" type="var">ReflectT</span></span>, because
+   (3&lt;?7) cannot match the <span class="inlinecode"><span class="id" type="var">false</span></span> required by <span class="inlinecode"><span class="id" type="var">ReflectF</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Goal</span> (3&lt;?7 = <span class="id" type="var">true</span>). <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+So <span class="inlinecode"><span class="id" type="var">v</span></span> cannot be <span class="inlinecode"><span class="id" type="var">ReflectF</span></span> <span class="inlinecode"><span class="id" type="var">Q</span></span> <span class="inlinecode">(3&lt;?7)</span> for any <span class="inlinecode"><span class="id" type="var">Q</span></span>, because that would
+   not type-check.  Now, the next question:  must there exist a value
+   of type <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&lt;?7)</span>  ?  The answer is yes; that is the
+   <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span> theorem.  The result of <span class="inlinecode"><span class="id" type="keyword">Check</span></span> <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span>, above, says that
+   for any <span class="inlinecode"><span class="id" type="var">x</span>,<span class="id" type="var">y</span></span>, there does exist a value (blt_reflect x y) whose type
+   is exactly <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode">(<span class="id" type="var">x</span>&lt;<span class="id" type="var">y</span>)(<span class="id" type="var">x</span>&lt;?<span class="id" type="var">y</span>)</span>.     So let's look at that value!  That is,
+   examine what <span class="inlinecode"><span class="id" type="var">H</span></span>, and <span class="inlinecode"><span class="id" type="var">P</span></span>, and <span class="inlinecode"><span class="id" type="var">Q</span></span> are equal to at "Case 1" and "Case 2": 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">three_less_seven_1</span>: 3&lt;7.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">assert</span> (<span class="id" type="var">H</span> := <span class="id" type="var">blt_reflect</span> 3 7).<br/>
+<span class="id" type="var">remember</span> (3&lt;?7) <span class="id" type="keyword">as</span> <span class="id" type="var">b</span>.<br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">P</span>|<span class="id" type="var">Q</span>] <span class="id" type="var">eqn</span>:?.<br/>
+* <span class="comment">(*&nbsp;Case&nbsp;1:&nbsp;H&nbsp;=&nbsp;ReflectT&nbsp;(3&lt;7)&nbsp;P&nbsp;*)</span><br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">P</span>.<br/>
+* <span class="comment">(*&nbsp;Case&nbsp;2:&nbsp;H&nbsp;=&nbsp;ReflectF&nbsp;(3&lt;7)&nbsp;Q&nbsp;*)</span><br/>
+<span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heqb</span>.<br/>
+<span class="id" type="tactic">inversion</span> <span class="id" type="var">Heqb</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Here is another proof that uses <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> instead of <span class="inlinecode"><span class="id" type="tactic">destruct</span></span>.
+   The <span class="inlinecode"><span class="id" type="var">ReflectF</span></span> case is eliminated automatically by <span class="inlinecode"><span class="id" type="tactic">inversion</span></span>
+   because <span class="inlinecode">3&lt;?7</span> does not match <span class="inlinecode"><span class="id" type="var">false</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">three_less_seven_2</span>: 3&lt;7.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">assert</span> (<span class="id" type="var">H</span> := <span class="id" type="var">blt_reflect</span> 3 7).<br/>
+<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">P</span>|<span class="id" type="var">Q</span>].<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">P</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">reflect</span></span> inductive data type is a way of relating a _decision
+   procedure_ (a function from X to <span class="inlinecode"><span class="id" type="var">bool</span></span>) with a predicate (a function
+   from X to <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>).   The convenience of <span class="inlinecode"><span class="id" type="var">reflect</span></span>, in the verification
+   of functional programs, is that we can do <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" type="var">blt_reflect</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span>)</span>,
+   which relates <span class="inlinecode"><span class="id" type="var">a</span>&lt;?<span class="id" type="var">b</span></span> (in the program) to the <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span> (in the proof).
+   That's just how the <span class="inlinecode"><span class="id" type="var">bdestruct</span></span> tactic works; you can go back
+   to <span class="inlinecode"><span class="id" type="var">Perm.v</span></span> and examine how it is implemented in the <span class="inlinecode"><span class="id" type="keyword">Ltac</span></span>
+   tactic-definition language. 
+<div class="paragraph"> </div>
+
+<a name="lab186"></a><h1 class="section">Using <span class="inlinecode"><span class="id" type="var">sumbool</span></span> to Characterize Decision Procedures</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">ScratchPad</span>.<br/>
+</div>
+
+<div class="doc">
+An alternate way to characterize decision procedures,
+   widely used in Coq, is via the inductive type <span class="inlinecode"><span class="id" type="var">sumbool</span></span>.
+
+<div class="paragraph"> </div>
+
+   Suppose <span class="inlinecode"><span class="id" type="var">Q</span></span>  is a proposition, that is, <span class="inlinecode"><span class="id" type="var">Q</span>:</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>.  We say <span class="inlinecode"><span class="id" type="var">Q</span></span> is
+   _decidable_ if there is an algorithm for computing a proof of
+   <span class="inlinecode"><span class="id" type="var">Q</span></span> or <span class="inlinecode">¬<span class="id" type="var">Q</span></span>.  More generally, when <span class="inlinecode"><span class="id" type="var">P</span></span> is a predicate (a function 
+   from some type <span class="inlinecode"><span class="id" type="var">T</span></span> to <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>), we say <span class="inlinecode"><span class="id" type="var">P</span></span> is decidable when 
+   <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">T</span>,</span> <span class="inlinecode"><span class="id" type="var">decidable</span>(<span class="id" type="var">P</span>)</span>.
+
+<div class="paragraph"> </div>
+
+   We represent this concept in Coq by an inductive datatype: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">sumbool</span> (<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Set</span> :=<br/>
+&nbsp;| <span class="id" type="var">left</span> : <span class="id" type="var">A</span> → <span class="id" type="var">sumbool</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span><br/>
+&nbsp;| <span class="id" type="var">right</span> : <span class="id" type="var">B</span> → <span class="id" type="var">sumbool</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span>.<br/>
+</div>
+
+<div class="doc">
+Let's consider <span class="inlinecode"><span class="id" type="var">sumbool</span></span> applied to two propositions: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">t<sub>1</sub></span> := <span class="id" type="var">sumbool</span> (3&lt;7) (3&gt;2).<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">less37</span>: 3&lt;7. <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">omega</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">greater23</span>: 3&gt;2. <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">omega</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">v1a</span>: <span class="id" type="var">t<sub>1</sub></span> := <span class="id" type="var">left</span> (3&lt;7) (3&gt;2) <span class="id" type="var">less37</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">v1b</span>: <span class="id" type="var">t<sub>1</sub></span> := <span class="id" type="var">right</span> (3&lt;7) (3&gt;2) <span class="id" type="var">greater23</span>.<br/>
+</div>
+
+<div class="doc">
+A value of type <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&gt;2)</span> is either one of:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" type="var">left</span></span> applied to a proof of (3&lt;7), or
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">right</span></span> applied to a proof of (3&gt;2).   
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ Now let's consider: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">t<sub>2</sub></span> := <span class="id" type="var">sumbool</span> (3&lt;7) (2&gt;3).<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">v2a</span>: <span class="id" type="var">t<sub>2</sub></span> := <span class="id" type="var">left</span> (3&lt;7) (2&gt;3) <span class="id" type="var">less37</span>.<br/>
+</div>
+
+<div class="doc">
+A value of type <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(2&gt;3)</span> is either one of:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" type="var">left</span></span> applied to a proof of (3&lt;7), or
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">right</span></span> applied to a proof of (2&gt;3).
+
+</li>
+</ul>
+  But since there are no proofs of 2&gt;3, only <span class="inlinecode"><span class="id" type="var">left</span></span> values (such as <span class="inlinecode"><span class="id" type="var">v2a</span></span>)
+  exist.  That's OK. 
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">sumbool</span></span> is in the Coq standard library, where there is <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> 
+   for it:  the expression <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" type="var">A</span>}+{<span class="id" type="var">B</span>}</span> <span class="inlinecode"></span> means <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode"><span class="id" type="var">B</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> "{ A } + { B }" := (<span class="id" type="var">sumbool</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span>) : <span class="id" type="var">type_scope</span>.<br/>
+</div>
+
+<div class="doc">
+A very common use of <span class="inlinecode"><span class="id" type="var">sumbool</span></span> is on a proposition and its negation.
+   For example, 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">t<sub>4</sub></span> := <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>, {<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)}.<br/>
+</div>
+
+<div class="doc">
+That expression, <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span>,</span> <span class="inlinecode">{<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)}</span>, says that for any 
+ natural numbers <span class="inlinecode"><span class="id" type="var">a</span></span> and <span class="inlinecode"><span class="id" type="var">b</span></span>, either <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span> or <span class="inlinecode"><span class="id" type="var">a</span>≥<span class="id" type="var">b</span></span>.  But it is _more_
+ than that!  Because <span class="inlinecode"><span class="id" type="var">sumbool</span></span> is an Inductive type with two constructors
+ <span class="inlinecode"><span class="id" type="var">left</span></span> and <span class="inlinecode"><span class="id" type="var">right</span></span>, then given the <span class="inlinecode">{3&lt;7}+{~(3&lt;7)}</span> you can pattern-match
+ on it and learn _constructively_ which thing is true.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">v<sub>3</sub></span>: {3&lt;7}+{~(3&lt;7)} := <span class="id" type="var">left</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">less37</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_3_less_7</span>:  <span class="id" type="var">bool</span> :=<br/>
+&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">v<sub>3</sub></span> <span class="id" type="keyword">with</span><br/>
+&nbsp;| <span class="id" type="var">left</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;| <span class="id" type="var">right</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">is_3_less_7</span>. <span class="comment">(*&nbsp;=&nbsp;true&nbsp;:&nbsp;bool&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">t<sub>4</sub></span>. <span class="comment">(*&nbsp;=&nbsp;forall&nbsp;a&nbsp;b&nbsp;:&nbsp;nat,&nbsp;{a&nbsp;&lt;&nbsp;b}&nbsp;+&nbsp;{~&nbsp;a&nbsp;&lt;&nbsp;b}&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Suppose there existed a value <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> of type <span class="inlinecode"><span class="id" type="var">t<sub>4</sub></span></span>.  That would be a 
+  _decision procedure_ for the less-than function on natural numbers.
+  For any nats <span class="inlinecode"><span class="id" type="var">a</span></span> and <span class="inlinecode"><span class="id" type="var">b</span></span>, you could calculate <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span>, which would
+  be either <span class="inlinecode"><span class="id" type="var">left</span></span> <span class="inlinecode">...</span> (if <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span> was provable) or <span class="inlinecode"><span class="id" type="var">right</span></span> <span class="inlinecode">...</span> (if <span class="inlinecode">~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)</span> was
+  provable).
+
+<div class="paragraph"> </div>
+
+  Let's go ahead and implement <span class="inlinecode"><span class="id" type="var">lt_dec</span></span>.  We can base it on the function
+  <span class="inlinecode"><span class="id" type="var">ltb</span>:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">bool</span></span> which calculates whether <span class="inlinecode"><span class="id" type="var">a</span></span> is less than <span class="inlinecode"><span class="id" type="var">b</span></span>,
+  as a boolean.  We already have a theorem that this function on booleans
+  is related to the proposition <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span>; that theorem is called <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Check</span> <span class="id" type="var">blt_reflect</span>. <span class="comment">(*&nbsp;:&nbsp;forall&nbsp;x&nbsp;y,&nbsp;reflect&nbsp;(x&lt;y)&nbsp;(x&lt;?y)&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+It's not too hard to use <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span> to define <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">lt_dec</span> (<span class="id" type="var">a</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">b</span>: <span class="id" type="var">nat</span>) : {<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)} :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">blt_reflect</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span><br/>
+| <span class="id" type="var">ReflectT</span> <span class="id" type="var">_</span> <span class="id" type="var">P</span> ⇒ <span class="id" type="var">left</span> (<span class="id" type="var">a</span> &lt; <span class="id" type="var">b</span>) (¬ <span class="id" type="var">a</span> &lt; <span class="id" type="var">b</span>) <span class="id" type="var">P</span><br/>
+| <span class="id" type="var">ReflectF</span> <span class="id" type="var">_</span> <span class="id" type="var">Q</span> ⇒ <span class="id" type="var">right</span> (<span class="id" type="var">a</span> &lt; <span class="id" type="var">b</span>) (¬ <span class="id" type="var">a</span> &lt; <span class="id" type="var">b</span>) <span class="id" type="var">Q</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Another, equivalent way to define <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> is to use 
+     definition-by-tactic: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">lt_dec'</span> (<span class="id" type="var">a</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">b</span>: <span class="id" type="var">nat</span>) : {<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)}.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">blt_reflect</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">P</span>|<span class="id" type="var">Q</span>]. <span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">P</span>. <span class="id" type="var">right</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Q</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">lt_dec</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">lt_dec'</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">lt_dec_equivalent</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>, <span class="id" type="var">lt_dec</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> = <span class="id" type="var">lt_dec'</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">intros</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">lt_dec</span>, <span class="id" type="var">lt_dec'</span>.<br/>
+<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+Warning: these definitions of <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> are not as nice as the
+  definition in the Coq standard library, because these are not
+  fully computable.  See the discussion below. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">ScratchPad</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab187"></a><h2 class="section"><span class="inlinecode"><span class="id" type="var">sumbool</span></span> in the Coq Standard Library</h2>
+
+</div>
+<div class="code code-space">
+
+<br/>
+<span class="id" type="keyword">Module</span> <span class="id" type="var">ScratchPad2</span>.<br/>
+<span class="id" type="var">Locate</span> <span class="id" type="var">sumbool</span>. <span class="comment">(*&nbsp;Coq.Init.Specif.sumbool&nbsp;*)</span><br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">sumbool</span>.<br/>
+</div>
+
+<div class="doc">
+The output of <span class="inlinecode"><span class="id" type="keyword">Print</span></span> <span class="inlinecode"><span class="id" type="var">sumbool</span></span> explains that the first two arguments 
+   of <span class="inlinecode"><span class="id" type="var">left</span></span> and <span class="inlinecode"><span class="id" type="var">right</span></span> are implicit.  We use them as follows (notice that
+   <span class="inlinecode"><span class="id" type="var">left</span></span> has only one explicit argument <span class="inlinecode"><span class="id" type="var">P</span></span>:  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">lt_dec</span> (<span class="id" type="var">a</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">b</span>: <span class="id" type="var">nat</span>) : {<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)} :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">blt_reflect</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span><br/>
+| <span class="id" type="var">ReflectT</span> <span class="id" type="var">_</span> <span class="id" type="var">P</span> ⇒ <span class="id" type="var">left</span> <span class="id" type="var">P</span><br/>
+| <span class="id" type="var">ReflectF</span> <span class="id" type="var">_</span> <span class="id" type="var">Q</span> ⇒ <span class="id" type="var">right</span> <span class="id" type="var">Q</span><br/>
+<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">le_dec</span> (<span class="id" type="var">a</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">b</span>: <span class="id" type="var">nat</span>) : {<span class="id" type="var">a</span>≤<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>≤<span class="id" type="var">b</span>)} :=<br/>
+<span class="id" type="keyword">match</span> <span class="id" type="var">ble_reflect</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span><br/>
+| <span class="id" type="var">ReflectT</span> <span class="id" type="var">_</span> <span class="id" type="var">P</span> ⇒ <span class="id" type="var">left</span> <span class="id" type="var">P</span><br/>
+| <span class="id" type="var">ReflectF</span> <span class="id" type="var">_</span> <span class="id" type="var">Q</span> ⇒ <span class="id" type="var">right</span> <span class="id" type="var">Q</span><br/>
+<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Now, let's use <span class="inlinecode"><span class="id" type="var">le_dec</span></span> directly in the implementation of insertion
+   sort, without mentioning <span class="inlinecode"><span class="id" type="var">ltb</span></span> at all. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> (<span class="id" type="var">x</span>:<span class="id" type="var">nat</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">x</span>::<span class="id" type="var">nil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">le_dec</span> <span class="id" type="var">x</span> <span class="id" type="var">h</span> <span class="id" type="keyword">then</span> <span class="id" type="var">x</span>::<span class="id" type="var">h</span>::<span class="id" type="var">t</span> <span class="id" type="keyword">else</span> <span class="id" type="var">h</span> :: <span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span><br/>
+&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">sort</span> (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">nil</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="var">insert</span> <span class="id" type="var">h</span> (<span class="id" type="var">sort</span> <span class="id" type="var">t</span>)<br/>
+<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">sorted</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> := <br/>
+| <span class="id" type="var">sorted_nil</span>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> <span class="id" type="var">nil</span><br/>
+| <span class="id" type="var">sorted_1</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> (<span class="id" type="var">x</span>::<span class="id" type="var">nil</span>)<br/>
+| <span class="id" type="var">sorted_cons</span>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">l</span>,<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">x</span> ≤ <span class="id" type="var">y</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">y</span>::<span class="id" type="var">l</span>) → <span class="id" type="var">sorted</span> (<span class="id" type="var">x</span>::<span class="id" type="var">y</span>::<span class="id" type="var">l</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab188"></a><h4 class="section">Exercise: 2 stars (insert_sorted_le_dec)</h4>
+
+</div>
+<div class="code code-space">
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_sorted</span>:<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>, <span class="id" type="var">sorted</span> <span class="id" type="var">l</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">insert</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="var">constructor</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">unfold</span> <span class="id" type="var">insert</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">le_dec</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span>) <span class="id" type="keyword">as</span> [ <span class="id" type="var">Hle</span> | <span class="id" type="var">Hgt</span>].<br/>
+</div>
+
+<div class="doc">
+Look at the proof state now.  In the first subgoal, we have
+      above the line, <span class="inlinecode"><span class="id" type="var">Hle</span>:</span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">x</span></span>.  In the second subgoal, we have
+      <span class="inlinecode"><span class="id" type="var">Hgt</span>:</span> <span class="inlinecode">¬</span> <span class="inlinecode">(<span class="id" type="var">a</span></span> <span class="inlinecode">&lt;</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span>.  These are put there automatically by the 
+      <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" type="var">le_dec</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">x</span>)</span>.  Now, the rest of the proof can proceed
+      as it did in <span class="inlinecode"><span class="id" type="var">Sort.v</span></span>, but using <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" type="var">le_dec</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span>)</span> instead of
+      <span class="inlinecode"><span class="id" type="var">bdestruct</span></span> <span class="inlinecode">(<span class="id" type="var">_</span></span> <span class="inlinecode">&lt;=?</span> <span class="inlinecode"><span class="id" type="var">_</span>)</span>. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab189"></a><h1 class="section">Decidability and Computability</h1>
+
+<div class="paragraph"> </div>
+
+ Before studying the rest of this chapter, it is helpful to study the
+   <span class="inlinecode"><span class="id" type="var">ProofObjects</span></span> chapter of _Software Foundations volume 1_ if you
+   have not done so already.
+
+<div class="paragraph"> </div>
+
+   A predicate <span class="inlinecode"><span class="id" type="var">P</span>:</span> <span class="inlinecode"><span class="id" type="var">T</span>→<span class="id" type="keyword">Prop</span></span> is _decidable_ if there is a computable
+   function <span class="inlinecode"><span class="id" type="var">f</span>:</span> <span class="inlinecode"><span class="id" type="var">T</span>→<span class="id" type="var">bool</span></span> such that, forall <span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">T</span></span>, <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>.
+   The second and most famous example of an _undecidable_ predicate
+   is the Halting Problem (Turing, 1936): <span class="inlinecode"><span class="id" type="var">T</span></span> is the type of Turing-machine
+   descriptions, and <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">x</span>)</span> is, Turing machine <span class="inlinecode"><span class="id" type="var">x</span></span> halts.  The first, and not
+   as famous, example is due to Church, 1936 (six months earlier): test
+   whether a lambda-expression has a normal form.  In 1936-37, as a 
+   first-year PhD student before beginning his PhD thesis work, Turing
+   proved these two problems are equivalent.
+
+<div class="paragraph"> </div>
+
+   Classical logic contains the axiom <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">P</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span>.  This is not provable
+   in core Coq, that is, in the bare Calculus of Inductive Constructions.  But
+   its negation is not provable either.   You could add this axiom to Coq
+   and the system would still be consistent (i.e., no way to prove <span class="inlinecode"><span class="id" type="var">False</span></span>).
+
+<div class="paragraph"> </div>
+
+   But <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span> is a weaker statement than <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" type="var">P</span>}+{~<span class="id" type="var">P</span>}</span> <span class="inlinecode"></span>, that is,
+   <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">(¬<span class="id" type="var">P</span>)</span>.  From <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" type="var">P</span>}+{~<span class="id" type="var">P</span>}</span> <span class="inlinecode"></span> you can actually _calculate_ or
+   <span class="inlinecode"><span class="id" type="tactic">compute</span></span> either <span class="inlinecode"><span class="id" type="var">left</span></span> <span class="inlinecode">(<span class="id" type="var">x</span>:<span class="id" type="var">P</span>)</span> or <span class="inlinecode"><span class="id" type="var">right</span>(<span class="id" type="var">y</span>:</span> <span class="inlinecode">¬<span class="id" type="var">P</span>)</span>.     From <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span> you cannot 
+   <span class="inlinecode"><span class="id" type="tactic">compute</span></span> whether <span class="inlinecode"><span class="id" type="var">P</span></span> is true.  Yes, you can <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> it in a proof, 
+   but not in a calculation.  
+
+<div class="paragraph"> </div>
+
+   For most purposes its unnecessary to add the axiom <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span> to Coq,
+   because for specific predicates there's a specific way to prove <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span>
+   as a theorem.  For example,  less-than on natural numbers is decidable,
+   and the existence of <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span> or <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> (as a theorem, not as an axiom)
+   is a demonstration of that.
+
+<div class="paragraph"> </div>
+
+   Furthermore, in this "book" we are interested in _algorithms_.  An axiom
+   <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span> does not give us an algorithm to compute whether P is true.  As
+   you saw in the definition of <span class="inlinecode"><span class="id" type="var">insert</span></span> above, we can use <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> not only as
+   a theorem that either <span class="inlinecode">3&lt;7</span> or <span class="inlinecode">~(3&lt;7)</span>, we can use it as a function to
+   compute whether <span class="inlinecode">3&lt;7</span>.  In Coq, you can't compute with axioms!
+   Let's try it: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Axiom</span> <span class="id" type="var">lt_dec_axiom_1</span>:  <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span>: <span class="id" type="var">nat</span>, <span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span> ∨ ~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>).<br/>
+</div>
+
+<div class="doc">
+Now, can we use this axiom to compute with?  
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;Uncomment&nbsp;and&nbsp;try&nbsp;this:&nbsp;<br/>
+Definition&nbsp;max&nbsp;(i&nbsp;j:&nbsp;nat)&nbsp;:&nbsp;nat&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;if&nbsp;lt_dec_axiom_1&nbsp;i&nbsp;j&nbsp;then&nbsp;j&nbsp;else&nbsp;i.<br/>
+*)</span><br/>
+</div>
+
+<div class="doc">
+That doesn't work, because an <span class="inlinecode"><span class="id" type="keyword">if</span></span> statement requires an <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span>
+  data type with exactly two constructors; but <span class="inlinecode"><span class="id" type="var">lt_dec_axiom_1</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span></span> has
+  type <span class="inlinecode"><span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>)</span>,  which is not Inductive.  But let's try a different axiom: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Axiom</span> <span class="id" type="var">lt_dec_axiom_2</span>:  <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span>: <span class="id" type="var">nat</span>, {<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>} + {~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>)}.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">max_with_axiom</span> (<span class="id" type="var">i</span> <span class="id" type="var">j</span>: <span class="id" type="var">nat</span>) : <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">lt_dec_axiom_2</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span> <span class="id" type="keyword">then</span> <span class="id" type="var">j</span> <span class="id" type="keyword">else</span> <span class="id" type="var">i</span>.<br/>
+</div>
+
+<div class="doc">
+This typechecks, because <span class="inlinecode"><span class="id" type="var">lt_dec_axiom_2</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span></span>  belongs to type
+     <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode">(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>)</span> <span class="inlinecode">(~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>))</span>   (also written <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>)}</span> <span class="inlinecode"></span>), which does have
+     two constructors.
+
+<div class="paragraph"> </div>
+
+     Now, let's use this function: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">max_with_axiom</span> 3 7.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;&nbsp;=&nbsp;if&nbsp;lt_dec_axiom_2&nbsp;3&nbsp;7&nbsp;then&nbsp;7&nbsp;else&nbsp;3<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+This <span class="inlinecode"><span class="id" type="tactic">compute</span></span> didn't compute very much!  Let's try to evaluate it
+    using <span class="inlinecode"><span class="id" type="tactic">unfold</span></span>: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">prove_with_max_axiom</span>:   <span class="id" type="var">max_with_axiom</span> 3 7 = 7.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">unfold</span> <span class="id" type="var">max_with_axiom</span>.<br/>
+<span class="id" type="tactic">try</span> <span class="id" type="tactic">reflexivity</span>. <span class="comment">(*&nbsp;does&nbsp;not&nbsp;do&nbsp;anything,&nbsp;reflexivity&nbsp;fails&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;uncomment&nbsp;this&nbsp;line&nbsp;and&nbsp;try&nbsp;it:&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;unfold&nbsp;lt_dec_axiom_2.<br/>
+*)</span><br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">lt_dec_axiom_2</span> 3 7).<br/>
+<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="var">contradiction</span> <span class="id" type="var">n</span>. <span class="id" type="tactic">omega</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+It is dangerous to add Axioms to Coq: if you add one that's inconsistent,
+   then it leads to the ability to prove <span class="inlinecode"><span class="id" type="var">False</span></span>.  While that's a convenient way
+   to get a lot of things proved, it's unsound; the proofs are useless.  
+
+<div class="paragraph"> </div>
+
+   The Axioms above, <span class="inlinecode"><span class="id" type="var">lt_dec_axiom_1</span></span> and <span class="inlinecode"><span class="id" type="var">lt_dec_axiom_2</span></span>, are safe enough:
+   they are consistent.  But they don't help in computation.  Axioms are not
+   useful here. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">End</span> <span class="id" type="var">ScratchPad2</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab190"></a><h1 class="section">Opacity of <span class="inlinecode"><span class="id" type="keyword">Qed</span></span></h1>
+
+<div class="paragraph"> </div>
+
+ This lemma <span class="inlinecode"><span class="id" type="var">prove_with_max_axiom</span></span> turned out to be _provable_, but the proof
+    could not go by _computation_.  In contrast, let's use <span class="inlinecode"><span class="id" type="var">lt_dec</span></span>, which was built
+    without any axioms: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">compute_with_lt_dec</span>:  (<span class="id" type="keyword">if</span> <span class="id" type="var">ScratchPad2.lt_dec</span> 3 7 <span class="id" type="keyword">then</span> 7 <span class="id" type="keyword">else</span> 3) = 7.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">compute</span>.<br/>
+<span class="comment">(*&nbsp;uncomment&nbsp;this&nbsp;line&nbsp;and&nbsp;try&nbsp;it:<br/>
+&nbsp;&nbsp;&nbsp;unfold&nbsp;blt_reflect.<br/>
+*)</span><br/>
+<span class="id" type="keyword">Abort</span>.<br/>
+</div>
+
+<div class="doc">
+Unfortunately, even though <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span> was proved without any axioms, it
+    is an _opaque theorem_  (proved with <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> instead of with <span class="inlinecode"><span class="id" type="keyword">Defined</span></span>), and
+    one cannot compute with opaque theorems.  Not only that, but it is proved with
+    other opaque theorems such as <span class="inlinecode"><span class="id" type="var">iff_sym</span></span> and <span class="inlinecode"><span class="id" type="var">Nat.ltb_lt</span></span>.  If we want to
+    compute with an implementation of <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> built from <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span>, then
+    we will have to rebuild <span class="inlinecode"><span class="id" type="var">blt_reflect</span></span> without using <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> anywhere, only <span class="inlinecode"><span class="id" type="keyword">Defined</span></span>.
+
+<div class="paragraph"> </div>
+
+    Instead, let's use the version of <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> from the Coq standard library,
+    which _is_ carefully built without any opaque (<span class="inlinecode"><span class="id" type="keyword">Qed</span></span>) theorems.
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">compute_with_StdLib_lt_dec</span>:  (<span class="id" type="keyword">if</span> <span class="id" type="var">lt_dec</span> 3 7 <span class="id" type="keyword">then</span> 7 <span class="id" type="keyword">else</span> 3) = 7.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">compute</span>.<br/>
+<span class="id" type="tactic">reflexivity</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The Coq standard library has many decidability theorems.  You can
+   examine them by doing the following <span class="inlinecode"><span class="id" type="var">Search</span></span> command. The results
+   shown here are only for the subset of the library that's currently
+   imported (by the <span class="inlinecode"><span class="id" type="keyword">Import</span></span> commands above); there's even more out there. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Search</span> ({<span class="id" type="var">_</span>}+{~_}).<br/>
+<span class="comment">(*<br/>
+reflect_dec:&nbsp;forall&nbsp;(P&nbsp;:&nbsp;Prop)&nbsp;(b&nbsp;:&nbsp;bool),&nbsp;reflect&nbsp;P&nbsp;b&nbsp;-&gt;&nbsp;{P}&nbsp;+&nbsp;{~&nbsp;P}<br/>
+lt_dec:&nbsp;forall&nbsp;n&nbsp;m&nbsp;:&nbsp;nat,&nbsp;{n&nbsp;&lt;&nbsp;m}&nbsp;+&nbsp;{~&nbsp;n&nbsp;&lt;&nbsp;m}<br/>
+list_eq_dec:<br/>
+&nbsp;&nbsp;forall&nbsp;A&nbsp;:&nbsp;Type,<br/>
+&nbsp;&nbsp;(forall&nbsp;x&nbsp;y&nbsp;:&nbsp;A,&nbsp;{x&nbsp;=&nbsp;y}&nbsp;+&nbsp;{x&nbsp;&lt;&gt;&nbsp;y})&nbsp;-&gt;<br/>
+&nbsp;&nbsp;forall&nbsp;l&nbsp;l'&nbsp;:&nbsp;list&nbsp;A,&nbsp;{l&nbsp;=&nbsp;l'}&nbsp;+&nbsp;{l&nbsp;&lt;&gt;&nbsp;l'}<br/>
+le_dec:&nbsp;forall&nbsp;n&nbsp;m&nbsp;:&nbsp;nat,&nbsp;{n&nbsp;&lt;=&nbsp;m}&nbsp;+&nbsp;{~&nbsp;n&nbsp;&lt;=&nbsp;m}<br/>
+in_dec:<br/>
+&nbsp;&nbsp;forall&nbsp;A&nbsp;:&nbsp;Type,<br/>
+&nbsp;&nbsp;(forall&nbsp;x&nbsp;y&nbsp;:&nbsp;A,&nbsp;{x&nbsp;=&nbsp;y}&nbsp;+&nbsp;{x&nbsp;&lt;&gt;&nbsp;y})&nbsp;-&gt;<br/>
+&nbsp;&nbsp;forall&nbsp;(a&nbsp;:&nbsp;A)&nbsp;(l&nbsp;:&nbsp;list&nbsp;A),&nbsp;{In&nbsp;a&nbsp;l}&nbsp;+&nbsp;{~&nbsp;In&nbsp;a&nbsp;l}<br/>
+gt_dec:&nbsp;forall&nbsp;n&nbsp;m&nbsp;:&nbsp;nat,&nbsp;{n&nbsp;&gt;&nbsp;m}&nbsp;+&nbsp;{~&nbsp;n&nbsp;&gt;&nbsp;m}<br/>
+ge_dec:&nbsp;forall&nbsp;n&nbsp;m&nbsp;:&nbsp;nat,&nbsp;{n&nbsp;&gt;=&nbsp;m}&nbsp;+&nbsp;{~&nbsp;n&nbsp;&gt;=&nbsp;m}<br/>
+eq_nat_decide:&nbsp;forall&nbsp;n&nbsp;m&nbsp;:&nbsp;nat,&nbsp;{eq_nat&nbsp;n&nbsp;m}&nbsp;+&nbsp;{~&nbsp;eq_nat&nbsp;n&nbsp;m}<br/>
+eq_nat_dec:&nbsp;forall&nbsp;n&nbsp;m&nbsp;:&nbsp;nat,&nbsp;{n&nbsp;=&nbsp;m}&nbsp;+&nbsp;{n&nbsp;&lt;&gt;&nbsp;m}<br/>
+bool_dec:&nbsp;forall&nbsp;b<sub>1</sub>&nbsp;b<sub>2</sub>&nbsp;:&nbsp;bool,&nbsp;{b<sub>1</sub>&nbsp;=&nbsp;b<sub>2</sub>}&nbsp;+&nbsp;{b<sub>1</sub>&nbsp;&lt;&gt;&nbsp;b<sub>2</sub>}<br/>
+Zodd_dec:&nbsp;forall&nbsp;n&nbsp;:&nbsp;Z,&nbsp;{Zodd&nbsp;n}&nbsp;+&nbsp;{~&nbsp;Zodd&nbsp;n}<br/>
+Zeven_dec:&nbsp;forall&nbsp;n&nbsp;:&nbsp;Z,&nbsp;{Zeven&nbsp;n}&nbsp;+&nbsp;{~&nbsp;Zeven&nbsp;n}<br/>
+Z_zerop:&nbsp;forall&nbsp;x&nbsp;:&nbsp;Z,&nbsp;{x&nbsp;=&nbsp;0%Z}&nbsp;+&nbsp;{x&nbsp;&lt;&gt;&nbsp;0%Z}<br/>
+Z_lt_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&lt;&nbsp;y)%Z}&nbsp;+&nbsp;{~&nbsp;(x&nbsp;&lt;&nbsp;y)%Z}<br/>
+Z_le_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&lt;=&nbsp;y)%Z}&nbsp;+&nbsp;{~&nbsp;(x&nbsp;&lt;=&nbsp;y)%Z}<br/>
+Z_gt_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&gt;&nbsp;y)%Z}&nbsp;+&nbsp;{~&nbsp;(x&nbsp;&gt;&nbsp;y)%Z}<br/>
+Z_ge_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&gt;=&nbsp;y)%Z}&nbsp;+&nbsp;{~&nbsp;(x&nbsp;&gt;=&nbsp;y)%Z}<br/>
+*)</span><br/>
+</div>
+
+<div class="doc">
+The type of <span class="inlinecode"><span class="id" type="var">list_eq_dec</span></span> is worth looking at.  It says that if you
+     have  a decidable equality for an element type <span class="inlinecode"><span class="id" type="var">A</span></span>, then
+    <span class="inlinecode"><span class="id" type="var">list_eq_dec</span></span> calculates for you a decidable equality for type <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>.
+    Try it out: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">list_nat_eq_dec</span>: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">al</span> <span class="id" type="var">bl</span> : <span class="id" type="var">list</span> <span class="id" type="var">nat</span>, {<span class="id" type="var">al</span>=<span class="id" type="var">bl</span>}+{<span class="id" type="var">al</span>≠<span class="id" type="var">bl</span>}) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">list_eq_dec</span> <span class="id" type="var">eq_nat_dec</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="keyword">if</span> <span class="id" type="var">list_nat_eq_dec</span> [1;3;4] [1;4;3] <span class="id" type="keyword">then</span> <span class="id" type="var">true</span> <span class="id" type="keyword">else</span> <span class="id" type="var">false</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;=&nbsp;false&nbsp;:&nbsp;bool&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="keyword">if</span> <span class="id" type="var">list_nat_eq_dec</span> [1;3;4] [1;3;4] <span class="id" type="keyword">then</span> <span class="id" type="var">true</span> <span class="id" type="keyword">else</span> <span class="id" type="var">false</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;=&nbsp;true&nbsp;:&nbsp;bool&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab191"></a><h4 class="section">Exercise: 2 stars (list_nat_in)</h4>
+ Use <span class="inlinecode"><span class="id" type="var">in_dec</span></span> to build this function. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">list_nat_in</span>: <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">i</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>), {<span class="id" type="var">In</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span>}+{~ <span class="id" type="var">In</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span>}<br/>
+&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">in_4_pi</span>:  (<span class="id" type="keyword">if</span> <span class="id" type="var">list_nat_in</span> 4  [3;1;4;1;5;9;2;6] <span class="id" type="keyword">then</span> <span class="id" type="var">true</span> <span class="id" type="keyword">else</span> <span class="id" type="var">false</span>) = <span class="id" type="var">true</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">simpl</span>.<br/>
+<span class="comment">(*&nbsp;reflexivity.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ In general, beyond <span class="inlinecode"><span class="id" type="var">list_eq_dec</span></span> and <span class="inlinecode"><span class="id" type="var">in_dec</span></span>, one can construct a
+     whole programmable calculus of decidability, using the
+     programs-as-proof  language of Coq.  But is it a good idea?  Read on! 
+<div class="paragraph"> </div>
+
+<a name="lab192"></a><h1 class="section">Advantages and Disadvantages of <span class="inlinecode"><span class="id" type="var">reflect</span></span> Versus <span class="inlinecode"><span class="id" type="var">sumbool</span></span></h1>
+
+<div class="paragraph"> </div>
+
+ I have shown two ways to program decision procedures in Coq,
+    one using <span class="inlinecode"><span class="id" type="var">reflect</span></span> and the other using <span class="inlinecode">{<span class="id" type="var">_</span>}+{~_}</span>, i.e., <span class="inlinecode"><span class="id" type="var">sumbool</span></span>.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> With <span class="inlinecode"><span class="id" type="var">sumbool</span></span>, you define _two_ things: the operator in <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>
+      such as <span class="inlinecode"><span class="id" type="var">lt</span>:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> and the decidability "theorem"
+      in <span class="inlinecode"><span class="id" type="var">sumbool</span></span>, such as <span class="inlinecode"><span class="id" type="var">lt_dec</span>:</span> <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span>,</span> <span class="inlinecode">{<span class="id" type="var">lt</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span>}+{~</span> <span class="inlinecode"><span class="id" type="var">lt</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span>}</span>.  I say
+      "theorem" in quotes because it's not _just_ a theorem, it's also
+      a (nonopaque) computable function.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> With <span class="inlinecode"><span class="id" type="var">reflect</span></span>, you define _three_ things:  the operator in <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>,
+      the operator in <span class="inlinecode"><span class="id" type="var">bool</span></span> (such as <span class="inlinecode"><span class="id" type="var">ltb</span>:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">bool</span></span>, and the
+      theorem that relates them (such as <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span>).  
+
+</li>
+</ul>
+   Defining three things seems like more work than defining two.
+   But it may be easier and more efficient.  Programming in <span class="inlinecode"><span class="id" type="var">bool</span></span>,
+   you may have more control over how your functions are implemented,
+   you will have fewer difficult uses of dependent types, and you
+   will run into fewer difficulties with opaque theorems.
+
+<div class="paragraph"> </div>
+
+   However, among Coq programmers, <span class="inlinecode"><span class="id" type="var">sumbool</span></span> seems to be more
+   widely used, and it seems to have better support in the Coq standard
+   library.  So you may encounter it, and it is worth understanding what
+   it does.   Either of these two methods is a reasonable way of programming
+   with proof.  
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>
