@@ -1,14 +1,43 @@
 dist: trusty
 language: ocaml
 cache:
+  apt: true
   directories:
+  - $HOME/.opam
   - $HOME/Library/Caches/Homebrew
+addons:
+  apt:
+    sources:
+    - avsm
+    packages:
+    - opam
+    - aspcud
+env:
+  global:
+  - OPAMYES=true
+  matrix:
+  - COQ="coq.8.7.1"
+  - COQ="coq.8.7.2"
+  - COQ="coq.8.8.0"
+matrix:
+  fast_finish: true
+  allow_failures:
+    - os: osx
 os:
+    - linux
     - osx
 
 before_install:
     if [ $TRAVIS_OS_NAME = osx ]; then
-    brew update; brew install coq; fi
+    brew update; brew install --ignore-dependencies ocaml opam; fi
+
+install:
+- "[ -e .opam ] || travis_wait opam init"
+- eval $(opam config env)
+- opam config var root
+- ocamlc -v
+- opam install $COQ
+- opam list
 
 script:
 - set -e
