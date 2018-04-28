@@ -1,0 +1,26 @@
+dist: trusty
+language: ocaml
+cache:
+  directories:
+  - $HOME/Library/Caches/Homebrew
+os:
+    - osx
+
+before_install:
+    if [ $TRAVIS_OS_NAME = osx ]; then
+    brew update; brew install coq; fi
+
+script:
+- set -e
+- echo '编译《逻辑基础》';
+  echo -en 'travis_fold:start:lf';
+  make -C lf-current -j;
+  echo -en 'travis_fold:end:lf'
+- echo '编译《程序语言基础》';
+  echo -en 'travis_fold:start:plf';
+  make -C plf-current -j;
+  echo -en 'travis_fold:end:plf'
+- echo '编译《函数式算法验证》';
+  echo -en 'travis_fold:start:vfa';
+  make -C vfa-current -j;
+  echo -en 'travis_fold:end:vfa'
