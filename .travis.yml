@@ -32,7 +32,7 @@ before_install:
     brew update; brew install --ignore-dependencies ocaml opam; fi
 
 install:
-- "[ -e .opam ] || travis_wait opam init"
+- "[ -e .opam ] || opam init"
 - eval $(opam config env)
 - opam config var root
 - ocamlc -v
@@ -53,3 +53,8 @@ script:
   echo -en 'travis_fold:start:vfa';
   make -C vfa-current -j;
   echo -en 'travis_fold:end:vfa'
+- echo '检查压缩包';
+  echo -en 'travis_fold:start:tar';
+  for v in lf plf vfa; do
+  tar -xf $v-current/$v.tgz; make -C $v -j; done;
+  echo -en 'travis_fold:end:tar'
