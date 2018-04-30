@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Poly: Polymorphism and Higher-Order Functions</title>
+<title>Poly: 多态与高阶函数</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,36 +29,33 @@
 
 <div id="main">
 
-<h1 class="libtitle">Poly<span class="subtitle">Polymorphism and Higher-Order Functions</span></h1>
+<h1 class="libtitle">Poly<span class="subtitle">多态与高阶函数</span></h1>
 
 
 <div class="code code-tight">
 
 <span class="comment">(*&nbsp;Suppress&nbsp;some&nbsp;annoying&nbsp;warnings&nbsp;from&nbsp;Coq:&nbsp;*)</span><br/>
 <span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">Lists</span>.<br/><hr class='doublespaceincode'/>
-<span class="comment">(***&nbsp;Polymorphism&nbsp;*)</span><br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">Lists</span>.<br/>
 </div>
 
 <div class="doc">
-In this chapter we continue our development of basic
-    concepts of functional programming.  The critical new ideas are
-    _polymorphism_ (abstracting functions over the types of the data
-    they manipulate) and _higher-order functions_ (treating functions
-    as data).  We begin with polymorphism. 
-</div>
-
-<div class="doc">
-<a name="lab97"></a><h2 class="section">Polymorphic Lists</h2>
+<a name="lab97"></a><h1 class="section">FULL: 多态</h1>
 
 <div class="paragraph"> </div>
 
- For the last couple of chapters, we've been working just
-    with lists of numbers.  Obviously, interesting programs also need
-    to be able to manipulate lists with elements from other types &mdash;
-    lists of strings, lists of booleans, lists of lists, etc.  We
-    _could_ just define a new inductive datatype for each of these,
-    for example... 
+ 在本章中，我们会继续发展函数式编程的基本概念，其中最关键的新概念就是
+    <b>多态</b>（在所处理的数据类型上抽象出函数）和<b>高阶函数</b>（函数作为数据）。 
+</div>
+
+<div class="doc">
+<a name="lab98"></a><h2 class="section">多态列表</h2>
+
+<div class="paragraph"> </div>
+
+ 在前几章中，我们只是使用了数的列表。很明显，
+    有趣的程序还需要能够处理其它元素类型的列表，如字符串列表、布尔值列表、
+    列表的列表等等。我们<b>可以</b>分别为它们定义新的归纳数据类型，例如... 
 </div>
 <div class="code code-tight">
 
@@ -68,16 +65,14 @@ In this chapter we continue our development of basic
 </div>
 
 <div class="doc">
-... but this would quickly become tedious, partly because we
-    have to make up different constructor names for each datatype, but
-    mostly because we would also need to define new versions of all
-    our list manipulating functions (<span class="inlinecode"><span class="id" type="var">length</span></span>, <span class="inlinecode"><span class="id" type="var">rev</span></span>, etc.) for each
-    new datatype definition. 
+...不过这样很快就会变得乏味。
+    部分原因在于我们必须为每种数据类型都定义不同的构造子，
+    然而主因还是我们必须为每种数据类型再重新定义一遍所有的列表处理函数
+    （如 <span class="inlinecode"><span class="id" type="var">length</span></span>、<span class="inlinecode"><span class="id" type="var">rev</span></span> 等）。 
 <div class="paragraph"> </div>
 
- To avoid all this repetition, Coq supports _polymorphic_
-    inductive type definitions.  For example, here is a _polymorphic
-    list_ datatype. 
+ 为避免这些重复，Coq 支持定义<b>多态</b>归纳类型。
+    例如，以下就是<b>多态列表</b>数据类型。 
 </div>
 <div class="code code-tight">
 
@@ -87,23 +82,17 @@ In this chapter we continue our development of basic
 </div>
 
 <div class="doc">
-This is exactly like the definition of <span class="inlinecode"><span class="id" type="var">natlist</span></span> from the
-    previous chapter, except that the <span class="inlinecode"><span class="id" type="var">nat</span></span> argument to the <span class="inlinecode"><span class="id" type="var">cons</span></span>
-    constructor has been replaced by an arbitrary type <span class="inlinecode"><span class="id" type="var">X</span></span>, a binding
-    for <span class="inlinecode"><span class="id" type="var">X</span></span> has been added to the header, and the occurrences of
-    <span class="inlinecode"><span class="id" type="var">natlist</span></span> in the types of the constructors have been replaced by
-    <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>.  (We can re-use the constructor names <span class="inlinecode"><span class="id" type="var">nil</span></span> and <span class="inlinecode"><span class="id" type="var">cons</span></span>
-    because the earlier definition of <span class="inlinecode"><span class="id" type="var">natlist</span></span> was inside of a
-    <span class="inlinecode"><span class="id" type="keyword">Module</span></span> definition that is now out of scope.)
+这和上一章中 <span class="inlinecode"><span class="id" type="var">natlist</span></span> 的定义基本一样，只是将 <span class="inlinecode"><span class="id" type="var">cons</span></span> 构造子的
+    <span class="inlinecode"><span class="id" type="var">nat</span></span> 参数换成了任意的类型 <span class="inlinecode"><span class="id" type="var">X</span></span>，定义的头部添加了 <span class="inlinecode"><span class="id" type="var">X</span></span> 的绑定，
+    而构造子类型中的 <span class="inlinecode"><span class="id" type="var">natlist</span></span> 则换成了 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>。（我们可以重用构造子名
+    <span class="inlinecode"><span class="id" type="var">nil</span></span> 和 <span class="inlinecode"><span class="id" type="var">cons</span></span>，因为之前定义的 <span class="inlinecode"><span class="id" type="var">natlist</span></span> 在当前作用之外的一个 <span class="inlinecode"><span class="id" type="keyword">Module</span></span> 中。）
 
 <div class="paragraph"> </div>
 
-    What sort of thing is <span class="inlinecode"><span class="id" type="var">list</span></span> itself?  One good way to think
-    about it is that <span class="inlinecode"><span class="id" type="var">list</span></span> is a _function_ from <span class="inlinecode"><span class="id" type="keyword">Type</span></span>s to
-    <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> definitions; or, to put it another way, <span class="inlinecode"><span class="id" type="var">list</span></span> is a
-    function from <span class="inlinecode"><span class="id" type="keyword">Type</span></span>s to <span class="inlinecode"><span class="id" type="keyword">Type</span></span>s.  For any particular type <span class="inlinecode"><span class="id" type="var">X</span></span>,
-    the type <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> is an <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span>ly defined set of lists whose
-    elements are of type <span class="inlinecode"><span class="id" type="var">X</span></span>. 
+    <span class="inlinecode"><span class="id" type="var">list</span></span> 本身又是什么类型？一种不错的思路就是把 <span class="inlinecode"><span class="id" type="var">list</span></span> 当做从 <span class="inlinecode"><span class="id" type="keyword">Type</span></span>
+    类型到 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 归纳定义的<b>函数</b>；或者换种思路，即 <span class="inlinecode"><span class="id" type="var">list</span></span>
+    是个从 <span class="inlinecode"><span class="id" type="keyword">Type</span></span> 类型到 <span class="inlinecode"><span class="id" type="keyword">Type</span></span> 类型的函数。对于任何特定的类型 <span class="inlinecode"><span class="id" type="var">X</span></span>，
+    类型 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 是一个 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 归纳定义的，元素类型为 <span class="inlinecode"><span class="id" type="var">X</span></span> 的列表的集合。 
 </div>
 <div class="code code-tight">
 
@@ -112,11 +101,9 @@ This is exactly like the definition of <span class="inlinecode"><span class="id"
 </div>
 
 <div class="doc">
-The parameter <span class="inlinecode"><span class="id" type="var">X</span></span> in the definition of <span class="inlinecode"><span class="id" type="var">list</span></span> becomes a parameter
-    to the constructors <span class="inlinecode"><span class="id" type="var">nil</span></span> and <span class="inlinecode"><span class="id" type="var">cons</span></span> &mdash; that is, <span class="inlinecode"><span class="id" type="var">nil</span></span> and <span class="inlinecode"><span class="id" type="var">cons</span></span>
-    are now polymorphic constructors, that need to be supplied with
-    the type of the list they are building. As an example, <span class="inlinecode"><span class="id" type="var">nil</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span>
-    constructs the empty list of type <span class="inlinecode"><span class="id" type="var">nat</span></span>. 
+<span class="inlinecode"><span class="id" type="var">list</span></span> 定义中的形参 <span class="inlinecode"><span class="id" type="var">X</span></span> 会作为构造子 <span class="inlinecode"><span class="id" type="var">nil</span></span> 和 <span class="inlinecode"><span class="id" type="var">cons</span></span> 的形参，
+    即，现在的 <span class="inlinecode"><span class="id" type="var">nil</span></span> 和 <span class="inlinecode"><span class="id" type="var">cons</span></span> 是多态构造子，它们需要 <span class="inlinecode"><span class="id" type="var">X</span></span>
+    来提供所构造的列表的类型。例如，<span class="inlinecode"><span class="id" type="var">nil</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span> 会构造出类型为 <span class="inlinecode"><span class="id" type="var">nat</span></span> 的空列表。 
 </div>
 <div class="code code-tight">
 
@@ -125,9 +112,8 @@ The parameter <span class="inlinecode"><span class="id" type="var">X</span></spa
 </div>
 
 <div class="doc">
-Similarly, <span class="inlinecode"><span class="id" type="var">cons</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span> adds an element of type <span class="inlinecode"><span class="id" type="var">nat</span></span> to a list of
-    type <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span>. Here is an example of forming a list containing
-    just the natural number 3.
+<span class="inlinecode"><span class="id" type="var">cons</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span> 与此类似，它将类型为 <span class="inlinecode"><span class="id" type="var">nat</span></span> 的元素添加到类型为
+    <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span> 的列表中。以下示例构造了一个只包含自然数 3 的列表： 
 </div>
 <div class="code code-tight">
 
@@ -136,11 +122,10 @@ Similarly, <span class="inlinecode"><span class="id" type="var">cons</span></spa
 </div>
 
 <div class="doc">
-What might the type of <span class="inlinecode"><span class="id" type="var">nil</span></span> be? We can read off the type <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>
-    from the definition, but this omits the binding for <span class="inlinecode"><span class="id" type="var">X</span></span> which is
-    the parameter to <span class="inlinecode"><span class="id" type="var">list</span></span>. <span class="inlinecode"><span class="id" type="keyword">Type</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> does not explain the
-    meaning of <span class="inlinecode"><span class="id" type="var">X</span></span>. <span class="inlinecode">(<span class="id" type="var">X</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="keyword">Type</span>)</span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> comes closer. Coq's
-    notation for this situation is <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="keyword">Type</span>,</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>. 
+<span class="inlinecode"><span class="id" type="var">nil</span></span> 的类型可能是什么？我们可以从定义中看到 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 的类型，
+    它忽略了 <span class="inlinecode"><span class="id" type="var">list</span></span> 的形参 <span class="inlinecode"><span class="id" type="var">X</span></span> 的绑定。<span class="inlinecode"><span class="id" type="keyword">Type</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 并没有解释
+    <span class="inlinecode"><span class="id" type="var">X</span></span> 的含义，<span class="inlinecode">(<span class="id" type="var">X</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="keyword">Type</span>)</span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 则比较接近。Coq 对这种情况的记法为
+    <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="keyword">Type</span>,</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>： 
 </div>
 <div class="code code-tight">
 
@@ -149,10 +134,8 @@ What might the type of <span class="inlinecode"><span class="id" type="var">nil<
 </div>
 
 <div class="doc">
-Similarly, the type of <span class="inlinecode"><span class="id" type="var">cons</span></span> from the definition looks like
-    <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>, but using this convention to explain the
-    meaning of <span class="inlinecode"><span class="id" type="var">X</span></span> results in the type <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span>,</span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span>
-    <span class="inlinecode"><span class="id" type="var">X</span></span>. 
+类似地，定义中 <span class="inlinecode"><span class="id" type="var">cons</span></span> 看起来像 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>
+    然而以此约定来解释 <span class="inlinecode"><span class="id" type="var">X</span></span> 的含义则是类型 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span>,</span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -161,18 +144,14 @@ Similarly, the type of <span class="inlinecode"><span class="id" type="var">cons
 </div>
 
 <div class="doc">
-(Side note on notation: In .v files, the "forall" quantifier
-    is spelled out in letters.  In the generated HTML files and in the
-    way various IDEs show .v files (with certain settings of their
-    display controls), <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>is usually typeset as the usual
-    mathematical "upside down A," but you'll still see the spelled-out
-    "forall" in a few places.  This is just a quirk of typesetting:
-    there is no difference in meaning.) 
+（关于记法的附注：在 <span class="inlinecode">.<span class="id" type="var">v</span></span> 文件中，量词「forall」会写成字母的形式，
+    而在生成的 HTML 和一些设置了显示控制的 IDE 中，<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>
+    通常会渲染成一般的「倒 A」数学符号，虽然你偶尔还是会看到英文拼写的
+    「forall」。这只是排版上的效果，它们的含义没有任何区别。） 
 <div class="paragraph"> </div>
 
- Having to supply a type argument for each use of a list
-    constructor may seem an awkward burden, but we will soon see
-    ways of reducing that burden. 
+ 如果在每次使用列表构造子时，都要为它提供类型参数，那样会很麻烦。
+    不过我们很快就会看到如何省去这种麻烦。 
 </div>
 <div class="code code-tight">
 
@@ -180,14 +159,12 @@ Similarly, the type of <span class="inlinecode"><span class="id" type="var">cons
 </div>
 
 <div class="doc">
-(We've written <span class="inlinecode"><span class="id" type="var">nil</span></span> and <span class="inlinecode"><span class="id" type="var">cons</span></span> explicitly here because we haven't
-    yet defined the <span class="inlinecode"></span> <span class="inlinecode">[]</span> <span class="inlinecode"></span> and <span class="inlinecode">::</span> notations for the new version of
-    lists.  We'll do that in a bit.) 
+（这里显式地写出了 <span class="inlinecode"><span class="id" type="var">nil</span></span> 和 <span class="inlinecode"><span class="id" type="var">cons</span></span>，因为我们还没为新版本的列表定义
+    <span class="inlinecode"></span> <span class="inlinecode">[]</span> <span class="inlinecode"></span> 和 <span class="inlinecode">::</span> 记法。我们待会儿再干。) 
 <div class="paragraph"> </div>
 
- We can now go back and make polymorphic versions of all the
-    list-processing functions that we wrote before.  Here is <span class="inlinecode"><span class="id" type="tactic">repeat</span></span>,
-    for example: 
+ 现在我们可以回过头来定义之前写下的列表处理函数的多态版本了。
+    例如 <span class="inlinecode"><span class="id" type="tactic">repeat</span></span>：
 </div>
 <div class="code code-tight">
 
@@ -199,8 +176,8 @@ Similarly, the type of <span class="inlinecode"><span class="id" type="var">cons
 </div>
 
 <div class="doc">
-As with <span class="inlinecode"><span class="id" type="var">nil</span></span> and <span class="inlinecode"><span class="id" type="var">cons</span></span>, we can use <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> by applying it
-    first to a type and then to an element of this type (and a number): 
+同 <span class="inlinecode"><span class="id" type="var">nil</span></span> 与 <span class="inlinecode"><span class="id" type="var">cons</span></span> 一样，我们可以通过将 <span class="inlinecode"><span class="id" type="tactic">repeat</span></span>
+    应用到一个类型、一个该类型的元素以及一个数字来使用它： 
 </div>
 <div class="code code-tight">
 
@@ -210,8 +187,8 @@ As with <span class="inlinecode"><span class="id" type="var">nil</span></span> a
 </div>
 
 <div class="doc">
-To use <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> to build other kinds of lists, we simply
-    instantiate it with an appropriate type parameter: 
+要用 <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> 构造其它种类的列表，
+    我们只需通过对应类型的参数将它实例化即可： 
 </div>
 <div class="code code-tight">
 
@@ -222,8 +199,8 @@ To use <span class="inlinecode"><span class="id" type="tactic">repeat</span></sp
 </div>
 
 <div class="doc">
-<a name="lab98"></a><h4 class="section">Exercise: 2 stars (mumble_grumble)</h4>
- Consider the following two inductively defined types. 
+<a name="lab99"></a><h4 class="section">Exercise: 2 stars (mumble_grumble)</h4>
+ 考虑以下两个归纳定义的类型： 
 </div>
 <div class="code code-tight">
 
@@ -237,8 +214,7 @@ To use <span class="inlinecode"><span class="id" type="tactic">repeat</span></sp
 </div>
 
 <div class="doc">
-Which of the following are well-typed elements of <span class="inlinecode"><span class="id" type="var">grumble</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> for
-    some type <span class="inlinecode"><span class="id" type="var">X</span></span>?
+对于某个类型 <span class="inlinecode"><span class="id" type="var">X</span></span>，以下哪些是 <span class="inlinecode"><span class="id" type="var">grumble</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 良定义的元素？
 
 <div class="paragraph"> </div>
 
@@ -261,26 +237,28 @@ Which of the following are well-typed elements of <span class="inlinecode"><span
 <li> <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode"><span class="id" type="var">bool</span></span> <span class="inlinecode">(<span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode">0)</span>
 
 </li>
-<li> <span class="inlinecode"><span class="id" type="var">c</span></span>
-
+<li> <span class="inlinecode"><span class="id" type="var">c</span></span> 
 </li>
 </ul>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
- <span class="proofbox">&#9744;</span> 
+
 </div>
+<div class="code code-tight">
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
 <div class="code code-tight">
 
 <span class="id" type="keyword">End</span> <span class="id" type="var">MumbleGrumble</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab99"></a><h3 class="section">Type Annotation Inference</h3>
+<a name="lab100"></a><h3 class="section">类型标注的推断</h3>
 
 <div class="paragraph"> </div>
 
- Let's write the definition of <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> again, but this time we
-    won't specify the types of any of the arguments.  Will Coq still
-    accept it? 
+ 我们再写一遍 <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> 的定义，不过这次不指定任何参数的类型。
+    Coq 还会接受它么？ 
 </div>
 <div class="code code-tight">
 
@@ -292,7 +270,7 @@ Which of the following are well-typed elements of <span class="inlinecode"><span
 </div>
 
 <div class="doc">
-Indeed it will.  Let's see what type Coq has assigned to <span class="inlinecode"><span class="id" type="var">repeat'</span></span>: 
+当然会。我们来看看 Coq 赋予了 <span class="inlinecode"><span class="id" type="var">repeat'</span></span> 什么类型： 
 </div>
 <div class="code code-tight">
 
@@ -303,55 +281,42 @@ Indeed it will.  Let's see what type Coq has assigned to <span class="inlinecode
 </div>
 
 <div class="doc">
-It has exactly the same type type as <span class="inlinecode"><span class="id" type="tactic">repeat</span></span>.  Coq was able
-    to use _type inference_ to deduce what the types of <span class="inlinecode"><span class="id" type="var">X</span></span>, <span class="inlinecode"><span class="id" type="var">x</span></span>, and
-    <span class="inlinecode"><span class="id" type="var">count</span></span> must be, based on how they are used.  For example, since
-    <span class="inlinecode"><span class="id" type="var">X</span></span> is used as an argument to <span class="inlinecode"><span class="id" type="var">cons</span></span>, it must be a <span class="inlinecode"><span class="id" type="keyword">Type</span></span>, since
-    <span class="inlinecode"><span class="id" type="var">cons</span></span> expects a <span class="inlinecode"><span class="id" type="keyword">Type</span></span> as its first argument; matching <span class="inlinecode"><span class="id" type="var">count</span></span>
-    with <span class="inlinecode">0</span> and <span class="inlinecode"><span class="id" type="var">S</span></span> means it must be a <span class="inlinecode"><span class="id" type="var">nat</span></span>; and so on.
+它与 <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> 的类型完全一致。Coq 可以使用<b>类型推断</b>
+    基于它们的使用方式来推出 <span class="inlinecode"><span class="id" type="var">X</span></span>、<span class="inlinecode"><span class="id" type="var">x</span></span> 和 <span class="inlinecode"><span class="id" type="var">count</span></span> 一定是什么类型。例如，
+    由于 <span class="inlinecode"><span class="id" type="var">X</span></span> 是作为 <span class="inlinecode"><span class="id" type="var">cons</span></span> 的参数使用的，因此它必定是个 <span class="inlinecode"><span class="id" type="keyword">Type</span></span> 类型，
+    因为 <span class="inlinecode"><span class="id" type="var">cons</span></span> 期望一个 <span class="inlinecode"><span class="id" type="keyword">Type</span></span> 作为其第一个参数，而用 <span class="inlinecode">0</span> 和 <span class="inlinecode"><span class="id" type="var">S</span></span> 来匹配
+    <span class="inlinecode"><span class="id" type="var">count</span></span> 意味着它必须是个 <span class="inlinecode"><span class="id" type="var">nat</span></span>，诸如此类。
 
 <div class="paragraph"> </div>
 
-    This powerful facility means we don't always have to write
-    explicit type annotations everywhere, although explicit type
-    annotations are still quite useful as documentation and sanity
-    checks, so we will continue to use them most of the time.  You
-    should try to find a balance in your own code between too many
-    type annotations (which can clutter and distract) and too
-    few (which forces readers to perform type inference in their heads
-    in order to understand your code). 
+    这种强大的功能意味着我们不必总是在任何地方都显式地写出类型标注，
+    不过显式的类型标注对于文档和完整性检查来说仍然非常有用，
+    因此我们仍会继续使用它。你应当在代码中把握好使用类型标注的平衡点，
+    太多导致混乱并分散注意力，太少则会迫使读者为理解你的代码而在大脑中进行类型推断。 
 </div>
 
 <div class="doc">
-<a name="lab100"></a><h3 class="section">Type Argument Synthesis</h3>
+<a name="lab101"></a><h3 class="section">类型参数的推断</h3>
 
 <div class="paragraph"> </div>
 
- To use a polymorphic function, we need to pass it one or
-    more types in addition to its other arguments.  For example, the
-    recursive call in the body of the <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> function above must
-    pass along the type <span class="inlinecode"><span class="id" type="var">X</span></span>.  But since the second argument to
-    <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> is an element of <span class="inlinecode"><span class="id" type="var">X</span></span>, it seems entirely obvious that the
-    first argument can only be <span class="inlinecode"><span class="id" type="var">X</span></span> &mdash; why should we have to write it
-    explicitly?
+ 要使用多态函数，我们需要为其参数再额外传入一个或更多类型。
+    例如，前面 <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> 函数体中的递归调用必须传递类型 <span class="inlinecode"><span class="id" type="var">X</span></span>。不过由于
+    <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> 的第二个参数为 <span class="inlinecode"><span class="id" type="var">X</span></span> 类型的元素，第一个参数明显只能是 <span class="inlinecode"><span class="id" type="var">X</span></span>，
+    既然如此，我们何必显式地写出它呢？
 
 <div class="paragraph"> </div>
 
-    Fortunately, Coq permits us to avoid this kind of redundancy.  In
-    place of any type argument we can write the "implicit argument"
-    <span class="inlinecode"><span class="id" type="var">_</span></span>, which can be read as "Please try to figure out for yourself
-    what belongs here."  More precisely, when Coq encounters a <span class="inlinecode"><span class="id" type="var">_</span></span>, it
-    will attempt to _unify_ all locally available information &mdash; the
-    type of the function being applied, the types of the other
-    arguments, and the type expected by the context in which the
-    application appears &mdash; to determine what concrete type should
-    replace the <span class="inlinecode"><span class="id" type="var">_</span></span>.
+    幸运的是，Coq 允许我们避免这种冗余。在任何我们可以将类型参数写为
+    「隐式参数」<span class="inlinecode"><span class="id" type="var">_</span></span> 的地方，都可以看做「请 Coq 自行找出这里应该填什么。」
+    更确切地说，当 Coq 遇到 <span class="inlinecode"><span class="id" type="var">_</span></span> 时，它会尝试<b>统一</b>所有的局部变量信息，
+    包括函数应当应用到的类型，其它参数的类型，以及应用函数的上下文中期望的类型，
+    以此来确定 <span class="inlinecode"><span class="id" type="var">_</span></span> 处应当填入的具体类型。
 
 <div class="paragraph"> </div>
 
-    This may sound similar to type annotation inference &mdash; indeed, the
-    two procedures rely on the same underlying mechanisms.  Instead of
-    simply omitting the types of some arguments to a function, like
+    这听起来很像类型标注推断。实际上，这两种个过程依赖于同样的底层机制。
+    除了简单地忽略函数中某些参数的类型：
 
 <div class="paragraph"> </div>
 
@@ -360,7 +325,7 @@ It has exactly the same type type as <span class="inlinecode"><span class="id" t
 <div class="paragraph"> </div>
 
 </div>
-    we can also replace the types with <span class="inlinecode"><span class="id" type="var">_</span></span>
+    我们还可以将类型换成 <span class="inlinecode"><span class="id" type="var">_</span></span>：
 
 <div class="paragraph"> </div>
 
@@ -369,12 +334,11 @@ It has exactly the same type type as <span class="inlinecode"><span class="id" t
 <div class="paragraph"> </div>
 
 </div>
-    to tell Coq to attempt to infer the missing information.
+    以此来告诉 Coq 要尝试推断出缺少的信息。
 
 <div class="paragraph"> </div>
 
-    Using implicit arguments, the <span class="inlinecode"><span class="id" type="tactic">repeat</span></span> function can be written like
-    this: 
+    使用隐式参数，<span class="inlinecode"><span class="id" type="tactic">repeat</span></span> 可写成如下形式： 
 </div>
 <div class="code code-tight">
 
@@ -386,11 +350,9 @@ It has exactly the same type type as <span class="inlinecode"><span class="id" t
 </div>
 
 <div class="doc">
-In this instance, we don't save much by writing <span class="inlinecode"><span class="id" type="var">_</span></span> instead of
-    <span class="inlinecode"><span class="id" type="var">X</span></span>.  But in many cases the difference in both keystrokes and
-    readability is nontrivial.  For example, suppose we want to write
-    down a list containing the numbers <span class="inlinecode">1</span>, <span class="inlinecode">2</span>, and <span class="inlinecode">3</span>.  Instead of
-    writing this... 
+在此例中，我们写出 <span class="inlinecode"><span class="id" type="var">_</span></span> 并没有省略多少 <span class="inlinecode"><span class="id" type="var">X</span></span>。然而在很多情况下，
+    这对减少击键次数和提高可读性还是很有效的。例如，假设我们要写下一个包含数字
+    <span class="inlinecode">1</span>、<span class="inlinecode">2</span> 和 <span class="inlinecode">3</span> 的列表，此时不必写成这样： 
 </div>
 <div class="code code-tight">
 
@@ -399,7 +361,7 @@ In this instance, we don't save much by writing <span class="inlinecode"><span c
 </div>
 
 <div class="doc">
-...we can use argument synthesis to write this: 
+我们可以使用参数推断写成这样： 
 </div>
 <div class="code code-tight">
 
@@ -408,22 +370,17 @@ In this instance, we don't save much by writing <span class="inlinecode"><span c
 </div>
 
 <div class="doc">
-<a name="lab101"></a><h3 class="section">Implicit Arguments</h3>
+<a name="lab102"></a><h3 class="section">隐式参数</h3>
 
 <div class="paragraph"> </div>
 
- We can go further and even avoid writing <span class="inlinecode"><span class="id" type="var">_</span></span>'s in most cases by
-    telling Coq _always_ to infer the type argument(s) of a given
-    function.
+ 我们甚至可以通过告诉 Coq <b>总是</b>推断给定函数的类型参数来避免 <span class="inlinecode"><span class="id" type="var">_</span></span>。
 
 <div class="paragraph"> </div>
 
-    The <span class="inlinecode"><span class="id" type="var">Arguments</span></span> directive specifies the name of the function (or
-    constructor) and then lists its argument names, with curly braces
-    around any arguments to be treated as implicit.  (If some
-    arguments of a definition don't have a name, as is often the case
-    for constructors, they can be marked with a wildcard pattern
-    <span class="inlinecode"><span class="id" type="var">_</span></span>.) 
+    <span class="inlinecode"><span class="id" type="var">Arguments</span></span> 用于指令指定函数或构造子的名字并列出其参数名，
+    花括号中的任何参数都会被视作隐式参数。（如果定义中的某个参数没有名字，
+    那么它可以用通配模式 <span class="inlinecode"><span class="id" type="var">_</span></span> 来标记。这种情况常见于构造子中。） 
 </div>
 <div class="code code-tight">
 
@@ -433,7 +390,7 @@ In this instance, we don't save much by writing <span class="inlinecode"><span c
 </div>
 
 <div class="doc">
-Now, we don't have to supply type arguments at all: 
+现在我们再也不必提供类型参数了： 
 </div>
 <div class="code code-tight">
 
@@ -441,9 +398,8 @@ Now, we don't have to supply type arguments at all:
 </div>
 
 <div class="doc">
-Alternatively, we can declare an argument to be implicit
-    when defining the function itself, by surrounding it in curly
-    braces instead of parens.  For example: 
+此外，我们还可以在定义函数时声明隐式参数，
+    只是需要将它放在花括号内而非圆括号中。例如： 
 </div>
 <div class="code code-tight">
 
@@ -455,19 +411,15 @@ Alternatively, we can declare an argument to be implicit
 </div>
 
 <div class="doc">
-(Note that we didn't even have to provide a type argument to the
-    recursive call to <span class="inlinecode"><span class="id" type="var">repeat'''</span></span>; indeed, it would be invalid to
-    provide one!)
+（注意我们现在甚至不必在 <span class="inlinecode"><span class="id" type="var">repeat'''</span></span> 的递归调用中提供类型参数了，
+      实际上提供了反而是无效的！）
 
 <div class="paragraph"> </div>
 
-    We will use the latter style whenever possible, but we will
-    continue to use explicit <span class="inlinecode"><span class="id" type="var">Argument</span></span> declarations for <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span>
-    constructors.  The reason for this is that marking the parameter
-    of an inductive type as implicit causes it to become implicit for
-    the type itself, not just for its constructors.  For instance,
-    consider the following alternative definition of the <span class="inlinecode"><span class="id" type="var">list</span></span>
-    type: 
+    我们会尽可能使用最后一种风格，不过还会继续在 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 构造子中使用显式的
+    <span class="inlinecode"><span class="id" type="var">Argument</span></span> 声明。原因在于如果将归纳类型的形参标为隐式的话，
+    不仅构造子的类型会变成隐式的，类型本身也会变成隐式的。例如，
+    考虑以下 <span class="inlinecode"><span class="id" type="var">list</span></span> 类型的另一种定义： 
 </div>
 <div class="code code-tight">
 
@@ -477,15 +429,12 @@ Alternatively, we can declare an argument to be implicit
 </div>
 
 <div class="doc">
-Because <span class="inlinecode"><span class="id" type="var">X</span></span> is declared as implicit for the _entire_ inductive
-    definition including <span class="inlinecode"><span class="id" type="var">list'</span></span> itself, we now have to write just
-    <span class="inlinecode"><span class="id" type="var">list'</span></span> whether we are talking about lists of numbers or booleans
-    or anything else, rather than <span class="inlinecode"><span class="id" type="var">list'</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span> or <span class="inlinecode"><span class="id" type="var">list'</span></span> <span class="inlinecode"><span class="id" type="var">bool</span></span> or
-    whatever; this is a step too far. 
+由于 <span class="inlinecode"><span class="id" type="var">X</span></span> 在包括 <span class="inlinecode"><span class="id" type="var">list'</span></span> 本身的<b>整个</b>归纳定义中都是隐式声明的，
+    因此当我们讨论数值、布尔值或其它任何类型的列表时，都只能写 <span class="inlinecode"><span class="id" type="var">list'</span></span>，
+    而写不了 <span class="inlinecode"><span class="id" type="var">list'</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span>、<span class="inlinecode"><span class="id" type="var">list'</span></span> <span class="inlinecode"><span class="id" type="var">bool</span></span> 或其它的了，这样就跑得有点太远了。 
 <div class="paragraph"> </div>
 
- Let's finish by re-implementing a few other standard list
-    functions on our new polymorphic lists... 
+ 作为本节的收尾，我们为新的多态列表重新实现几个其它的标准列表函数... 
 </div>
 <div class="code code-tight">
 
@@ -516,15 +465,13 @@ Because <span class="inlinecode"><span class="id" type="var">X</span></span> is 
 </div>
 
 <div class="doc">
-<a name="lab102"></a><h3 class="section">Supplying Type Arguments Explicitly</h3>
+<a name="lab103"></a><h3 class="section">显式提供类型参数</h3>
 
 <div class="paragraph"> </div>
 
- One small problem with declaring arguments <span class="inlinecode"><span class="id" type="keyword">Implicit</span></span> is
-    that, occasionally, Coq does not have enough local information to
-    determine a type argument; in such cases, we need to tell Coq that
-    we want to give the argument explicitly just this time.  For
-    example, suppose we write this: 
+ 用 <span class="inlinecode"><span class="id" type="keyword">Implicit</span></span> 将参数声明为隐式的会有个小问题：Coq
+    偶尔会没有足够的局部信息来确定类型参数。此时，我们需要告诉 Coq
+    这次我们会显示地给出参数。例如，假设我们写了如下定义： 
 </div>
 <div class="code code-tight">
 
@@ -532,18 +479,15 @@ Because <span class="inlinecode"><span class="id" type="var">X</span></span> is 
 </div>
 
 <div class="doc">
-(The <span class="inlinecode"><span class="id" type="var">Fail</span></span> qualifier that appears before <span class="inlinecode"><span class="id" type="keyword">Definition</span></span> can be
-    used with _any_ command, and is used to ensure that that command
-    indeed fails when executed. If the command does fail, Coq prints
-    the corresponding error message, but continues processing the rest
-    of the file.)
+（<span class="inlinecode"><span class="id" type="keyword">Definition</span></span> 前面的 <span class="inlinecode"><span class="id" type="var">Fail</span></span> 限定符可用于<b>任何</b>命令，
+    它的作用是确保该命令在执行时确实会失败。如果该命令失败了，Coq
+    就会打印出相应的错误信息，不过之后会继续处理文件中剩下的部分。）
 
 <div class="paragraph"> </div>
 
-    Here, Coq gives us an error because it doesn't know what type
-    argument to supply to <span class="inlinecode"><span class="id" type="var">nil</span></span>.  We can help it by providing an
-    explicit type declaration (so that Coq has more information
-    available when it gets to the "application" of <span class="inlinecode"><span class="id" type="var">nil</span></span>): 
+    在这里，Coq 给出了一条错误信息，因为它不知道应该为 <span class="inlinecode"><span class="id" type="var">nil</span></span> 提供何种类型。
+    我们可以为它提供个显式的类型声明来帮助它，这样 Coq 在「应用」<span class="inlinecode"><span class="id" type="var">nil</span></span>
+    时就有更多可用的信息了： 
 </div>
 <div class="code code-tight">
 
@@ -551,8 +495,7 @@ Because <span class="inlinecode"><span class="id" type="var">X</span></span> is 
 </div>
 
 <div class="doc">
-Alternatively, we can force the implicit arguments to be explicit by
-   prefixing the function name with <span class="inlinecode">@</span>. 
+此外，我们还可以在函数名前加上前缀 <span class="inlinecode">@</span> 来强制将隐式参数变成显式的： 
 </div>
 <div class="code code-tight">
 
@@ -561,10 +504,9 @@ Alternatively, we can force the implicit arguments to be explicit by
 </div>
 
 <div class="doc">
-Using argument synthesis and implicit arguments, we can
-    define convenient notation for lists, as before.  Since we have
-    made the constructor type arguments implicit, Coq will know to
-    automatically infer these when we use the notations. 
+使用参数推断和隐式参数，我们可以为列表定义和前面一样的简便记法。
+    由于我们让构造子的的类型参数变成了隐式的，因此 Coq
+    就知道在我们使用该记法时自动推断它们了。 
 </div>
 <div class="code code-tight">
 
@@ -577,7 +519,7 @@ Using argument synthesis and implicit arguments, we can
 </div>
 
 <div class="doc">
-Now lists can be written just the way we'd hope: 
+现在列表就能写成我们希望的方式了： 
 </div>
 <div class="code code-tight">
 
@@ -585,13 +527,13 @@ Now lists can be written just the way we'd hope:
 </div>
 
 <div class="doc">
-<a name="lab103"></a><h3 class="section">Exercises</h3>
+<a name="lab104"></a><h3 class="section">练习</h3>
 
 <div class="paragraph"> </div>
 
-<a name="lab104"></a><h4 class="section">Exercise: 2 stars, optional (poly_exercises)</h4>
- Here are a few simple exercises, just like ones in the <span class="inlinecode"><span class="id" type="var">Lists</span></span>
-    chapter, for practice with polymorphism.  Complete the proofs below. 
+<a name="lab105"></a><h4 class="section">Exercise: 2 stars, optional (poly_exercises)</h4>
+ 下面是一些简单的练习，和 <span class="inlinecode"><span class="id" type="var">Lists</span></span> 一章中的一样。
+    为了实践多态，请完成下面的证明。 
 </div>
 <div class="code code-tight">
 
@@ -613,8 +555,8 @@ Now lists can be written just the way we'd hope:
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab105"></a><h4 class="section">Exercise: 2 stars, optional (more_poly_exercises)</h4>
- Here are some slightly more interesting ones... 
+<a name="lab106"></a><h4 class="section">Exercise: 2 stars, optional (more_poly_exercises)</h4>
+ 这儿有些更有趣的东西... 
 </div>
 <div class="code code-tight">
 
@@ -631,13 +573,12 @@ Now lists can be written just the way we'd hope:
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab106"></a><h2 class="section">Polymorphic Pairs</h2>
+<a name="lab107"></a><h2 class="section">多态序对</h2>
 
 <div class="paragraph"> </div>
 
- Following the same pattern, the type definition we gave in
-    the last chapter for pairs of numbers can be generalized to
-    _polymorphic pairs_, often called _products_: 
+ 按照相同的模式，我们在上一章中给出的数值序对的定义可被推广为
+    <b>多态序对（Polymorphic Pairs）</b>，它通常叫做<b>积（Products）</b>： 
 </div>
 <div class="code code-tight">
 
@@ -647,8 +588,8 @@ Now lists can be written just the way we'd hope:
 </div>
 
 <div class="doc">
-As with lists, we make the type arguments implicit and define the
-    familiar concrete notation. 
+和列表一样，我们也可以将类型参数定义成隐式的，
+    并以此定义类似的具体记法： 
 </div>
 <div class="code code-tight">
 
@@ -656,8 +597,7 @@ As with lists, we make the type arguments implicit and define the
 </div>
 
 <div class="doc">
-We can also use the <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> mechanism to define the standard
-    notation for product _types_: 
+我们也可以使用 <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> 来定义标准的<b>积类型（Product Types）</b>记法： 
 </div>
 <div class="code code-tight">
 
@@ -665,19 +605,18 @@ We can also use the <span class="inlinecode"><span class="id" type="keyword">Not
 </div>
 
 <div class="doc">
-(The annotation <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">type_scope</span></span> tells Coq that this abbreviation
-    should only be used when parsing types.  This avoids a clash with
-    the multiplication symbol.) 
+（标注 <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">type_scope</span></span> 会告诉 Coq 该缩写只能在解析类型时使用。
+      这避免了与乘法符号的冲突。) 
 <div class="paragraph"> </div>
 
- It is easy at first to get <span class="inlinecode">(<span class="id" type="var">x</span>,<span class="id" type="var">y</span>)</span> and <span class="inlinecode"><span class="id" type="var">X</span>*<span class="id" type="var">Y</span></span> confused.
-    Remember that <span class="inlinecode">(<span class="id" type="var">x</span>,<span class="id" type="var">y</span>)</span> is a _value_ built from two other values,
-    while <span class="inlinecode"><span class="id" type="var">X</span>*<span class="id" type="var">Y</span></span> is a _type_ built from two other types.  If <span class="inlinecode"><span class="id" type="var">x</span></span> has
-    type <span class="inlinecode"><span class="id" type="var">X</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span> has type <span class="inlinecode"><span class="id" type="var">Y</span></span>, then <span class="inlinecode">(<span class="id" type="var">x</span>,<span class="id" type="var">y</span>)</span> has type <span class="inlinecode"><span class="id" type="var">X</span>*<span class="id" type="var">Y</span></span>. 
+ 一开始会很容易混淆 <span class="inlinecode">(<span class="id" type="var">x</span>,<span class="id" type="var">y</span>)</span> 和 <span class="inlinecode"><span class="id" type="var">X</span>*<span class="id" type="var">Y</span></span>。不过要记住 <span class="inlinecode">(<span class="id" type="var">x</span>,<span class="id" type="var">y</span>)</span>
+    是一个<b>值</b>，它由两个其它的值构造得来；而 <span class="inlinecode"><span class="id" type="var">X</span>*<span class="id" type="var">Y</span></span> 是一个<b>类型</b>，
+    它由两个其它的类型构造得来。如果 <span class="inlinecode"><span class="id" type="var">x</span></span> 的类型为 <span class="inlinecode"><span class="id" type="var">X</span></span> 而 <span class="inlinecode"><span class="id" type="var">y</span></span> 的类型为 <span class="inlinecode"><span class="id" type="var">Y</span></span>，
+    那么 <span class="inlinecode">(<span class="id" type="var">x</span>,<span class="id" type="var">y</span>)</span> 的类型就是 <span class="inlinecode"><span class="id" type="var">X</span>*<span class="id" type="var">Y</span></span>。 
 <div class="paragraph"> </div>
 
- The first and second projection functions now look pretty
-    much as they would in any functional programming language. 
+ 第一元（first）和第二元（second）的射影函数（Projection Functions）
+    现在看起来和其它函数式编程语言中的很像了： 
 </div>
 <div class="code code-tight">
 
@@ -692,10 +631,9 @@ We can also use the <span class="inlinecode"><span class="id" type="keyword">Not
 </div>
 
 <div class="doc">
-The following function takes two lists and combines them
-    into a list of pairs.  In other functional languages, it is often
-    called <span class="inlinecode"><span class="id" type="var">zip</span></span>; we call it <span class="inlinecode"><span class="id" type="var">combine</span></span> for consistency with Coq's
-    standard library. 
+以下函数接受两个列表，并将它们结合成一个序对的列表。
+    在其它函数式语言中，它通常被称作 <span class="inlinecode"><span class="id" type="var">zip</span></span>。我们为了与 Coq 的标准库保持一致，
+    将它命名为 <span class="inlinecode"><span class="id" type="var">combine</span></span>。
 </div>
 <div class="code code-tight">
 
@@ -709,18 +647,16 @@ The following function takes two lists and combines them
 </div>
 
 <div class="doc">
-<a name="lab107"></a><h4 class="section">Exercise: 1 star, optional (combine_checks)</h4>
- Try answering the following questions on paper and
-    checking your answers in coq:
+<a name="lab108"></a><h4 class="section">Exercise: 1 star, optional (combine_checks)</h4>
+ 请尝试在纸上回答以下问题并在 Coq 中检验你的解答：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> What is the type of <span class="inlinecode"><span class="id" type="var">combine</span></span> (i.e., what does <span class="inlinecode"><span class="id" type="keyword">Check</span></span>
-      <span class="inlinecode">@<span class="id" type="var">combine</span></span> print?)
+<li> <span class="inlinecode"><span class="id" type="var">combine</span></span> 的类型是什么？（即 <span class="inlinecode"><span class="id" type="keyword">Check</span></span> <span class="inlinecode">@<span class="id" type="var">combine</span></span> 会打印出什么？）
 
 </li>
-<li> What does
+<li> 以下命令会打印出什么？
 
 <div class="paragraph"> </div>
 
@@ -729,21 +665,20 @@ The following function takes two lists and combines them
 <div class="paragraph"> </div>
 
 </div>
-      print? 
+
 </li>
 </ul>
  <span class="proofbox">&#9744;</span> 
 <div class="paragraph"> </div>
 
-<a name="lab108"></a><h4 class="section">Exercise: 2 stars, recommended (split)</h4>
- The function <span class="inlinecode"><span class="id" type="tactic">split</span></span> is the right inverse of <span class="inlinecode"><span class="id" type="var">combine</span></span>: it takes a
-    list of pairs and returns a pair of lists.  In many functional
-    languages, it is called <span class="inlinecode"><span class="id" type="var">unzip</span></span>.
+<a name="lab109"></a><h4 class="section">Exercise: 2 stars, recommended (split)</h4>
+ 函数 <span class="inlinecode"><span class="id" type="tactic">split</span></span> 是 <span class="inlinecode"><span class="id" type="var">combine</span></span> 的右逆（right inverse）：
+    它接受一个序对的列表并返回一个列表的序对。
+    在很多函数式语言中，它被称作 <span class="inlinecode"><span class="id" type="var">unzip</span></span>。
 
 <div class="paragraph"> </div>
 
-    Fill in the definition of <span class="inlinecode"><span class="id" type="tactic">split</span></span> below.  Make sure it passes the
-    given unit test. 
+    请在下面完成 <span class="inlinecode"><span class="id" type="tactic">split</span></span> 的定义，确保它能够通过给定的单元测试。 
 </div>
 <div class="code code-tight">
 
@@ -759,12 +694,12 @@ The following function takes two lists and combines them
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab109"></a><h2 class="section">Polymorphic Options</h2>
+<a name="lab110"></a><h2 class="section">多态候选</h2>
 
 <div class="paragraph"> </div>
 
- One last polymorphic type for now: _polymorphic options_,
-    which generalize <span class="inlinecode"><span class="id" type="var">natoption</span></span> from the previous chapter: 
+ 现在介绍最后一种多态类型：<b>多态候选（Polymorphic Options）</b>,
+    它推广了上一章中的 <span class="inlinecode"><span class="id" type="var">natoption</span></span>： 
 </div>
 <div class="code code-tight">
 
@@ -776,8 +711,7 @@ The following function takes two lists and combines them
 </div>
 
 <div class="doc">
-We can now rewrite the <span class="inlinecode"><span class="id" type="var">nth_error</span></span> function so that it works
-    with any type of lists. 
+现在我们可以重写 <span class="inlinecode"><span class="id" type="var">nth_error</span></span> 函数来让它适用于任何类型的列表了。 
 </div>
 <div class="code code-tight">
 
@@ -805,10 +739,8 @@ We can now rewrite the <span class="inlinecode"><span class="id" type="var">nth_
 </div>
 
 <div class="doc">
-<a name="lab110"></a><h4 class="section">Exercise: 1 star, optional (hd_error_poly)</h4>
- Complete the definition of a polymorphic version of the
-    <span class="inlinecode"><span class="id" type="var">hd_error</span></span> function from the last chapter. Be sure that it
-    passes the unit tests below. 
+<a name="lab111"></a><h4 class="section">Exercise: 1 star, optional (hd_error_poly)</h4>
+ 请完成上一章中 <span class="inlinecode"><span class="id" type="var">hd_error</span></span> 的多态定义，确保它能通过下方的单元测试。 
 </div>
 <div class="code code-tight">
 
@@ -817,8 +749,7 @@ We can now rewrite the <span class="inlinecode"><span class="id" type="var">nth_
 </div>
 
 <div class="doc">
-Once again, to force the implicit arguments to be explicit,
-    we can use <span class="inlinecode">@</span> before the name of the function. 
+再说一遍，要强制将隐式参数转为显式参数，我们可以在函数名前使用 <span class="inlinecode">@</span>。 
 </div>
 <div class="code code-tight">
 
@@ -832,24 +763,21 @@ Once again, to force the implicit arguments to be explicit,
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab111"></a><h1 class="section">Functions as Data</h1>
+<a name="lab112"></a><h1 class="section">函数作为数据</h1>
 
 <div class="paragraph"> </div>
 
- Like many other modern programming languages &mdash; including
-    all functional languages (ML, Haskell, Scheme, Scala, Clojure,
-    etc.) &mdash; Coq treats functions as first-class citizens, allowing
-    them to be passed as arguments to other functions, returned as
-    results, stored in data structures, etc.
+ 和其它现代编程语言，包括所有函数式语言（ML、Haskell、
+    Scheme、Scala、Clojure 等）一样，Coq 也将函数视作「一等公民（First-Class Citizens）」，
+    即允许将它们作为参数传入其它函数、作为结果返回、以及存储在数据结构中等等。 
 </div>
 
 <div class="doc">
-<a name="lab112"></a><h2 class="section">Higher-Order Functions</h2>
+<a name="lab113"></a><h2 class="section">高阶函数</h2>
 
 <div class="paragraph"> </div>
 
- Functions that manipulate other functions are often called
-    _higher-order_ functions.  Here's a simple one: 
+ 用于操作其它函数的函数通常叫做<b>高阶函数</b>。以下是简单的示例： 
 </div>
 <div class="code code-tight">
 
@@ -858,9 +786,8 @@ Once again, to force the implicit arguments to be explicit,
 </div>
 
 <div class="doc">
-The argument <span class="inlinecode"><span class="id" type="var">f</span></span> here is itself a function (from <span class="inlinecode"><span class="id" type="var">X</span></span> to
-    <span class="inlinecode"><span class="id" type="var">X</span></span>); the body of <span class="inlinecode"><span class="id" type="var">doit3times</span></span> applies <span class="inlinecode"><span class="id" type="var">f</span></span> three times to some
-    value <span class="inlinecode"><span class="id" type="var">n</span></span>. 
+这里的参数 <span class="inlinecode"><span class="id" type="var">f</span></span> 本身也是个（从 <span class="inlinecode"><span class="id" type="var">X</span></span> 到 <span class="inlinecode"><span class="id" type="var">X</span></span> 的）函数，
+    <span class="inlinecode"><span class="id" type="var">doit3times</span></span> 的函数体将 <span class="inlinecode"><span class="id" type="var">f</span></span> 对某个值 <span class="inlinecode"><span class="id" type="var">n</span></span> 应用三次。 
 </div>
 <div class="code code-tight">
 
@@ -873,14 +800,13 @@ The argument <span class="inlinecode"><span class="id" type="var">f</span></span
 </div>
 
 <div class="doc">
-<a name="lab113"></a><h2 class="section">Filter</h2>
+<a name="lab114"></a><h2 class="section">过滤器</h2>
 
 <div class="paragraph"> </div>
 
- Here is a more useful higher-order function, taking a list
-    of <span class="inlinecode"><span class="id" type="var">X</span></span>s and a _predicate_ on <span class="inlinecode"><span class="id" type="var">X</span></span> (a function from <span class="inlinecode"><span class="id" type="var">X</span></span> to <span class="inlinecode"><span class="id" type="var">bool</span></span>)
-    and "filtering" the list, returning a new list containing just
-    those elements for which the predicate returns <span class="inlinecode"><span class="id" type="var">true</span></span>. 
+ 下面是个更有用的高阶函数，它接受一个元素类型为 <span class="inlinecode"><span class="id" type="var">X</span></span> 的列表和一个
+    <span class="inlinecode"><span class="id" type="var">X</span></span> 的谓词（即一个从 <span class="inlinecode"><span class="id" type="var">X</span></span> 到 <span class="inlinecode"><span class="id" type="var">bool</span></span> 的函数），然后「过滤」此列表并返回一个新列表，
+    其中仅包含对该谓词返回 <span class="inlinecode"><span class="id" type="var">true</span></span> 的元素。 
 </div>
 <div class="code code-tight">
 
@@ -894,9 +820,8 @@ The argument <span class="inlinecode"><span class="id" type="var">f</span></span
 </div>
 
 <div class="doc">
-For example, if we apply <span class="inlinecode"><span class="id" type="var">filter</span></span> to the predicate <span class="inlinecode"><span class="id" type="var">evenb</span></span>
-    and a list of numbers <span class="inlinecode"><span class="id" type="var">l</span></span>, it returns a list containing just the
-    even members of <span class="inlinecode"><span class="id" type="var">l</span></span>. 
+例如，如果我们将 <span class="inlinecode"><span class="id" type="var">filter</span></span> 应用到谓词 <span class="inlinecode"><span class="id" type="var">evenb</span></span> 和一个数值列表 <span class="inlinecode"><span class="id" type="var">l</span></span>
+    上，那么它就会返回一个只包含 <span class="inlinecode"><span class="id" type="var">l</span></span> 中偶数的列表。 
 </div>
 <div class="code code-tight">
 
@@ -912,8 +837,8 @@ For example, if we apply <span class="inlinecode"><span class="id" type="var">fi
 </div>
 
 <div class="doc">
-We can use <span class="inlinecode"><span class="id" type="var">filter</span></span> to give a concise version of the
-    <span class="inlinecode"><span class="id" type="var">countoddmembers</span></span> function from the <a href="Lists.html"><span class="inlineref">Lists</span></a> chapter. 
+我们可以使用 <span class="inlinecode"><span class="id" type="var">filter</span></span> 给出 <a href="Lists.html"><span class="inlineref">Lists</span></a> 中 <span class="inlinecode"><span class="id" type="var">countoddmembers</span></span>
+    函数的简洁的版本。 
 </div>
 <div class="code code-tight">
 
@@ -928,24 +853,19 @@ We can use <span class="inlinecode"><span class="id" type="var">filter</span></s
 </div>
 
 <div class="doc">
-<a name="lab114"></a><h2 class="section">Anonymous Functions</h2>
+<a name="lab115"></a><h2 class="section">匿名函数</h2>
 
 <div class="paragraph"> </div>
 
- It is arguably a little sad, in the example just above, to
-    be forced to define the function <span class="inlinecode"><span class="id" type="var">length_is_1</span></span> and give it a name
-    just to be able to pass it as an argument to <span class="inlinecode"><span class="id" type="var">filter</span></span>, since we
-    will probably never use it again.  Moreover, this is not an
-    isolated example: when using higher-order functions, we often want
-    to pass as arguments "one-off" functions that we will never use
-    again; having to give each of these functions a name would be
-    tedious.
+ 在上面这个例子中，我们不得不定义一个名为 <span class="inlinecode"><span class="id" type="var">length_is_1</span></span> 的函数，
+    以便让它能够作为参数传入到 <span class="inlinecode"><span class="id" type="var">filter</span></span> 中，由于该函数可能再也用不到了，
+    这有点令人沮丧。我们经常需要传入「一次性」的函数作为参数，之后不会再用，
+    而为每个函数取名是十分无聊的。
 
 <div class="paragraph"> </div>
 
-    Fortunately, there is a better way.  We can construct a function
-    "on the fly" without declaring it at the top level or giving it a
-    name. 
+    幸运的是，有一种更好的方法。我们可以按需随时构造函数而不必在顶层中声明它
+    或给它取名。 
 </div>
 <div class="code code-tight">
 
@@ -955,12 +875,10 @@ We can use <span class="inlinecode"><span class="id" type="var">filter</span></s
 </div>
 
 <div class="doc">
-The expression <span class="inlinecode">(<span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> can be read as "the function
-    that, given a number <span class="inlinecode"><span class="id" type="var">n</span></span>, yields <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">n</span></span>." 
+表达式 <span class="inlinecode">(<span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> 可读作「一个给定 <span class="inlinecode"><span class="id" type="var">n</span></span> 并返回 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">n</span></span> 的函数。」 
 <div class="paragraph"> </div>
 
- Here is the <span class="inlinecode"><span class="id" type="var">filter</span></span> example, rewritten to use an anonymous
-    function. 
+ 下面是一个使用匿名函数重写的 <span class="inlinecode"><span class="id" type="var">filter</span></span>：
 </div>
 <div class="code code-tight">
 
@@ -972,11 +890,9 @@ The expression <span class="inlinecode">(<span class="id" type="keyword">fun</sp
 </div>
 
 <div class="doc">
-<a name="lab115"></a><h4 class="section">Exercise: 2 stars (filter_even_gt<sub>7</sub>)</h4>
- Use <span class="inlinecode"><span class="id" type="var">filter</span></span> (instead of <span class="inlinecode"><span class="id" type="keyword">Fixpoint</span></span>) to write a Coq function
-    <span class="inlinecode"><span class="id" type="var">filter_even_gt<sub>7</sub></span></span> that takes a list of natural numbers as input
-    and returns a list of just those that are even and greater than
-    7. 
+<a name="lab116"></a><h4 class="section">Exercise: 2 stars (filter_even_gt<sub>7</sub>)</h4>
+ 使用 <span class="inlinecode"><span class="id" type="var">filter</span></span>（而非 <span class="inlinecode"><span class="id" type="keyword">Fixpoint</span></span>）来编写 Coq 函数 <span class="inlinecode"><span class="id" type="var">filter_even_gt<sub>7</sub></span></span>，
+    它接受一个自然数列表作为输入，返回一个只包含大于 <span class="inlinecode">7</span> 的偶数的列表。 
 </div>
 <div class="code code-tight">
 
@@ -994,8 +910,8 @@ The expression <span class="inlinecode">(<span class="id" type="keyword">fun</sp
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab116"></a><h4 class="section">Exercise: 3 stars (partition)</h4>
- Use <span class="inlinecode"><span class="id" type="var">filter</span></span> to write a Coq function <span class="inlinecode"><span class="id" type="var">partition</span></span>:
+<a name="lab117"></a><h4 class="section">Exercise: 3 stars (partition)</h4>
+ 使用 <span class="inlinecode"><span class="id" type="var">filter</span></span> 编写一个 Coq 函数 <span class="inlinecode"><span class="id" type="var">partition</span></span>：
 
 <div class="paragraph"> </div>
 
@@ -1005,13 +921,10 @@ The expression <span class="inlinecode">(<span class="id" type="keyword">fun</sp
 <div class="paragraph"> </div>
 
 </div>
-   Given a set <span class="inlinecode"><span class="id" type="var">X</span></span>, a test function of type <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">bool</span></span> and a <span class="inlinecode"><span class="id" type="var">list</span></span>
-   <span class="inlinecode"><span class="id" type="var">X</span></span>, <span class="inlinecode"><span class="id" type="var">partition</span></span> should return a pair of lists.  The first member of
-   the pair is the sublist of the original list containing the
-   elements that satisfy the test, and the second is the sublist
-   containing those that fail the test.  The order of elements in the
-   two sublists should be the same as their order in the original
-   list. 
+   给定一个集合 <span class="inlinecode"><span class="id" type="var">X</span></span>、一个类型为 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">bool</span></span> 的测试函数和一个 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>，
+   <span class="inlinecode"><span class="id" type="var">partition</span></span> 应当返回一个列表的序对。该序对的第一个成员为包含原始列表中
+   满足该测试的子列表，而第二个成员为包含不满足该测试的元素的子列表。
+   两个子列表中元素的顺序应当与它们在原始列表中的顺序相同。 
 </div>
 <div class="code code-tight">
 
@@ -1029,11 +942,11 @@ The expression <span class="inlinecode">(<span class="id" type="keyword">fun</sp
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab117"></a><h2 class="section">Map</h2>
+<a name="lab118"></a><h2 class="section">映射</h2>
 
 <div class="paragraph"> </div>
 
- Another handy higher-order function is called <span class="inlinecode"><span class="id" type="var">map</span></span>. 
+ 另一个方便的高阶函数叫做 <span class="inlinecode"><span class="id" type="var">map</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -1045,9 +958,9 @@ The expression <span class="inlinecode">(<span class="id" type="keyword">fun</sp
 </div>
 
 <div class="doc">
-It takes a function <span class="inlinecode"><span class="id" type="var">f</span></span> and a list <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">l</span></span> <span class="inlinecode">=</span> <span class="inlinecode">[<span class="id" type="var">n<sub>1</sub></span>,</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>,</span> <span class="inlinecode"><span class="id" type="var">n<sub>3</sub></span>,</span> <span class="inlinecode">...]</span> <span class="inlinecode"></span>
-    and returns the list <span class="inlinecode"></span> <span class="inlinecode">[<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span>,</span> <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>,</span> <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>3</sub></span>,...]</span> <span class="inlinecode"></span>, where <span class="inlinecode"><span class="id" type="var">f</span></span> has
-    been applied to each element of <span class="inlinecode"><span class="id" type="var">l</span></span> in turn.  For example: 
+它接受一个函数 <span class="inlinecode"><span class="id" type="var">f</span></span> 和一个列表 <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">l</span></span> <span class="inlinecode">=</span> <span class="inlinecode">[<span class="id" type="var">n<sub>1</sub></span>,</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>,</span> <span class="inlinecode"><span class="id" type="var">n<sub>3</sub></span>,</span> <span class="inlinecode">...]</span> <span class="inlinecode"></span>
+    并返回列表 <span class="inlinecode"></span> <span class="inlinecode">[<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span>,</span> <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>,</span> <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>3</sub></span>,...]</span> <span class="inlinecode"></span>，其中 <span class="inlinecode"><span class="id" type="var">f</span></span> 可分别应用于 <span class="inlinecode"><span class="id" type="var">l</span></span>
+    中的每一个元素。例如： 
 </div>
 <div class="code code-tight">
 
@@ -1056,10 +969,9 @@ It takes a function <span class="inlinecode"><span class="id" type="var">f</span
 </div>
 
 <div class="doc">
-The element types of the input and output lists need not be
-    the same, since <span class="inlinecode"><span class="id" type="var">map</span></span> takes _two_ type arguments, <span class="inlinecode"><span class="id" type="var">X</span></span> and <span class="inlinecode"><span class="id" type="var">Y</span></span>; it
-    can thus be applied to a list of numbers and a function from
-    numbers to booleans to yield a list of booleans: 
+输入列表和输出列表的元素类型不必相同，因为 <span class="inlinecode"><span class="id" type="var">map</span></span> 会接受<b>两个</b>类型参数
+    <span class="inlinecode"><span class="id" type="var">X</span></span> 和 <span class="inlinecode"><span class="id" type="var">Y</span></span>，因此它可以应用到一个数值的列表和一个从数值到布尔值的函数，
+    并产生一个布尔值列表： 
 </div>
 <div class="code code-tight">
 
@@ -1069,9 +981,8 @@ The element types of the input and output lists need not be
 </div>
 
 <div class="doc">
-It can even be applied to a list of numbers and
-    a function from numbers to _lists_ of booleans to
-    yield a _list of lists_ of booleans: 
+它甚至可以应用到一个数值的列表和一个从数值到布尔值列表的函数，
+    并产生一个布尔值的<b>列表的列表</b>： 
 </div>
 <div class="code code-tight">
 
@@ -1082,13 +993,12 @@ It can even be applied to a list of numbers and
 </div>
 
 <div class="doc">
-<a name="lab118"></a><h3 class="section">Exercises</h3>
+<a name="lab119"></a><h3 class="section">练习</h3>
 
 <div class="paragraph"> </div>
 
-<a name="lab119"></a><h4 class="section">Exercise: 3 stars (map_rev)</h4>
- Show that <span class="inlinecode"><span class="id" type="var">map</span></span> and <span class="inlinecode"><span class="id" type="var">rev</span></span> commute.  You may need to define an
-    auxiliary lemma. 
+<a name="lab120"></a><h4 class="section">Exercise: 3 stars (map_rev)</h4>
+ 请证明 <span class="inlinecode"><span class="id" type="var">map</span></span> 和 <span class="inlinecode"><span class="id" type="var">rev</span></span> 可交换。你可能需要定义一个辅助引力 
 </div>
 <div class="code code-tight">
 
@@ -1102,12 +1012,11 @@ It can even be applied to a list of numbers and
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab120"></a><h4 class="section">Exercise: 2 stars, recommended (flat_map)</h4>
- The function <span class="inlinecode"><span class="id" type="var">map</span></span> maps a <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> to a <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">Y</span></span> using a function
-    of type <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Y</span></span>.  We can define a similar function, <span class="inlinecode"><span class="id" type="var">flat_map</span></span>,
-    which maps a <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> to a <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">Y</span></span> using a function <span class="inlinecode"><span class="id" type="var">f</span></span> of type
-    <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">Y</span></span>.  Your definition should work by 'flattening' the
-    results of <span class="inlinecode"><span class="id" type="var">f</span></span>, like so:
+<a name="lab121"></a><h4 class="section">Exercise: 2 stars, recommended (flat_map)</h4>
+ 函数 <span class="inlinecode"><span class="id" type="var">map</span></span> 通过一个类型为 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> 的函数将 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 映射到 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">Y</span></span>。
+    我们可以定义一个类似的函数 <span class="inlinecode"><span class="id" type="var">flat_map</span></span>，它通过一个类型为 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">Y</span></span>
+    的函数 <span class="inlinecode"><span class="id" type="var">f</span></span> 将 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 映射到 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">Y</span></span>。你的定义应当可以「压扁」<span class="inlinecode"><span class="id" type="var">f</span></span>
+    的结果，就像这样：
 
 <div class="paragraph"> </div>
 
@@ -1134,9 +1043,8 @@ It can even be applied to a list of numbers and
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- Lists are not the only inductive type that we can write a
-    <span class="inlinecode"><span class="id" type="var">map</span></span> function for.  Here is the definition of <span class="inlinecode"><span class="id" type="var">map</span></span> for the
-    <span class="inlinecode"><span class="id" type="var">option</span></span> type: 
+ 列表并不是唯一我们可以为它写出 <span class="inlinecode"><span class="id" type="var">map</span></span> 函数的归纳类型。
+    以下是 <span class="inlinecode"><span class="id" type="var">option</span></span> 类型的 <span class="inlinecode"><span class="id" type="var">map</span></span> 定义： 
 </div>
 <div class="code code-tight">
 
@@ -1149,26 +1057,21 @@ It can even be applied to a list of numbers and
 </div>
 
 <div class="doc">
-<a name="lab121"></a><h4 class="section">Exercise: 2 stars, optional (implicit_args)</h4>
- The definitions and uses of <span class="inlinecode"><span class="id" type="var">filter</span></span> and <span class="inlinecode"><span class="id" type="var">map</span></span> use implicit
-    arguments in many places.  Replace the curly braces around the
-    implicit arguments with parentheses, and then fill in explicit
-    type parameters where necessary and use Coq to check that you've
-    done so correctly.  (This exercise is not to be turned in; it is
-    probably easiest to do it on a _copy_ of this file that you can
-    throw away afterwards.) 
+<a name="lab122"></a><h4 class="section">Exercise: 2 stars, optional (implicit_args)</h4>
+ <span class="inlinecode"><span class="id" type="var">filter</span></span> 和 <span class="inlinecode"><span class="id" type="var">map</span></span> 的定义和应用在很多地方使用了隐式参数。
+    请将隐式参数外层的花括号替换为圆括号，然后在必要的地方补充显式类型形参并用
+    Coq 检查你做的是否正确。（本练习并不会打分，你可以在本文件的<b>副本</b>中做它，
+    之后丢掉即可。）
  <span class="proofbox">&#9744;</span> 
 </div>
 
 <div class="doc">
-<a name="lab122"></a><h2 class="section">Fold</h2>
+<a name="lab123"></a><h2 class="section">折叠</h2>
 
 <div class="paragraph"> </div>
 
- An even more powerful higher-order function is called
-    <span class="inlinecode"><span class="id" type="var">fold</span></span>.  This function is the inspiration for the "<span class="inlinecode"><span class="id" type="var">reduce</span></span>"
-    operation that lies at the heart of Google's map/reduce
-    distributed programming framework. 
+ 一个更加强大的高阶函数叫做 <span class="inlinecode"><span class="id" type="var">fold</span></span>。本函数启发自「<span class="inlinecode"><span class="id" type="var">reduce</span></span> 归约」
+    操作，它是 Google 的 map/reduce 分布式编程框架的核心。 
 </div>
 <div class="code code-tight">
 
@@ -1181,12 +1084,10 @@ It can even be applied to a list of numbers and
 </div>
 
 <div class="doc">
-Intuitively, the behavior of the <span class="inlinecode"><span class="id" type="var">fold</span></span> operation is to
-    insert a given binary operator <span class="inlinecode"><span class="id" type="var">f</span></span> between every pair of elements
-    in a given list.  For example, <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">fold</span></span> <span class="inlinecode"><span class="id" type="var">plus</span></span> <span class="inlinecode">[1;2;3;4]</span> <span class="inlinecode"></span> intuitively
-    means <span class="inlinecode">1+2+3+4</span>.  To make this precise, we also need a "starting
-    element" that serves as the initial second input to <span class="inlinecode"><span class="id" type="var">f</span></span>.  So, for
-    example,
+直观上来说，<span class="inlinecode"><span class="id" type="var">fold</span></span> 操作的行为就是将给定的二元操作符 <span class="inlinecode"><span class="id" type="var">f</span></span>
+    插入到给定列表的每一对元素之间。例如，<span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">fold</span></span> <span class="inlinecode"><span class="id" type="var">plus</span></span> <span class="inlinecode">[1;2;3;4]</span> <span class="inlinecode"></span>
+    直观上的意思是 <span class="inlinecode">1+2+3+4</span>。为了让它更精确，我们还需要一个「起始元素」
+    作为 <span class="inlinecode"><span class="id" type="var">f</span></span> 初始的第二个输入。因此，例如
 
 <div class="paragraph"> </div>
 
@@ -1195,7 +1096,7 @@ Intuitively, the behavior of the <span class="inlinecode"><span class="id" type=
 <div class="paragraph"> </div>
 
 </div>
-    yields
+    就会产生
 
 <div class="paragraph"> </div>
 
@@ -1204,7 +1105,7 @@ Intuitively, the behavior of the <span class="inlinecode"><span class="id" type=
 <div class="paragraph"> </div>
 
 </div>
-    Some more examples: 
+    以下是更多例子： 
 </div>
 <div class="code code-tight">
 
@@ -1235,12 +1136,10 @@ Intuitively, the behavior of the <span class="inlinecode"><span class="id" type=
 </div>
 
 <div class="doc">
-<a name="lab123"></a><h4 class="section">Exercise: 1 star, advanced (fold_types_different)</h4>
- Observe that the type of <span class="inlinecode"><span class="id" type="var">fold</span></span> is parameterized by _two_ type
-    variables, <span class="inlinecode"><span class="id" type="var">X</span></span> and <span class="inlinecode"><span class="id" type="var">Y</span></span>, and the parameter <span class="inlinecode"><span class="id" type="var">f</span></span> is a binary operator
-    that takes an <span class="inlinecode"><span class="id" type="var">X</span></span> and a <span class="inlinecode"><span class="id" type="var">Y</span></span> and returns a <span class="inlinecode"><span class="id" type="var">Y</span></span>.  Can you think of a
-    situation where it would be useful for <span class="inlinecode"><span class="id" type="var">X</span></span> and <span class="inlinecode"><span class="id" type="var">Y</span></span> to be
-    different? 
+<a name="lab124"></a><h4 class="section">Exercise: 1 star, advanced (fold_types_different)</h4>
+ 我们观察到 <span class="inlinecode"><span class="id" type="var">fold</span></span> 由 <span class="inlinecode"><span class="id" type="var">X</span></span> 和 <span class="inlinecode"><span class="id" type="var">Y</span></span> 这<b>两个</b>类型变量参数化，形参 <span class="inlinecode"><span class="id" type="var">f</span></span>
+    则是个接受 <span class="inlinecode"><span class="id" type="var">X</span></span> 和 <span class="inlinecode"><span class="id" type="var">Y</span></span> 并返回 <span class="inlinecode"><span class="id" type="var">Y</span></span> 的二元操作符。你能想出一种 <span class="inlinecode"><span class="id" type="var">X</span></span> 和
+    <span class="inlinecode"><span class="id" type="var">Y</span></span> 不同时的应用情景吗？ 
 </div>
 <div class="code code-tight">
 
@@ -1250,16 +1149,14 @@ Intuitively, the behavior of the <span class="inlinecode"><span class="id" type=
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab124"></a><h2 class="section">Functions That Construct Functions</h2>
+<a name="lab125"></a><h2 class="section">用函数构造函数</h2>
 
 <div class="paragraph"> </div>
 
- Most of the higher-order functions we have talked about so
-    far take functions as arguments.  Let's look at some examples that
-    involve _returning_ functions as the results of other functions.
-    To begin, here is a function that takes a value <span class="inlinecode"><span class="id" type="var">x</span></span> (drawn from
-    some type <span class="inlinecode"><span class="id" type="var">X</span></span>) and returns a function from <span class="inlinecode"><span class="id" type="var">nat</span></span> to <span class="inlinecode"><span class="id" type="var">X</span></span> that
-    yields <span class="inlinecode"><span class="id" type="var">x</span></span> whenever it is called, ignoring its <span class="inlinecode"><span class="id" type="var">nat</span></span> argument. 
+ 目前我们讨论过的大部分高阶函数都是接受函数作为参数的。
+    现在我们来看一些将函数作为其它函数的结果<b>返回</b>的例子。
+    首先，下面是一个接受值 <span class="inlinecode"><span class="id" type="var">x</span></span>（由某个类型 <span class="inlinecode"><span class="id" type="var">X</span></span> 刻画）并返回一个从
+    <span class="inlinecode"><span class="id" type="var">nat</span></span> 到 <span class="inlinecode"><span class="id" type="var">X</span></span> 的函数，当它被调用时总是产生 <span class="inlinecode"><span class="id" type="var">x</span></span> 并忽略其 <span class="inlinecode"><span class="id" type="var">nat</span></span> 参数。 
 </div>
 <div class="code code-tight">
 
@@ -1281,9 +1178,8 @@ Intuitively, the behavior of the <span class="inlinecode"><span class="id" type=
 </div>
 
 <div class="doc">
-In fact, the multiple-argument functions we have already
-    seen are also examples of passing functions as data.  To see why,
-    recall the type of <span class="inlinecode"><span class="id" type="var">plus</span></span>. 
+实际上，我们已经见过的多参函数也是讲函数作为数据传入的例子。
+    为了理解为什么，请回想 <span class="inlinecode"><span class="id" type="var">plus</span></span> 的类型。 
 </div>
 <div class="code code-tight">
 
@@ -1292,15 +1188,13 @@ In fact, the multiple-argument functions we have already
 </div>
 
 <div class="doc">
-Each <span class="inlinecode">→</span> in this expression is actually a _binary_ operator
-    on types.  This operator is _right-associative_, so the type of
-    <span class="inlinecode"><span class="id" type="var">plus</span></span> is really a shorthand for <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode">(<span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span>)</span> &mdash; i.e., it
-    can be read as saying that "<span class="inlinecode"><span class="id" type="var">plus</span></span> is a one-argument function that
-    takes a <span class="inlinecode"><span class="id" type="var">nat</span></span> and returns a one-argument function that takes
-    another <span class="inlinecode"><span class="id" type="var">nat</span></span> and returns a <span class="inlinecode"><span class="id" type="var">nat</span></span>."  In the examples above, we
-    have always applied <span class="inlinecode"><span class="id" type="var">plus</span></span> to both of its arguments at once, but
-    if we like we can supply just the first.  This is called _partial
-    application_. 
+该表达式中的每个 <span class="inlinecode">→</span> 实际上都是一个类型上的<b>二元</b>操作符。
+    该操作符是<b>右结合</b>的，因此 <span class="inlinecode"><span class="id" type="var">plus</span></span> 的类型其实是 <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode">(<span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span>)</span>
+    的简写，即，它可以读作「<span class="inlinecode"><span class="id" type="var">plus</span></span> 是一个单参数函数，它接受一个 <span class="inlinecode"><span class="id" type="var">nat</span></span>
+    并返回另一个函数，该函数接受另一个 <span class="inlinecode"><span class="id" type="var">nat</span></span> 并返回一个 <span class="inlinecode"><span class="id" type="var">nat</span></span>」。
+    在上面的例子中，我们总是将 <span class="inlinecode"><span class="id" type="var">plus</span></span> 一次同时应用到两个参数上。
+    不过如果我们喜欢，也可以一次只提供一个参数，这叫做<b>偏应用（Partial
+    Application）</b>。 
 </div>
 <div class="code code-tight">
 
@@ -1315,7 +1209,7 @@ Each <span class="inlinecode">→</span> in this expression is actually a _binar
 </div>
 
 <div class="doc">
-<a name="lab125"></a><h1 class="section">Additional Exercises</h1>
+<a name="lab126"></a><h1 class="section">附加练习</h1>
 
 </div>
 <div class="code code-space">
@@ -1325,9 +1219,9 @@ Each <span class="inlinecode">→</span> in this expression is actually a _binar
 </div>
 
 <div class="doc">
-<a name="lab126"></a><h4 class="section">Exercise: 2 stars (fold_length)</h4>
- Many common functions on lists can be implemented in terms of
-   <span class="inlinecode"><span class="id" type="var">fold</span></span>.  For example, here is an alternative definition of <span class="inlinecode"><span class="id" type="var">length</span></span>: 
+<a name="lab127"></a><h4 class="section">Exercise: 2 stars (fold_length)</h4>
+ 列表的很多通用函数都可以通过 <span class="inlinecode"><span class="id" type="var">fold</span></span> 来实现。例如，下面是
+    <span class="inlinecode"><span class="id" type="var">length</span></span> 的另一种实现： 
 </div>
 <div class="code code-tight">
 
@@ -1341,7 +1235,7 @@ Each <span class="inlinecode">→</span> in this expression is actually a _binar
 </div>
 
 <div class="doc">
-Prove the correctness of <span class="inlinecode"><span class="id" type="var">fold_length</span></span>. 
+请证明 <span class="inlinecode"><span class="id" type="var">fold_length</span></span> 的正确性。 
 </div>
 <div class="code code-tight">
 
@@ -1355,9 +1249,8 @@ Prove the correctness of <span class="inlinecode"><span class="id" type="var">fo
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab127"></a><h4 class="section">Exercise: 3 stars (fold_map)</h4>
- We can also define <span class="inlinecode"><span class="id" type="var">map</span></span> in terms of <span class="inlinecode"><span class="id" type="var">fold</span></span>.  Finish <span class="inlinecode"><span class="id" type="var">fold_map</span></span>
-    below. 
+<a name="lab128"></a><h4 class="section">Exercise: 3 stars (fold_map)</h4>
+ 我们也可以用 <span class="inlinecode"><span class="id" type="var">fold</span></span> 来定义 <span class="inlinecode"><span class="id" type="var">map</span></span>。请完成下面的 <span class="inlinecode"><span class="id" type="var">fold_map</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -1366,8 +1259,7 @@ Prove the correctness of <span class="inlinecode"><span class="id" type="var">fo
 </div>
 
 <div class="doc">
-Write down a theorem <span class="inlinecode"><span class="id" type="var">fold_map_correct</span></span> in Coq stating that
-   <span class="inlinecode"><span class="id" type="var">fold_map</span></span> is correct, and prove it. 
+在 Coq 中写出 <span class="inlinecode"><span class="id" type="var">fold_map_correct</span></span> 来陈述 <span class="inlinecode"><span class="id" type="var">fold_map</span></span> 是正确的，然后证明它。 
 </div>
 <div class="code code-tight">
 
@@ -1378,24 +1270,22 @@ Write down a theorem <span class="inlinecode"><span class="id" type="var">fold_m
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab128"></a><h4 class="section">Exercise: 2 stars, advanced (currying)</h4>
- In Coq, a function <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">B</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span></span> really has the type <span class="inlinecode"><span class="id" type="var">A</span></span>
-    <span class="inlinecode">→</span> <span class="inlinecode">(<span class="id" type="var">B</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span>)</span>.  That is, if you give <span class="inlinecode"><span class="id" type="var">f</span></span> a value of type <span class="inlinecode"><span class="id" type="var">A</span></span>, it
-    will give you function <span class="inlinecode"><span class="id" type="var">f'</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">B</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span></span>.  If you then give <span class="inlinecode"><span class="id" type="var">f'</span></span> a
-    value of type <span class="inlinecode"><span class="id" type="var">B</span></span>, it will return a value of type <span class="inlinecode"><span class="id" type="var">C</span></span>.  This
-    allows for partial application, as in <span class="inlinecode"><span class="id" type="var">plus3</span></span>.  Processing a list
-    of arguments with functions that return functions is called
-    _currying_, in honor of the logician Haskell Curry.
+<a name="lab129"></a><h4 class="section">Exercise: 2 stars, advanced (currying)</h4>
+ 在 Coq 中，函数 <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">B</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span></span> 的类型其实是 <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode">(<span class="id" type="var">B</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span>)</span>。
+    也就是说，如果给 <span class="inlinecode"><span class="id" type="var">f</span></span> 一个类型为 <span class="inlinecode"><span class="id" type="var">A</span></span> 的值，它就会给你函数 <span class="inlinecode"><span class="id" type="var">f'</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">B</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span></span>。
+    如果再给 <span class="inlinecode"><span class="id" type="var">f'</span></span> 一个类型为 <span class="inlinecode"><span class="id" type="var">B</span></span> 的值，它就会返回一个类型为 <span class="inlinecode"><span class="id" type="var">C</span></span> 的值。
+    这为我们提供了 <span class="inlinecode"><span class="id" type="var">plus3</span></span> 中的那种偏应用能力。
+    用返回函数的函数处理参数列表的方式被称为<b>柯里化（Currying）</b>，
+    它是为了纪念逻辑学家 Haskell Curry。
 
 <div class="paragraph"> </div>
 
-    Conversely, we can reinterpret the type <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">B</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span></span> as <span class="inlinecode">(<span class="id" type="var">A</span></span> <span class="inlinecode">*</span>
-    <span class="inlinecode"><span class="id" type="var">B</span>)</span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span></span>.  This is called _uncurrying_.  With an uncurried binary
-    function, both arguments must be given at once as a pair; there is
-    no partial application. 
+    反正，我们也可以将 <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">B</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span></span> 解释为 <span class="inlinecode">(<span class="id" type="var">A</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">B</span>)</span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">C</span></span>。这叫做
+    <b>反柯里化（Uncurrying）</b>。对于反柯里化的二元函数，
+    两个参数必须作为序对一次给出，此时它不会偏应用。 
 <div class="paragraph"> </div>
 
- We can define currying as follows: 
+ 我们可以将柯里化定义如下： 
 </div>
 <div class="code code-tight">
 
@@ -1404,8 +1294,8 @@ Write down a theorem <span class="inlinecode"><span class="id" type="var">fold_m
 </div>
 
 <div class="doc">
-As an exercise, define its inverse, <span class="inlinecode"><span class="id" type="var">prod_uncurry</span></span>.  Then prove
-    the theorems below to show that the two are inverses. 
+作为练习，请定义它的反函数 <span class="inlinecode"><span class="id" type="var">prod_uncurry</span></span>，
+    然后在下面证明它们互为反函数的定理。 
 </div>
 <div class="code code-tight">
 
@@ -1415,8 +1305,7 @@ As an exercise, define its inverse, <span class="inlinecode"><span class="id" ty
 </div>
 
 <div class="doc">
-As a (trivial) example of the usefulness of currying, we can use it
-    to shorten one of the examples that we saw above: 
+举一个柯里化用途的（平凡的）例子，我们可以用它来缩短之前看到的一个例子： 
 </div>
 <div class="code code-tight">
 
@@ -1425,8 +1314,7 @@ As a (trivial) example of the usefulness of currying, we can use it
 </div>
 
 <div class="doc">
-Thought exercise: before running the following commands, can you
-    calculate the types of <span class="inlinecode"><span class="id" type="var">prod_curry</span></span> and <span class="inlinecode"><span class="id" type="var">prod_uncurry</span></span>? 
+思考练习：在运行以下命令之前，你能计算出 <span class="inlinecode"><span class="id" type="var">prod_curry</span></span> 和 <span class="inlinecode"><span class="id" type="var">prod_uncurry</span></span> 的类型吗？ 
 </div>
 <div class="code code-tight">
 
@@ -1449,8 +1337,8 @@ Thought exercise: before running the following commands, can you
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab129"></a><h4 class="section">Exercise: 2 stars, advanced (nth_error_informal)</h4>
- Recall the definition of the <span class="inlinecode"><span class="id" type="var">nth_error</span></span> function:
+<a name="lab130"></a><h4 class="section">Exercise: 2 stars, advanced (nth_error_informal)</h4>
+ 回想 <span class="inlinecode"><span class="id" type="var">nth_error</span></span> 函数的定义：
 
 <div class="paragraph"> </div>
 
@@ -1463,7 +1351,7 @@ Thought exercise: before running the following commands, can you
 <div class="paragraph"> </div>
 
 </div>
-   Write an informal proof of the following theorem:
+   请写出以下定理的非形式化证明：
 
 <div class="paragraph"> </div>
 
@@ -1472,16 +1360,20 @@ Thought exercise: before running the following commands, can you
 <div class="paragraph"> </div>
 
 </div>
+
+</div>
+<div class="code code-tight">
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
- <span class="proofbox">&#9744;</span> 
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab130"></a><h4 class="section">Exercise: 4 stars, advanced (church_numerals)</h4>
- This exercise explores an alternative way of defining natural
-    numbers, using the so-called _Church numerals_, named after
-    mathematician Alonzo Church.  We can represent a natural number
-    <span class="inlinecode"><span class="id" type="var">n</span></span> as a function that takes a function <span class="inlinecode"><span class="id" type="var">f</span></span> as a parameter and
-    returns <span class="inlinecode"><span class="id" type="var">f</span></span> iterated <span class="inlinecode"><span class="id" type="var">n</span></span> times. 
+<a name="lab131"></a><h4 class="section">Exercise: 4 stars, advanced (church_numerals)</h4>
+ 本练习使用<b>邱奇数（Church numerals）</b>探讨了另一种定义自然数的方式，
+    它以数学家 Alonzo Church 命名。我们可以将自然数 <span class="inlinecode"><span class="id" type="var">n</span></span> 表示为一个函数，
+    它接受一个函数 <span class="inlinecode"><span class="id" type="var">f</span></span> 作为参数并返回迭代了 <span class="inlinecode"><span class="id" type="var">n</span></span> 次的 <span class="inlinecode"><span class="id" type="var">f</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -1490,8 +1382,8 @@ Thought exercise: before running the following commands, can you
 </div>
 
 <div class="doc">
-Let's see how to write some numbers with this notation. Iterating
-    a function once should be the same as just applying it.  Thus: 
+我们来看看如何用这种记法写数。将函数迭代一次应当与将它应用一次相同。
+    因此： 
 </div>
 <div class="code code-tight">
 
@@ -1500,7 +1392,7 @@ Let's see how to write some numbers with this notation. Iterating
 </div>
 
 <div class="doc">
-Similarly, <span class="inlinecode"><span class="id" type="var">two</span></span> should apply <span class="inlinecode"><span class="id" type="var">f</span></span> twice to its argument: 
+与此类似，<span class="inlinecode"><span class="id" type="var">two</span></span> 应当对其参数应用两次 <span class="inlinecode"><span class="id" type="var">f</span></span>： 
 </div>
 <div class="code code-tight">
 
@@ -1509,9 +1401,8 @@ Similarly, <span class="inlinecode"><span class="id" type="var">two</span></span
 </div>
 
 <div class="doc">
-Defining <span class="inlinecode"><span class="id" type="var">zero</span></span> is somewhat trickier: how can we "apply a function
-    zero times"?  The answer is actually simple: just return the
-    argument untouched. 
+定义 <span class="inlinecode"><span class="id" type="var">zero</span></span> 有点刁钻：我们如何「将函数应用零次」？答案很简单：
+    把参数原样返回就好。 
 </div>
 <div class="code code-tight">
 
@@ -1520,10 +1411,9 @@ Defining <span class="inlinecode"><span class="id" type="var">zero</span></span>
 </div>
 
 <div class="doc">
-More generally, a number <span class="inlinecode"><span class="id" type="var">n</span></span> can be written as <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode">(<span class="id" type="var">f</span></span>
-    <span class="inlinecode">...</span> <span class="inlinecode">(<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode">...)</span>, with <span class="inlinecode"><span class="id" type="var">n</span></span> occurrences of <span class="inlinecode"><span class="id" type="var">f</span></span>.  Notice in
-    particular how the <span class="inlinecode"><span class="id" type="var">doit3times</span></span> function we've defined previously
-    is actually just the Church representation of <span class="inlinecode">3</span>. 
+更一般地说，数 <span class="inlinecode"><span class="id" type="var">n</span></span> 可以写作 <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode">(<span class="id" type="var">f</span></span>
+    <span class="inlinecode">...</span> <span class="inlinecode">(<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode">...)</span>，其中 <span class="inlinecode"><span class="id" type="var">f</span></span> 出现了 <span class="inlinecode"><span class="id" type="var">n</span></span> 次。要特别注意我们之前定义
+    <span class="inlinecode"><span class="id" type="var">doit3times</span></span> 函数的方式就是 <span class="inlinecode">3</span> 的邱奇数表示。 
 </div>
 <div class="code code-tight">
 
@@ -1531,12 +1421,10 @@ More generally, a number <span class="inlinecode"><span class="id" type="var">n<
 </div>
 
 <div class="doc">
-Complete the definitions of the following functions. Make sure
-    that the corresponding unit tests pass by proving them with
-    <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span>. 
+完成以下函数的定义。请用 <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span> 证明来确认它们能够通过对应的单元测试。 
 <div class="paragraph"> </div>
 
- Successor of a natural number: 
+ 自然数的后继： 
 </div>
 <div class="code code-tight">
 
@@ -1551,7 +1439,7 @@ Complete the definitions of the following functions. Make sure
 </div>
 
 <div class="doc">
-Addition of two natural numbers: 
+两个自然数的加法： 
 </div>
 <div class="code code-tight">
 
@@ -1567,7 +1455,7 @@ Addition of two natural numbers:
 </div>
 
 <div class="doc">
-Multiplication: 
+乘法： 
 </div>
 <div class="code code-tight">
 
@@ -1582,13 +1470,12 @@ Multiplication:
 </div>
 
 <div class="doc">
-Exponentiation: 
+指数： 
 <div class="paragraph"> </div>
 
- (_Hint_: Polymorphism plays a crucial role here.  However,
-    choosing the right type to iterate over can be tricky.  If you hit
-    a "Universe inconsistency" error, try iterating over a different
-    type: <span class="inlinecode"><span class="id" type="var">nat</span></span> itself is usually problematic.) 
+ （<b>提示</b>：多态在这里起到了关键的作用。然而，选择正确的类型来迭代会很棘手。
+    如果你遇到了「Universe inconsistency，全域不一致」错误，请在不同的类型上迭代。
+    <span class="inlinecode"><span class="id" type="var">nat</span></span> 本身通常会有问题。） 
 </div>
 <div class="code code-tight">
 

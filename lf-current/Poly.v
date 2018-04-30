@@ -1,121 +1,95 @@
-(** * Poly: Polymorphism and Higher-Order Functions *)
+(** * Poly: 多态与高阶函数 *)
 
-(* Final reminder: Please do not put solutions to the exercises in
-   publicly accessible places.  Thank you!! *)
+(* 最后提醒：请勿将习题解答放在可以公开访问的地方，谢谢！ *)
 
 (* Suppress some annoying warnings from Coq: *)
 Set Warnings "-notation-overridden,-parsing".
 Require Export Lists.
 
-(*** Polymorphism *)
+(* ################################################################# *)
+(** * FULL: 多态 *)
 
-(** In this chapter we continue our development of basic
-    concepts of functional programming.  The critical new ideas are
-    _polymorphism_ (abstracting functions over the types of the data
-    they manipulate) and _higher-order functions_ (treating functions
-    as data).  We begin with polymorphism. *)
+(** 在本章中，我们会继续发展函数式编程的基本概念，其中最关键的新概念就是
+    _'多态'_（在所处理的数据类型上抽象出函数）和_'高阶函数'_（函数作为数据）。 *)
 
 (* ================================================================= *)
-(** ** Polymorphic Lists *)
+(** ** 多态列表 *)
 
-(** For the last couple of chapters, we've been working just
-    with lists of numbers.  Obviously, interesting programs also need
-    to be able to manipulate lists with elements from other types --
-    lists of strings, lists of booleans, lists of lists, etc.  We
-    _could_ just define a new inductive datatype for each of these,
-    for example... *)
+(** 在前几章中，我们只是使用了数的列表。很明显，
+    有趣的程序还需要能够处理其它元素类型的列表，如字符串列表、布尔值列表、
+    列表的列表等等。我们_'可以'_分别为它们定义新的归纳数据类型，例如... *)
 
 Inductive boollist : Type :=
   | bool_nil : boollist
   | bool_cons : bool -> boollist -> boollist.
 
-(** ... but this would quickly become tedious, partly because we
-    have to make up different constructor names for each datatype, but
-    mostly because we would also need to define new versions of all
-    our list manipulating functions ([length], [rev], etc.) for each
-    new datatype definition. *)
+(** ...不过这样很快就会变得乏味。
+    部分原因在于我们必须为每种数据类型都定义不同的构造子，
+    然而主因还是我们必须为每种数据类型再重新定义一遍所有的列表处理函数
+    （如 [length]、[rev] 等）。 *)
 
-(** To avoid all this repetition, Coq supports _polymorphic_
-    inductive type definitions.  For example, here is a _polymorphic
-    list_ datatype. *)
+(** 为避免这些重复，Coq 支持定义_'多态'_归纳类型。
+    例如，以下就是_'多态列表'_数据类型。 *)
 
 Inductive list (X:Type) : Type :=
   | nil : list X
   | cons : X -> list X -> list X.
 
-(** This is exactly like the definition of [natlist] from the
-    previous chapter, except that the [nat] argument to the [cons]
-    constructor has been replaced by an arbitrary type [X], a binding
-    for [X] has been added to the header, and the occurrences of
-    [natlist] in the types of the constructors have been replaced by
-    [list X].  (We can re-use the constructor names [nil] and [cons]
-    because the earlier definition of [natlist] was inside of a
-    [Module] definition that is now out of scope.)
+(** 这和上一章中 [natlist] 的定义基本一样，只是将 [cons] 构造子的
+    [nat] 参数换成了任意的类型 [X]，定义的头部添加了 [X] 的绑定，
+    而构造子类型中的 [natlist] 则换成了 [list X]。（我们可以重用构造子名
+    [nil] 和 [cons]，因为之前定义的 [natlist] 在当前作用之外的一个 [Module] 中。）
 
-    What sort of thing is [list] itself?  One good way to think
-    about it is that [list] is a _function_ from [Type]s to
-    [Inductive] definitions; or, to put it another way, [list] is a
-    function from [Type]s to [Type]s.  For any particular type [X],
-    the type [list X] is an [Inductive]ly defined set of lists whose
-    elements are of type [X]. *)
+    [list] 本身又是什么类型？一种不错的思路就是把 [list] 当做从 [Type]
+    类型到 [Inductive] 归纳定义的_'函数'_；或者换种思路，即 [list]
+    是个从 [Type] 类型到 [Type] 类型的函数。对于任何特定的类型 [X]，
+    类型 [list X] 是一个 [Inductive] 归纳定义的，元素类型为 [X] 的列表的集合。 *)
 
 Check list.
 (* ===> list : Type -> Type *)
 
-(** The parameter [X] in the definition of [list] becomes a parameter
-    to the constructors [nil] and [cons] -- that is, [nil] and [cons]
-    are now polymorphic constructors, that need to be supplied with
-    the type of the list they are building. As an example, [nil nat]
-    constructs the empty list of type [nat]. *)
+(** [list] 定义中的形参 [X] 会作为构造子 [nil] 和 [cons] 的形参，
+    即，现在的 [nil] 和 [cons] 是多态构造子，它们需要 [X]
+    来提供所构造的列表的类型。例如，[nil nat] 会构造出类型为 [nat] 的空列表。 *)
 
 Check (nil nat).
 (* ===> nil nat : list nat *)
 
-(** Similarly, [cons nat] adds an element of type [nat] to a list of
-    type [list nat]. Here is an example of forming a list containing
-    just the natural number 3.*)
+(** [cons nat] 与此类似，它将类型为 [nat] 的元素添加到类型为
+    [list nat] 的列表中。以下示例构造了一个只包含自然数 3 的列表： *)
 
 Check (cons nat 3 (nil nat)).
 (* ===> cons nat 3 (nil nat) : list nat *)
 
-(** What might the type of [nil] be? We can read off the type [list X]
-    from the definition, but this omits the binding for [X] which is
-    the parameter to [list]. [Type -> list X] does not explain the
-    meaning of [X]. [(X : Type) -> list X] comes closer. Coq's
-    notation for this situation is [forall X : Type, list X]. *)
+(** [nil] 的类型可能是什么？我们可以从定义中看到 [list X] 的类型，
+    它忽略了 [list] 的形参 [X] 的绑定。[Type -> list X] 并没有解释
+    [X] 的含义，[(X : Type) -> list X] 则比较接近。Coq 对这种情况的记法为
+    [forall X : Type, list X]： *)
 
 Check nil.
 (* ===> nil : forall X : Type, list X *)
 
-(** Similarly, the type of [cons] from the definition looks like
-    [X -> list X -> list X], but using this convention to explain the
-    meaning of [X] results in the type [forall X, X -> list X -> list
-    X]. *)
+(** 类似地，定义中 [cons] 看起来像 [X -> list X -> list X]
+    然而以此约定来解释 [X] 的含义则是类型 [forall X, X -> list X -> list X]。 *)
 
 Check cons.
 (* ===> cons : forall X : Type, X -> list X -> list X *)
 
-(** (Side note on notation: In .v files, the "forall" quantifier
-    is spelled out in letters.  In the generated HTML files and in the
-    way various IDEs show .v files (with certain settings of their
-    display controls), [forall] is usually typeset as the usual
-    mathematical "upside down A," but you'll still see the spelled-out
-    "forall" in a few places.  This is just a quirk of typesetting:
-    there is no difference in meaning.) *)
+(** （关于记法的附注：在 [.v] 文件中，量词「forall」会写成字母的形式，
+    而在生成的 HTML 和一些设置了显示控制的 IDE 中，[forall]
+    通常会渲染成一般的「倒 A」数学符号，虽然你偶尔还是会看到英文拼写的
+    「forall」。这只是排版上的效果，它们的含义没有任何区别。） *)
 
-(** Having to supply a type argument for each use of a list
-    constructor may seem an awkward burden, but we will soon see
-    ways of reducing that burden. *) 
+(** 如果在每次使用列表构造子时，都要为它提供类型参数，那样会很麻烦。
+    不过我们很快就会看到如何省去这种麻烦。 *)
 
 Check (cons nat 2 (cons nat 1 (nil nat))).
 
-(** (We've written [nil] and [cons] explicitly here because we haven't
-    yet defined the [ [] ] and [::] notations for the new version of
-    lists.  We'll do that in a bit.) *)
+(** （这里显式地写出了 [nil] 和 [cons]，因为我们还没为新版本的列表定义
+    [ [] ] 和 [::] 记法。我们待会儿再干。) *)
 
-(** We can now go back and make polymorphic versions of all the
-    list-processing functions that we wrote before.  Here is [repeat],
-    for example: *)
+(** 现在我们可以回过头来定义之前写下的列表处理函数的多态版本了。
+    例如 [repeat]：*)
 
 Fixpoint repeat (X : Type) (x : X) (count : nat) : list X :=
   match count with
@@ -123,15 +97,15 @@ Fixpoint repeat (X : Type) (x : X) (count : nat) : list X :=
   | S count' => cons X x (repeat X x count')
   end.
 
-(** As with [nil] and [cons], we can use [repeat] by applying it
-    first to a type and then to an element of this type (and a number): *)
+(** 同 [nil] 与 [cons] 一样，我们可以通过将 [repeat]
+    应用到一个类型、一个该类型的元素以及一个数字来使用它： *)
 
 Example test_repeat1 :
   repeat nat 4 2 = cons nat 4 (cons nat 4 (nil nat)).
 Proof. reflexivity.  Qed.
 
-(** To use [repeat] to build other kinds of lists, we simply
-    instantiate it with an appropriate type parameter: *)
+(** 要用 [repeat] 构造其它种类的列表，
+    我们只需通过对应类型的参数将它实例化即可： *)
 
 Example test_repeat2 :
   repeat bool false 1 = cons bool false (nil bool).
@@ -141,7 +115,7 @@ Proof. reflexivity.  Qed.
 Module MumbleGrumble.
 
 (** **** Exercise: 2 stars (mumble_grumble)  *)
-(** Consider the following two inductively defined types. *)
+(** 考虑以下两个归纳定义的类型： *)
 
 Inductive mumble : Type :=
   | a : mumble
@@ -152,27 +126,25 @@ Inductive grumble (X:Type) : Type :=
   | d : mumble -> grumble X
   | e : X -> grumble X.
 
-(** Which of the following are well-typed elements of [grumble X] for
-    some type [X]?
+(** 对于某个类型 [X]，以下哪些是 [grumble X] 良定义的元素？
       - [d (b a 5)]
       - [d mumble (b a 5)]
       - [d bool (b a 5)]
       - [e bool true]
       - [e mumble (b c 0)]
       - [e bool (b c 0)]
-      - [c]
+      - [c] *)
 (* 请在此处解答 *)
-*)
+
 (** [] *)
 
 End MumbleGrumble.
 
 (* ----------------------------------------------------------------- *)
-(** *** Type Annotation Inference *)
+(** *** 类型标注的推断 *)
 
-(** Let's write the definition of [repeat] again, but this time we
-    won't specify the types of any of the arguments.  Will Coq still
-    accept it? *)
+(** 我们再写一遍 [repeat] 的定义，不过这次不指定任何参数的类型。
+    Coq 还会接受它么？ *)
 
 Fixpoint repeat' X x count : list X :=
   match count with
@@ -180,64 +152,50 @@ Fixpoint repeat' X x count : list X :=
   | S count' => cons X x (repeat' X x count')
   end.
 
-(** Indeed it will.  Let's see what type Coq has assigned to [repeat']: *)
+(** 当然会。我们来看看 Coq 赋予了 [repeat'] 什么类型： *)
 
 Check repeat'.
 (* ===> forall X : Type, X -> nat -> list X *)
 Check repeat.
 (* ===> forall X : Type, X -> nat -> list X *)
 
-(** It has exactly the same type type as [repeat].  Coq was able
-    to use _type inference_ to deduce what the types of [X], [x], and
-    [count] must be, based on how they are used.  For example, since
-    [X] is used as an argument to [cons], it must be a [Type], since
-    [cons] expects a [Type] as its first argument; matching [count]
-    with [0] and [S] means it must be a [nat]; and so on.
+(** 它与 [repeat] 的类型完全一致。Coq 可以使用_'类型推断'_
+    基于它们的使用方式来推出 [X]、[x] 和 [count] 一定是什么类型。例如，
+    由于 [X] 是作为 [cons] 的参数使用的，因此它必定是个 [Type] 类型，
+    因为 [cons] 期望一个 [Type] 作为其第一个参数，而用 [0] 和 [S] 来匹配
+    [count] 意味着它必须是个 [nat]，诸如此类。
 
-    This powerful facility means we don't always have to write
-    explicit type annotations everywhere, although explicit type
-    annotations are still quite useful as documentation and sanity
-    checks, so we will continue to use them most of the time.  You
-    should try to find a balance in your own code between too many
-    type annotations (which can clutter and distract) and too
-    few (which forces readers to perform type inference in their heads
-    in order to understand your code). *)
+    这种强大的功能意味着我们不必总是在任何地方都显式地写出类型标注，
+    不过显式的类型标注对于文档和完整性检查来说仍然非常有用，
+    因此我们仍会继续使用它。你应当在代码中把握好使用类型标注的平衡点，
+    太多导致混乱并分散注意力，太少则会迫使读者为理解你的代码而在大脑中进行类型推断。 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Type Argument Synthesis *)
+(** *** 类型参数的推断 *)
 
-(** To use a polymorphic function, we need to pass it one or
-    more types in addition to its other arguments.  For example, the
-    recursive call in the body of the [repeat] function above must
-    pass along the type [X].  But since the second argument to
-    [repeat] is an element of [X], it seems entirely obvious that the
-    first argument can only be [X] -- why should we have to write it
-    explicitly?
+(** 要使用多态函数，我们需要为其参数再额外传入一个或更多类型。
+    例如，前面 [repeat] 函数体中的递归调用必须传递类型 [X]。不过由于
+    [repeat] 的第二个参数为 [X] 类型的元素，第一个参数明显只能是 [X]，
+    既然如此，我们何必显式地写出它呢？
 
-    Fortunately, Coq permits us to avoid this kind of redundancy.  In
-    place of any type argument we can write the "implicit argument"
-    [_], which can be read as "Please try to figure out for yourself
-    what belongs here."  More precisely, when Coq encounters a [_], it
-    will attempt to _unify_ all locally available information -- the
-    type of the function being applied, the types of the other
-    arguments, and the type expected by the context in which the
-    application appears -- to determine what concrete type should
-    replace the [_].
+    幸运的是，Coq 允许我们避免这种冗余。在任何我们可以将类型参数写为
+    「隐式参数」[_] 的地方，都可以看做「请 Coq 自行找出这里应该填什么。」
+    更确切地说，当 Coq 遇到 [_] 时，它会尝试_'统一'_所有的局部变量信息，
+    包括函数应当应用到的类型，其它参数的类型，以及应用函数的上下文中期望的类型，
+    以此来确定 [_] 处应当填入的具体类型。
 
-    This may sound similar to type annotation inference -- indeed, the
-    two procedures rely on the same underlying mechanisms.  Instead of
-    simply omitting the types of some arguments to a function, like
+    这听起来很像类型标注推断。实际上，这两种个过程依赖于同样的底层机制。
+    除了简单地忽略函数中某些参数的类型：
 
       repeat' X x count : list X :=
 
-    we can also replace the types with [_]
+    我们还可以将类型换成 [_]：
 
       repeat' (X : _) (x : _) (count : _) : list X :=
 
-    to tell Coq to attempt to infer the missing information.
+    以此来告诉 Coq 要尝试推断出缺少的信息。
 
-    Using implicit arguments, the [repeat] function can be written like
-    this: *)
+    使用隐式参数，[repeat] 可写成如下形式： *)
 
 Fixpoint repeat'' X x count : list X :=
   match count with
@@ -245,45 +203,37 @@ Fixpoint repeat'' X x count : list X :=
   | S count' => cons _ x (repeat'' _ x count')
   end.
 
-(** In this instance, we don't save much by writing [_] instead of
-    [X].  But in many cases the difference in both keystrokes and
-    readability is nontrivial.  For example, suppose we want to write
-    down a list containing the numbers [1], [2], and [3].  Instead of
-    writing this... *)
+(** 在此例中，我们写出 [_] 并没有省略多少 [X]。然而在很多情况下，
+    这对减少击键次数和提高可读性还是很有效的。例如，假设我们要写下一个包含数字
+    [1]、[2] 和 [3] 的列表，此时不必写成这样： *)
 
 Definition list123 :=
   cons nat 1 (cons nat 2 (cons nat 3 (nil nat))).
 
-(** ...we can use argument synthesis to write this: *)
+(** 我们可以使用参数推断写成这样： *)
 
 Definition list123' :=
   cons _ 1 (cons _ 2 (cons _ 3 (nil _))).
 
 (* ----------------------------------------------------------------- *)
-(** *** Implicit Arguments *)
+(** *** 隐式参数 *)
 
-(** We can go further and even avoid writing [_]'s in most cases by
-    telling Coq _always_ to infer the type argument(s) of a given
-    function.
+(** 我们甚至可以通过告诉 Coq _'总是'_推断给定函数的类型参数来避免 [_]。
 
-    The [Arguments] directive specifies the name of the function (or
-    constructor) and then lists its argument names, with curly braces
-    around any arguments to be treated as implicit.  (If some
-    arguments of a definition don't have a name, as is often the case
-    for constructors, they can be marked with a wildcard pattern
-    [_].) *)
+    [Arguments] 用于指令指定函数或构造子的名字并列出其参数名，
+    花括号中的任何参数都会被视作隐式参数。（如果定义中的某个参数没有名字，
+    那么它可以用通配模式 [_] 来标记。这种情况常见于构造子中。） *)
 
 Arguments nil {X}.
 Arguments cons {X} _ _.
 Arguments repeat {X} x count.
 
-(** Now, we don't have to supply type arguments at all: *)
+(** 现在我们再也不必提供类型参数了： *)
 
 Definition list123'' := cons 1 (cons 2 (cons 3 nil)).
 
-(** Alternatively, we can declare an argument to be implicit
-    when defining the function itself, by surrounding it in curly
-    braces instead of parens.  For example: *)
+(** 此外，我们还可以在定义函数时声明隐式参数，
+    只是需要将它放在花括号内而非圆括号中。例如： *)
 
 Fixpoint repeat''' {X : Type} (x : X) (count : nat) : list X :=
   match count with
@@ -291,30 +241,23 @@ Fixpoint repeat''' {X : Type} (x : X) (count : nat) : list X :=
   | S count' => cons x (repeat''' x count')
   end.
 
-(** (Note that we didn't even have to provide a type argument to the
-    recursive call to [repeat''']; indeed, it would be invalid to
-    provide one!)
+(** （注意我们现在甚至不必在 [repeat'''] 的递归调用中提供类型参数了，
+      实际上提供了反而是无效的！）
 
-    We will use the latter style whenever possible, but we will
-    continue to use explicit [Argument] declarations for [Inductive]
-    constructors.  The reason for this is that marking the parameter
-    of an inductive type as implicit causes it to become implicit for
-    the type itself, not just for its constructors.  For instance,
-    consider the following alternative definition of the [list]
-    type: *)
+    我们会尽可能使用最后一种风格，不过还会继续在 [Inductive] 构造子中使用显式的
+    [Argument] 声明。原因在于如果将归纳类型的形参标为隐式的话，
+    不仅构造子的类型会变成隐式的，类型本身也会变成隐式的。例如，
+    考虑以下 [list] 类型的另一种定义： *)
 
 Inductive list' {X:Type} : Type :=
   | nil' : list'
   | cons' : X -> list' -> list'.
 
-(** Because [X] is declared as implicit for the _entire_ inductive
-    definition including [list'] itself, we now have to write just
-    [list'] whether we are talking about lists of numbers or booleans
-    or anything else, rather than [list' nat] or [list' bool] or
-    whatever; this is a step too far. *)
+(** 由于 [X] 在包括 [list'] 本身的_'整个'_归纳定义中都是隐式声明的，
+    因此当我们讨论数值、布尔值或其它任何类型的列表时，都只能写 [list']，
+    而写不了 [list' nat]、[list' bool] 或其它的了，这样就跑得有点太远了。 *)
 
-(** Let's finish by re-implementing a few other standard list
-    functions on our new polymorphic lists... *)
+(** 作为本节的收尾，我们为新的多态列表重新实现几个其它的标准列表函数... *)
 
 Fixpoint app {X : Type} (l1 l2 : list X)
              : (list X) :=
@@ -347,40 +290,33 @@ Example test_length1: length (cons 1 (cons 2 (cons 3 nil))) = 3.
 Proof. reflexivity.  Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Supplying Type Arguments Explicitly *)
+(** *** 显式提供类型参数 *)
 
-(** One small problem with declaring arguments [Implicit] is
-    that, occasionally, Coq does not have enough local information to
-    determine a type argument; in such cases, we need to tell Coq that
-    we want to give the argument explicitly just this time.  For
-    example, suppose we write this: *)
+(** 用 [Implicit] 将参数声明为隐式的会有个小问题：Coq
+    偶尔会没有足够的局部信息来确定类型参数。此时，我们需要告诉 Coq
+    这次我们会显示地给出参数。例如，假设我们写了如下定义： *)
 
 Fail Definition mynil := nil.
 
-(** (The [Fail] qualifier that appears before [Definition] can be
-    used with _any_ command, and is used to ensure that that command
-    indeed fails when executed. If the command does fail, Coq prints
-    the corresponding error message, but continues processing the rest
-    of the file.)
+(** （[Definition] 前面的 [Fail] 限定符可用于_'任何'_命令，
+    它的作用是确保该命令在执行时确实会失败。如果该命令失败了，Coq
+    就会打印出相应的错误信息，不过之后会继续处理文件中剩下的部分。）
 
-    Here, Coq gives us an error because it doesn't know what type
-    argument to supply to [nil].  We can help it by providing an
-    explicit type declaration (so that Coq has more information
-    available when it gets to the "application" of [nil]): *)
+    在这里，Coq 给出了一条错误信息，因为它不知道应该为 [nil] 提供何种类型。
+    我们可以为它提供个显式的类型声明来帮助它，这样 Coq 在「应用」[nil]
+    时就有更多可用的信息了： *)
 
 Definition mynil : list nat := nil.
 
-(** Alternatively, we can force the implicit arguments to be explicit by
-   prefixing the function name with [@]. *)
+(** 此外，我们还可以在函数名前加上前缀 [@] 来强制将隐式参数变成显式的： *)
 
 Check @nil.
 
 Definition mynil' := @nil nat.
 
-(** Using argument synthesis and implicit arguments, we can
-    define convenient notation for lists, as before.  Since we have
-    made the constructor type arguments implicit, Coq will know to
-    automatically infer these when we use the notations. *)
+(** 使用参数推断和隐式参数，我们可以为列表定义和前面一样的简便记法。
+    由于我们让构造子的的类型参数变成了隐式的，因此 Coq
+    就知道在我们使用该记法时自动推断它们了。 *)
 
 Notation "x :: y" := (cons x y)
                      (at level 60, right associativity).
@@ -389,16 +325,16 @@ Notation "[ x ; .. ; y ]" := (cons x .. (cons y []) ..).
 Notation "x ++ y" := (app x y)
                      (at level 60, right associativity).
 
-(** Now lists can be written just the way we'd hope: *)
+(** 现在列表就能写成我们希望的方式了： *)
 
 Definition list123''' := [1; 2; 3].
 
 (* ----------------------------------------------------------------- *)
-(** *** Exercises *)
+(** *** 练习 *)
 
 (** **** Exercise: 2 stars, optional (poly_exercises)  *)
-(** Here are a few simple exercises, just like ones in the [Lists]
-    chapter, for practice with polymorphism.  Complete the proofs below. *)
+(** 下面是一些简单的练习，和 [Lists] 一章中的一样。
+    为了实践多态，请完成下面的证明。 *)
 
 Theorem app_nil_r : forall (X:Type), forall l:list X,
   l ++ [] = l.
@@ -417,7 +353,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (more_poly_exercises)  *)
-(** Here are some slightly more interesting ones... *)
+(** 这儿有些更有趣的东西... *)
 
 Theorem rev_app_distr: forall X (l1 l2 : list X),
   rev (l1 ++ l2) = rev l2 ++ rev l1.
@@ -431,38 +367,35 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Polymorphic Pairs *)
+(** ** 多态序对 *)
 
-(** Following the same pattern, the type definition we gave in
-    the last chapter for pairs of numbers can be generalized to
-    _polymorphic pairs_, often called _products_: *)
+(** 按照相同的模式，我们在上一章中给出的数值序对的定义可被推广为
+    _'多态序对（Polymorphic Pairs）'_，它通常叫做_'积（Products）'_： *)
 
 Inductive prod (X Y : Type) : Type :=
 | pair : X -> Y -> prod X Y.
 
 Arguments pair {X} {Y} _ _.
 
-(** As with lists, we make the type arguments implicit and define the
-    familiar concrete notation. *)
+(** 和列表一样，我们也可以将类型参数定义成隐式的，
+    并以此定义类似的具体记法： *)
 
 Notation "( x , y )" := (pair x y).
 
-(** We can also use the [Notation] mechanism to define the standard
-    notation for product _types_: *)
+(** 我们也可以使用 [Notation] 来定义标准的_'积类型（Product Types）'_记法： *)
 
 Notation "X * Y" := (prod X Y) : type_scope.
 
-(** (The annotation [: type_scope] tells Coq that this abbreviation
-    should only be used when parsing types.  This avoids a clash with
-    the multiplication symbol.) *)
+(** （标注 [: type_scope] 会告诉 Coq 该缩写只能在解析类型时使用。
+      这避免了与乘法符号的冲突。) *)
 
-(** It is easy at first to get [(x,y)] and [X*Y] confused.
-    Remember that [(x,y)] is a _value_ built from two other values,
-    while [X*Y] is a _type_ built from two other types.  If [x] has
-    type [X] and [y] has type [Y], then [(x,y)] has type [X*Y]. *)
+(** 一开始会很容易混淆 [(x,y)] 和 [X*Y]。不过要记住 [(x,y)]
+    是一个_'值'_，它由两个其它的值构造得来；而 [X*Y] 是一个_'类型'_，
+    它由两个其它的类型构造得来。如果 [x] 的类型为 [X] 而 [y] 的类型为 [Y]，
+    那么 [(x,y)] 的类型就是 [X*Y]。 *)
 
-(** The first and second projection functions now look pretty
-    much as they would in any functional programming language. *)
+(** 第一元（first）和第二元（second）的射影函数（Projection Functions）
+    现在看起来和其它函数式编程语言中的很像了： *)
 
 Definition fst {X Y : Type} (p : X * Y) : X :=
   match p with
@@ -474,10 +407,9 @@ Definition snd {X Y : Type} (p : X * Y) : Y :=
   | (x, y) => y
   end.
 
-(** The following function takes two lists and combines them
-    into a list of pairs.  In other functional languages, it is often
-    called [zip]; we call it [combine] for consistency with Coq's
-    standard library. *)
+(** 以下函数接受两个列表，并将它们结合成一个序对的列表。
+    在其它函数式语言中，它通常被称作 [zip]。我们为了与 Coq 的标准库保持一致，
+    将它命名为 [combine]。*)
 
 Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
            : list (X*Y) :=
@@ -488,24 +420,20 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
   end.
 
 (** **** Exercise: 1 star, optional (combine_checks)  *)
-(** Try answering the following questions on paper and
-    checking your answers in coq:
-    - What is the type of [combine] (i.e., what does [Check
-      @combine] print?)
-    - What does
+(** 请尝试在纸上回答以下问题并在 Coq 中检验你的解答：
+    - [combine] 的类型是什么？（即 [Check @combine] 会打印出什么？）
+    - 以下命令会打印出什么？
 
         Compute (combine [1;2] [false;false;true;true]).
-
-      print? *)
+*)
 (** [] *)
 
 (** **** Exercise: 2 stars, recommended (split)  *)
-(** The function [split] is the right inverse of [combine]: it takes a
-    list of pairs and returns a pair of lists.  In many functional
-    languages, it is called [unzip].
+(** 函数 [split] 是 [combine] 的右逆（right inverse）：
+    它接受一个序对的列表并返回一个列表的序对。
+    在很多函数式语言中，它被称作 [unzip]。
 
-    Fill in the definition of [split] below.  Make sure it passes the
-    given unit test. *)
+    请在下面完成 [split] 的定义，确保它能够通过给定的单元测试。 *)
 
 Fixpoint split {X Y : Type} (l : list (X*Y))
                : (list X) * (list Y)
@@ -518,10 +446,10 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Polymorphic Options *)
+(** ** 多态候选 *)
 
-(** One last polymorphic type for now: _polymorphic options_,
-    which generalize [natoption] from the previous chapter: *)
+(** 现在介绍最后一种多态类型：_'多态候选（Polymorphic Options）'_,
+    它推广了上一章中的 [natoption]： *)
 
 Inductive option (X:Type) : Type :=
   | Some : X -> option X
@@ -530,8 +458,7 @@ Inductive option (X:Type) : Type :=
 Arguments Some {X} _.
 Arguments None {X}.
 
-(** We can now rewrite the [nth_error] function so that it works
-    with any type of lists. *)
+(** 现在我们可以重写 [nth_error] 函数来让它适用于任何类型的列表了。 *)
 
 Fixpoint nth_error {X : Type} (l : list X) (n : nat)
                    : option X :=
@@ -548,15 +475,12 @@ Example test_nth_error3 : nth_error [true] 2 = None.
 Proof. reflexivity. Qed.
 
 (** **** Exercise: 1 star, optional (hd_error_poly)  *)
-(** Complete the definition of a polymorphic version of the
-    [hd_error] function from the last chapter. Be sure that it
-    passes the unit tests below. *)
+(** 请完成上一章中 [hd_error] 的多态定义，确保它能通过下方的单元测试。 *)
 
 Definition hd_error {X : Type} (l : list X) : option X
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-(** Once again, to force the implicit arguments to be explicit,
-    we can use [@] before the name of the function. *)
+(** 再说一遍，要强制将隐式参数转为显式参数，我们可以在函数名前使用 [@]。 *)
 
 Check @hd_error.
 
@@ -567,26 +491,22 @@ Example test_hd_error2 : hd_error  [[1];[2]]  = Some [1].
 (** [] *)
 
 (* ################################################################# *)
-(** * Functions as Data *)
+(** * 函数作为数据 *)
 
-(** Like many other modern programming languages -- including
-    all functional languages (ML, Haskell, Scheme, Scala, Clojure,
-    etc.) -- Coq treats functions as first-class citizens, allowing
-    them to be passed as arguments to other functions, returned as
-    results, stored in data structures, etc.*)
+(** 和其它现代编程语言，包括所有函数式语言（ML、Haskell、
+    Scheme、Scala、Clojure 等）一样，Coq 也将函数视作「一等公民（First-Class Citizens）」，
+    即允许将它们作为参数传入其它函数、作为结果返回、以及存储在数据结构中等等。 *)
 
 (* ================================================================= *)
-(** ** Higher-Order Functions *)
+(** ** 高阶函数 *)
 
-(** Functions that manipulate other functions are often called
-    _higher-order_ functions.  Here's a simple one: *)
+(** 用于操作其它函数的函数通常叫做_'高阶函数'_。以下是简单的示例： *)
 
 Definition doit3times {X:Type} (f:X->X) (n:X) : X :=
   f (f (f n)).
 
-(** The argument [f] here is itself a function (from [X] to
-    [X]); the body of [doit3times] applies [f] three times to some
-    value [n]. *)
+(** 这里的参数 [f] 本身也是个（从 [X] 到 [X] 的）函数，
+    [doit3times] 的函数体将 [f] 对某个值 [n] 应用三次。 *)
 
 Check @doit3times.
 (* ===> doit3times : forall X : Type, (X -> X) -> X -> X *)
@@ -598,12 +518,11 @@ Example test_doit3times': doit3times negb true = false.
 Proof. reflexivity.  Qed.
 
 (* ================================================================= *)
-(** ** Filter *)
+(** ** 过滤器 *)
 
-(** Here is a more useful higher-order function, taking a list
-    of [X]s and a _predicate_ on [X] (a function from [X] to [bool])
-    and "filtering" the list, returning a new list containing just
-    those elements for which the predicate returns [true]. *)
+(** 下面是个更有用的高阶函数，它接受一个元素类型为 [X] 的列表和一个
+    [X] 的谓词（即一个从 [X] 到 [bool] 的函数），然后「过滤」此列表并返回一个新列表，
+    其中仅包含对该谓词返回 [true] 的元素。 *)
 
 Fixpoint filter {X:Type} (test: X->bool) (l:list X)
                 : (list X) :=
@@ -613,9 +532,8 @@ Fixpoint filter {X:Type} (test: X->bool) (l:list X)
                         else       filter test t
   end.
 
-(** For example, if we apply [filter] to the predicate [evenb]
-    and a list of numbers [l], it returns a list containing just the
-    even members of [l]. *)
+(** 例如，如果我们将 [filter] 应用到谓词 [evenb] 和一个数值列表 [l]
+    上，那么它就会返回一个只包含 [l] 中偶数的列表。 *)
 
 Example test_filter1: filter evenb [1;2;3;4] = [2;4].
 Proof. reflexivity.  Qed.
@@ -629,8 +547,8 @@ Example test_filter2:
   = [ [3]; [4]; [8] ].
 Proof. reflexivity.  Qed.
 
-(** We can use [filter] to give a concise version of the
-    [countoddmembers] function from the [Lists] chapter. *)
+(** 我们可以使用 [filter] 给出 [Lists] 中 [countoddmembers]
+    函数的简洁的版本。 *)
 
 Definition countoddmembers' (l:list nat) : nat :=
   length (filter oddb l).
@@ -643,30 +561,23 @@ Example test_countoddmembers'3:   countoddmembers' nil = 0.
 Proof. reflexivity.  Qed.
 
 (* ================================================================= *)
-(** ** Anonymous Functions *)
+(** ** 匿名函数 *)
 
-(** It is arguably a little sad, in the example just above, to
-    be forced to define the function [length_is_1] and give it a name
-    just to be able to pass it as an argument to [filter], since we
-    will probably never use it again.  Moreover, this is not an
-    isolated example: when using higher-order functions, we often want
-    to pass as arguments "one-off" functions that we will never use
-    again; having to give each of these functions a name would be
-    tedious.
+(** 在上面这个例子中，我们不得不定义一个名为 [length_is_1] 的函数，
+    以便让它能够作为参数传入到 [filter] 中，由于该函数可能再也用不到了，
+    这有点令人沮丧。我们经常需要传入「一次性」的函数作为参数，之后不会再用，
+    而为每个函数取名是十分无聊的。
 
-    Fortunately, there is a better way.  We can construct a function
-    "on the fly" without declaring it at the top level or giving it a
-    name. *)
+    幸运的是，有一种更好的方法。我们可以按需随时构造函数而不必在顶层中声明它
+    或给它取名。 *)
 
 Example test_anon_fun':
   doit3times (fun n => n * n) 2 = 256.
 Proof. reflexivity.  Qed.
 
-(** The expression [(fun n => n * n)] can be read as "the function
-    that, given a number [n], yields [n * n]." *)
+(** 表达式 [(fun n => n * n)] 可读作「一个给定 [n] 并返回 [n * n] 的函数。」 *)
 
-(** Here is the [filter] example, rewritten to use an anonymous
-    function. *)
+(** 下面是一个使用匿名函数重写的 [filter]：*)
 
 Example test_filter2':
     filter (fun l => beq_nat (length l) 1)
@@ -675,10 +586,8 @@ Example test_filter2':
 Proof. reflexivity.  Qed.
 
 (** **** Exercise: 2 stars (filter_even_gt7)  *)
-(** Use [filter] (instead of [Fixpoint]) to write a Coq function
-    [filter_even_gt7] that takes a list of natural numbers as input
-    and returns a list of just those that are even and greater than
-    7. *)
+(** 使用 [filter]（而非 [Fixpoint]）来编写 Coq 函数 [filter_even_gt7]，
+    它接受一个自然数列表作为输入，返回一个只包含大于 [7] 的偶数的列表。 *)
 
 Definition filter_even_gt7 (l : list nat) : list nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -693,18 +602,15 @@ Example test_filter_even_gt7_2 :
 (** [] *)
 
 (** **** Exercise: 3 stars (partition)  *)
-(** Use [filter] to write a Coq function [partition]:
+(** 使用 [filter] 编写一个 Coq 函数 [partition]：
 
       partition : forall X : Type,
                   (X -> bool) -> list X -> list X * list X
 
-   Given a set [X], a test function of type [X -> bool] and a [list
-   X], [partition] should return a pair of lists.  The first member of
-   the pair is the sublist of the original list containing the
-   elements that satisfy the test, and the second is the sublist
-   containing those that fail the test.  The order of elements in the
-   two sublists should be the same as their order in the original
-   list. *)
+   给定一个集合 [X]、一个类型为 [X -> bool] 的测试函数和一个 [list X]，
+   [partition] 应当返回一个列表的序对。该序对的第一个成员为包含原始列表中
+   满足该测试的子列表，而第二个成员为包含不满足该测试的元素的子列表。
+   两个子列表中元素的顺序应当与它们在原始列表中的顺序相同。 *)
 
 Definition partition {X : Type}
                      (test : X -> bool)
@@ -719,9 +625,9 @@ Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
 (** [] *)
 
 (* ================================================================= *)
-(** ** Map *)
+(** ** 映射 *)
 
-(** Another handy higher-order function is called [map]. *)
+(** 另一个方便的高阶函数叫做 [map]。 *)
 
 Fixpoint map {X Y:Type} (f:X->Y) (l:list X) : (list Y) :=
   match l with
@@ -729,25 +635,23 @@ Fixpoint map {X Y:Type} (f:X->Y) (l:list X) : (list Y) :=
   | h :: t => (f h) :: (map f t)
   end.
 
-(** It takes a function [f] and a list [ l = [n1, n2, n3, ...] ]
-    and returns the list [ [f n1, f n2, f n3,...] ], where [f] has
-    been applied to each element of [l] in turn.  For example: *)
+(** 它接受一个函数 [f] 和一个列表 [ l = [n1, n2, n3, ...] ]
+    并返回列表 [ [f n1, f n2, f n3,...] ]，其中 [f] 可分别应用于 [l]
+    中的每一个元素。例如： *)
 
 Example test_map1: map (fun x => plus 3 x) [2;0;2] = [5;3;5].
 Proof. reflexivity.  Qed.
 
-(** The element types of the input and output lists need not be
-    the same, since [map] takes _two_ type arguments, [X] and [Y]; it
-    can thus be applied to a list of numbers and a function from
-    numbers to booleans to yield a list of booleans: *)
+(** 输入列表和输出列表的元素类型不必相同，因为 [map] 会接受_'两个'_类型参数
+    [X] 和 [Y]，因此它可以应用到一个数值的列表和一个从数值到布尔值的函数，
+    并产生一个布尔值列表： *)
 
 Example test_map2:
   map oddb [2;1;2;5] = [false;true;false;true].
 Proof. reflexivity.  Qed.
 
-(** It can even be applied to a list of numbers and
-    a function from numbers to _lists_ of booleans to
-    yield a _list of lists_ of booleans: *)
+(** 它甚至可以应用到一个数值的列表和一个从数值到布尔值列表的函数，
+    并产生一个布尔值的_'列表的列表'_： *)
 
 Example test_map3:
     map (fun n => [evenb n;oddb n]) [2;1;2;5]
@@ -755,11 +659,10 @@ Example test_map3:
 Proof. reflexivity.  Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Exercises *)
+(** *** 练习 *)
 
 (** **** Exercise: 3 stars (map_rev)  *)
-(** Show that [map] and [rev] commute.  You may need to define an
-    auxiliary lemma. *)
+(** 请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引力 *)
 
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
@@ -768,11 +671,10 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 2 stars, recommended (flat_map)  *)
-(** The function [map] maps a [list X] to a [list Y] using a function
-    of type [X -> Y].  We can define a similar function, [flat_map],
-    which maps a [list X] to a [list Y] using a function [f] of type
-    [X -> list Y].  Your definition should work by 'flattening' the
-    results of [f], like so:
+(** 函数 [map] 通过一个类型为 [X -> Y] 的函数将 [list X] 映射到 [list Y]。
+    我们可以定义一个类似的函数 [flat_map]，它通过一个类型为 [X -> list Y]
+    的函数 [f] 将 [list X] 映射到 [list Y]。你的定义应当可以「压扁」[f]
+    的结果，就像这样：
 
         flat_map (fun n => [n;n+1;n+2]) [1;5;10]
       = [1; 2; 3; 5; 6; 7; 10; 11; 12].
@@ -788,9 +690,8 @@ Example test_flat_map1:
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Lists are not the only inductive type that we can write a
-    [map] function for.  Here is the definition of [map] for the
-    [option] type: *)
+(** 列表并不是唯一我们可以为它写出 [map] 函数的归纳类型。
+    以下是 [option] 类型的 [map] 定义： *)
 
 Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
                       : option Y :=
@@ -800,23 +701,18 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
   end.
 
 (** **** Exercise: 2 stars, optional (implicit_args)  *)
-(** The definitions and uses of [filter] and [map] use implicit
-    arguments in many places.  Replace the curly braces around the
-    implicit arguments with parentheses, and then fill in explicit
-    type parameters where necessary and use Coq to check that you've
-    done so correctly.  (This exercise is not to be turned in; it is
-    probably easiest to do it on a _copy_ of this file that you can
-    throw away afterwards.) 
+(** [filter] 和 [map] 的定义和应用在很多地方使用了隐式参数。
+    请将隐式参数外层的花括号替换为圆括号，然后在必要的地方补充显式类型形参并用
+    Coq 检查你做的是否正确。（本练习并不会打分，你可以在本文件的_'副本'_中做它，
+    之后丢掉即可。）
 *)
 (** [] *)
 
 (* ================================================================= *)
-(** ** Fold *)
+(** ** 折叠 *)
 
-(** An even more powerful higher-order function is called
-    [fold].  This function is the inspiration for the "[reduce]"
-    operation that lies at the heart of Google's map/reduce
-    distributed programming framework. *)
+(** 一个更加强大的高阶函数叫做 [fold]。本函数启发自「[reduce] 归约」
+    操作，它是 Google 的 map/reduce 分布式编程框架的核心。 *)
 
 Fixpoint fold {X Y:Type} (f: X->Y->Y) (l:list X) (b:Y)
                          : Y :=
@@ -825,20 +721,18 @@ Fixpoint fold {X Y:Type} (f: X->Y->Y) (l:list X) (b:Y)
   | h :: t => f h (fold f t b)
   end.
 
-(** Intuitively, the behavior of the [fold] operation is to
-    insert a given binary operator [f] between every pair of elements
-    in a given list.  For example, [ fold plus [1;2;3;4] ] intuitively
-    means [1+2+3+4].  To make this precise, we also need a "starting
-    element" that serves as the initial second input to [f].  So, for
-    example,
+(** 直观上来说，[fold] 操作的行为就是将给定的二元操作符 [f]
+    插入到给定列表的每一对元素之间。例如，[ fold plus [1;2;3;4] ]
+    直观上的意思是 [1+2+3+4]。为了让它更精确，我们还需要一个「起始元素」
+    作为 [f] 初始的第二个输入。因此，例如
 
        fold plus [1;2;3;4] 0
 
-    yields
+    就会产生
 
        1 + (2 + (3 + (4 + 0))).
 
-    Some more examples: *)
+    以下是更多例子： *)
 
 Check (fold andb).
 (* ===> fold andb : list bool -> bool -> bool *)
@@ -856,24 +750,20 @@ Example fold_example3 :
 Proof. reflexivity. Qed.
 
 (** **** Exercise: 1 star, advanced (fold_types_different)  *)
-(** Observe that the type of [fold] is parameterized by _two_ type
-    variables, [X] and [Y], and the parameter [f] is a binary operator
-    that takes an [X] and a [Y] and returns a [Y].  Can you think of a
-    situation where it would be useful for [X] and [Y] to be
-    different? *)
+(** 我们观察到 [fold] 由 [X] 和 [Y] 这_'两个'_类型变量参数化，形参 [f]
+    则是个接受 [X] 和 [Y] 并返回 [Y] 的二元操作符。你能想出一种 [X] 和
+    [Y] 不同时的应用情景吗？ *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (* ================================================================= *)
-(** ** Functions That Construct Functions *)
+(** ** 用函数构造函数 *)
 
-(** Most of the higher-order functions we have talked about so
-    far take functions as arguments.  Let's look at some examples that
-    involve _returning_ functions as the results of other functions.
-    To begin, here is a function that takes a value [x] (drawn from
-    some type [X]) and returns a function from [nat] to [X] that
-    yields [x] whenever it is called, ignoring its [nat] argument. *)
+(** 目前我们讨论过的大部分高阶函数都是接受函数作为参数的。
+    现在我们来看一些将函数作为其它函数的结果_'返回'_的例子。
+    首先，下面是一个接受值 [x]（由某个类型 [X] 刻画）并返回一个从
+    [nat] 到 [X] 的函数，当它被调用时总是产生 [x] 并忽略其 [nat] 参数。 *)
 
 Definition constfun {X: Type} (x: X) : nat->X :=
   fun (k:nat) => x.
@@ -886,22 +776,19 @@ Proof. reflexivity. Qed.
 Example constfun_example2 : (constfun 5) 99 = 5.
 Proof. reflexivity. Qed.
 
-(** In fact, the multiple-argument functions we have already
-    seen are also examples of passing functions as data.  To see why,
-    recall the type of [plus]. *)
+(** 实际上，我们已经见过的多参函数也是讲函数作为数据传入的例子。
+    为了理解为什么，请回想 [plus] 的类型。 *)
 
 Check plus.
 (* ==> nat -> nat -> nat *)
 
-(** Each [->] in this expression is actually a _binary_ operator
-    on types.  This operator is _right-associative_, so the type of
-    [plus] is really a shorthand for [nat -> (nat -> nat)] -- i.e., it
-    can be read as saying that "[plus] is a one-argument function that
-    takes a [nat] and returns a one-argument function that takes
-    another [nat] and returns a [nat]."  In the examples above, we
-    have always applied [plus] to both of its arguments at once, but
-    if we like we can supply just the first.  This is called _partial
-    application_. *)
+(** 该表达式中的每个 [->] 实际上都是一个类型上的_'二元'_操作符。
+    该操作符是_'右结合'_的，因此 [plus] 的类型其实是 [nat -> (nat -> nat)]
+    的简写，即，它可以读作「[plus] 是一个单参数函数，它接受一个 [nat]
+    并返回另一个函数，该函数接受另一个 [nat] 并返回一个 [nat]」。
+    在上面的例子中，我们总是将 [plus] 一次同时应用到两个参数上。
+    不过如果我们喜欢，也可以一次只提供一个参数，这叫做_'偏应用（Partial
+    Application）'_。 *)
 
 Definition plus3 := plus 3.
 Check plus3.
@@ -914,13 +801,13 @@ Example test_plus3'' :  doit3times (plus 3) 0 = 9.
 Proof. reflexivity.  Qed.
 
 (* ################################################################# *)
-(** * Additional Exercises *)
+(** * 附加练习 *)
 
 Module Exercises.
 
 (** **** Exercise: 2 stars (fold_length)  *)
-(** Many common functions on lists can be implemented in terms of
-   [fold].  For example, here is an alternative definition of [length]: *)
+(** 列表的很多通用函数都可以通过 [fold] 来实现。例如，下面是
+    [length] 的另一种实现： *)
 
 Definition fold_length {X : Type} (l : list X) : nat :=
   fold (fun _ n => S n) l 0.
@@ -928,7 +815,7 @@ Definition fold_length {X : Type} (l : list X) : nat :=
 Example test_fold_length1 : fold_length [4;7;0] = 3.
 Proof. reflexivity. Qed.
 
-(** Prove the correctness of [fold_length]. *)
+(** 请证明 [fold_length] 的正确性。 *)
 
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
@@ -937,52 +824,46 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 3 stars (fold_map)  *)
-(** We can also define [map] in terms of [fold].  Finish [fold_map]
-    below. *)
+(** 我们也可以用 [fold] 来定义 [map]。请完成下面的 [fold_map]。 *)
 
 Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-(** Write down a theorem [fold_map_correct] in Coq stating that
-   [fold_map] is correct, and prove it. *)
+(** 在 Coq 中写出 [fold_map_correct] 来陈述 [fold_map] 是正确的，然后证明它。 *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (currying)  *)
-(** In Coq, a function [f : A -> B -> C] really has the type [A
-    -> (B -> C)].  That is, if you give [f] a value of type [A], it
-    will give you function [f' : B -> C].  If you then give [f'] a
-    value of type [B], it will return a value of type [C].  This
-    allows for partial application, as in [plus3].  Processing a list
-    of arguments with functions that return functions is called
-    _currying_, in honor of the logician Haskell Curry.
+(** 在 Coq 中，函数 [f : A -> B -> C] 的类型其实是 [A -> (B -> C)]。
+    也就是说，如果给 [f] 一个类型为 [A] 的值，它就会给你函数 [f' : B -> C]。
+    如果再给 [f'] 一个类型为 [B] 的值，它就会返回一个类型为 [C] 的值。
+    这为我们提供了 [plus3] 中的那种偏应用能力。
+    用返回函数的函数处理参数列表的方式被称为_'柯里化（Currying）'_，
+    它是为了纪念逻辑学家 Haskell Curry。
 
-    Conversely, we can reinterpret the type [A -> B -> C] as [(A *
-    B) -> C].  This is called _uncurrying_.  With an uncurried binary
-    function, both arguments must be given at once as a pair; there is
-    no partial application. *)
+    反正，我们也可以将 [A -> B -> C] 解释为 [(A * B) -> C]。这叫做
+    _'反柯里化（Uncurrying）'_。对于反柯里化的二元函数，
+    两个参数必须作为序对一次给出，此时它不会偏应用。 *)
 
-(** We can define currying as follows: *)
+(** 我们可以将柯里化定义如下： *)
 
 Definition prod_curry {X Y Z : Type}
   (f : X * Y -> Z) (x : X) (y : Y) : Z := f (x, y).
 
-(** As an exercise, define its inverse, [prod_uncurry].  Then prove
-    the theorems below to show that the two are inverses. *)
+(** 作为练习，请定义它的反函数 [prod_uncurry]，
+    然后在下面证明它们互为反函数的定理。 *)
 
 Definition prod_uncurry {X Y Z : Type}
   (f : X -> Y -> Z) (p : X * Y) : Z
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-(** As a (trivial) example of the usefulness of currying, we can use it
-    to shorten one of the examples that we saw above: *)
+(** 举一个柯里化用途的（平凡的）例子，我们可以用它来缩短之前看到的一个例子： *)
 
 Example test_map1': map (plus 3) [2;0;2] = [5;3;5].
 Proof. reflexivity.  Qed.
 
-(** Thought exercise: before running the following commands, can you
-    calculate the types of [prod_curry] and [prod_uncurry]? *)
+(** 思考练习：在运行以下命令之前，你能计算出 [prod_curry] 和 [prod_uncurry] 的类型吗？ *)
 
 Check @prod_curry.
 Check @prod_uncurry.
@@ -1002,7 +883,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (nth_error_informal)  *)
-(** Recall the definition of the [nth_error] function:
+(** 回想 [nth_error] 函数的定义：
 
    Fixpoint nth_error {X : Type} (l : list X) (n : nat) : option X :=
      match l with
@@ -1010,54 +891,47 @@ Proof.
      | a :: l' => if beq_nat n O then Some a else nth_error l' (pred n)
      end.
 
-   Write an informal proof of the following theorem:
+   请写出以下定理的非形式化证明：
 
    forall X n l, length l = n -> @nth_error X l n = None
-
-(* 请在此处解答 *)
 *)
+(* 请在此处解答 *)
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (church_numerals)  *)
-(** This exercise explores an alternative way of defining natural
-    numbers, using the so-called _Church numerals_, named after
-    mathematician Alonzo Church.  We can represent a natural number
-    [n] as a function that takes a function [f] as a parameter and
-    returns [f] iterated [n] times. *)
+(** 本练习使用_'邱奇数（Church numerals）'_探讨了另一种定义自然数的方式，
+    它以数学家 Alonzo Church 命名。我们可以将自然数 [n] 表示为一个函数，
+    它接受一个函数 [f] 作为参数并返回迭代了 [n] 次的 [f]。 *)
 
 Module Church.
 Definition nat := forall X : Type, (X -> X) -> X -> X.
 
-(** Let's see how to write some numbers with this notation. Iterating
-    a function once should be the same as just applying it.  Thus: *)
+(** 我们来看看如何用这种记法写数。将函数迭代一次应当与将它应用一次相同。
+    因此： *)
 
 Definition one : nat :=
   fun (X : Type) (f : X -> X) (x : X) => f x.
 
-(** Similarly, [two] should apply [f] twice to its argument: *)
+(** 与此类似，[two] 应当对其参数应用两次 [f]： *)
 
 Definition two : nat :=
   fun (X : Type) (f : X -> X) (x : X) => f (f x).
 
-(** Defining [zero] is somewhat trickier: how can we "apply a function
-    zero times"?  The answer is actually simple: just return the
-    argument untouched. *)
+(** 定义 [zero] 有点刁钻：我们如何「将函数应用零次」？答案很简单：
+    把参数原样返回就好。 *)
 
 Definition zero : nat :=
   fun (X : Type) (f : X -> X) (x : X) => x.
 
-(** More generally, a number [n] can be written as [fun X f x => f (f
-    ... (f x) ...)], with [n] occurrences of [f].  Notice in
-    particular how the [doit3times] function we've defined previously
-    is actually just the Church representation of [3]. *)
+(** 更一般地说，数 [n] 可以写作 [fun X f x => f (f
+    ... (f x) ...)]，其中 [f] 出现了 [n] 次。要特别注意我们之前定义
+    [doit3times] 函数的方式就是 [3] 的邱奇数表示。 *)
 
 Definition three : nat := @doit3times.
 
-(** Complete the definitions of the following functions. Make sure
-    that the corresponding unit tests pass by proving them with
-    [reflexivity]. *)
+(** 完成以下函数的定义。请用 [reflexivity] 证明来确认它们能够通过对应的单元测试。 *)
 
-(** Successor of a natural number: *)
+(** 自然数的后继： *)
 
 Definition succ (n : nat) : nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1071,7 +945,7 @@ Proof. (* 请在此处解答 *) Admitted.
 Example succ_3 : succ two = three.
 Proof. (* 请在此处解答 *) Admitted.
 
-(** Addition of two natural numbers: *)
+(** 两个自然数的加法： *)
 
 Definition plus (n m : nat) : nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1086,7 +960,7 @@ Example plus_3 :
   plus (plus two two) three = plus one (plus three three).
 Proof. (* 请在此处解答 *) Admitted.
 
-(** Multiplication: *)
+(** 乘法： *)
 
 Definition mult (n m : nat) : nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1100,12 +974,11 @@ Proof. (* 请在此处解答 *) Admitted.
 Example mult_3 : mult two three = plus three three.
 Proof. (* 请在此处解答 *) Admitted.
 
-(** Exponentiation: *)
+(** 指数： *)
 
-(** (_Hint_: Polymorphism plays a crucial role here.  However,
-    choosing the right type to iterate over can be tricky.  If you hit
-    a "Universe inconsistency" error, try iterating over a different
-    type: [nat] itself is usually problematic.) *)
+(** （_'提示'_：多态在这里起到了关键的作用。然而，选择正确的类型来迭代会很棘手。
+    如果你遇到了「Universe inconsistency，全域不一致」错误，请在不同的类型上迭代。
+    [nat] 本身通常会有问题。） *)
 
 Definition exp (n m : nat) : nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.

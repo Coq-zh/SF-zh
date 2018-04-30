@@ -238,7 +238,7 @@ Proof.
 (** 现在，给定 [string] 类型的字符串 [x1] 和 [x2]，我们可以在使用
     [destruct (beq_stringP x1 x2)] 对 [beq_string x1 x2]
     的结果进行分类讨论的同时，生成关于 [x1] 和 [x2] （在 [=] 的意义上）
-    的相等性的假设。 *)
+    的相等性前提。 *)
 
 (** **** Exercise: 2 stars (t_update_same)  *)
 (** 请仿照[IndProp]一章中的示例，用 [beq_stringP] 来证明以下定理，

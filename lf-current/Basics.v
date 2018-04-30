@@ -476,10 +476,10 @@ Proof. simpl. reflexivity.  Qed.
 (** 你可以在两个表达式之间添加逗号来同时匹配它们：*)
 
 Fixpoint minus (n m:nat) : nat :=
-  match (n, m) with
-  | (O   , _)    => O
-  | (S _ , O)    => n
-  | (S n', S m') => minus n' m'
+  match n, m with
+  | O   , _    => O
+  | S _ , O    => n
+  | S n', S m' => minus n' m'
   end.
 
 (** 第一行中的 [_] 是一个 _'通配符'_。在模式匹配中使用 [_]
@@ -726,7 +726,7 @@ Theorem mult_S_1 : forall n m : nat,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(* （注意，它其实不用 [rewrite] 就能证明，不过请使用 [rewrite] 来做练习。） *)
+(* （注意，该命题可用 [rewrite] 以外的策略证明，不过请使用 [rewrite] 来做练习。） *)
 (** [] *)
 
 (* ################################################################# *)

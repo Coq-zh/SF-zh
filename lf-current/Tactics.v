@@ -1,26 +1,20 @@
-(** * Tactics: More Basic Tactics *)
+(** * Tactics: 更多基本策略 *)
 
-(** This chapter introduces several additional proof strategies
-    and tactics that allow us to begin proving more interesting
-    properties of functional programs.  We will see:
+(** 本章额外介绍了一些证明策略和手段，
+    它们能用来证明更多关于函数式程序的有趣性质。我们会看到：
 
-    - how to use auxiliary lemmas in both "forward-style" and
-      "backward-style" proofs;
-    - how to reason about data constructors (in particular, how to use
-      the fact that they are injective and disjoint);
-    - how to strengthen an induction hypothesis (and when such
-      strengthening is required); and
-    - more details on how to reason by case analysis. *)
+    - 如何在「向前证明」和「向后证明」两种风格中使用辅助引理；
+    - 如何对数据构造子进行论证（特别是，如何利用它们单射且不交的事实）；
+    - 如何增强归纳前提（以及何时需要增强）；
+    - 还有通过分类讨论进行论证的更多细节。 *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Export Poly.
 
 (* ################################################################# *)
-(** * The [apply] Tactic *)
+(** * [apply] 策略 *)
 
-(** We often encounter situations where the goal to be proved is
-    _exactly_ the same as some hypothesis in the context or some
-    previously proved lemma. *)
+(** 我们经常会遇到待证目标与上下文中的前提或已证引理_'刚好相同'_的情况。 *)
 
 Theorem silly1 : forall (n m o p : nat),
      n = m  ->
@@ -1072,7 +1066,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, recommended (forall_exists_challenge)  *) 
+(** **** Exercise: 4 stars, advanced, recommended (forall_exists_challenge)  *)
 (** Define two recursive [Fixpoints], [forallb] and [existsb].  The
     first checks whether every element in a list satisfies a given
     predicate:

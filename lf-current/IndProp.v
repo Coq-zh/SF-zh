@@ -1,35 +1,29 @@
-(** * IndProp: Inductively Defined Propositions *)
+(** * IndProp: 归纳定义的命题 *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Export Logic.
 Require Coq.omega.Omega.
 
 (* ################################################################# *)
-(** * Inductively Defined Propositions *)
+(** * 归纳定义的命题 *)
 
-(** In the [Logic] chapter, we looked at several ways of writing
-    propositions, including conjunction, disjunction, and quantifiers.
-    In this chapter, we bring a new tool into the mix: _inductive
-    definitions_. *)
+(** 在 [Logic] 一章中，我们学习了多种方法来编写命题，包括合取、析取和量词。
+    在本章中，我们引入新的方式：_'归纳定义的命题（Inductive Definitions）'_。 *)
 
-(** Recall that we have seen two ways of stating that a number [n] is
-    even: We can say (1) [evenb n = true], or (2) [exists k, n =
-    double k].  Yet another possibility is to say that [n] is even if
-    we can establish its evenness from the following rules:
+(** 请回想一下我们已经学过的两种方法来表达数字 [n] 是偶数：
+    (1) [evenb n = true]，以及 (2) [exists k, n = double k] 。
+    然而另一种可能是通过如下规则来建立数字 [n] 的偶数性质：
 
-       - Rule [ev_0]:  The number [0] is even.
-       - Rule [ev_SS]: If [n] is even, then [S (S n)] is even. *)
+       - 规则 [ev_0]:  数字 [0] 是偶数。
+       - 规则 [ev_SS]: 如果 [n] 是偶数, 那么 [S (S n)] 是偶数。 *)
 
-(** To illustrate how this definition of evenness works, let's
-    imagine using it to show that [4] is even. By rule [ev_SS], it
-    suffices to show that [2] is even. This, in turn, is again
-    guaranteed by rule [ev_SS], as long as we can show that [0] is
-    even. But this last fact follows directly from the [ev_0] rule. *)
+(** 为了理解这样的偶数性质定义如何工作，我们可想象如何证明 [4] 是偶数。
+    根据规则 [ev_SS]，需要证明 [2] 是偶数。这时，只要证明 [0] 是偶数，
+    我们可继续通过规则 [ev_SS] 确保它成立。而规则 [ev_0] 可直接证明 [0] 是偶数。 *)
 
-(** We will see many definitions like this one during the rest
-    of the course.  For purposes of informal discussions, it is
-    helpful to have a lightweight notation that makes them easy to
-    read and write.  _Inference rules_ are one such notation: *)
+(** 接下来的课程中，我们会看到很多类似方式定义的命题。
+    在非形式化的讨论中，使用轻量化的记法有助于阅读和书写。
+    _'推断规则（Inference Rules）'_ 是其中一种： *)
 (**
 
                               ------------                        (ev_0)
@@ -40,17 +34,13 @@ Require Coq.omega.Omega.
                               ev (S (S n))
 *)
 
-(** Each of the textual rules above is reformatted here as an
-    inference rule; the intended reading is that, if the _premises_
-    above the line all hold, then the _conclusion_ below the line
-    follows.  For example, the rule [ev_SS] says that, if [n]
-    satisfies [ev], then [S (S n)] also does.  If a rule has no
-    premises above the line, then its conclusion holds
-    unconditionally.
+(** 
+    若将前文所述的规则重新排版成推断规则，我们可以这样阅读它，如果线上方的 
+    _'前提（Premises）'_ 成立，那么线下方的 _'结论（Conclusion）'_ 成立。
+    比如，规则 [ev_SS] 是如果 [n] 满足 [ev]，那么 [S (S n)] 也满足。
+    如果一条规则在线上方没有前提，则结论直接成立。
 
-    We can represent a proof using these rules by combining rule
-    applications into a _proof tree_. Here's how we might transcribe
-    the above proof that [4] is even: *)
+    我们可以通过组合推断规则来展示证明。下面展示如何转译 [4] 是偶数的证明： *)
 (**
 
                              ------  (ev_0)
@@ -61,33 +51,28 @@ Require Coq.omega.Omega.
                               ev 4
 *)
 
-(** Why call this a "tree" (rather than a "stack", for example)?
-    Because, in general, inference rules can have multiple premises.
-    We will see examples of this below. *)
+(**
+    为什么我们把这样的证明称之为「树」（而非其他，比如「栈」）？
+    因为一般来说推断规则可以有多个前提。我们会在后面看到一些例子。 *)
 
-(** Putting all of this together, we can translate the definition of
-    evenness into a formal Coq definition using an [Inductive]
-    declaration, where each constructor corresponds to an inference
-    rule: *)
+(** 基于上述，可将偶数性质的定义翻译为Coq中使用 [Inductive] 声明的定义，
+    声明中每一个构造子对应一个推断规则： *)
 
 Inductive ev : nat -> Prop :=
 | ev_0 : ev 0
 | ev_SS : forall n : nat, ev n -> ev (S (S n)).
 
-(** This definition is different in one crucial respect from
-    previous uses of [Inductive]: its result is not a [Type], but
-    rather a function from [nat] to [Prop] -- that is, a property of
-    numbers.  Note that we've already seen other inductive definitions
-    that result in functions, such as [list], whose type is [Type ->
-    Type].  What is new here is that, because the [nat] argument of
-    [ev] appears _unnamed_, to the _right_ of the colon, it is allowed
-    to take different values in the types of different constructors:
-    [0] in the type of [ev_0] and [S (S n)] in the type of [ev_SS].
+(** 这个定义同之前其他 [Inductive] 的使用有一个重要的区别：
+    它的结果并不是一个 [Type] ，而是一个将 [nat] 映射到 [Prop] 的函数
+    —— 即关于数的性质。
+    注意我们曾见过其他的归纳定义结果为函数，比如 [list] ，其类型是 [Type -> Type] 。
+    值得注意的是，由于 [ev] 中出现在冒号 _'右侧'_ 的 [nat] 参数是 _'未命名'_ 的，
+    这允许在不同的构造子类型中使用不同的值：
+    [ev_0] 类型中的 [0] 以及 [ev_SS] 类型中的 [S (S n)]。
 
-    In contrast, the definition of [list] names the [X] parameter
-    _globally_, to the _left_ of the colon, forcing the result of
-    [nil] and [cons] to be the same ([list X]).  Had we tried to bring
-    [nat] to the left in defining [ev], we would have seen an error: *)
+    相反， [list] 的定义以 _'全局方式'_ 命名了冒号 _'左侧'_ 的参数 [X] ，
+    强迫 [nil] 和 [cons] 的结果为同一个类型（ [list X] ）。
+    如果在定义 [ev] 时我们将 [nat] 置于冒号左侧，会得到如下错误： *)
 
 Fail Inductive wrong_ev (n : nat) : Prop :=
 | wrong_ev_0 : wrong_ev 0
@@ -96,27 +81,25 @@ Fail Inductive wrong_ev (n : nat) : Prop :=
         allowed to be used as a bound variable in the type
         of its constructor. *)
 
-(** ("Parameter" here is Coq jargon for an argument on the left of the
-    colon in an [Inductive] definition; "index" is used to refer to
-    arguments on the right of the colon.) *)
+(** (「Parameter」 是 Coq 中的一个术语来表示 [Inductive] 定义中冒号左侧的参数；
+    「index」 则指冒号右侧的参数。) *)
 
-(** We can think of the definition of [ev] as defining a Coq property
-    [ev : nat -> Prop], together with primitive theorems [ev_0 : ev 0] and
-    [ev_SS : forall n, ev n -> ev (S (S n))]. *)
+(** 在 Coq 中，我们可以认为 [ev] 定义了一个性质 [ev : nat -> Prop]，其包括原始定理
+    [ev_0 : ev 0] 和 [ev_SS : forall n, ev n -> ev (S (S n))]。  *)
 
-(** Such "constructor theorems" have the same status as proven
-    theorems.  In particular, we can use Coq's [apply] tactic with the
-    rule names to prove [ev] for particular numbers... *)
+(** 这些 「定理构造子」 等同于被证明过的定理。
+    特别的，我们可以使用 Coq 中的 [apply] 策略和规则名称来证明某个
+    数字的 [ev] 性质…… *)
 
 Theorem ev_4 : ev 4.
 Proof. apply ev_SS. apply ev_SS. apply ev_0. Qed.
 
-(** ... or we can use function application syntax: *)
+(** …… 或使用函数应用的语法： *)
 
 Theorem ev_4' : ev 4.
 Proof. apply (ev_SS 2 (ev_SS 0 ev_0)). Qed.
 
-(** We can also prove theorems that have hypotheses involving [ev]. *)
+(** 我们同样可以对前提中使用到 [ev] 的定理进行证明。 *)
 
 Theorem ev_plus4 : forall n, ev n -> ev (4 + n).
 Proof.
@@ -124,7 +107,7 @@ Proof.
   apply ev_SS. apply ev_SS. apply Hn.
 Qed.
 
-(** More generally, we can show that any number multiplied by 2 is even: *)
+(** 更一般地，我们可以证明以任意数字乘2是偶数： *)
 
 (** **** Exercise: 1 star (ev_double)  *)
 Theorem ev_double : forall n,
@@ -134,54 +117,44 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
-(** * Using Evidence in Proofs *)
+(** * 在证明中使用证据 *)
 
-(** Besides _constructing_ evidence that numbers are even, we can also
-    _reason about_ such evidence.
+(** 除了 _'构造'_ 证据（evidence）来表示某个数字是偶数，我们还可以对这些证据进行 _'推理'_。
+    
+    使用 [Inductive] 声明来引入 [ev] 不仅仅表示在 Coq 中 [ev_0] 和 [ev_SS] 
+    这样的构造子是合法的方式来构造偶数证明的证据，他们也是 _'仅有的'_ 方式 
+    （对 [ev] 而言）。 *)
 
-    Introducing [ev] with an [Inductive] declaration tells Coq not
-    only that the constructors [ev_0] and [ev_SS] are valid ways to
-    build evidence that some number is even, but also that these two
-    constructors are the _only_ ways to build evidence that numbers
-    are even (in the sense of [ev]). *)
+(** 换句话说，如果某人展示了对于 [ev n] 的证据 [E]，那么我们知道 [E] 
+    必是二者其一：
 
-(** In other words, if someone gives us evidence [E] for the assertion
-    [ev n], then we know that [E] must have one of two shapes:
+      - [E] 是 [ev_0] （且 [n] is [O]）, 或
+      - [E] 是 [ev_SS n' E'] （且 [n] 是 [S (S n')], [E'] 是
+        [ev n'] 的证据）. *)
 
-      - [E] is [ev_0] (and [n] is [O]), or
-      - [E] is [ev_SS n' E'] (and [n] is [S (S n')], where [E'] is
-        evidence for [ev n']). *)
-
-(** This suggests that it should be possible to analyze a hypothesis
-    of the form [ev n] much as we do inductively defined data
-    structures; in particular, it should be possible to argue by
-    _induction_ and _case analysis_ on such evidence.  Let's look at a
-    few examples to see what this means in practice. *)
+(** 这样的形式暗示着，我们可以像分析归纳定义的数据结构一样分析他们；
+    特别的，对于这类证据使用 _'归纳'_ 和 _'分类讨论'_ 来进行论证也是可行的。
+    让我们通过一些例子来看看在实践中这意味着什么。 *)
 
 (* ================================================================= *)
-(** ** Inversion on Evidence *)
+(** ** 对证据进行反演 *)
 
-(** Suppose we are proving some fact involving a number [n], and we
-    are given [ev n] as a hypothesis.  We already know how to perform
-    case analysis on [n] using the [inversion] tactic, generating
-    separate subgoals for the case where [n = O] and the case where [n
-    = S n'] for some [n'].  But for some proofs we may instead want to
-    analyze the evidence that [ev n] _directly_.
+(** 假设我们正在证明涉及数字 [n] 的某个性质，且给定 [ev n] 作为前提。
+    我们已经知道对 [n] 使用 [inversion] 策略可对 [n = 0] 和 [n = S n']
+    进行分类讨论，同时 [inversion] 会生成子目标。但对于一些证明，我们想
+    _'直接'_ 对证据 [ev n] 进行分析：
 
-    By the definition of [ev], there are two cases to consider:
+    根据 [ev] 的定义，有两种情况需要考虑：
 
-    - If the evidence is of the form [ev_0], we know that [n = 0].
+    - 如果证据形如 [ev_0]，那么可得 [n = 0]。
 
-    - Otherwise, the evidence must have the form [ev_SS n' E'], where
-      [n = S (S n')] and [E'] is evidence for [ev n']. *)
+    - 否则，证据必然形如 [ev_SS n' E']，其中 [n = S (S n')] 且
+      [E'] 是 [ev n'] 的证据。 *)
 
-(** We can perform this kind of reasoning in Coq, again using
-    the [inversion] tactic.  Besides allowing us to reason about
-    equalities involving constructors, [inversion] provides a
-    case-analysis principle for inductively defined propositions.
-    When used in this way, its syntax is similar to [destruct]: We
-    pass it a list of identifiers separated by [|] characters to name
-    the arguments to each of the possible constructors.  *)
+(** 在 Coq 中进行此类推理，我们也可以使用 [inversion] 策略。
+    除了可对涉及到构造子的等式进行推理，[inversion] 对归纳定义的命题
+    提供了分类讨论的原则。当以此种方式使用它时，语法与 [destruct] 类似：
+    我们需提供一个由 [|] 分隔的标识符列表来命名构造子中的参数。 *)
 
 Theorem ev_minus2 : forall n,
   ev n -> ev (pred (pred n)).
@@ -191,20 +164,17 @@ Proof.
   - (* E = ev_0 *) simpl. apply ev_0.
   - (* E = ev_SS n' E' *) simpl. apply E'.  Qed.
 
-(** In words, here is how the inversion reasoning works in this proof:
+(** 在这个证明中反演推理的工作方式如下：
 
-    - If the evidence is of the form [ev_0], we know that [n = 0].
-      Therefore, it suffices to show that [ev (pred (pred 0))] holds.
-      By the definition of [pred], this is equivalent to showing that
-      [ev 0] holds, which directly follows from [ev_0].
+    - 如果证据形如 [ev_0]，那么我们可得 [n = 0]。
+      因此，需要证明 [ev (pred (pred 0))] 成立。
+      根据 [pred] 的定义，这等同于证明 [ev 0]，即可从 [ev 0] 直接得证。
 
-    - Otherwise, the evidence must have the form [ev_SS n' E'], where
-      [n = S (S n')] and [E'] is evidence for [ev n'].  We must then
-      show that [ev (pred (pred (S (S n'))))] holds, which, after
-      simplification, follows directly from [E']. *)
+    - 否则，证据必然形如 [ev_SS n' E']，其中 [n = S (S n')] 且 [E'] 是
+      [ev n'] 的证据。我们需要证明 [ev (pred (pred (S (S n'))))] 成立，
+      在简化后，可从 [E'] 得证。 *)
 
-(** This particular proof also works if we replace [inversion] by
-    [destruct]: *)
+(** 如果我们把 [inversion] 替换为 [destruct]，这个证明同样工作： *)
 
 Theorem ev_minus2' : forall n,
   ev n -> ev (pred (pred n)).
@@ -214,42 +184,32 @@ Proof.
   - (* E = ev_0 *) simpl. apply ev_0.
   - (* E = ev_SS n' E' *) simpl. apply E'.  Qed.
 
-(** The difference between the two forms is that [inversion] is more
-    convenient when used on a hypothesis that consists of an inductive
-    property applied to a complex expression (as opposed to a single
-    variable).  Here's is a concrete example.  Suppose that we wanted
-    to prove the following variation of [ev_minus2]: *)
+(** 将一个由归纳性质（inductive property）构成的假设作用于复杂的表达式
+    （而非一个变量）时， 使用 [inversion] 会比 [destruct] 更加方便。
+    这里有一个具体的例子。假设我们想要证明 [ev_minus2] 的变种： *)
 
 Theorem evSS_ev : forall n,
   ev (S (S n)) -> ev n.
 
-(** Intuitively, we know that evidence for the hypothesis cannot
-    consist just of the [ev_0] constructor, since [O] and [S] are
-    different constructors of the type [nat]; hence, [ev_SS] is the
-    only case that applies.  Unfortunately, [destruct] is not smart
-    enough to realize this, and it still generates two subgoals.  Even
-    worse, in doing so, it keeps the final goal unchanged, failing to
-    provide any useful information for completing the proof.  *)
+(** 直观来说，我们知道支撑前提的证据不会由 [ev_0] 组成，因为 [0] 和 [S] 是
+    [nat] 类型不同的构造子；由此 [ev_SS] 是唯一需要应对的情况（译注：[ev_0] 无条件成立）。
+    不幸的是，[destruct] 并没有如此智能，它仍然为我们生成两个子目标。
+    更甚至，于此同时最终目标没有改变，也无法为完成证明提供任何有用的信息。 *)
 
 Proof.
   intros n E.
   destruct E as [| n' E'].
   - (* E = ev_0. *)
-    (* We must prove that [n] is even from no assumptions! *)
+    (* 我们须证明 [n] 是偶数，但没有任何有用的假设信息可以使用！ *)
 Abort.
 
-(** What happened, exactly?  Calling [destruct] has the effect of
-    replacing all occurrences of the property argument by the values
-    that correspond to each constructor.  This is enough in the case
-    of [ev_minus2'] because that argument, [n], is mentioned directly
-    in the final goal. However, it doesn't help in the case of
-    [evSS_ev] since the term that gets replaced ([S (S n)]) is not
-    mentioned anywhere. *)
+(** 究竟发生了什么？ 应用 [destruct] 把性质的参数替换为对应于构造子的值。
+    这对于证明 [ev_minus2'] 是有帮助的，因为在最终目标中直接使用到了参数 [n]。
+    然而，这对于 [evSS_ev] 并没有帮助，因为被替换掉的 [S (S n)] 并没有在其他地方被使用。*)
 
-(** The [inversion] tactic, on the other hand, can detect (1) that the
-    first case does not apply, and (2) that the [n'] that appears on
-    the [ev_SS] case must be the same as [n].  This allows us to
-    complete the proof: *)
+(** 另一方面，[inversion] 策略可以检测到（1）第一个分类是不适用的（译注：[ev_0]），
+    以及（2）出现在 [ev_SS] 中的 [n'] 必等同于 [n]。
+    这帮助我们完成了证明： *)
 
 Theorem evSS_ev : forall n,
   ev (S (S n)) -> ev n.
@@ -260,16 +220,15 @@ Proof.
   apply E'.
 Qed.
 
-(** By using [inversion], we can also apply the principle of explosion
-    to "obviously contradictory" hypotheses involving inductive
-    properties. For example: *)
+(** 通过 [inversion]，我们可以对「显然矛盾的」归纳性质假设应用爆炸原理（principle of explosion）。
+    比如： *)
 
 Theorem one_not_even : ~ ev 1.
 Proof.
   intros H. inversion H. Qed.
 
 (** **** Exercise: 1 star (SSSSev__even)  *)
-(** Prove the following result using [inversion]. *)
+(** 请使用 [inversion] 策略证明以下结果。 *)
 
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
@@ -278,7 +237,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 1 star (even5_nonsense)  *)
-(** Prove the following result using [inversion]. *)
+(** 请使用 [inversion] 策略证明以下结果。 *)
 
 Theorem even5_nonsense :
   ev 5 -> 2 + 2 = 9.
@@ -286,88 +245,73 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** The way we've used [inversion] here may seem a bit
-    mysterious at first.  Until now, we've only used [inversion] on
-    equality propositions, to utilize injectivity of constructors or
-    to discriminate between different constructors.  But we see here
-    that [inversion] can also be applied to analyzing evidence for
-    inductively defined propositions.
+(** 初看我们使用 [inversion] 的方式似乎有点难以理解。 
+    目前为止，我们只对相等性命题使用 [inversion]，以此来利用构造子的单射性
+    或区分不同的构造子（TODO：injectivity翻译） 。
+    但我们将要看到 [inversion] 也可以用于分析归纳定义命题的证据。
+    
+    一般来说 [inversion] 以这样的方式工作。设想在当前上下文中名称 [I] 指向
+    假设 [P]，而[P] 由一个 [Inductive] 声明所定义。
+    接下来，使用 [inversion I] 会对 [P] 中的每一个构造子生成子目标，
+    其中 [I] 会被替换为在这个构造子中为了证明 [P] 所需要满足的精确条件。
+    有些子目标是自相矛盾的，[inversion] 会直接抛弃这些子目标。
+    而为了证明最初的目标，剩下的情形必须被证明。对于这些，[inversion] 会添加
+    [P] 成立所需要的等式到证明的上下文中。（比如 [evSS_ev] 证明中的 [S (S n') = n]。） *)
 
-    Here's how [inversion] works in general.  Suppose the name [I]
-    refers to an assumption [P] in the current context, where [P] has
-    been defined by an [Inductive] declaration.  Then, for each of the
-    constructors of [P], [inversion I] generates a subgoal in which
-    [I] has been replaced by the exact, specific conditions under
-    which this constructor could have been used to prove [P].  Some of
-    these subgoals will be self-contradictory; [inversion] throws
-    these away.  The ones that are left represent the cases that must
-    be proved to establish the original goal.  For those, [inversion]
-    adds all equations into the proof context that must hold of the
-    arguments given to [P] (e.g., [S (S n') = n] in the proof of
-    [evSS_ev]). *)
-
-(** The [ev_double] exercise above shows that our new notion of
-    evenness is implied by the two earlier ones (since, by
-    [even_bool_prop] in chapter [Logic], we already know that
-    those are equivalent to each other). To show that all three
-    coincide, we just need the following lemma: *)
+(** 上面的 [ev_double] 练习展示了偶数性质的一种新记法，其被之前的两种记法所蕴含。
+    （因为，由  [Logic] 一章中的 [even_bool_prop]，我们已经知道
+    他们是互相等价的。）
+    为了展示这三种方式的一致性，我们需要下面的引理： *)
 
 Lemma ev_even_firsttry : forall n,
   ev n -> exists k, n = double k.
 Proof.
 (* 课上已完成 *)
 
-(** We could try to proceed by case analysis or induction on [n].  But
-    since [ev] is mentioned in a premise, this strategy would probably
-    lead to a dead end, as in the previous section.  Thus, it seems
-    better to first try inversion on the evidence for [ev].  Indeed,
-    the first case can be solved trivially. *)
+(** 我们可以尝试使用分类讨论或对 [n] 进行归纳。
+    但由于 [ev] 在前提中出现，如同之前章节的一些例子，这种策略或许无法行得通。
+    如此我们似乎可以首先尝试对 [ev] 的证据进行反演。
+    确实，第一个分类可以被平凡地证明。 *)
 
   intros n E. inversion E as [| n' E'].
   - (* E = ev_0 *)
     exists 0. reflexivity.
   - (* E = ev_SS n' E' *) simpl.
 
-(** Unfortunately, the second case is harder.  We need to show [exists
-    k, S (S n') = double k], but the only available assumption is
-    [E'], which states that [ev n'] holds.  Since this isn't directly
-    useful, it seems that we are stuck and that performing case
-    analysis on [E] was a waste of time.
+(** 不幸地是，第二个分类要困难一些。我们需要证明 [exists k, S (S n') = double k]，
+    但唯一可用的假设是 [E']，也即 [ev n'] 成立。由于这并不直接有用，
+    我们似乎被卡住了，而对 [E] 进行分类讨论是徒劳的。
 
-    If we look more closely at our second goal, however, we can see
-    that something interesting happened: By performing case analysis
-    on [E], we were able to reduce the original result to an similar
-    one that involves a _different_ piece of evidence for [ev]: [E'].
-    More formally, we can finish our proof by showing that
+    如果仔细观察第二个（子）目标，我们可以看到一些有意思的事情：
+    对 [E] 进行分类讨论，我们可以把要证明的原始结果归约到另一个上，
+    其涉及到一个不同 [ev] 的证据： [E']。
+    形式化地说，我们可以完成证明通过展示：
+
 
         exists k', n' = double k',
 
-    which is the same as the original statement, but with [n'] instead
-    of [n].  Indeed, it is not difficult to convince Coq that this
-    intermediate result suffices. *)
+    
+    这同原始的命题是一致的，只是 [n'] 被替换为 n。确实，通过这个中间结果完成证明
+    并不困难。  *)
 
     assert (I : (exists k', n' = double k') ->
                 (exists k, S (S n') = double k)).
     { intros [k' Hk']. rewrite Hk'. exists (S k'). reflexivity. }
-    apply I. (* reduce the original goal to the new one *)
+    apply I. (* 将原始目标归约到新目标上 *)
 
 Admitted.
 
 (* ================================================================= *)
-(** ** Induction on Evidence *)
+(** ** 对证据进行归纳 *)
 
-(** If this looks familiar, it is no coincidence: We've encountered
-    similar problems in the [Induction] chapter, when trying to use
-    case analysis to prove results that required induction.  And once
-    again the solution is... induction!
+(** 看起来很类似，但这并不是巧合：我们遇到了类似 [Induction] 章节中的问题，
+    对于需要使用归纳来证明的命题我们使用了分类讨论。
+    再一次地，解决方法是使用……归纳！
 
-    The behavior of [induction] on evidence is the same as its
-    behavior on data: It causes Coq to generate one subgoal for each
-    constructor that could have used to build that evidence, while
-    providing an induction hypotheses for each recursive occurrence of
-    the property in question. *)
+    对证据和对数据使用 [induction] 的行为是相同的：它导致 Coq 对每个可用于构造证据的
+    构造子生成一个子目标，同时对递归出现的问题命题提供了归纳假设。 *)
 
-(** Let's try our current lemma again: *)
+(** 让我们再次尝试证明这个引理： *)
 
 Lemma ev_even : forall n,
   ev n -> exists k, n = double k.
@@ -377,18 +321,16 @@ Proof.
   - (* E = ev_0 *)
     exists 0. reflexivity.
   - (* E = ev_SS n' E'
-       with IH : exists k', n' = double k' *)
+       同时 IH : exists k', n' = double k' *)
     destruct IH as [k' Hk'].
     rewrite Hk'. exists (S k'). reflexivity.
 Qed.
 
-(** Here, we can see that Coq produced an [IH] that corresponds to
-    [E'], the single recursive occurrence of [ev] in its own
-    definition.  Since [E'] mentions [n'], the induction hypothesis
-    talks about [n'], as opposed to [n] or some other number. *)
+(** 这里我们看到 Coq 对 [E'] 产生了 [IH]，而 [E'] 是唯一递归出现的
+    [ev] 命题。 由于 [E'] 中涉及到 [n']，这个归纳假设是关于 [n'] 的，
+    而非关于 [n] 或其他数字的。  *)
 
-(** The equivalence between the second and third definitions of
-    evenness now follows. *)
+(** 关于偶数性质的第二个和第三个定义的等价性如下： *)
 
 Theorem ev_even_iff : forall n,
   ev n <-> exists k, n = double k.
@@ -398,13 +340,10 @@ Proof.
   - (* <- *) intros [k Hk]. rewrite Hk. apply ev_double.
 Qed.
 
-(** As we will see in later chapters, induction on evidence is a
-    recurring technique across many areas, and in particular when
-    formalizing the semantics of programming languages, where many
-    properties of interest are defined inductively. *)
+(** 我们会在后面的章节中看到，对证据进行归纳在很多领域里是一种常用的技术，
+    特别是在形式化程序语言的语义时，由于其中很多有趣的性质都是归纳定义的。 *)
 
-(** The following exercises provide simple examples of this
-    technique, to help you familiarize yourself with it. *)
+(** 下面的练习提供了一些简单的例子，来帮助你熟悉这项技术。 *)
 
 (** **** Exercise: 2 stars (ev_sum)  *)
 Theorem ev_sum : forall n m, ev n -> ev m -> ev (n + m).
@@ -413,18 +352,14 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (ev'_ev)  *)
-(** In general, there may be multiple ways of defining a
-    property inductively.  For example, here's a (slightly contrived)
-    alternative definition for [ev]: *)
+(** 一般来说，有很多种方式来归纳地定义一个性质。比如说，下面是关于 [ev] 的另一种（蹩脚的）定义：*)
 
 Inductive ev' : nat -> Prop :=
 | ev'_0 : ev' 0
 | ev'_2 : ev' 2
 | ev'_sum : forall n m, ev' n -> ev' m -> ev' (n + m).
 
-(** Prove that this definition is logically equivalent to the old
-    one.  (You may want to look at the previous theorem when you get
-    to the induction step.) *)
+(** 请证明这个定义在逻辑上等同于前述定义。（当进入到归纳环节时，你可能会想参考一下上一个定理。）*)
 
 Theorem ev'_ev : forall n, ev' n <-> ev n.
 Proof.
@@ -432,8 +367,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced, recommended (ev_ev__ev)  *)
-(** Finding the appropriate thing to do induction on is a
-    bit tricky here: *)
+(** 在本题中找到合适的项进行归纳需要一点技巧： *)
 
 Theorem ev_ev__ev : forall n m,
   ev (n+m) -> ev n -> ev m.
@@ -442,9 +376,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
-(** This exercise just requires applying existing lemmas.  No
-    induction or even case analysis is needed, though some of the
-    rewriting may be tedious. *)
+(** 这个练习仅仅需要使用前述引理。不需要使用归纳和分类讨论，尽管一些重写可能会比较乏味。 *)
 
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
@@ -453,25 +385,19 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
-(** * Inductive Relations *)
+(** * 归纳关系 *)
 
-(** A proposition parameterized by a number (such as [ev])
-    can be thought of as a _property_ -- i.e., it defines
-    a subset of [nat], namely those numbers for which the proposition
-    is provable.  In the same way, a two-argument proposition can be
-    thought of as a _relation_ -- i.e., it defines a set of pairs for
-    which the proposition is provable. *)
+(** 我们可以认为由数字参数化的命题（比如 [ev]）是一个_'性质'_，也即，
+    它定义了 [nat]　的一个子集，其中的数字可以被证明满足此命题。
+    以同样的方式，我们可认为有两个参数的命题是一个_'关系'_，也即，它定义了一个
+    序对的集合可满足此命题。*)
 
 Module Playground.
 
-(** One useful example is the "less than or equal to" relation on
-    numbers. *)
+(** 一个很有用的例子是数字的「小于等于」关系。*)
 
-(** The following definition should be fairly intuitive.  It
-    says that there are two ways to give evidence that one number is
-    less than or equal to another: either observe that they are the
-    same number, or give evidence that the first is less than or equal
-    to the predecessor of the second. *)
+(**　下面的定义应当是比较直观的。它提供了两种方法来描述一个数字小于等于另一个数字的证据：
+    要么可观察到两个数字相等，或提供证据显示第一个数字小于等于第二个数字的前继。　*)
 
 Inductive le : nat -> nat -> Prop :=
   | le_n : forall n, le n n
@@ -479,20 +405,14 @@ Inductive le : nat -> nat -> Prop :=
 
 Notation "m <= n" := (le m n).
 
-(** Proofs of facts about [<=] using the constructors [le_n] and
-    [le_S] follow the same patterns as proofs about properties, like
-    [ev] above. We can [apply] the constructors to prove [<=]
-    goals (e.g., to show that [3<=3] or [3<=6]), and we can use
-    tactics like [inversion] to extract information from [<=]
-    hypotheses in the context (e.g., to prove that [(2 <= 1) ->
-    2+2=5].) *)
+(** 类似于证明 [ev] 这样的性质，使用 [le_n] 和 [le_S]　构造子来证明关于 [<=]
+    的事实遵循了同样的模式。我们可以对构造子使用 [apply] 策略来证明 [<=] 目标
+    （比如证明 [3<=3] 或 [3<=6]），也可以使用 [inversion] 策略来从上下文中 [<=] 的
+    假设里抽取信息（比如证明 [(2<=1) -> 2+2=5]）。 *)
 
-(** Here are some sanity checks on the definition.  (Notice that,
-    although these are the same kind of simple "unit tests" as we gave
-    for the testing functions we wrote in the first few lectures, we
-    must construct their proofs explicitly -- [simpl] and
-    [reflexivity] don't do the job, because the proofs aren't just a
-    matter of simplifying computations.) *)
+(** 这里提供一些完备性检查。（请注意，尽管这同我们在开始课程时编写的
+    函数「单元测试」类似，但我们在这里必须明确地写下他们的证明—— [simpl] 和
+    [reflexivity] 并不会有效果，因为这些证明不仅仅是对表达式进行简化。）  *)
 
 Theorem test_le1 :
   3 <= 3.
@@ -512,8 +432,7 @@ Proof.
   (* 课上已完成 *)
   intros H. inversion H. inversion H2.  Qed.
 
-(** The "strictly less than" relation [n < m] can now be defined
-    in terms of [le]. *)
+(** 现在「严格小于」关系 [n < m] 可以使用 [le] 来定义。 *)
 
 End Playground.
 
@@ -521,7 +440,7 @@ Definition lt (n m:nat) := le (S n) m.
 
 Notation "m < n" := (lt m n).
 
-(** Here are a few more simple relations on numbers: *)
+(** 这里展示了一些定义于数字上的关系：*)
 
 Inductive square_of : nat -> nat -> Prop :=
   | sq : forall n:nat, square_of n (n * n).
@@ -534,23 +453,20 @@ Inductive next_even : nat -> nat -> Prop :=
   | ne_2 : forall n, ev (S (S n)) -> next_even n (S (S n)).
 
 (** **** Exercise: 2 stars, optional (total_relation)  *)
-(** Define an inductive binary relation [total_relation] that holds
-    between every pair of natural numbers. *)
+(** 请定一个二元归纳关系 [total_relation] 对每一个自然数序对成立。 *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (empty_relation)  *)
-(** Define an inductive binary relation [empty_relation] (on numbers)
-    that never holds. *)
+(** 请定一个二元归纳关系 [empty_relation] 对自然数永远为假。 *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (le_exercises)  *)
-(** Here are a number of facts about the [<=] and [<] relations that
-    we are going to need later in the course.  The proofs make good
-    practice exercises. *)
+(** 这里展示一些关于 [<=] 和 [<] 关系的事实，我们在接下来的课程中将会用到他们。
+    证明他们将会是非常有益的练习。 *)
 
 Lemma le_trans : forall m n o, m <= n -> n <= o -> m <= o.
 Proof.
@@ -594,7 +510,7 @@ Theorem leb_complete : forall n m,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** Hint: The next one may be easiest to prove by induction on [m]. *)
+(** 提示：在下面的问题中，对 [m] 进行归纳会使证明容易一些。*)
 
 Theorem leb_correct : forall n m,
   n <= m ->
@@ -602,7 +518,7 @@ Theorem leb_correct : forall n m,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** Hint: This theorem can easily be proved without using [induction]. *)
+(** 提示：这个定理可以不通过使用 [induction] 来证明。*)
 
 Theorem leb_true_trans : forall n m o,
   leb n m = true -> leb m o = true -> leb n o = true.
@@ -620,9 +536,7 @@ Proof.
 Module R.
 
 (** **** Exercise: 3 stars, recommended (R_provability)  *)
-(** We can define three-place relations, four-place relations,
-    etc., in just the same way as binary relations.  For example,
-    consider the following three-place relation on numbers: *)
+(** 通过同样的方式，我们可以定义三元关系、四元关系等。例如，考虑以下定义在数字上的三元关系： *)
 
 Inductive R : nat -> nat -> nat -> Prop :=
    | c1 : R 0 0 0
@@ -631,26 +545,22 @@ Inductive R : nat -> nat -> nat -> Prop :=
    | c4 : forall m n o, R (S m) (S n) (S (S o)) -> R m n o
    | c5 : forall m n o, R m n o -> R n m o.
 
-(** - Which of the following propositions are provable?
+(** - 下列哪个命题是可以被证明的？
       - [R 1 1 2]
       - [R 2 2 6]
 
-    - If we dropped constructor [c5] from the definition of [R],
-      would the set of provable propositions change?  Briefly (1
-      sentence) explain your answer.
+    - 如果在 [R] 的定义中我们丢弃 [c5] 构造子，可被证明的集合会发生变化吗？
+      简要（一句话）解释你的答案。
 
-    - If we dropped constructor [c4] from the definition of [R],
-      would the set of provable propositions change?  Briefly (1
-      sentence) explain your answer.
+    - 如果在 [R] 的定义中我们丢弃 [c4] 构造子，可被证明的集合会发生变化吗？
+      简要（一句话）解释你的答案。
 
 (* 请在此处解答 *)
 *)
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (R_fact)  *)
-(** The relation [R] above actually encodes a familiar function.
-    Figure out which function; then state and prove this equivalence
-    in Coq? *)
+(** 关系 [R] 其实编码了一个熟悉的函数。请找出这个函数，定义它并在 Coq 中证明他们等价。*)
 
 Definition fR : nat -> nat -> nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -663,53 +573,48 @@ Proof.
 End R.
 
 (** **** Exercise: 4 stars, advanced (subsequence)  *)
-(** A list is a _subsequence_ of another list if all of the elements
-    in the first list occur in the same order in the second list,
-    possibly with some extra elements in between. For example,
+(** 如果一个列表的所有元素以相同的顺序出现在另一个列表之中（但允许其中出现其他额外的元素），
+    我们把第一个列表称作第二个列表的_'子序列'_。 例如：
 
       [1;2;3]
 
-    is a subsequence of each of the lists
+    是以下所有列表的子序列
 
       [1;2;3]
       [1;1;1;2;2;3]
       [1;2;7;3]
       [5;6;1;9;9;2;7;3;8]
 
-    but it is _not_ a subsequence of any of the lists
+    但_'不是'_以下列表的子序列
 
       [1;2]
       [1;3]
       [5;6;2;1;7;3;8].
 
-    - Define an inductive proposition [subseq] on [list nat] that
-      captures what it means to be a subsequence. (Hint: You'll need
-      three cases.)
+    - 在 [list nat] 上定一个归纳命题 [subseq]，其表达了子序列的涵义。
+      （提示：你需要三个分类。）
 
-    - Prove [subseq_refl] that subsequence is reflexive, that is,
-      any list is a subsequence of itself.
+    - 证明子序列的自反关系 [subseq_refl]，也即任何列表是它自身的子序列。
 
-    - Prove [subseq_app] that for any lists [l1], [l2], and [l3],
-      if [l1] is a subsequence of [l2], then [l1] is also a subsequence
-      of [l2 ++ l3].
+    - 证明关系 [subseq_app] 对任意列表 [l1]，[l2] 和 [l3]，如果 [l1] 是 [l2]
+      的子序列，那么 [l1] 也是 [l2 ++ l3] 的子序列。
 
-    - (Optional, harder) Prove [subseq_trans] that subsequence is
-      transitive -- that is, if [l1] is a subsequence of [l2] and [l2]
-      is a subsequence of [l3], then [l1] is a subsequence of [l3].
-      Hint: choose your induction carefully! *)
+    - （可选的，困难）证明子序列的传递关系 [subseq_trans]——也即，如果 [l1] 是 [l2]
+      的子序列，且 [l2] 是 [l3] 的子序列，那么 [l1] 是 [l3] 的子序列。
+      （提示：仔细选择进行归纳的项！） *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (R_provability2)  *)
-(** Suppose we give Coq the following definition:
+(** 假设我们在 Coq 中有如下定义：
 
     Inductive R : nat -> list nat -> Prop :=
       | c1 : R 0 []
       | c2 : forall n l, R n l -> R (S n) (n :: l)
       | c3 : forall n l, R (S n) l -> R n l.
 
-    Which of the following propositions are provable?
+    下列命题哪个是可被证明的？
 
     - [R 2 [1;0]]
     - [R 1 [1;2;1;0]]
