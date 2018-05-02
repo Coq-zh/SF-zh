@@ -54,7 +54,7 @@
          目录 或
          章节依赖简图 中找到它们。
 
-       - 有关 Coq 的问题，可以查看 Stack Overflow 上的 #coq 板块
+       - 有关 Coq 的问题，可以查看 Stack Overflow 上的 [#coq] 板块
          (https://stackoverflow.com/questions/tagged/coq)，
          它是个很棒的社区资源。
 
