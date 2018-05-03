@@ -1603,7 +1603,11 @@ Proof.
 
     Write an alternate version of [beval] that performs short-circuit
     evaluation of [BAnd] in this manner, and prove that it is
-    equivalent to [beval]. *)
+    equivalent to [beval].  (N.b. This is only true because expression
+    evaluation in Imp is rather simple.  In a bigger language where
+    evaluating an expression might diverge, the short-circuiting BAnd
+    would _not_ be equivalent to the original, since it would make more
+    programs terminate.) *)
 
 (* 请在此处解答 *)
 (** [] *)

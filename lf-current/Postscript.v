@@ -65,7 +65,7 @@
             - Real World Haskell, by Bryan O'Sullivan, John Goerzen,
               and Don Stewart [O'Sullivan 2008].
               （《Real World Haskell 中文版》http://cnhaskell.com/）
-            - ...以及其它关于 Haskell、OCaml、 Scheme、Racket、Scala、F#
+            - ...以及其它关于 Haskell、OCaml、 Scheme、Racket、Scala、F sharp
               等语言的优秀书籍。
 
        - 更多 Coq 相关的资源：
