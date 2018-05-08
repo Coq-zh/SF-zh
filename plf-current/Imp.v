@@ -505,7 +505,7 @@ Tactic Notation "simpl_and_try" tactic(c) :=
 
 (** The [omega] tactic implements a decision procedure for a subset of
     first-order logic called _Presburger arithmetic_.  It is based on
-    the Omega algorithm invented by William Pugh [Pugh 1991].
+    the Omega algorithm invented by William Pugh [Pugh 1991] (in Bib.v).
 
     If the goal is a universally quantified formula made out of
 
@@ -1550,14 +1550,12 @@ Example s_execute1 :
        [SPush 5; SPush 3; SPush 1; SMinus]
    = [2; 5].
 (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: s_execute1 *)
 
 Example s_execute2 :
      s_execute { X --> 3 } [3;4]
        [SPush 4; SLoad X; SMult; SPlus]
    = [15; 4].
 (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: s_execute2 *)
 
 (** Next, write a function that compiles an [aexp] into a stack
     machine program. The effect of running the program should be the

@@ -128,26 +128,22 @@ Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: mult_0_r *)
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: plus_n_Sm *)
 
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: plus_comm *)
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: plus_assoc *)
 (** [] *)
 
 (** **** Exercise: 2 stars (double_plus)  *)

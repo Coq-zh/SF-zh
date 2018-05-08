@@ -388,7 +388,7 @@ where "'[' x ':=' s ']' t" := (subst x s t).
     same as [[x:=s]t = \r:Bool. \x:Bool. r].  That is, renaming a
     bound variable changes how [t] behaves under substitution. *)
 
-(** See, for example, [Aydemir 2008] for further discussion
+(** See, for example, [Aydemir 2008] (in Bib.v) for further discussion
     of this issue. *)
 
 (** **** Exercise: 3 stars (substi_correct)  *)

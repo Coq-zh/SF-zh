@@ -902,7 +902,7 @@ Require Import Stlc.
     scratch -- the only thing missing is a way to allow _recursion_ in
     type definitions.  We won't cover this here, but detailed
     treatments can be found in many textbooks -- e.g., Types and
-    Programming Languages [Pierce 2002]. *)
+    Programming Languages [Pierce 2002] (in Bib.v). *)
 
 (* ################################################################# *)
 (** * Exercise: Formalizing the Extensions *)

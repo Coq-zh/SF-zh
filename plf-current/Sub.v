@@ -96,7 +96,7 @@ Require Import Smallstep.
 
     To keep things simple here, we won't deal with any of these
     issues -- in fact, we won't even talk any more about objects or
-    classes.  (There is a lot of discussion in [Pierce 2002], if
+    classes.  (There is a lot of discussion in [Pierce 2002] (in Bib.v), if
     you are interested.)  Instead, we'll study the core concepts
     behind the subclass / subinterface relation in the simplified
     setting of the STLC. *)

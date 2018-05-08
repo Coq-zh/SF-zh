@@ -375,7 +375,6 @@ Hint Constructors has_type.
     starting to prove anything, make sure you understand what it is
     saying.*)
 
-(* GRADE_THEOREM 0.5: typing_example_2 *)
 Lemma typing_example_2 :
   empty |-
     (tapp (tabs a (TRCons i1 (TArrow A A)
@@ -389,7 +388,6 @@ Lemma typing_example_2 :
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(* GRADE_THEOREM 0.5: typing_nonexample *)
 Example typing_nonexample :
   ~ exists T,
       (update empty a (TRCons i2 (TArrow A A)

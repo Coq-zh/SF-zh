@@ -240,7 +240,6 @@ Proof. constructor. Qed.
 
 (** **** Exercise: 2 stars (simple_priq_proofs)  *)
 
-(* GRADE_THEOREM 0.5: delete_max_None_relate *)
 Lemma delete_max_None_relate:
   forall p, priq p -> 
       (Abs p nil <-> delete_max p = None).
@@ -260,7 +259,6 @@ Lemma merge_priq:
   forall p q, priq p -> priq q -> priq (merge p q).
 Proof. intros. constructor. Qed.
 
-(* GRADE_THEOREM 0.5: delete_max_Some_relate *)
 Lemma merge_relate:
     forall p q pl ql al, 
        priq p -> priq q ->

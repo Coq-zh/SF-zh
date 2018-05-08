@@ -248,19 +248,19 @@
 
        - More on Hoare logic and program verification
             - The Formal Semantics of Programming Languages: An
-              Introduction, by Glynn Winskel [Winskel 1993].
+              Introduction, by Glynn Winskel [Winskel 1993] (in Bib.v).
             - Many practical verification tools, e.g. Microsoft's
               Boogie system, Java Extended Static Checking, etc.
 
        - More on the foundations of programming languages:
             - Concrete Semantics with Isabelle/HOL, by Tobias Nipkow
-              and Gerwin Klein [Nipkow 2014]
+              and Gerwin Klein [Nipkow 2014] (in Bib.v)
             - Types and Programming Languages, by Benjamin C. Pierce
-              [Pierce 2002].
+              [Pierce 2002] (in Bib.v).
             - Practical Foundations for Programming Languages, by
-              Robert Harper [Harper 2016].
+              Robert Harper [Harper 2016] (in Bib.v).
             - Foundations for Programming Languages, by John
-              C. Mitchell [Mitchell 1996].
+              C. Mitchell [Mitchell 1996] (in Bib.v).
 
         - Iron Lambda (http://iron.ouroborus.net/) is a collection
           of ​Coq formalisations for functional languages of

@@ -239,7 +239,6 @@ Fixpoint nonzeros (l:natlist) : natlist
 Example test_nonzeros:
   nonzeros [0;1;0;2;3;0;0] = [1;2;3].
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_nonzeros *)
 
 Fixpoint oddmembers (l:natlist) : natlist
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -247,7 +246,6 @@ Fixpoint oddmembers (l:natlist) : natlist
 Example test_oddmembers:
   oddmembers [0;1;0;2;3;0;0] = [1;3].
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_oddmembers *)
 
 Definition countoddmembers (l:natlist) : nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -314,7 +312,6 @@ Example test_count1:              count 1 [1;2;3;1;4;1] = 3.
  (* 请在此处解答 *) Admitted.
 Example test_count2:              count 6 [1;2;3;1;4;1] = 0.
  (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_count2 *)
 
 (** Multiset [sum] is similar to set [union]: [sum a b] contains all
     the elements of [a] and of [b].  (Mathematicians usually define
@@ -333,7 +330,6 @@ Definition sum : bag -> bag -> bag
 
 Example test_sum1:              count 1 (sum [1;2;3] [1;4;1]) = 3.
  (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_sum1 *)
 
 Definition add (v:nat) (s:bag) : bag
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -342,16 +338,12 @@ Example test_add1:                count 1 (add 1 [1;4;1]) = 3.
  (* 请在此处解答 *) Admitted.
 Example test_add2:                count 5 (add 1 [1;4;1]) = 0.
  (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_add1 *)
-(* GRADE_THEOREM 0.5: NatList.test_add2 *)
 
 Definition member (v:nat) (s:bag) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Example test_member1:             member 1 [1;4;1] = true.
  (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_member1 *)
-(* GRADE_THEOREM 0.5: NatList.test_member2 *)
 
 Example test_member2:             member 2 [1;4;1] = false.
 (* 请在此处解答 *) Admitted.
@@ -685,19 +677,16 @@ Theorem app_nil_r : forall l : natlist,
   l ++ [] = l.
 Proof.
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.app_nil_r *)
 
 Theorem rev_app_distr: forall l1 l2 : natlist,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.rev_app_distr *)
 
 Theorem rev_involutive : forall l : natlist,
   rev (rev l) = l.
 Proof.
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.rev_involutive *)
 
 (** 下面的练习有简短的解法，如果你开始发现情况已经复杂到你无法理清的程度，
     请后退一步并试着寻找更为简单的方法。 *)
@@ -706,7 +695,6 @@ Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
   l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
 Proof.
   (* 请在此处解答 *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.app_assoc4 *)
 
 (** 一个关于你对 [nonzeros] 的实现的练习： *)
 

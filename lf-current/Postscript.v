@@ -60,20 +60,20 @@
 
        - 更多与函数式编程相关的内容：
             - Learn You a Haskell for Great Good, by Miran Lipovaca
-              [Lipovaca 2011].
+              [Lipovaca 2011] (in Bib.v).
               （《Haskell 趣学指南》https://learnyoua.haskell.sg/content/）
             - Real World Haskell, by Bryan O'Sullivan, John Goerzen,
-              and Don Stewart [O'Sullivan 2008].
+              and Don Stewart [O'Sullivan 2008] (in Bib.v).
               （《Real World Haskell 中文版》http://cnhaskell.com/）
             - ...以及其它关于 Haskell、OCaml、 Scheme、Racket、Scala、F sharp
               等语言的优秀书籍。
 
        - 更多 Coq 相关的资源：
            - Certified Programming with Dependent Types, by Adam
-             Chlipala [Chlipala 2013].
+             Chlipala [Chlipala 2013] (in Bib.v).
            - Interactive Theorem Proving and Program Development:
              Coq'Art: The Calculus of Inductive Constructions, by Yves
-             Bertot and Pierre Casteran [Bertot 2004].
+             Bertot and Pierre Casteran [Bertot 2004] (in Bib.v).
 
        - 如果你有兴趣了解现实世界中形式化验证对关键软件的应用，
          可以参阅_'《编程语言基础》'_的后记。
