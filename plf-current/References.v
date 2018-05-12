@@ -1,6 +1,5 @@
 (** * References: Typing Mutable References *)
 
- 
 (** Up to this point, we have considered a variety of _pure_
     language features, including functional abstraction, basic types
     such as numbers and booleans, and structured types such as records
@@ -286,7 +285,7 @@ Definition tseq t1 t2 :=
 (** ** References and Aliasing *)
 
 (** It is important to bear in mind the difference between the
-    _reference_ that is bound to some variable [r] and the _cell_ 
+    _reference_ that is bound to some variable [r] and the _cell_
     in the store that is pointed to by this reference.
 
     If we make a copy of [r], for example by binding its value to
@@ -442,6 +441,8 @@ Definition tseq t1 t2 :=
 would it behave the same? *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_compact_update : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -495,6 +496,8 @@ would it behave the same? *)
 (** Show how this can lead to a violation of type safety. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_type_safety_violation : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -661,15 +664,15 @@ Qed.
     existing reduction rules with stores:
 
                                value v2
-                -------------------------------------- (ST_AppAbs) 
+                -------------------------------------- (ST_AppAbs)
                 (\x:T.t12) v2 / st ==> [x:=v2]t12 / st
 
                         t1 / st ==> t1' / st'
-                     --------------------------- (ST_App1) 
+                     --------------------------- (ST_App1)
                      t1 t2 / st ==> t1' t2 / st'
 
                   value v1 t2 / st ==> t2' / st'
-                  ---------------------------------- (ST_App2) 
+                  ---------------------------------- (ST_App2)
                      v1 t2 / st ==> v1 t2' / st'
 
     Note that the first rule here returns the store unchanged, since
@@ -679,14 +682,14 @@ Qed.
 
     Now, the result of reducing a [ref] expression will be a fresh
     location; this is why we included locations in the syntax of terms
-    and in the set of values.  It is crucial to note that making this 
-    extension to the syntax of terms does not mean that we intend 
-    _programmers_ to write terms involving explicit, concrete locations: 
-    such terms will arise only as intermediate results during reduction.  
+    and in the set of values.  It is crucial to note that making this
+    extension to the syntax of terms does not mean that we intend
+    _programmers_ to write terms involving explicit, concrete locations:
+    such terms will arise only as intermediate results during reduction.
     This may seem odd, but it follows naturally from our design decision
-    to represent the result of every reduction step by a modified _term_. 
-    If we had chosen a more "machine-like" model, e.g., with an explicit 
-    stack to contain values of bound identifiers, then the idea of adding 
+    to represent the result of every reduction step by a modified _term_.
+    If we had chosen a more "machine-like" model, e.g., with an explicit
+    stack to contain values of bound identifiers, then the idea of adding
     locations to the set of allowed values might seem more obvious.
 
     In terms of this expanded syntax, we can state reduction rules
@@ -695,7 +698,7 @@ Qed.
     reduce [t1] until it becomes a value:
 
                         t1 / st ==> t1' / st'
-                       ----------------------- (ST_Deref) 
+                       ----------------------- (ST_Deref)
                        !t1 / st ==> !t1' / st'
 
     Once [t1] has finished reducing, we should have an expression of
@@ -704,7 +707,7 @@ Qed.
     [unit], is erroneous, as is a term that tries to dereference a
     location that is larger than the size [|st|] of the currently
     allocated store; the reduction rules simply get stuck in this
-    case.  The type-safety properties established below assure us 
+    case.  The type-safety properties established below assure us
     that well-typed terms will never misbehave in this way.)
 
                                l < |st|
@@ -717,11 +720,11 @@ Qed.
     reduce [t2] until it becomes a value (of any sort):
 
                         t1 / st ==> t1' / st'
-                 ----------------------------------- (ST_Assign1) 
+                 ----------------------------------- (ST_Assign1)
                  t1 := t2 / st ==> t1' := t2 / st'
 
                         t2 / st ==> t2' / st'
-                  --------------------------------- (ST_Assign2) 
+                  --------------------------------- (ST_Assign2)
                   v1 := t2 / st ==> v1 := t2' / st'
 
     Once we have finished with [t1] and [t2], we have an expression of
@@ -729,7 +732,7 @@ Qed.
     location [l] contain [v2]:
 
                                l < |st|
-                ------------------------------------- (ST_Assign) 
+                ------------------------------------- (ST_Assign)
                 loc l := v2 / st ==> unit / [l:=v2]st
 
     The notation [[l:=v2]st] means "the store that maps [l] to [v2]
@@ -741,19 +744,19 @@ Qed.
     reduce [t1] until it becomes a value:
 
                         t1 / st ==> t1' / st'
-                    ----------------------------- (ST_Ref) 
+                    ----------------------------- (ST_Ref)
                     ref t1 / st ==> ref t1' / st'
 
     Then, to reduce the [ref] itself, we choose a fresh location at
     the end of the current store -- i.e., location [|st|] -- and yield
     a new store that extends [st] with the new value [v1].
 
-                   -------------------------------- (ST_RefValue) 
+                   -------------------------------- (ST_RefValue)
                    ref v1 / st ==> loc |st| / st,v1
 
     The value resulting from this step is the newly allocated location
     itself.  (Formally, [st,v1] means [st ++ v1::nil] -- i.e., to add
-    a new reference cell to the store, we append it to the end.)  
+    a new reference cell to the store, we append it to the end.)
 
     Note that these reduction rules do not perform any kind of
     garbage collection: we simply allow the store to keep growing
@@ -762,8 +765,8 @@ Qed.
     definition of "garbage" is precisely parts of the store that are
     no longer reachable and so cannot play any further role in
     reduction), but it means that a naive implementation of our
-    evaluator might run out of memory where a more sophisticated 
-    evaluator would be able to continue by reusing locations whose 
+    evaluator might run out of memory where a more sophisticated
+    evaluator would be able to continue by reusing locations whose
     contents have become garbage.
 
     Here are the rules again, formally: *)
@@ -920,8 +923,8 @@ Definition context := partial_map ty.
     [l] appears many times in a term [t], we will re-calculate the type of
     [v] many times in the course of constructing a typing derivation for
     [t].  Worse, if [v] itself contains locations, then we will have to
-    recalculate _their_ types each time they appear.  Worse yet, the 
-    proposed typing rule for locations may not allow us to derive 
+    recalculate _their_ types each time they appear.  Worse yet, the
+    proposed typing rule for locations may not allow us to derive
     anything at all, if the store contains a _cycle_.  For example,
     there is no finite typing derivation for the location [0] with respect
     to this store:
@@ -932,6 +935,8 @@ Definition context := partial_map ty.
 (** **** Exercise: 2 stars (cyclic_store)  *)
 (** Can you find a term whose reduction will create this particular
     cyclic store? *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_cyclic_store : option (prod nat string) := None.
 (** [] *)
 
 (** These problems arise from the fact that our proposed
@@ -949,10 +954,10 @@ Definition context := partial_map ty.
     can be collected together as a _store typing_ -- a finite function
     mapping locations to types.
 
-    As with the other type systems we've seen, this conservative typing 
-    restriction on allowed updates means that we will rule out as 
+    As with the other type systems we've seen, this conservative typing
+    restriction on allowed updates means that we will rule out as
     ill-typed some programs that could reduce perfectly well without
-    getting stuck. 
+    getting stuck.
 
     Just as we did for stores, we will represent a store type simply
     as a list of types: the type at index [i] records the type of the
@@ -979,10 +984,10 @@ Definition store_Tlookup (n:nat) (ST:store_ty) :=
                    Gamma; ST |- loc l : Ref (lookup l ST)
 
 
-    That is, as long as [l] is a valid location, we can compute the 
-    type of [l] just by looking it up in [ST].  Typing is again a 
-    four-place relation, but it is parameterized on a store _typing_ 
-    rather than a concrete store.  The rest of the typing rules are 
+    That is, as long as [l] is a valid location, we can compute the
+    type of [l] just by looking it up in [ST].  Typing is again a
+    four-place relation, but it is parameterized on a store _typing_
+    rather than a concrete store.  The rest of the typing rules are
     analogously augmented with store typings. *)
 
 (* ================================================================= *)
@@ -1143,6 +1148,8 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     [ST1 |- st] and [ST2 |- st]? *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_store_not_unique : option (prod nat string) := None.
 (** [] *)
 
 (** We can now state something closer to the desired preservation
@@ -1615,6 +1622,8 @@ Qed.
 
 (* 请在此处解答 *)
  *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_preservation_informal : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -1733,8 +1742,8 @@ Qed.
     another function stored in a reference cell; the trick is that we
     then smuggle in a reference to itself!
 
-   (\r:Ref (Unit -> Unit).  
-        r := (\x:Unit.(!r) unit); (!r) unit) 
+   (\r:Ref (Unit -> Unit).
+        r := (\x:Unit.(!r) unit); (!r) unit)
    (ref (\x:Unit.unit))
 
    First, [ref (\x:Unit.unit)] creates a reference to a cell of type
@@ -1742,16 +1751,16 @@ Qed.
    function which binds it to the name [r], and assigns to it the
    function [\x:Unit.(!r) unit] -- that is, the function which ignores
    its argument and calls the function stored in [r] on the argument
-   [unit]; but of course, that function is itself!  To start the 
-   divergent loop, we execute the function stored in the cell by 
-   evaluating [(!r) unit]. 
+   [unit]; but of course, that function is itself!  To start the
+   divergent loop, we execute the function stored in the cell by
+   evaluating [(!r) unit].
 
    Here is the divergent term in Coq: *)
 
 Module ExampleVariables.
 
 Open Scope string_scope.
-  
+
 Definition x := "x".
 Definition y := "y".
 Definition r := "r".
@@ -1810,7 +1819,7 @@ Notation "t1 '/' st '==>+' t2 '/' st'" :=
         (at level 40, st at level 39, t2 at level 39).
 
 (** Now, we can show that the expression [loop] reduces to the
-    expression [!(loc 0) unit] and the size-one store 
+    expression [!(loc 0) unit] and the size-one store
     [[r:=(loc 0)]loop_fun]. *)
 
 (** As a convenience, we introduce a slight variant of the [normalize]
@@ -1826,7 +1835,7 @@ Ltac reduce :=
             [ (eauto 10; fail) | (instantiate; compute)];
             try solve [apply multi_refl]).
 
-(** Next, we use [reduce] to show that [loop] steps to 
+(** Next, we use [reduce] to show that [loop] steps to
     [!(loc 0) unit], starting from the empty store. *)
 
 Lemma loop_steps_to_loop_fun :
@@ -1856,7 +1865,7 @@ Qed.
     sure it gives the correct result when applied to the argument
     [4].) *)
 
-Definition factorial : tm 
+Definition factorial : tm
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Lemma factorial_type : empty; nil |- factorial \in (TArrow TNat TNat).

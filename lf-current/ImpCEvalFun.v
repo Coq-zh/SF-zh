@@ -264,6 +264,8 @@ Proof.
     请让你的证明能够将主要想法传达给读者。 *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_ceval_step__ceval_inf : option (prod nat string) := None.
 (** [] *)
 
 Theorem ceval_step_more: forall i1 i2 st st' c,

@@ -154,7 +154,7 @@ Hint Constructors step.
 (** Notice that the [step] relation doesn't care about whether
     expressions make global sense -- it just checks that the operation
     in the _next_ reduction step is being applied to the right kinds
-    of operands.  For example, the term [succ true] (i.e., 
+    of operands.  For example, the term [succ true] (i.e.,
     [tsucc ttrue] in the formal syntax) cannot take a step, but the
     almost as obviously nonsensical term
 
@@ -408,6 +408,8 @@ Proof with auto.
 
       - (* 请在此处解答 *)
  *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_finish_progress_informal : option (prod nat string) := None.
 (** [] *)
 
 (** This theorem is more interesting than the strong progress theorem
@@ -477,6 +479,8 @@ Proof with auto.
 
       - (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_finish_preservation_informal : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 3 stars (preservation_alternate_proof)  *)
@@ -535,7 +539,7 @@ Module NormalizePlayground.
 Import Smallstep.
 
 Example step_example1 :
-  (P (C 3) (P (C 3) (C 4))) 
+  (P (C 3) (P (C 3) (C 4)))
   ==>* (C 10).
 Proof.
   apply multi_step with (P (C 3) (C 7)).
@@ -575,7 +579,7 @@ Tactic Notation "normalize" :=
   apply multi_refl.
 
 Example step_example1'' :
-  (P (C 3) (P (C 3) (C 4))) 
+  (P (C 3) (P (C 3) (C 4)))
   ==>* (C 10).
 Proof.
   normalize.
@@ -583,7 +587,7 @@ Proof.
      a trace of how the expression reduced...
          (P (C 3) (P (C 3) (C 4)) ==>* C 10)
          (P (C 3) (C 7) ==>* C 10)
-         (C 10 ==>* C 10)                      
+         (C 10 ==>* C 10)
   *)
 Qed.
 
@@ -606,7 +610,7 @@ Qed.
 
 (** **** Exercise: 1 star (normalize_ex)  *)
 Theorem normalize_ex : exists e',
-  (P (C 3) (P (C 2) (C 1))) 
+  (P (C 3) (P (C 2) (C 1)))
   ==>* e'.
 Proof.
   (* 请在此处解答 *) Admitted.
@@ -616,7 +620,7 @@ Proof.
 (** For comparison, prove it using [apply] instead of [eapply]. *)
 
 Theorem normalize_ex' : exists e',
-  (P (C 3) (P (C 2) (C 1))) 
+  (P (C 3) (P (C 2) (C 1)))
   ==>* e'.
 Proof.
   (* 请在此处解答 *) Admitted.
@@ -644,6 +648,8 @@ Tactic Notation "normalize" :=
 
     (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_subject_expansion : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars (variation1)  *)
@@ -663,8 +669,10 @@ Tactic Notation "normalize" :=
 
       - Preservation
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_variation1 : option (prod nat string) := None.
+(** [] *)
 
 (** **** Exercise: 2 stars (variation2)  *)
 (** Suppose, instead, that we add this new rule to the [step] relation:
@@ -675,8 +683,10 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_variation2 : option (prod nat string) := None.
+(** [] *)
 
 (** **** Exercise: 2 stars, optional (variation3)  *)
 (** Suppose instead that we add this rule:
@@ -744,6 +754,8 @@ Tactic Notation "normalize" :=
 
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_remove_predzero : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  *)
@@ -758,6 +770,8 @@ Tactic Notation "normalize" :=
 
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_prog_pres_bigstep : option (prod nat string) := None.
 (** [] *)
 
 (** $Date$ *)

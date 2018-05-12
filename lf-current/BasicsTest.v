@@ -1,21 +1,28 @@
 Set Warnings "-notation-overridden,-parsing".
+From Coq Require Export String.
 Require Import Basics.
-Parameter MISSING: Type.   
+Parameter MISSING: Type. 
 
-Module Check.  
+Module Check. 
 
-Ltac check_type A B :=  
-match type of A with  
+Ltac check_type A B := 
+match type of A with 
 | context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]  
-end.  
+| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
+end. 
 
-Ltac print_manual_grade A :=  
-first [  
-match eval compute in A with  
-| ?T => idtac "Score:" T  
-end  
-| idtac "Score: Ungraded"].  
+Ltac print_manual_grade A := 
+match eval compute in A with 
+| Some (pair ?S ?C) => 
+idtac "Score:"  S; 
+match eval compute in C with  
+| ""%string => idtac "Comment: None"  
+| _ => idtac "Comment:" C 
+end 
+| None => 
+idtac "Score: Ungraded"; 
+idtac "Comment: None" 
+end. 
 
 End Check.
 
@@ -134,9 +141,9 @@ Print Assumptions identity_fn_applied_twice.
 Goal True.
 idtac " ".
 
-idtac "#> Manually graded: boolean_functions".
+idtac "#> Manually graded: negation_fn_applied_twice".
 idtac "Possible points: 1".
-print_manual_grade score_boolean_functions.
+print_manual_grade manual_grade_for_negation_fn_applied_twice.
 idtac " ".
 
 idtac "-------------------  binary  --------------------".
@@ -144,7 +151,7 @@ idtac " ".
 
 idtac "#> Manually graded: binary".
 idtac "Possible points: 3".
-print_manual_grade score_binary.
+print_manual_grade manual_grade_for_binary.
 idtac " ".
 
 idtac " ".

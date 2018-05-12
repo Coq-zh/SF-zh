@@ -1,5 +1,5 @@
 (** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
- 
+
 Set Warnings "-notation-overridden,-parsing".
 Require Import Maps.
 Require Import Types.
@@ -242,7 +242,7 @@ Require Import Stlc.
    error code.
 
    These are specific examples of a binary _sum type_ (sometimes called
-   a _disjoint union_), which describes a set of values drawn from 
+   a _disjoint union_), which describes a set of values drawn from
    one of two given types, e.g.:
 
        Nat + Bool
@@ -278,13 +278,13 @@ Require Import Stlc.
 *)
 (** The type [Nat + Unit] above is in fact isomorphic to [option
     nat] in Coq -- i.e., it's easy to write functions that translate
-    back and forth. *) 
+    back and forth. *)
 
 (** To _use_ elements of sum types, we introduce a [case]
     construct (a very simplified form of Coq's [match]) to destruct
     them. For example, the following procedure converts a [Nat+Bool]
     into a [Nat]: *)
-(** 
+(**
 
     getNat =
       \x:Nat+Bool.
@@ -356,7 +356,7 @@ Require Import Stlc.
          Gamma |- case t0 of inl x1 => t1 | inr x2 => t2 : T
 
 
-    We use the type annotation in [inl] and [inr] to make the typing 
+    We use the type annotation in [inl] and [inr] to make the typing
     relation simpler, similarly to what we did for functions. *)
 
 (** Without this extra information, the typing rule [T_Inl], for
@@ -477,21 +477,21 @@ Require Import Stlc.
 
    Note that the right-hand side of this binder mentions the variable
    being bound -- something that is not allowed by our formalization of
-   [let] above.  
+   [let] above.
 
-   Directly formalizing this "recursive definition" mechanism is possible, 
-   but it requires a bit of extra effort: in particular, we'd have to 
-   pass around an "environment" of recursive function definitions in 
+   Directly formalizing this "recursive definition" mechanism is possible,
+   but it requires a bit of extra effort: in particular, we'd have to
+   pass around an "environment" of recursive function definitions in
    the definition of the [step] relation. *)
 
 (** Here is another way of presenting recursive functions that is equally
-    powerful (though not quite as convenient for the programmer) and 
-    more straightforward to formalize: instead of writing recursive 
-    definitions, we define a _fixed-point operator_ called [fix] 
-    that performs the "unfolding" of the recursive definition in the 
-    right-hand side as needed, during reduction.  
+    powerful (though not quite as convenient for the programmer) and
+    more straightforward to formalize: instead of writing recursive
+    definitions, we define a _fixed-point operator_ called [fix]
+    that performs the "unfolding" of the recursive definition in the
+    right-hand side as needed, during reduction.
 
-    For example, instead of 
+    For example, instead of
 
       fact = \x:Nat.
                 if x=0 then 1 else x * (fact (pred x)))
@@ -506,20 +506,20 @@ Require Import Stlc.
 *)
 (** We can derive the latter from the former as follows:
 
-      - In the right-hand side of the definition of [fact], replace 
+      - In the right-hand side of the definition of [fact], replace
         recursive references to [fact] by a fresh variable [f].
 
-      - Add an abstraction binding [f] at the front, with an 
-        appropriate type annotation.  (Since we are using [f] in place 
+      - Add an abstraction binding [f] at the front, with an
+        appropriate type annotation.  (Since we are using [f] in place
         of [fact], which had type [Nat->Nat], we should require [f]
-        to have the same type.)  The new abstraction has type 
+        to have the same type.)  The new abstraction has type
         [(Nat->Nat) -> (Nat->Nat)].
 
-      - Apply [fix] to this abstraction.  This application has  
+      - Apply [fix] to this abstraction.  This application has
         type [Nat->Nat].
 
-      - Use all of this as the right-hand side of an ordinary 
-        [let]-binding for [fact].  
+      - Use all of this as the right-hand side of an ordinary
+        [let]-binding for [fact].
 *)
 
 (** The intuition is that the higher-order function [f] passed
@@ -562,10 +562,10 @@ Require Import Stlc.
 *)
 
 (** Let's see how [ST_FixAbs] works by reducing [fact 3 = fix F 3],
-    where 
+    where
 
     F = (\f. \x. if x=0 then 1 else x * (f (pred x)))
->> 
+
     (type annotations are omitted for brevity).
 
     fix F 3
@@ -730,9 +730,9 @@ Require Import Stlc.
            | {i1:T1, ..., in:Tn}         record type
            | ...
 
-   The generalization from products should be pretty obvious.  But 
+   The generalization from products should be pretty obvious.  But
    it's worth noticing the ways in which what we've actually written is
-   even _more_ informal than the informal syntax we've used in previous 
+   even _more_ informal than the informal syntax we've used in previous
    sections and chapters: we've used "[...]" in several places to mean "any
    number of these," and we've omitted explicit mention of the usual
    side condition that the labels of a record should not contain any
@@ -808,7 +808,7 @@ Require Import Stlc.
 (* ----------------------------------------------------------------- *)
 (** *** Encoding Records (Optional) *)
 
-(** Let's see how records can be encoded using just pairs and [unit].  
+(** Let's see how records can be encoded using just pairs and [unit].
 
     First, observe that we can encode arbitrary-size _tuples_ using
     nested pairs and the [unit] value.  To avoid overloading the pair
@@ -922,7 +922,7 @@ Require Import Stlc.
      - unit
 
     You need to complete the implementations for:
-     - pairs 
+     - pairs
      - let (which involves binding)
      - [fix]
 
@@ -1322,8 +1322,8 @@ Example typechecks :
   empty |- test \in TNat.
 Proof.
   unfold test.
-  (* This typing derivation is quite deep, so we need 
-     to increase the max search depth of [auto] from the 
+  (* This typing derivation is quite deep, so we need
+     to increase the max search depth of [auto] from the
      default 5 to 10. *)
   auto 10.
 Qed.
@@ -1667,20 +1667,20 @@ Proof with eauto.
   generalize dependent HeqGamma.
   induction Ht; intros HeqGamma; subst.
   - (* T_Var *)
-    (* The final rule in the given typing derivation cannot be 
-       [T_Var], since it can never be the case that 
+    (* The final rule in the given typing derivation cannot be
+       [T_Var], since it can never be the case that
        [empty |- x : T] (since the context is empty). *)
     inversion H.
   - (* T_Abs *)
-    (* If the [T_Abs] rule was the last used, then 
+    (* If the [T_Abs] rule was the last used, then
        [t = tabs x T11 t12], which is a value. *)
     left...
   - (* T_App *)
-    (* If the last rule applied was T_App, then [t = t1 t2], 
+    (* If the last rule applied was T_App, then [t = t1 t2],
        and we know from the form of the rule that
          [empty |- t1 : T1 -> T2]
          [empty |- t2 : T1]
-       By the induction hypothesis, each of t1 and t2 either is 
+       By the induction hypothesis, each of t1 and t2 either is
        a value or can take a step. *)
     right.
     destruct IHHt1; subst...
@@ -1688,17 +1688,17 @@ Proof with eauto.
       destruct IHHt2; subst...
       * (* t2 is a value *)
         (* If both [t1] and [t2] are values, then we know that
-           [t1 = tabs x T11 t12], since abstractions are the 
+           [t1 = tabs x T11 t12], since abstractions are the
            only values that can have an arrow type.  But
            [(tabs x T11 t12) t2 ==> [x:=t2]t12] by [ST_AppAbs]. *)
         inversion H; subst; try solve_by_invert.
         exists (subst x t2 t12)...
       * (* t2 steps *)
-        (* If [t1] is a value and [t2 ==> t2'], 
+        (* If [t1] is a value and [t2 ==> t2'],
            then [t1 t2 ==> t1 t2'] by [ST_App2]. *)
         inversion H0 as [t2' Hstp]. exists (tapp t1 t2')...
     + (* t1 steps *)
-      (* Finally, If [t1 ==> t1'], then [t1 t2 ==> t1' t2] 
+      (* Finally, If [t1 ==> t1'], then [t1 t2 ==> t1' t2]
          by [ST_App1]. *)
       inversion H as [t1' Hstp]. exists (tapp t1' t2)...
   - (* T_Nat *)
@@ -1967,7 +1967,7 @@ Proof with eauto.
      Gamma |- [x:=v]t : S. *)
   intros Gamma x U v t S Htypt Htypv.
   generalize dependent Gamma. generalize dependent S.
-  (* Proof: By induction on the term t.  Most cases follow 
+  (* Proof: By induction on the term t.  Most cases follow
      directly from the IH, with the exception of tvar
      and tabs. These aren't automatic because we must
      reason about how the variables interact. *)
@@ -1985,9 +1985,9 @@ Proof with eauto.
     unfold update, t_update in H1.
     destruct (beq_stringP x y).
     + (* x=y *)
-      (* If [x = y], then we know that [U = S], and that 
-         [[x:=v]y = v].  So what we really must show is 
-         that if [empty |- v : U] then [Gamma |- v : U].  
+      (* If [x = y], then we know that [U = S], and that
+         [[x:=v]y = v].  So what we really must show is
+         that if [empty |- v : U] then [Gamma |- v : U].
          We have already proven a more general version
          of this theorem, called context invariance. *)
       subst.
@@ -2022,14 +2022,14 @@ Proof with eauto.
     + (* x=y *)
     (* If [x = y], then the substitution has no effect.  Context
        invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
-       equivalent.  Since the former context shows that 
+       equivalent.  Since the former context shows that
        [t0 : T12], so does the latter. *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
       destruct (beq_string y x)...
     + (* x<>y *)
-      (* If [x <> y], then the IH and context invariance allow 
+      (* If [x <> y], then the IH and context invariance allow
          us to show that
            [Gamma,x:U,y:T11 |- t0 : T12]       =>
            [Gamma,y:T11,x:U |- t0 : T12]       =>
@@ -2103,19 +2103,19 @@ Theorem preservation : forall t t' T,
      empty |- t' \in T.
 Proof with eauto.
   intros t t' T HT.
-  (* Theorem: If [empty |- t : T] and [t ==> t'], then 
+  (* Theorem: If [empty |- t : T] and [t ==> t'], then
      [empty |- t' : T]. *)
   remember empty as Gamma. generalize dependent HeqGamma.
   generalize dependent t'.
-  (* Proof: By induction on the given typing derivation.  Many 
-     cases are contradictory ([T_Var], [T_Abs]).  We show just 
+  (* Proof: By induction on the given typing derivation.  Many
+     cases are contradictory ([T_Var], [T_Abs]).  We show just
      the interesting ones. *)
   induction HT;
     intros t' HeqGamma HE; subst; inversion HE; subst...
   - (* T_App *)
-    (* If the last rule used was [T_App], then [t = t1 t2], and 
-       three rules could have been used to show [t ==> t']: 
-       [ST_App1], [ST_App2], and [ST_AppAbs]. In the first two 
+    (* If the last rule used was [T_App], then [t = t1 t2], and
+       three rules could have been used to show [t ==> t']:
+       [ST_App1], [ST_App2], and [ST_AppAbs]. In the first two
        cases, the result follows directly from the IH. *)
     inversion HE; subst...
     + (* ST_AppAbs *)
@@ -2128,7 +2128,7 @@ Proof with eauto.
              [empty |- tabs x T11 t12 : T1->T2]
          and by inversion
              [x:T1 |- t12 : T2]
-         We have already proven that substitution preserves 
+         We have already proven that substitution preserves
          typing, and
              [empty |- v2 : T1]
          by assumption, so we are done. *)
@@ -2155,6 +2155,8 @@ Proof with eauto.
 Qed.
 
 End STLCExtended.
+(* Do not modify the following line: *)
+Definition manual_grade_for_STLC_extensions : option (prod nat string) := None.
 (** [] *)
 
 (** $Date$ *)

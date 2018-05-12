@@ -561,6 +561,8 @@ Proof.
 (** **** Exercise: 2 stars, advanced (beq_nat_true_informal)  *)
 (** Give a careful informal proof of [beq_nat_true], being as explicit
     as possible about quantifiers. *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_informal_proof : option (prod nat string) := None.
 
 (* 请在此处解答 *)
 (** [] *)
@@ -1051,6 +1053,8 @@ Definition split_combine_statement : Prop
 Theorem split_combine : split_combine_statement.
 Proof.
 (* 请在此处解答 *) Admitted.
+(* Do not modify the following line: *)
+Definition manual_grade_for_split_combine : option (prod nat string) := None.
 
 (** [] *)
 
@@ -1097,6 +1101,8 @@ Proof.
     [existsb'] and [existsb] have the same behavior. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_forall_exists_challenge : option (prod nat string) := None.
 (** [] *)
 
 

@@ -16,11 +16,12 @@
  to reasoning about algorithms and data structures.
  *)
 
+Require Import Coq.Strings.String.
 Require Export Coq.Bool.Bool.
 Require Export Coq.Arith.Arith.
 Require Export Coq.Arith.EqNat.
 Require Export Coq.omega.Omega.
-Require Export Coq.Lists.List. 
+Require Export Coq.Lists.List.
 Export ListNotations.
 Require Export Permutation.
 
@@ -46,7 +47,7 @@ Locate "<?".     (* x <? y  := Nat.ltb x y *)
 Check Nat.ltb_lt.
 (* : forall n m : nat, (n <? m) = true <-> n < m *)
 
-(** For some reason, the Coq library has [ <? ] and [ <=? ] 
+(** For some reason, the Coq library has [ <? ] and [ <=? ]
     notations, but is missing these three: *)
 
 Notation  "a >=? b" := (Nat.leb b a)
@@ -90,9 +91,9 @@ Qed.
     Suppose you have this simple program, [(if a <? 5 then a else 2)],
     and you want to prove that it evaluates to a number smaller than 6.
     You can use [blt_reflect] "by hand": *)
-    
+
 Example reflect_example1: forall a, (if a<?5 then a else 2) < 6.
-Proof. 
+Proof.
   intros.
   destruct (blt_reflect a 5) as [H|H].
   * (* Notice that [H] above the line has a [Prop]ositional
@@ -133,7 +134,7 @@ Ltac bdestruct X :=
      are more examples later. *)
 
 Example reflect_example2: forall a, (if a<?5 then a else 2) < 6.
-Proof. 
+Proof.
   intros.
   bdestruct (a<?5).  (* instead of: [destruct (blt_reflect a 5) as [H|H]]. *)
   * (* Notice that [H] above the line has a [Prop]ositional
@@ -153,18 +154,18 @@ Qed.
     [inversion] typically creates some equality facts, why not then
     [subst] ?   This motivates the following useful tactic, [inv]:  *)
 
-Ltac inv H := inversion H; clear H; subst. 
+Ltac inv H := inversion H; clear H; subst.
 
 (* ================================================================= *)
 (** ** Linear Integer Inequalities *)
 
-(** In our proofs about searching and sorting algorithms, we 
-    sometimes have to reason about the consequences of 
+(** In our proofs about searching and sorting algorithms, we
+    sometimes have to reason about the consequences of
     less-than and greater-than.  Here's a contrived example. *)
 
 Module Exploration1.
 
-Theorem omega_example1: 
+Theorem omega_example1:
  forall i j k,
     i < j ->
     ~ (k - 3 <= j) ->
@@ -176,10 +177,10 @@ Proof.
     Here's the hard way. *)
 
   (* try to remember the name of the lemma about negation and [<=] *)
-  Search (~ _ <= _ -> _). 
+  Search (~ _ <= _ -> _).
   apply not_le in H0.
   (* try to remember the name of the transitivity lemma about [>] *)
-  Search (_ > _ -> _ > _ -> _ > _).  
+  Search (_ > _ -> _ > _ -> _ > _).
   apply gt_trans with j.
   apply gt_trans with (k-3).
   (* _OBVIOUSLY_, [k] is greater than [k-3].  But _OOPS_,
@@ -190,16 +191,16 @@ Abort.
 Theorem bogus_subtraction: ~ (forall k:nat, k > k - 3).
 Proof.
   (* [intro] introduces exactly one thing, like [intros ?] *)
-  intro.  
+  intro.
   (* [specialize] applies a hypothesis to an argument *)
-  specialize (H O).  
+  specialize (H O).
   simpl in H. inversion H.
 Qed.
 
 (** With bogus subtraction, this omega_example1 theorem even True?
     Yes it is; let's try again, the hard way, to find the proof. *)
 
-Theorem omega_example1: 
+Theorem omega_example1:
  forall i j k,
     i < j ->
     ~ (k - 3 <= j) ->
@@ -210,7 +211,7 @@ Proof. (* try again! *)
   unfold gt in H0.
   unfold gt.
   (* try to remember the name ... *)
-  Search (_ < _ -> _ <= _ -> _ < _).  
+  Search (_ < _ -> _ <= _ -> _ < _).
   apply lt_le_trans with j.
   apply H.
   apply le_trans with (k-3).
@@ -222,7 +223,7 @@ Qed.  (* Oof!  That was exhausting and tedious.  *)
 
 (** And here's the easy way. *)
 
-Theorem omega_example2: 
+Theorem omega_example2:
  forall i j k,
     i < j ->
     ~ (k - 3 <= j) ->
@@ -248,7 +249,7 @@ Qed.
     Omega does _not_ understand other operators.  It treats things
     like [a*b] and [f x y] as if they were variables.  That is, it can
     prove [f x y > a*b -> f x y + 3 >= a*b], in the same way it would
-    prove [u > v -> u+3 >= v]. 
+    prove [u > v -> u+3 >= v].
 
     Now let's consider a silly little program: swap the first two
     elements of a list, if they are out of order. *)
@@ -388,7 +389,7 @@ Proof.
   reflexivity.
   simpl.
   bdestruct (b <? a).
-* 
+*
   simpl.
   bdestruct (a <? b).
   omega.
@@ -413,21 +414,21 @@ Locate Permutation. (* Inductive Coq.Sorting.Permutation.Permutation *)
 Check Permutation. (*  : forall {A : Type}, list A -> list A -> Prop *)
 
 (** We say "list [al] is a permutation of list [bl]",
-     written [Permutation al bl], if the elements of [al] can be 
+     written [Permutation al bl], if the elements of [al] can be
      reordered (without insertions or deletions) to get the list [bl]. *)
 
-Print Permutation. 
+Print Permutation.
 (*
  Inductive Permutation {A : Type} : list A -> list A -> Prop :=
     perm_nil : Permutation [] []
   | perm_skip : forall (x : A) (l l' : list A),
-                Permutation l l' -> 
+                Permutation l l' ->
                 Permutation (x :: l) (x :: l')
   | perm_swap : forall (x y : A) (l : list A),
                 Permutation (y :: x :: l) (x :: y :: l)
   | perm_trans : forall l l' l'' : list A,
-                 Permutation l l' -> 
-                 Permutation l' l'' -> 
+                 Permutation l l' ->
+                 Permutation l' l'' ->
                  Permutation l l''.
 *)
 
@@ -451,7 +452,7 @@ Print Permutation.
      - 1. If [Permutation al bl], then [length al = length bl].
      - 2. If [Permutation al bl], then [Permutation bl al].
      - 3. [[1;1]] is NOT a permutation of [[1;2]].
-     - 4. [[1;2;3;4]] IS a permutation of [[3;4;2;1]]. 
+     - 4. [[1;2;3;4]] IS a permutation of [[3;4;2;1]].
 
    YOUR ASSIGNMENT: Add three more properties. Write them here: *)
 
@@ -464,12 +465,14 @@ Search Permutation.  (* Browse through the results of this query! *)
     been proved as theorems by the Coq library developers?  Answer
     here:
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_Permutation_properties : option (prod nat string) := None.
+(** [] *)
 
 (** Let's use the permutation rules in the library to prove the
     following theorem. *)
-    
+
 Example butterfly: forall b u t e r f l y : nat,
   Permutation ([b;u;t;t;e;r]++[f;l;y]) ([f;l;u;t;t;e;r]++[b;y]).
 Proof.
@@ -477,7 +480,7 @@ Proof.
  (* Just to illustrate a method, let's group [u;t;t;e;r] together: *)
  change [b;u;t;t;e;r] with ([b]++[u;t;t;e;r]).
  change [f;l;u;t;t;e;r] with ([f;l]++[u;t;t;e;r]).
- remember [u;t;t;e;r] as utter. 
+ remember [u;t;t;e;r] as utter.
  clear Hequtter.
  (* Next, let's cancel [utter] from both sides.  In order to do that,
     we need to bring [utter] to the beginning of each list. *)
@@ -506,7 +509,7 @@ Search (Permutation (_::_) (_::_)).
 Qed.
 
 (** That example illustrates a general method for proving
-  permutations involving cons [::] and append [++].  
+  permutations involving cons [::] and append [++].
   You identify some portion appearing in both sides;
   you bring that portion to the front on each side using
   lemmas such as [Permutation_app_comm] and [perm_swap],
@@ -573,7 +576,7 @@ Definition first_le_second (al: list nat) : Prop :=
   end.
 
 Theorem maybe_swap_correct: forall al,
-    Permutation al (maybe_swap al) 
+    Permutation al (maybe_swap al)
     /\ first_le_second (maybe_swap al).
 Proof.
   intros.
@@ -612,7 +615,7 @@ End Exploration1.
 Theorem Forall_perm: forall {A} (f: A -> Prop) al bl,
   Permutation al bl ->
   Forall f al -> Forall f bl.
-Proof. 
+Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 

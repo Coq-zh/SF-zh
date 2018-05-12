@@ -178,6 +178,8 @@ Proof.
 
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_destruct_induction : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -333,6 +335,8 @@ Proof.
 
     Proof: (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_plus_comm_informal : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (beq_nat_refl_informal)  *)
@@ -469,6 +473,8 @@ Proof.
     请自便！ *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_commute : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced (binary_inverse)  *)
@@ -488,6 +494,8 @@ Proof.
     再次说明，如果对此有帮助的话，请随意更改你之前的定义。 *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_inverse : option (prod nat string) := None.
 (** [] *)
 
 

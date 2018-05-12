@@ -20,7 +20,7 @@ Require Import Types.
 (* ################################################################# *)
 (** * Overview *)
 
-(** The STLC is built on some collection of _base types_: 
+(** The STLC is built on some collection of _base types_:
     booleans, numbers, strings, etc.  The exact choice of base types
     doesn't matter much -- the construction of the language and its
     theoretical properties work out the same no matter what we
@@ -129,7 +129,7 @@ Require Import Types.
 
       - [(\x:Bool. x) true] has type [Bool]
 
-      - [\x:Bool. \y:Bool. x] has type [Bool->Bool->Bool] 
+      - [\x:Bool. \y:Bool. x] has type [Bool->Bool->Bool]
                               (i.e., [Bool -> (Bool->Bool)])
 
       - [(\x:Bool. \y:Bool. x) false] has type [Bool->Bool]
@@ -169,7 +169,7 @@ Inductive tm : Type :=
     not considering type inference here. *)
 
 Open Scope string_scope.
-     
+
 (** Some examples... *)
 
 Definition x := "x".
@@ -270,8 +270,8 @@ Hint Constructors value.
     in a STLC term.  A complete program is _closed_ -- that is, it
     contains no free variables.
 
-    (Conversely, a term with free variables is often called an _open 
-    term_.) 
+    (Conversely, a term with free variables is often called an _open
+    term_.)
 
     Having made the choice not to reduce under abstractions, we don't
     need to worry about whether variables are values, since we'll
@@ -304,7 +304,7 @@ Hint Constructors value.
 
 (** Here are some examples:
 
-      - [[x:=true] (if x then x else false)] 
+      - [[x:=true] (if x then x else false)]
            yields [if true then true else false]
 
       - [[x:=true] x] yields [true]
@@ -315,7 +315,7 @@ Hint Constructors value.
 
       - [[x:=true] false] yields [false] (vacuous substitution)
 
-      - [[x:=true] (\y:Bool. if y then x else false)] 
+      - [[x:=true] (\y:Bool. if y then x else false)]
            yields [\y:Bool. if y then true else false]
 
       - [[x:=true] (\y:Bool. x)] yields [\y:Bool. true]
@@ -530,8 +530,8 @@ Proof.
 
 (** Example:
 
-      (\x:Bool->Bool. x) 
-         (\x:Bool. if x then false else true) 
+      (\x:Bool->Bool. x)
+         (\x:Bool. if x then false else true)
          true
             ==>* false
 
@@ -552,7 +552,7 @@ Proof.
 
 (** Example:
 
-      (\x:Bool -> Bool. x) 
+      (\x:Bool -> Bool. x)
          ((\x:Bool. if x then false else true) true)
             ==>* false
 

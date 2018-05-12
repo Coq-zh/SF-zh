@@ -76,7 +76,7 @@ Require Import Smallstep.
     superinterface), plus possibly some more.
 
     The fact that an object from a subclass can be used in place of
-    one from a superclass provides a degree of flexibility that is 
+    one from a superclass provides a degree of flexibility that is
     extremely handy for organizing complex libraries.  For example, a
     GUI toolkit like Java's Swing framework might define an abstract
     interface [Component] that collects together the common fields and
@@ -139,8 +139,8 @@ Require Import Smallstep.
 
 (** To start off, we impose two "structural rules" that are
     independent of any particular type constructor: a rule of
-    _transitivity_, which says intuitively that, if [S] is 
-    better (richer, safer) than [U] and [U] is better than [T], 
+    _transitivity_, which says intuitively that, if [S] is
+    better (richer, safer) than [U] and [U] is better than [T],
     then [S] is better than [T]...
 
                               S <: U    U <: T
@@ -158,7 +158,7 @@ Require Import Smallstep.
 (** *** Products *)
 
 (** Now we consider the individual type constructors, one by one,
-    beginning with product types.  We consider one pair to be a subtype 
+    beginning with product types.  We consider one pair to be a subtype
     of another if each of its components is.
 
                             S1 <: T1    S2 <: T2
@@ -169,14 +169,14 @@ Require Import Smallstep.
 (* ----------------------------------------------------------------- *)
 (** *** Arrows *)
 
-(** The subtyping rule for arrows is a little less intuitive.  
+(** The subtyping rule for arrows is a little less intuitive.
     Suppose we have functions [f] and [g] with these types:
 
        f : C -> Student
        g : (C->Person) -> D
 
     That is, [f] is a function that yields a record of type [Student],
-    and [g] is a (higher-order) function that expects its argument to be 
+    and [g] is a (higher-order) function that expects its argument to be
     a function yielding a record of type [Person].  Also suppose that
     [Student] is a subtype of [Person].  Then the application [g f] is
     safe even though their types do not match up precisely, because
@@ -242,7 +242,7 @@ Require Import Smallstep.
     field will simply be ignored.  For example,
 
     {name:String, age:Nat, gpa:Nat} <: {name:String, age:Nat}
-    {name:String, age:Nat} <: {name:String} 
+    {name:String, age:Nat} <: {name:String}
     {name:String} <: {}
 
     This is known as "width subtyping" for records. *)
@@ -275,10 +275,10 @@ Require Import Smallstep.
 
     That is, the record on the left should have all the field labels of
     the one on the right (and possibly more), while the types of the
-    common fields should be in the subtype relation. 
+    common fields should be in the subtype relation.
 
-    However, this rule is rather heavy and hard to read, so it is often 
-    decomposed into three simpler rules, which can be combined using 
+    However, this rule is rather heavy and hard to read, so it is often
+    decomposed into three simpler rules, which can be combined using
     [S_Trans] to achieve all the same effects. *)
 
 (** First, adding fields to the end of a record type gives a subtype:
@@ -342,11 +342,13 @@ Require Import Smallstep.
        g : (Person -> Nat) -> Nat
 
     ... such that the application [g f] will get stuck during
-    execution.  (Use informal syntax.  No need to prove formally that 
+    execution.  (Use informal syntax.  No need to prove formally that
     the application gets stuck.)
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_arrow_sub_wrong : option (prod nat string) := None.
+(** [] *)
 
 (* ----------------------------------------------------------------- *)
 (** *** Top *)
@@ -452,8 +454,10 @@ Where does the type [Top->Top->Student] fit into this order?
 That is, state how [Top -> (Top -> Student)] compares with each
 of the five types above. It may be unrelated to some of them.
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_subtype_order : option (prod nat string) := None.
+(** [] *)
 
 (** **** Exercise: 1 star (subtype_instances_tf_2)  *)
 (** Which of the following statements are true?  Write _true_ or
@@ -484,6 +488,8 @@ of the five types above. It may be unrelated to some of them.
            exists S1 S2,
               S = S1*S2  /\  S1 <: T1  /\  S2 <: T2  
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_subtype_instances_tf_2 : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 1 star (subtype_concepts_tf)  *)
@@ -514,13 +520,15 @@ of the five types above. It may be unrelated to some of them.
       [S0], [S1], etc., such that all the [Si]'s are different and
       each [S(i+1)] is a supertype of [Si].
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_subtype_concepts_tf : option (prod nat string) := None.
+(** [] *)
 
 (** **** Exercise: 2 stars (proper_subtypes)  *)
 (** Is the following statement true or false?  Briefly explain your
-    answer.  (Here [TBase n] stands for a base type, where [n] is 
-    a string standing for the name of the base type.  See the 
+    answer.  (Here [TBase n] stands for a base type, where [n] is
+    a string standing for the name of the base type.  See the
     Syntax section below.)
 
     forall T,
@@ -528,6 +536,8 @@ of the five types above. It may be unrelated to some of them.
          exists S,
             S <: T  /\  S <> T
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_proper_subtypes : option (prod nat string) := None.
 (** [] *)
 
 
@@ -543,8 +553,10 @@ of the five types above. It may be unrelated to some of them.
 
    - What is the _largest_ type [T] that makes the same assertion true?
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_small_large_1 : option (prod nat string) := None.
+(** [] *)
 
 (** **** Exercise: 2 stars (small_large_2)  *)
 (**
@@ -556,8 +568,10 @@ of the five types above. It may be unrelated to some of them.
 
    - What is the _largest_ type [T] that makes the same assertion true?
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_small_large_2 : option (prod nat string) := None.
+(** [] *)
 
 (** **** Exercise: 2 stars, optional (small_large_3)  *)
 (**
@@ -584,8 +598,10 @@ of the five types above. It may be unrelated to some of them.
    - What is the _largest_ type [T] that makes the same
      assertion true?
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_small_large_4 : option (prod nat string) := None.
+(** [] *)
 
 (** **** Exercise: 2 stars (smallest_1)  *)
 (** What is the _smallest_ type [T] that makes the following
@@ -594,6 +610,8 @@ of the five types above. It may be unrelated to some of them.
       exists S, exists t,
         empty |- (\x:T. x x) t : S
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_smallest_1 : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars (smallest_2)  *)
@@ -602,6 +620,8 @@ of the five types above. It may be unrelated to some of them.
 
       empty |- (\x:Top. x) ((\z:A.z) , (\z:B.z)) : T
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_smallest_2 : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (count_supertypes)  *)
@@ -621,7 +641,7 @@ of the five types above. It may be unrelated to some of them.
                             --------------------                        (S_Prod)
                                S1*S2 <: T1*T2
 
-    intuitively corresponds to the "depth" subtyping rule for records. 
+    intuitively corresponds to the "depth" subtyping rule for records.
     Extending the analogy, we might consider adding a "permutation" rule
 
                                    --------------
@@ -629,8 +649,10 @@ of the five types above. It may be unrelated to some of them.
 
     for products.  Is this a good idea? Briefly explain why or why not.
 
-
-    [] *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_pair_permutation : option (prod nat string) := None.
+(** [] *)
 
 (* ################################################################# *)
 (** * Formal Definitions *)
@@ -778,7 +800,7 @@ Hint Constructors subtype.
 
 Module Examples.
 
-Open Scope string_scope.  
+Open Scope string_scope.
 Notation x := "x".
 Notation y := "y".
 Notation z := "z".
@@ -797,13 +819,13 @@ Example subtyping_example_0 :
 Proof. auto. Qed.
 
 (** **** Exercise: 2 stars, optional (subtyping_judgements)  *)
-(** (Wait to do this exercise until after you have added product types to 
-    the language -- see exercise [products] -- at least up to this point 
+(** (Wait to do this exercise until after you have added product types to
+    the language -- see exercise [products] -- at least up to this point
     in the file).
 
     Recall that, in chapter [MoreStlc], the optional section "Encoding
     Records" describes how records can be encoded as pairs.
-    Using this encoding, define pair types representing the following 
+    Using this encoding, define pair types representing the following
     record types:
 
     Person   := { name : String }
@@ -812,11 +834,11 @@ Proof. auto. Qed.
     Employee := { name : String ;
                   ssn  : Integer }
 *)
-Definition Person : ty 
+Definition Person : ty
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
-Definition Student : ty 
+Definition Student : ty
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
-Definition Employee : ty 
+Definition Employee : ty
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 (** Now use the definition of the subtype relation to prove the following: *)
@@ -1066,7 +1088,7 @@ Qed.
         Then [t1 t2 ==> t1 t2'] by rule [ST_App2] because [t1] is a
         value.
 
-      - Finally, suppose [t1] and [t2] are both values.  By the 
+      - Finally, suppose [t1] and [t2] are both values.  By the
         canonical forms lemma for arrow types, we know that [t1] has the
         form [\x:S1.s2] for some [x], [S1], and [s2].  But then
         [(\x:S1.s2) t2 ==> [x:=t2]s2] by [ST_AppAbs], since [t2] is a
@@ -1087,8 +1109,8 @@ Qed.
     - If the final step of the derivation is by [T_Sub], then there is
       a type [S] such that [S <: T] and [empty |- t : S].  The desired
       result is exactly the induction hypothesis for the typing
-      subderivation. 
-   
+      subderivation.
+
     Formally: *)
 
 Theorem progress : forall t T,
@@ -1163,13 +1185,13 @@ Qed.
        S].  The IH for the typing subderivation tell us that there is
        some type [S2] with [S1 -> S2 <: S] and [Gamma, x:S1 |- t2 :
        S2].  Picking type [S2] gives us what we need, since [S1 -> S2
-       <: T] then follows by [S_Trans]. 
+       <: T] then follows by [S_Trans].
 
     Formally: *)
 
 Lemma typing_inversion_abs : forall Gamma x S1 t2 T,
      Gamma |- (tabs x S1 t2) \in T ->
-     exists S2, 
+     exists S2,
        TArrow S1 S2 <: T
        /\ Gamma & {{x-->S1}} |- t2 \in S2.
 Proof with eauto.
@@ -1522,7 +1544,7 @@ Qed.
 
     - Suppose we add the following typing rule:
 
-                            Gamma |- t : S1->S2 
+                            Gamma |- t : S1->S2
                     S1 <: T1     T1 <: S1      S2 <: T2
                     -----------------------------------    (T_Funny1)
                             Gamma |- t : T1->T2
@@ -1530,45 +1552,47 @@ Qed.
 
     - Suppose we add the following reduction rule:
 
-                             --------------------         (ST_Funny21) 
+                             --------------------         (ST_Funny21)
                              unit ==> (\x:Top. x)
 
 
     - Suppose we add the following subtyping rule:
 
-                               ----------------          (S_Funny3) 
+                               ----------------          (S_Funny3)
                                Unit <: Top->Top
 
 
     - Suppose we add the following subtyping rule:
 
-                               ----------------          (S_Funny4) 
+                               ----------------          (S_Funny4)
                                Top->Top <: Unit
 
 
     - Suppose we add the following reduction rule:
 
-                             ---------------------      (ST_Funny5) 
+                             ---------------------      (ST_Funny5)
                              (unit t) ==> (t unit)
 
 
     - Suppose we add the same reduction rule _and_ a new typing rule:
 
-                             ---------------------       (ST_Funny5) 
+                             ---------------------       (ST_Funny5)
                              (unit t) ==> (t unit)
 
-                           ------------------------      (T_Funny6) 
+                           ------------------------      (T_Funny6)
                            empty |- unit : Top->Top
 
 
     - Suppose we _change_ the arrow subtyping rule to:
 
                           S1 <: T1 S2 <: T2
-                          -----------------              (S_Arrow') 
+                          -----------------              (S_Arrow')
                           S1->S2 <: T1->T2
 
- 
+
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_variations : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -1593,7 +1617,7 @@ Qed.
     - (Copy and) extend the subtyping relation with this rule:
 
                         S1 <: T1 S2 <: T2
-                        --------------------- (Sub_Prod) 
+                        --------------------- (Sub_Prod)
                         S1 * S2 <: T1 * T2
 
     - Extend the typing relation with the same rules for pairs and
@@ -1628,12 +1652,16 @@ Inductive tm : Type :=
 (** Copy and extend and/or fill in required definitions and lemmas
     here. *)
 
+(* Do not modify the following line: *)
+Definition manual_grade_for_progress : option (prod nat string) := None.
 Theorem progress : forall t T,
      empty |- t \in T ->
      value t \/ exists t', t ==> t'.
 Proof.
   (* 请在此处解答 *) Admitted.
 
+(* Do not modify the following line: *)
+Definition manual_grade_for_preservation : option (prod nat string) := None.
 Theorem preservation : forall t t' T,
      empty |- t \in T  ->
      t ==> t'  ->
@@ -1641,7 +1669,7 @@ Theorem preservation : forall t t' T,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-End ProductExtension.  
+End ProductExtension.
 (** [] *)
 
 (** $Date$ *)

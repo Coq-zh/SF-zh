@@ -1,7 +1,7 @@
 (** * Binom: Binomial Queues *)
 
 (** Implementation and correctness proof of fast mergeable priority queues
-   using binomial queues. 
+   using binomial queues.
 
   Operation [empty] is constant time,  [insert], [delete_max], and [merge]
   are logN time.  (Well, except that comparisons on [nat] take linear time.
@@ -14,7 +14,7 @@
   by Andrew W. Appel, 2016.
 
   Binomial Queues http://www.cs.princeton.edu/~appel/BQ.pdf
-  Section 9.7 of _Algorithms 3rd Edition in Java, Parts 1-4: 
+  Section 9.7 of _Algorithms 3rd Edition in Java, Parts 1-4:
     Fundamentals, Data Structures, Sorting, and Searching_,
   by Robert Sedgewick.  Addison-Wesley, 2002.
 *)
@@ -22,6 +22,7 @@
 (* ################################################################# *)
 (** * The Program *)
 
+Require Import Coq.Strings.String.
 Require Import Perm.
 Require Import Priqueue.
 
@@ -47,13 +48,13 @@ Definition empty : priqueue := nil.
 
 Definition smash (t u:  tree) : tree :=
   match t , u with
-  |  Node x t1 Leaf, Node y u1 Leaf => 
+  |  Node x t1 Leaf, Node y u1 Leaf =>
                    if  x >? y then Node x (Node y u1 t1) Leaf
                                 else Node y (Node x t1 u1) Leaf
   | _ , _ => Leaf  (* arbitrary bogus tree *)
   end.
 
-Fixpoint carry (q: list tree) (t: tree) : list tree := 
+Fixpoint carry (q: list tree) (t: tree) : list tree :=
   match q, t with
   | nil, Leaf        => nil
   | nil, _            => t :: nil
@@ -62,19 +63,19 @@ Fixpoint carry (q: list tree) (t: tree) : list tree :=
   | u :: q', _       => Leaf :: carry q' (smash t u)
  end.
 
-Definition insert (x: key) (q: priqueue) : priqueue := 
+Definition insert (x: key) (q: priqueue) : priqueue :=
      carry q (Node x Leaf Leaf).
 
 Eval compute in fold_left (fun x q =>insert q x) [3;1;4;1;5;9;2;3;5] empty.
-(**  
+(** 
     = [Node 5 Leaf Leaf;
        Leaf;
        Leaf;
        Node 9
           (Node 4 (Node 3 (Node 1 Leaf Leaf) (Node 1 Leaf Leaf))
-             (Node 3 (Node 2 Leaf Leaf) (Node 5 Leaf Leaf))) 
+             (Node 3 (Node 2 Leaf Leaf) (Node 5 Leaf Leaf)))
           Leaf]
-     : priqueue 
+     : priqueue
 >> *)
 
 Fixpoint join (p q: priqueue) (c: tree) : priqueue :=
@@ -96,7 +97,7 @@ Fixpoint unzip (t: tree) (cont: priqueue -> priqueue) : priqueue :=
   end.
 
 Definition heap_delete_max (t: tree) : priqueue :=
-  match t with 
+  match t with
     Node x t1 Leaf  => unzip t1 (fun u => u)
   | _ => nil   (* bogus value for ill-formed or empty trees *)
   end.
@@ -151,7 +152,7 @@ Fixpoint pow2heap' (n: nat) (m: key) (t: tree) :=
 
 (** [t] is a power-of-2 heap of depth [n] *)
 
-Definition pow2heap (n: nat) (t: tree) := 
+Definition pow2heap (n: nat) (t: tree) :=
   match t with
     Node m t1 Leaf => pow2heap' n m t1
   | _ => False
@@ -160,7 +161,7 @@ Definition pow2heap (n: nat) (t: tree) :=
 (** [l] is the [i]th tail of a binomial heap *)
 
 Fixpoint priq'  (i: nat) (l: list tree) : Prop :=
-   match l with 
+   match l with
   | t :: l' => (t=Leaf \/ pow2heap i t) /\ priq' (S i) l'
   | nil => True
  end.
@@ -190,8 +191,8 @@ Theorem smash_valid:
 (** [] *)
 
 (** **** Exercise: 3 stars (carry_valid)  *)
-Theorem carry_valid: 
-           forall n q,  priq' n q -> 
+Theorem carry_valid:
+           forall n q,  priq' n q ->
            forall t, (t=Leaf \/ pow2heap n t) -> priq' n (carry q t).
 (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -228,14 +229,14 @@ Theorem delete_max_Some_priq:
 Inductive tree_elems: tree -> list key -> Prop :=
 | tree_elems_leaf: tree_elems Leaf nil
 | tree_elems_node:  forall bl br v tl tr b,
-           tree_elems tl bl -> 
-           tree_elems tr br -> 
+           tree_elems tl bl ->
+           tree_elems tr br ->
            Permutation b (v::bl++br) ->
            tree_elems (Node v tl tr) b.
 
 (** **** Exercise: 3 stars (priqueue_elems)  *)
 (** Make an inductive definition, similar to [tree_elems], to relate
-  a priority queue  "l"  to a list of all its elements.  
+  a priority queue  "l"  to a list of all its elements.
 
   As you can see in the definition of [tree_elems],  a [tree] relates to
   _any_ permutation of its keys, not just a single permutation.
@@ -243,9 +244,11 @@ Inductive tree_elems: tree -> list key -> Prop :=
   using (basically) the same technique as in [tree_elems].
 *)
 
-Inductive priqueue_elems: list tree -> list key -> Prop := 
+Inductive priqueue_elems: list tree -> list key -> Prop :=
              (* 请在此处解答 *)
 .
+(* Do not modify the following line: *)
+Definition manual_grade_for_priqueue_elems : option (prod nat string) := None.
 (** [] *)
 
 Definition Abs (p: priqueue) (al: list key) := priqueue_elems p al.
@@ -277,7 +280,7 @@ Theorem priqueue_elems_ext: forall q e1 e2,
 (** [] *)
 
 (** **** Exercise: 2 stars (abs_perm)  *)
-Theorem abs_perm: forall p al bl, 
+Theorem abs_perm: forall p al bl,
    priq p -> Abs p al -> Abs p bl -> Permutation al bl.
 Proof.
 (* 请在此处解答 *) Admitted.
@@ -317,30 +320,30 @@ Theorem smash_elems: forall n t u bt bu,
 (**  Some of these proofs are quite long, but they're not especially tricky. *)
 
 (** **** Exercise: 4 stars, optional (carry_elems)  *)
-Theorem carry_elems: 
-      forall n q,  priq' n q -> 
-      forall t, (t=Leaf \/ pow2heap n t) -> 
-      forall eq et, priqueue_elems q eq -> 
-                          tree_elems t et ->  
+Theorem carry_elems:
+      forall n q,  priq' n q ->
+      forall t, (t=Leaf \/ pow2heap n t) ->
+      forall eq et, priqueue_elems q eq ->
+                          tree_elems t et ->
                           priqueue_elems (carry q t) (eq++et).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (insert_elems)  *)
-Theorem insert_relate: 
+Theorem insert_relate:
         forall p al k, priq p -> Abs p al -> Abs (insert k p) (k::al).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** Exercise: 4 stars, optional (join_elems)  *)
-Theorem join_elems: 
-                forall p q c n, 
-                      priq' n p -> 
-                      priq' n q -> 
+Theorem join_elems:
+                forall p q c n,
+                      priq' n p ->
+                      priq' n q ->
                       (c=Leaf \/ pow2heap n c) ->
-                  forall pe qe ce, 
-                             priqueue_elems p pe -> 
-                             priqueue_elems q qe -> 
+                  forall pe qe ce,
+                             priqueue_elems p pe ->
+                             priqueue_elems q qe ->
                              tree_elems c ce ->
                               priqueue_elems (join p q c) (ce++pe++qe).
 (* 请在此处解答 *) Admitted.
@@ -348,7 +351,7 @@ Theorem join_elems:
 
 (** **** Exercise: 2 stars, optional (merge_relate)  *)
 Theorem merge_relate:
-    forall p q pl ql al, 
+    forall p q pl ql al,
        priq p -> priq q ->
        Abs p pl -> Abs q ql -> Abs (merge p q) al ->
        Permutation al (pl++ql).
@@ -387,7 +390,6 @@ End BinomQueue.
 (** Adapt the program (but not necessarily the proof) to use Ocaml integers
   as keys, in the style shown in [Extract].   Write an ML program to
   exercise it with random inputs.  Compare the runtime to the implementation
-  from [Priqueue], also adapted for Ocaml integers. 
+  from [Priqueue], also adapted for Ocaml integers.
 *)
 (** [] *)
-

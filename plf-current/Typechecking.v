@@ -249,6 +249,10 @@ End STLCChecker.
     is to fill in the omitted cases in the following. *)
 
 Module TypecheckerExtensions.
+(* Do not modify the following line: *)
+Definition manual_grade_for_type_checking_sound : option (prod nat string) := None.
+(* Do not modify the following line: *)
+Definition manual_grade_for_type_checking_complete : option (prod nat string) := None.
 Import MoreStlc.
 Import STLCExtended.
   

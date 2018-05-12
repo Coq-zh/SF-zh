@@ -68,7 +68,7 @@
 (* ################################################################# *)
 (** * A Simple Program That's Waaaaay Too Slow. *)
 
-
+Require Import Coq.Strings.String.
 Require Import Perm.
 Require Import Maps.
 Import FunctionalExtensionality.
@@ -83,7 +83,7 @@ Fixpoint loop (input: list nat) (c: nat) (table: total_map bool) : nat :=
                   else loop al c (t_update table a true)
  end.
 
-Definition collisions (input: list nat) : nat := 
+Definition collisions (input: list nat) : nat :=
        loop input 0 (t_empty false).
 
 Example collisions_pi: collisions [3;1;4;1;5;9;2;6] = 1.
@@ -127,8 +127,8 @@ Module Integers.
 (** We start with positive numbers. *)
 
 Inductive positive : Set :=
-  | xI : positive -> positive 
-  | xO : positive -> positive 
+  | xI : positive -> positive
+  | xO : positive -> positive
   | xH : positive.
 
 (** A positive number is either
@@ -142,7 +142,7 @@ Definition ten := xO (xI (xO xH)).
 
 (** To interpret a [positive] number as a [nat], *)
 
-Fixpoint positive2nat (p: positive) : nat := 
+Fixpoint positive2nat (p: positive) : nat :=
   match p with
   | xI q => 1 + 2 * positive2nat q
   | xO q => 0 + 2 * positive2nat q
@@ -238,7 +238,7 @@ Proof.
     But really, here you can use [omega] without penalty. *)
 
 Lemma addc_correct: forall (c: bool) (p q: positive),
-   positive2nat (addc c p q) = 
+   positive2nat (addc c p q) =
         (if c then 1 else 0) + positive2nat p + positive2nat q.
 Proof.
 (* 请在此处解答 *) Admitted.
@@ -252,13 +252,13 @@ apply addc_correct.
 Qed.
 (** [] *)
 
-(** Claim:  the [add] function on positive numbers takes worst-case time 
+(** Claim:  the [add] function on positive numbers takes worst-case time
     proportional to the log base 2 of the result.
 
     We can't prove this in Coq, since Coq has no cost model for execution.
     But we can prove it informally. Notice that [addc] is structurally recursive
    on [p], that is, the number of recursive calls is at most the height of the
-    [p] structure; that's equal to log base 2 of [p] (rounded up to the nearest 
+    [p] structure; that's equal to log base 2 of [p] (rounded up to the nearest
     integer). The last call may call [succ q], which is structurally recursive on [q],
     but this [q] argument is what remained of the original [q] after
     stripping off a number of constructors equal to the height of [p].
@@ -273,7 +273,7 @@ Inductive comparison : Set :=
     Eq : comparison | Lt : comparison | Gt : comparison.
 
 (** **** Exercise: 5 stars (compare_correct)  *)
-Fixpoint compare x y {struct x}:= 
+Fixpoint compare x y {struct x}:=
   match x, y with
     | p~1, q~1 => compare p q
     | p~1, q~0 => match compare p q with Lt => Lt | _ => Gt end
@@ -310,13 +310,13 @@ induction x; destruct y; simpl.
 (** Coq's integer type is constructed from positive numbers: *)
 
 Inductive Z : Set :=
-  | Z0 : Z 
-  | Zpos : positive -> Z 
+  | Z0 : Z
+  | Zpos : positive -> Z
   | Zneg : positive -> Z.
 
 (** We can construct efficient (logN time) algorithms for operations
    on [Z]:  [add], [subtract], [compare], and so on.  These algorithms
-   call upon the efficient algorithms for [positive]s.  
+   call upon the efficient algorithms for [positive]s.
 
    We won't show these here, because in this chapter we now turn
    to efficient maps over positive numbers. *)
@@ -329,8 +329,8 @@ End Integers.  (* Hide away our experiments with [positive] *)
 
 Print positive.  (* from the Coq standard library:
   Inductive positive : Set :=
-  |  xI : positive -> positive 
-  | xO : positive -> positive 
+  |  xI : positive -> positive
+  | xO : positive -> positive
   | xH : positive *)
 
 Check Pos.compare.  (*   : positive -> positive -> comparison *)
@@ -374,7 +374,7 @@ End RatherSlow.
 
 (** We can use balanced binary search trees (red-black trees), with
    keys of type [Z].  Then the [loop] does [N] iterations; the table lookup
-   does [O(logN)] comparisons, and each comparison takes [O(log N)] time. 
+   does [O(logN)] comparisons, and each comparison takes [O(log N)] time.
    Overall, the asymptotic run time is [N*(logN)^2]. *)
 
 (* ################################################################# *)
@@ -464,14 +464,14 @@ Definition insert {A: Type} (i: positive) (a: A) (t: trie_table A)
 Definition three_ten : trie_table bool :=
  insert 3 true (insert 10 true (empty false)).
 
-Eval compute in three_ten. 
+Eval compute in three_ten.
 (* = (false,
         Node (Node Leaf false (Node (Node Leaf true Leaf) false Leaf))
                  false
                  (Node Leaf true Leaf))
      : trie_table bool  *)
 
-Eval compute in 
+Eval compute in
    map (fun i => lookup i three_ten) [3;1;4;1;5]%positive.
 (*      = [true; false; false; false; false]  : list bool *)
 
@@ -501,7 +501,7 @@ End FastEnough.
     representation), but this evaluates in one step to [S c], which
     takes constant time, no matter how long [c] is.  In "real life", one
     might be advised to use [Z] instead of [nat] for the [c] variables,
-    in which case, [1+c] takes worst-case [log N], and average-case 
+    in which case, [1+c] takes worst-case [log N], and average-case
     constant time. *)
 
 (** **** Exercise: 2 stars (successor_of_Z_constant_time)  *)
@@ -512,22 +512,24 @@ End FastEnough.
      from 1 to N is touched exactly once -- whichever way you like. *)
 
 (* [explain here]
-*)  
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_successor_of_Z_constant_time : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
 (** * Proving the Correctness of Trie Tables *)
 
-(** Trie tables are just another implementation of the [Maps] 
+(** Trie tables are just another implementation of the [Maps]
      abstract data type.  What we have to prove is the same as usual for an ADT:
-     define a representation invariant, define an abstraction relation, prove 
+     define a representation invariant, define an abstraction relation, prove
      that the operations respect the invariant and the abstraction relation.
 
      We will indeed do that.  But this time we'll take a different approach.
      Instead of defining a "natural" abstraction relation based on what
      we see in the data structure, we'll define an abstraction relation
      that says, "what you get is what you get."    This will work, but it means
-     we've moved the work into directly proving some things about the 
+     we've moved the work into directly proving some things about the
      relation between the [lookup] and the [insert] operators. *)
 
 (* ================================================================= *)
@@ -550,7 +552,7 @@ Lemma look_ins_same: forall {A} a k (v:A) t, look a k (ins a k v t) = v.
 (** **** Exercise: 3 stars (look_ins_same)  *)
 (** Induction on j? Induction on t?   Do you feel lucky? *)
 
-Lemma look_ins_other: forall {A} a j k (v:A) t, 
+Lemma look_ins_other: forall {A} a j k (v:A) t,
    j <> k -> look a j (ins a k v t) = look a j t.
 (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -617,13 +619,13 @@ Definition Abs {A: Type} (t: trie_table A) (m: total_map A) :=
 
 (** **** Exercise: 2 stars (is_trie)  *)
 (** If you picked a _really simple_ representation invariant, these should be easy.
-    Later, if you need to change the representation invariant in order to 
+    Later, if you need to change the representation invariant in order to
     get the [_relate] proofs to work, then you'll need to fix these proofs. *)
 
 Theorem empty_is_trie: forall {A} (default: A), is_trie (empty default).
 (* 请在此处解答 *) Admitted.
 
-Theorem insert_is_trie: forall {A} i x (t: trie_table A), 
+Theorem insert_is_trie: forall {A} i x (t: trie_table A),
    is_trie t -> is_trie (insert i x t).
 (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -633,7 +635,7 @@ Theorem insert_is_trie: forall {A} i x (t: trie_table A),
     use one of the lemmas you proved above, in the section
     "Lemmas about the relation between [lookup] and [insert]." *)
 
-Theorem empty_relate: forall {A} (default: A), 
+Theorem empty_relate: forall {A} (default: A),
     Abs (empty default) (t_empty default).
 Proof.
 (* 请在此处解答 *) Admitted.
@@ -652,7 +654,7 @@ Theorem lookup_relate: forall {A} i (t: trie_table A) m,
 (** Given the abstraction relation we've chosen, this one should NOT be simple.
    However, you've already done the heavy lifting, with the lemmas
   [look_ins_same] and [look_ins_other].   You will not need induction here.
-  Instead, unfold a bunch of things, use extensionality, and get to a case analysis 
+  Instead, unfold a bunch of things, use extensionality, and get to a case analysis
   on whether [pos2nat k =? pos2nat j].   To handle that case analysis,
    use [bdestruct]. You may also need [pos2nat_injective]. *)
 
@@ -666,8 +668,8 @@ Theorem insert_relate: forall {A} k (v: A) t cts,
 (* ================================================================= *)
 (** ** Sanity Check *)
 
-Example Abs_three_ten: 
-    Abs 
+Example Abs_three_ten:
+    Abs
        (insert 3 true (insert 10 true (empty false)))
        (t_update (t_update (t_empty false) (pos2nat 10) true) (pos2nat 3) true).
 Proof.
@@ -690,5 +692,5 @@ try (apply empty_relate).
   compiler (2006), and are now available in the Coq standard library as the
   [PositiveMap] module, which implements the [FMaps] interface.
   The core implementation of [PositiveMap] is just as shown in this chapter,
-  but [FMaps] uses different names for the functions [insert] and [lookup], 
+  but [FMaps] uses different names for the functions [insert] and [lookup],
   and also provides several other operations on maps.  *)

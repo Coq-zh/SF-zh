@@ -474,6 +474,8 @@ Proof.
    and [assn_sub_ex2]) and use [hoare_asgn] to prove them. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_hoare_asgn_examples : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars, recommended (hoare_asgn_wrong)  *)
@@ -492,6 +494,8 @@ Proof.
     the rule doesn't work.) *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_hoare_asgn_wrong : option (prod nat string) := None.
 (** [] *)
 
 Local Close Scope aexp_scope.
@@ -798,8 +802,9 @@ Qed.
    to prove them. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_hoare_asgn_examples_2 : option (prod nat string) := None.
 (** [] *)
-
 
 
 (* ================================================================= *)
@@ -932,6 +937,8 @@ Proof.
 *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_hoarestate1 : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -1180,6 +1187,8 @@ Lemma hoare_if1_good :
 Proof. (* 请在此处解答 *) Admitted.
 
 End If1.
+(* Do not modify the following line: *)
+Definition manual_grade_for_if1_hoare : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -1452,6 +1461,8 @@ Proof.
 *)
 
 End RepeatExercise.
+(* Do not modify the following line: *)
+Definition manual_grade_for_hoare_repeat : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)

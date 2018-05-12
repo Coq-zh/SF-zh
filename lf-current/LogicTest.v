@@ -1,21 +1,28 @@
 Set Warnings "-notation-overridden,-parsing".
+From Coq Require Export String.
 Require Import Logic.
-Parameter MISSING: Type.   
+Parameter MISSING: Type. 
 
-Module Check.  
+Module Check. 
 
-Ltac check_type A B :=  
-match type of A with  
+Ltac check_type A B := 
+match type of A with 
 | context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]  
-end.  
+| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
+end. 
 
-Ltac print_manual_grade A :=  
-first [  
-match eval compute in A with  
-| ?T => idtac "Score:" T  
-end  
-| idtac "Score: Ungraded"].  
+Ltac print_manual_grade A := 
+match eval compute in A with 
+| Some (pair ?S ?C) => 
+idtac "Score:"  S; 
+match eval compute in C with  
+| ""%string => idtac "Comment: None"  
+| _ => idtac "Comment:" C 
+end 
+| None => 
+idtac "Score: Ungraded"; 
+idtac "Comment: None" 
+end. 
 
 End Check.
 
@@ -78,7 +85,7 @@ idtac " ".
 idtac "#> Manually graded: double_neg_inf".
 idtac "Advanced".
 idtac "Possible points: 2".
-print_manual_grade score_double_neg_inf.
+print_manual_grade manual_grade_for_double_neg_inf.
 idtac " ".
 
 idtac "-------------------  contrapositive  --------------------".
@@ -111,7 +118,7 @@ idtac " ".
 idtac "#> Manually graded: informal_not_PNP".
 idtac "Advanced".
 idtac "Possible points: 1".
-print_manual_grade score_informal_not_PNP.
+print_manual_grade manual_grade_for_informal_not_PNP.
 idtac " ".
 
 idtac "-------------------  or_distributes_over_and  --------------------".

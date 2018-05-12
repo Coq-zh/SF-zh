@@ -268,6 +268,8 @@ These decorations were constructed as follows:
       FI
         {{ Y = X + Z }}
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_decorations_in_if_minus_plus_reloaded : option (prod nat string) := None.
 (** [] *)
 
 
@@ -570,6 +572,8 @@ Proof.
     is correct. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_decorations_in_slow_assignment : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -850,6 +854,8 @@ Proof.
     {{ Y = m! }}
 *)
 
+(* Do not modify the following line: *)
+Definition manual_grade_for_decorations_in_factorial : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -889,6 +895,8 @@ Proof.
   {{ Z = min a b }}
 *)
 
+(* Do not modify the following line: *)
+Definition manual_grade_for_decorations_in_Min_Hoare : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 3 stars (two_loops)  *)
@@ -939,6 +947,8 @@ Proof.
     {{ Z = a + b + c }}
 *)
 
+(* Do not modify the following line: *)
+Definition manual_grade_for_decorations_in_two_loops : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -1953,6 +1963,8 @@ Example slow_assignment_dec (m:nat) : decorated
 Theorem slow_assignment_dec_correct : forall m,
   dec_correct (slow_assignment_dec m).
 Proof. (* 请在此处解答 *) Admitted.
+(* Do not modify the following line: *)
+Definition manual_grade_for_check_defn_of_slow_assignment_dec : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (factorial_dec)   *)
@@ -1969,6 +1981,8 @@ Fixpoint real_fact (n:nat) : nat :=
     prove it correct as [factorial_dec_correct]. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_factorial_dec : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (fib_eqn)  *)

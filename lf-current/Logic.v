@@ -390,6 +390,8 @@ Proof.
    _'定理'_：对于任何命题 [P] 而言，[P] 蕴含 [~~P]。 *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_double_neg_inf : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars, recommended (contrapositive)  *)
@@ -411,6 +413,8 @@ Definition informal_not_PNP_TODO := 0.
 (** 请写出 [forall P : Prop, ~(P /\ ~P)] 的非形式化证明。 *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_informal_not_PNP : option (prod nat string) := None.
 (** [] *)
 
 (** 类似地，由于不等性包含一个否定，因此在能够熟练地使用它前也需要一些练习。

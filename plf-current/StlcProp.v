@@ -19,7 +19,7 @@ Import STLC.
     first step in establishing basic properties of reduction and types
     is to identify the possible _canonical forms_ (i.e., well-typed
     closed values) belonging to each type.  For [Bool], these are the
-    boolean values [ttrue] and [tfalse]; for arrow types, they are 
+    boolean values [ttrue] and [tfalse]; for arrow types, they are
     lambda-abstractions.  *)
 
 Lemma canonical_forms_bool : forall t,
@@ -178,9 +178,9 @@ Proof.
         variables of the term.  And finally, for this, we need a
         careful definition of...
 
-      - the _free variables_ in a term -- i.e., variables that are 
-        used in the term and where these uses are _not_ in the scope of 
-        an enclosing function abstraction binding a variable of the 
+      - the _free variables_ in a term -- i.e., variables that are
+        used in the term and where these uses are _not_ in the scope of
+        an enclosing function abstraction binding a variable of the
         same name.
 
    To make Coq happy, we need to formalize the story in the opposite
@@ -202,10 +202,10 @@ Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
       appears_free_in x (tvar x)
   | afi_app1 : forall x t1 t2,
-      appears_free_in x t1 -> 
+      appears_free_in x t1 ->
       appears_free_in x (tapp t1 t2)
   | afi_app2 : forall x t1 t2,
-      appears_free_in x t2 -> 
+      appears_free_in x t2 ->
       appears_free_in x (tapp t1 t2)
   | afi_abs : forall x y T11 t12,
       y <> x  ->
@@ -230,8 +230,8 @@ Hint Constructors appears_free_in.
 Definition closed (t:tm) :=
   forall x, ~ appears_free_in x t.
 
-(** An _open_ term is one that may contain free variables.  (I.e., every 
-    term is an open term; the closed terms are a subset of the open ones.  
+(** An _open_ term is one that may contain free variables.  (I.e., every
+    term is an open term; the closed terms are a subset of the open ones.
     "Open" really means "possibly containing free variables.") *)
 
 (** **** Exercise: 1 star (afi)  *)
@@ -244,6 +244,8 @@ Definition closed (t:tm) :=
     properties, which are really the crux of the lambda-calculus. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_afi : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -396,7 +398,7 @@ Qed.
     substitute [v] for each of the occurrences of [x] in [t] and
     obtain a new term that still has type [T]. *)
 
-(** _Lemma_: If [Gamma & {{x-->U}} |- t \in T] and [|- v \in U], 
+(** _Lemma_: If [Gamma & {{x-->U}} |- t \in T] and [|- v \in U],
     then [Gamma |- [x:=v]t \in T]. *)
 
 Lemma substitution_preserves_typing : forall Gamma x U t v T,
@@ -491,7 +493,7 @@ Proof with eauto.
     + (* x=y *)
       subst.
       rewrite update_eq in H2.
-      inversion H2; subst. 
+      inversion H2; subst.
       eapply context_invariance. eassumption.
       apply typable_empty__closed in Ht'. unfold closed in Ht'.
       intros.  apply (Ht' x0) in H0. inversion H0.
@@ -582,6 +584,8 @@ Qed.
 
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_subject_expansion_stlc : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -615,6 +619,8 @@ Proof.
       [unique_types], and prove your theorem. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_types_unique : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -622,10 +628,12 @@ Proof.
 
 (** **** Exercise: 1 star (progress_preservation_statement)  *)
 (** Without peeking at their statements above, write down the progress
-    and preservation theorems for the simply typed lambda-calculus (as 
+    and preservation theorems for the simply typed lambda-calculus (as
     Coq theorems).
     You can write [Admitted] for the proofs. *)
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_progress_preservation_statement : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars (stlc_variation1)  *)
@@ -651,10 +659,12 @@ and the following typing rule:
       - Preservation
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_stlc_variation1 : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars (stlc_variation2)  *)
-(** Suppose instead that we add a new term [foo] with the following 
+(** Suppose instead that we add a new term [foo] with the following
     reduction rules:
 
                        -----------------                (ST_Foo1)
@@ -675,6 +685,8 @@ and the following typing rule:
       - Preservation
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_stlc_variation2 : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars (stlc_variation3)  *)
@@ -691,10 +703,12 @@ and the following typing rule:
       - Preservation
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_stlc_variation3 : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (stlc_variation4)  *)
-(** Suppose instead that we add the following new rule to the 
+(** Suppose instead that we add the following new rule to the
     reduction relation:
 
             ----------------------------------        (ST_FunnyIfTrue)
@@ -715,7 +729,7 @@ and the following typing rule:
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (stlc_variation5)  *)
-(** Suppose instead that we add the following new rule to the typing 
+(** Suppose instead that we add the following new rule to the typing
     relation:
 
                  Gamma |- t1 \in Bool->Bool->Bool
@@ -738,7 +752,7 @@ and the following typing rule:
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (stlc_variation6)  *)
-(** Suppose instead that we add the following new rule to the typing 
+(** Suppose instead that we add the following new rule to the typing
     relation:
 
                      Gamma |- t1 \in Bool
@@ -761,7 +775,7 @@ and the following typing rule:
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (stlc_variation7)  *)
-(** Suppose we add the following new rule to the typing relation 
+(** Suppose we add the following new rule to the typing relation
     of the STLC:
 
                          ------------------- (T_FunnyAbs)
@@ -851,9 +865,10 @@ Inductive tm : Type :=
         accepts the whole file. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_stlc_arith : option (prod nat string) := None.
 (** [] *)
 
 End STLCArith.
 
 (** $Date$ *)
-

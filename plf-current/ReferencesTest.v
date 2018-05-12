@@ -1,21 +1,28 @@
 Set Warnings "-notation-overridden,-parsing".
+From Coq Require Export String.
 Require Import References.
-Parameter MISSING: Type.   
+Parameter MISSING: Type. 
 
-Module Check.  
+Module Check. 
 
-Ltac check_type A B :=  
-match type of A with  
+Ltac check_type A B := 
+match type of A with 
 | context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]  
-end.  
+| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
+end. 
 
-Ltac print_manual_grade A :=  
-first [  
-match eval compute in A with  
-| ?T => idtac "Score:" T  
-end  
-| idtac "Score: Ungraded"].  
+Ltac print_manual_grade A := 
+match eval compute in A with 
+| Some (pair ?S ?C) => 
+idtac "Score:"  S; 
+match eval compute in C with  
+| ""%string => idtac "Comment: None"  
+| _ => idtac "Comment:" C 
+end 
+| None => 
+idtac "Score: Ungraded"; 
+idtac "Comment: None" 
+end. 
 
 End Check.
 
@@ -27,41 +34,41 @@ Goal True.
 idtac "-------------------  compact_update  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: compact_update".
+idtac "#> Manually graded: STLCRef.compact_update".
 idtac "Possible points: 2".
-print_manual_grade score_compact_update.
+print_manual_grade STLCRef.manual_grade_for_compact_update.
 idtac " ".
 
 idtac "-------------------  type_safety_violation  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: type_safety_violation".
+idtac "#> Manually graded: STLCRef.type_safety_violation".
 idtac "Possible points: 2".
-print_manual_grade score_type_safety_violation.
+print_manual_grade STLCRef.manual_grade_for_type_safety_violation.
 idtac " ".
 
 idtac "-------------------  cyclic_store  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: cyclic_store".
+idtac "#> Manually graded: STLCRef.cyclic_store".
 idtac "Possible points: 2".
-print_manual_grade score_cyclic_store.
+print_manual_grade STLCRef.manual_grade_for_cyclic_store.
 idtac " ".
 
 idtac "-------------------  store_not_unique  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: store_not_unique".
+idtac "#> Manually graded: STLCRef.store_not_unique".
 idtac "Possible points: 2".
-print_manual_grade score_store_not_unique.
+print_manual_grade STLCRef.manual_grade_for_store_not_unique.
 idtac " ".
 
 idtac "-------------------  preservation_informal  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: preservation_informal".
+idtac "#> Manually graded: STLCRef.preservation_informal".
 idtac "Possible points: 3".
-print_manual_grade score_preservation_informal.
+print_manual_grade STLCRef.manual_grade_for_preservation_informal.
 idtac " ".
 
 idtac "-------------------  factorial_ref  --------------------".

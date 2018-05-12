@@ -112,10 +112,11 @@ Example test_repeat2 :
 Proof. reflexivity.  Qed.
 
 
-Module MumbleGrumble.
 
 (** **** Exercise: 2 stars (mumble_grumble)  *)
 (** 考虑以下两个归纳定义的类型： *)
+
+Module MumbleGrumble.
 
 Inductive mumble : Type :=
   | a : mumble
@@ -135,10 +136,10 @@ Inductive grumble (X:Type) : Type :=
       - [e bool (b c 0)]
       - [c] *)
 (* 请在此处解答 *)
-
-(** [] *)
-
 End MumbleGrumble.
+(* Do not modify the following line: *)
+Definition manual_grade_for_mumble_grumble : option (prod nat string) := None.
+(** [] *)
 
 (* ----------------------------------------------------------------- *)
 (** *** 类型标注的推断 *)
@@ -450,6 +451,13 @@ Proof.
 
 (** 现在介绍最后一种多态类型：_'多态候选（Polymorphic Options）'_,
     它推广了上一章中的 [natoption]： *)
+(** One last polymorphic type for now: _polymorphic options_,
+    which generalize [natoption] from the previous chapter.  (We put
+    the definition inside a module because the standard library
+    already defines [option] and it's this one that we want to use
+    below.) *)
+
+Module OptionPlayground.
 
 Inductive option (X:Type) : Type :=
   | Some : X -> option X
@@ -457,6 +465,8 @@ Inductive option (X:Type) : Type :=
 
 Arguments Some {X} _.
 Arguments None {X}.
+
+End OptionPlayground.
 
 (** 现在我们可以重写 [nth_error] 函数来让它适用于任何类型的列表了。 *)
 
@@ -755,6 +765,8 @@ Proof. reflexivity. Qed.
     [Y] 不同时的应用情景吗？ *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_fold_types_different : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -832,6 +844,8 @@ Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y
 (** 在 Coq 中写出 [fold_map_correct] 来陈述 [fold_map] 是正确的，然后证明它。 *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_fold_map : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced (currying)  *)
@@ -896,6 +910,8 @@ Proof.
    forall X n l, length l = n -> @nth_error X l n = None
 *)
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_informal_proof : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (church_numerals)  *)
@@ -993,6 +1009,8 @@ Example exp_3 : exp three zero = one.
 Proof. (* 请在此处解答 *) Admitted.
 
 End Church.
+(* Do not modify the following line: *)
+Definition manual_grade_for_succ_plus_mult_exp : option (prod nat string) := None.
 (** [] *)
 
 End Exercises.

@@ -374,6 +374,8 @@ Proof with (eauto using wf_rcd_lookup).
     lemma. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_rcd_types_match_informal : option (prod nat string) := None.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
@@ -463,8 +465,8 @@ Example typing_example_1 :
            (tapp (tabs x TRcd_j (tproj (tvar x) j))
                    (trcd_kj))
            (TArrow B B).
-(* empty |- (\x:{k:A->A,j:B->B}. x.j) 
-              {k=(\z:A.z), j=(\z:B.z)} 
+(* empty |- (\x:{k:A->A,j:B->B}. x.j)
+              {k=(\z:A.z), j=(\z:B.z)}
          : B->B *)
 Proof with eauto.
   (* 请在此处解答 *) Admitted.

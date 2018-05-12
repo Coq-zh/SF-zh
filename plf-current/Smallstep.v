@@ -735,6 +735,8 @@ Definition bool_step_prop3 :=
        tfalse.
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_smallstep_bools : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (progress_bool)  *)
@@ -1181,6 +1183,8 @@ Proof.
 
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_eval__multistep_inf : option (prod nat string) := None.
 (** [] *)
 
 (** For the other direction, we need one lemma, which establishes a
@@ -1282,6 +1286,8 @@ Inductive step : tm -> tm -> Prop :=
 (* 请在此处解答 *)
 
 End Combined.
+(* Do not modify the following line: *)
+Definition manual_grade_for_combined_properties : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)

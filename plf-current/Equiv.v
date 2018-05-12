@@ -453,6 +453,8 @@ Definition prog_i : com :=
 
 Definition equiv_classes : list (list com)
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+(* Do not modify the following line: *)
+Definition manual_grade_for_equiv_classes : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -1412,6 +1414,8 @@ Example havoc_example2 :
   (SKIP;; HAVOC Z) / { --> 0 } \\ { Z --> 42 }.
 Proof.
 (* 请在此处解答 *) Admitted.
+(* Do not modify the following line: *)
+Definition manual_grade_for_Check_rule_for_HAVOC : option (prod nat string) := None.
 (** [] *)
 
 (** Finally, we repeat the definition of command equivalence from above: *)

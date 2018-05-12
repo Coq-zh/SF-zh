@@ -350,6 +350,8 @@ Example test_member2:             member 2 [1;4;1] = false.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (bag_more_functions)  *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_bag_theorem : option (prod nat string) := None.
 (** 你可以把下面这些和 [bag] 有关的函数当作额外的练习 *)
 
 (** 当 [remove_one] 被应用到一个没有数可以移除的背包时，
@@ -766,6 +768,8 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (rev_injective)  *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_rev_injective : option (prod nat string) := None.
 (** 证明 [rev] 函数是单射的，也就是说，
 
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
@@ -961,6 +965,8 @@ Inductive baz : Type :=
 (** 类型 [baz] 有_'多少'_个元素？（请用汉语或你习惯的自然语言解答。） *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_baz_num_elts : option (prod nat string) := None.
 (** [] *)
 
 

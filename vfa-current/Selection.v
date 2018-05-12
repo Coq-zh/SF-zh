@@ -7,11 +7,11 @@
   quadratic-time sorting algorithm (for small input sizes) you should
   use insertion sort.  Insertion sort is simpler to implement, runs
   faster, and is simpler to prove correct.   We use selection sort here
-  only to illustrate the proof techniques.  
+  only to illustrate the proof techniques.
 
      *Well, hardly ever.  If the cost of "moving" an element is _much_
-  larger than the cost of comparing two keys, then selection sort is 
-  better than insertion sort.  But this consideration does not apply in our 
+  larger than the cost of comparing two keys, then selection sort is
+  better than insertion sort.  But this consideration does not apply in our
   setting, where the elements are  represented as pointers into the
   heap, and only the pointers need to be moved.
 
@@ -23,6 +23,7 @@
 (* ################################################################# *)
 (** * The Selection-Sort Program  *)
 
+Require Export Coq.Lists.List.
 Require Import Perm.
 
 (** Find (and delete) the smallest element in a list. *)
@@ -30,12 +31,12 @@ Require Import Perm.
 Fixpoint select (x: nat) (l: list nat) : nat * list nat :=
 match l with
 |  nil => (x, nil)
-|  h::t => if x <=? h 
+|  h::t => if x <=? h
                then let (j, l') := select x t in (j, h::l')
                else let (j,l') := select h t in (j, x::l')
 end.
 
-(** Now, selection-sort works by repeatedly extracting the smallest element, 
+(** Now, selection-sort works by repeatedly extracting the smallest element,
    and making a list of the results. *)
 
 (* Uncomment this function, and try it.
@@ -47,9 +48,9 @@ match l with
 end.
 *)
 
-(** _Error: Recursive call to selsort has principal argument equal 
-  to [r'] instead of [r]_.  That is, the recursion is not _structural_, since 
-  the list r' is not a structural sublist of (i::r).  One way to fix the 
+(** _Error: Recursive call to selsort has principal argument equal
+  to [r'] instead of [r]_.  That is, the recursion is not _structural_, since
+  the list r' is not a structural sublist of (i::r).  One way to fix the
   problem is to use Coq's [Function] feature, and prove that
   [length(r')<length(i::r)].  Later in this chapter, we'll show that approach.
 
@@ -96,7 +97,7 @@ Qed.
 (** Specification of correctness of a sorting algorithm:
    it rearranges the elements into a list that is totally ordered. *)
 
-Inductive sorted: list nat -> Prop := 
+Inductive sorted: list nat -> Prop :=
  | sorted_nil: sorted nil
  | sorted_1: forall i, sorted (i::nil)
  | sorted_cons: forall i j l, i <= j -> sorted (j::l) -> sorted (i::j::l).
@@ -115,7 +116,7 @@ Definition selection_sort_correct : Prop :=
 (** We'll start by working on part 1, permutations. *)
 
 (** **** Exercise: 3 stars (select_perm)  *)
-Lemma select_perm: forall x l, 
+Lemma select_perm: forall x l,
   let (y,r) := select x l in
    Permutation (x::l) (y::r).
 Proof.
@@ -131,7 +132,7 @@ induction l; intros; simpl in *.
 
 (** **** Exercise: 3 stars (selection_sort_perm)  *)
 Lemma selsort_perm:
-  forall n, 
+  forall n,
   forall l, length l = n -> Permutation l (selsort l n).
 Proof.
 
@@ -153,7 +154,7 @@ Lemma select_smallest_aux:
     select x al = (y,bl) ->
     y <= x.
 Proof.
-(* Hint: no induction needed in this lemma. 
+(* Hint: no induction needed in this lemma.
    Just use existing lemmas about select, along with [Forall_perm] *)
 (* 请在此处解答 *) Admitted.
 
@@ -171,7 +172,7 @@ destruct (select x al) eqn:?H.
 
 (** **** Exercise: 3 stars (selection_sort_sorted)  *)
 Lemma selection_sort_sorted_aux:
-  forall  y bl, 
+  forall  y bl,
    sorted (selsort bl (length bl)) ->
    Forall (fun z : nat => y <= z) bl ->
    sorted (y :: selsort bl (length bl)).
@@ -183,7 +184,7 @@ Theorem selection_sort_sorted: forall al, sorted (selection_sort al).
 Proof.
 intros.
 unfold selection_sort.
-(* Hint: do induction on the [length] of al. 
+(* Hint: do induction on the [length] of al.
     In the inductive case, use [select_smallest], [select_perm],
     and [selection_sort_sorted_aux]. *)
  (* 请在此处解答 *) Admitted.
@@ -231,7 +232,7 @@ Defined.  (* Use [Defined] instead of [Qed], otherwise you
 
 (** **** Exercise: 3 stars (selsort'_perm)  *)
 Lemma selsort'_perm:
-  forall n, 
+  forall n,
   forall l, length l = n -> Permutation l (selsort' l).
 Proof.
 

@@ -204,6 +204,17 @@ Proof. simpl. reflexivity. Qed.
     中的断言都能被 Coq 验证通过。（仿照前面 [orb] 测试的模式，移除每一个
     [Admitted.] 并补充证明。）此函数应在两个输入之一或二者均为 [false]
     时返回 [true] 。  *)
+(** Remove "[Admitted.]" and complete the definition of the following
+    function; then make sure that the [Example] assertions below can
+    each be verified by Coq.  (Remove "[Admitted.]" and fill in each
+    proof, following the model of the [orb] tests above.) The function
+    should return [true] if either or both of its inputs are
+    [false]. *)
+(** Every chapter comes with a [[*Test.v]] file, containing scripts
+    that check some of the exercises. After you finish an exercise in
+    this file, you can run [[make BasicsTest.vo]] and check its
+    output. If you did correctly, it will show "Type: ok", based on no
+    "Assumptions". *)
 
 Definition nandb (b1:bool) (b2:bool) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -989,6 +1000,13 @@ Proof.
     第二个前提是说函数 [f] 有 [f x = negb x] 的性质。 *)
 
 (* 请在此处解答 *)
+(* The [Import] statement on the next line tells Coq to use the
+   standard library String module.  We'll use strings more in later
+   chapters, but for the moment we just need syntax for literal
+   strings for the grader comments. *)
+From Coq Require Export String.
+(* Do not modify the following line: *)
+Definition manual_grade_for_negation_fn_applied_twice : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (andb_eq_orb)  *)
@@ -1038,5 +1056,7 @@ Proof.
         先自增再转换为一进制数，应该与将其先转换成一进制后再自增获得的结果相同。 *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary : option (prod nat string) := None.
 (** [] *)
 

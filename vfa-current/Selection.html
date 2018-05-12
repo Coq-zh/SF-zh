@@ -45,13 +45,13 @@
   quadratic-time sorting algorithm (for small input sizes) you should
   use insertion sort.  Insertion sort is simpler to implement, runs
   faster, and is simpler to prove correct.   We use selection sort here
-  only to illustrate the proof techniques.  
+  only to illustrate the proof techniques.
 
 <div class="paragraph"> </div>
 
      *Well, hardly ever.  If the cost of "moving" an element is _much_
-  larger than the cost of comparing two keys, then selection sort is 
-  better than insertion sort.  But this consideration does not apply in our 
+  larger than the cost of comparing two keys, then selection sort is
+  better than insertion sort.  But this consideration does not apply in our
   setting, where the elements are  represented as pointers into the
   heap, and only the pointers need to be moved.
 
@@ -69,6 +69,7 @@
 <div class="code code-space">
 
 <br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <a class="idref" href="http://coq.inria.fr/library/Coq.Lists.List.html#"><span class="id" type="library">Coq.Lists.List</span></a>.<br/>
 <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <a class="idref" href="Perm.html#"><span class="id" type="library">Perm</span></a>.<br/>
 </div>
 
@@ -80,14 +81,14 @@ Find (and delete) the smallest element in a list.
 <span class="id" type="keyword">Fixpoint</span> <a name="select"><span class="id" type="definition">select</span></a> (<span class="id" type="var">x</span>: <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a>) (<span class="id" type="var">l</span>: <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#list"><span class="id" type="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a> * <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#list"><span class="id" type="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a> :=<br/>
 <span class="id" type="keyword">match</span> <a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a> <span class="id" type="keyword">with</span><br/>
 |  <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nil"><span class="id" type="constructor">nil</span></a> ⇒ (<a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a>, <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nil"><span class="id" type="constructor">nil</span></a>)<br/>
-|  <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a> &lt;=? <span class="id" type="var">h</span> <br/>
+|  <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a> &lt;=? <span class="id" type="var">h</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="keyword">let</span> (<span class="id" type="var">j</span>, <span class="id" type="var">l'</span>) := <a class="idref" href="Selection.html#select"><span class="id" type="definition">select</span></a> <a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a> <span class="id" type="var">t</span> <span class="id" type="keyword">in</span> (<a class="idref" href="Selection.html#j"><span class="id" type="variable">j</span></a>, <span class="id" type="var">h</span>::<a class="idref" href="Selection.html#l'"><span class="id" type="variable">l'</span></a>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="keyword">let</span> (<span class="id" type="var">j</span>,<span class="id" type="var">l'</span>) := <a class="idref" href="Selection.html#select"><span class="id" type="definition">select</span></a> <span class="id" type="var">h</span> <span class="id" type="var">t</span> <span class="id" type="keyword">in</span> (<a class="idref" href="Selection.html#j"><span class="id" type="variable">j</span></a>, <a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a>::<a class="idref" href="Selection.html#l'"><span class="id" type="variable">l'</span></a>)<br/>
 <span class="id" type="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
-Now, selection-sort works by repeatedly extracting the smallest element, 
+Now, selection-sort works by repeatedly extracting the smallest element,
    and making a list of the results. 
 </div>
 <div class="code code-tight">
@@ -103,9 +104,9 @@ end.<br/>
 </div>
 
 <div class="doc">
-<b>Error: Recursive call to selsort has principal argument equal 
-  to <span class="inlinecode"><span class="id" type="var">r'</span></span> instead of <span class="inlinecode"><span class="id" type="var">r</span></span>_.  That is, the recursion is not _structural_, since 
-  the list r' is not a structural sublist of (i::r).  One way to fix the 
+<b>Error: Recursive call to selsort has principal argument equal
+  to <span class="inlinecode"><span class="id" type="var">r'</span></span> instead of <span class="inlinecode"><span class="id" type="var">r</span></span>_.  That is, the recursion is not _structural_, since
+  the list r' is not a structural sublist of (i::r).  One way to fix the
   problem is to use Coq's <span class="inlinecode"><span class="id" type="var">Function</span></span> feature, and prove that
   <span class="inlinecode"><span class="id" type="var">length</span>(<span class="id" type="var">r'</span>)&lt;<span class="id" type="var">length</span>(<span class="id" type="var">i</span>::<span class="id" type="var">r</span>)</span>.  Later in this chapter, we'll show that approach.
 
@@ -171,7 +172,7 @@ Specification of correctness of a sorting algorithm:
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Inductive</span> <a name="sorted"><span class="id" type="inductive">sorted</span></a>: <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#list"><span class="id" type="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a> → <span class="id" type="keyword">Prop</span> := <br/>
+<span class="id" type="keyword">Inductive</span> <a name="sorted"><span class="id" type="inductive">sorted</span></a>: <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#list"><span class="id" type="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a> → <span class="id" type="keyword">Prop</span> :=<br/>
 &nbsp;| <a name="sorted_nil"><span class="id" type="constructor">sorted_nil</span></a>: <a class="idref" href="Selection.html#sorted"><span class="id" type="inductive">sorted</span></a> <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nil"><span class="id" type="constructor">nil</span></a><br/>
 &nbsp;| <a name="sorted_1"><span class="id" type="constructor">sorted_1</span></a>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span>, <a class="idref" href="Selection.html#sorted"><span class="id" type="inductive">sorted</span></a> (<a class="idref" href="Selection.html#i"><span class="id" type="variable">i</span></a>::<a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nil"><span class="id" type="constructor">nil</span></a>)<br/>
 &nbsp;| <a name="sorted_cons"><span class="id" type="constructor">sorted_cons</span></a>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span> <span class="id" type="var">l</span>, <a class="idref" href="Selection.html#i"><span class="id" type="variable">i</span></a> ≤ <a class="idref" href="Selection.html#j"><span class="id" type="variable">j</span></a> → <a class="idref" href="Selection.html#sorted"><span class="id" type="inductive">sorted</span></a> (<a class="idref" href="Selection.html#j"><span class="id" type="variable">j</span></a>::<a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a>) → <a class="idref" href="Selection.html#sorted"><span class="id" type="inductive">sorted</span></a> (<a class="idref" href="Selection.html#i"><span class="id" type="variable">i</span></a>::<a class="idref" href="Selection.html#j"><span class="id" type="variable">j</span></a>::<a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a>).<br/><hr class='doublespaceincode'/>
@@ -200,7 +201,7 @@ We'll start by working on part 1, permutations.
 
 </div>
 <div class="code code-space">
-<span class="id" type="keyword">Lemma</span> <a name="select_perm"><span class="id" type="lemma">select_perm</span></a>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>, <br/>
+<span class="id" type="keyword">Lemma</span> <a name="select_perm"><span class="id" type="lemma">select_perm</span></a>: <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">let</span> (<span class="id" type="var">y</span>,<span class="id" type="var">r</span>) := <a class="idref" href="Selection.html#select"><span class="id" type="definition">select</span></a> <a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a> <a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a> <span class="id" type="keyword">in</span><br/>
 &nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library/Coq.Sorting.Permutation.html#Permutation"><span class="id" type="inductive">Permutation</span></a> (<a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a>::<a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a>) (<a class="idref" href="Selection.html#y"><span class="id" type="variable">y</span></a>::<a class="idref" href="Selection.html#r"><span class="id" type="variable">r</span></a>).<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
@@ -227,7 +228,7 @@ NOTE: If you wish, you may <span class="inlinecode"><span class="id" type="keywo
 </div>
 <div class="code code-space">
 <span class="id" type="keyword">Lemma</span> <a name="selsort_perm"><span class="id" type="lemma">selsort_perm</span></a>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>,<br/>
 &nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">l</span>, <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#length"><span class="id" type="definition">length</span></a> <a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a> = <a class="idref" href="Selection.html#n"><span class="id" type="variable">n</span></a> → <a class="idref" href="http://coq.inria.fr/library/Coq.Sorting.Permutation.html#Permutation"><span class="id" type="inductive">Permutation</span></a> <a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a> (<a class="idref" href="Selection.html#selsort"><span class="id" type="definition">selsort</span></a> <a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a> <a class="idref" href="Selection.html#n"><span class="id" type="variable">n</span></a>).<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 </div>
@@ -259,7 +260,7 @@ NOTE: If you wish, you may <span class="inlinecode"><span class="id" type="keywo
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Selection.html#select"><span class="id" type="definition">select</span></a> <a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a> <a class="idref" href="Selection.html#al"><span class="id" type="variable">al</span></a> = (<a class="idref" href="Selection.html#y"><span class="id" type="variable">y</span></a>,<a class="idref" href="Selection.html#bl"><span class="id" type="variable">bl</span></a>) →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Selection.html#y"><span class="id" type="variable">y</span></a> ≤ <a class="idref" href="Selection.html#x"><span class="id" type="variable">x</span></a>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
-<span class="comment">(*&nbsp;Hint:&nbsp;no&nbsp;induction&nbsp;needed&nbsp;in&nbsp;this&nbsp;lemma.&nbsp;<br/>
+<span class="comment">(*&nbsp;Hint:&nbsp;no&nbsp;induction&nbsp;needed&nbsp;in&nbsp;this&nbsp;lemma.<br/>
 &nbsp;&nbsp;&nbsp;Just&nbsp;use&nbsp;existing&nbsp;lemmas&nbsp;about&nbsp;select,&nbsp;along&nbsp;with&nbsp;<span class="inlinecode"><span class="id" type="var">Forall_perm</span></span>&nbsp;*)</span><br/>
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Theorem</span> <a name="select_smallest"><span class="id" type="lemma">select_smallest</span></a>:<br/>
@@ -283,7 +284,7 @@ NOTE: If you wish, you may <span class="inlinecode"><span class="id" type="keywo
 </div>
 <div class="code code-space">
 <span class="id" type="keyword">Lemma</span> <a name="selection_sort_sorted_aux"><span class="id" type="lemma">selection_sort_sorted_aux</span></a>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>  <span class="id" type="var">y</span> <span class="id" type="var">bl</span>, <br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>  <span class="id" type="var">y</span> <span class="id" type="var">bl</span>,<br/>
 &nbsp;&nbsp;&nbsp;<a class="idref" href="Selection.html#sorted"><span class="id" type="inductive">sorted</span></a> (<a class="idref" href="Selection.html#selsort"><span class="id" type="definition">selsort</span></a> <a class="idref" href="Selection.html#bl"><span class="id" type="variable">bl</span></a> (<a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#length"><span class="id" type="definition">length</span></a> <a class="idref" href="Selection.html#bl"><span class="id" type="variable">bl</span></a>)) →<br/>
 &nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library/Coq.Lists.List.html#Forall"><span class="id" type="inductive">Forall</span></a> (<span class="id" type="keyword">fun</span> <span class="id" type="var">z</span> : <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a> ⇒ <a class="idref" href="Selection.html#y"><span class="id" type="variable">y</span></a> ≤ <a class="idref" href="Selection.html#z"><span class="id" type="variable">z</span></a>) <a class="idref" href="Selection.html#bl"><span class="id" type="variable">bl</span></a> →<br/>
 &nbsp;&nbsp;&nbsp;<a class="idref" href="Selection.html#sorted"><span class="id" type="inductive">sorted</span></a> (<a class="idref" href="Selection.html#y"><span class="id" type="variable">y</span></a> :: <a class="idref" href="Selection.html#selsort"><span class="id" type="definition">selsort</span></a> <a class="idref" href="Selection.html#bl"><span class="id" type="variable">bl</span></a> (<a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#length"><span class="id" type="definition">length</span></a> <a class="idref" href="Selection.html#bl"><span class="id" type="variable">bl</span></a>)).<br/>
@@ -294,7 +295,7 @@ NOTE: If you wish, you may <span class="inlinecode"><span class="id" type="keywo
 <span class="id" type="keyword">Proof</span>.<br/>
 <span class="id" type="tactic">intros</span>.<br/>
 <span class="id" type="tactic">unfold</span> <a class="idref" href="Selection.html#selection_sort"><span class="id" type="definition">selection_sort</span></a>.<br/>
-<span class="comment">(*&nbsp;Hint:&nbsp;do&nbsp;induction&nbsp;on&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">length</span></span>&nbsp;of&nbsp;al.&nbsp;<br/>
+<span class="comment">(*&nbsp;Hint:&nbsp;do&nbsp;induction&nbsp;on&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">length</span></span>&nbsp;of&nbsp;al.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;In&nbsp;the&nbsp;inductive&nbsp;case,&nbsp;use&nbsp;<span class="inlinecode"><span class="id" type="var">select_smallest</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">select_perm</span></span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">selection_sort_sorted_aux</span></span>.&nbsp;*)</span><br/>
 &nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
@@ -361,7 +362,7 @@ When you use <span class="inlinecode"><span class="id" type="var">Function</span
 </div>
 <div class="code code-space">
 <span class="id" type="keyword">Lemma</span> <a name="selsort'_perm"><span class="id" type="lemma">selsort'_perm</span></a>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>,<br/>
 &nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">l</span>, <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#length"><span class="id" type="definition">length</span></a> <a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a> = <a class="idref" href="Selection.html#n"><span class="id" type="variable">n</span></a> → <a class="idref" href="http://coq.inria.fr/library/Coq.Sorting.Permutation.html#Permutation"><span class="id" type="inductive">Permutation</span></a> <a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a> (<a class="idref" href="Selection.html#selsort'"><span class="id" type="lemma">selsort'</span></a> <a class="idref" href="Selection.html#l"><span class="id" type="variable">l</span></a>).<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 </div>

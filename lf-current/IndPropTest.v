@@ -1,21 +1,28 @@
 Set Warnings "-notation-overridden,-parsing".
+From Coq Require Export String.
 Require Import IndProp.
-Parameter MISSING: Type.   
+Parameter MISSING: Type. 
 
-Module Check.  
+Module Check. 
 
-Ltac check_type A B :=  
-match type of A with  
+Ltac check_type A B := 
+match type of A with 
 | context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]  
-end.  
+| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
+end. 
 
-Ltac print_manual_grade A :=  
-first [  
-match eval compute in A with  
-| ?T => idtac "Score:" T  
-end  
-| idtac "Score: Ungraded"].  
+Ltac print_manual_grade A := 
+match eval compute in A with 
+| Some (pair ?S ?C) => 
+idtac "Score:"  S; 
+match eval compute in C with  
+| ""%string => idtac "Comment: None"  
+| _ => idtac "Comment:" C 
+end 
+| None => 
+idtac "Score: Ungraded"; 
+idtac "Comment: None" 
+end. 
 
 End Check.
 
@@ -88,9 +95,9 @@ idtac " ".
 idtac "-------------------  R_provability  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: R_provability".
+idtac "#> Manually graded: R.R_provability".
 idtac "Possible points: 3".
-print_manual_grade score_R_provability.
+print_manual_grade R.manual_grade_for_R_provability.
 idtac " ".
 
 idtac "-------------------  subsequence  --------------------".
@@ -99,7 +106,7 @@ idtac " ".
 idtac "#> Manually graded: subsequence".
 idtac "Advanced".
 idtac "Possible points: 4".
-print_manual_grade score_subsequence.
+print_manual_grade manual_grade_for_subsequence.
 idtac " ".
 
 idtac "-------------------  exp_match_ex1  --------------------".
@@ -207,9 +214,9 @@ idtac " ".
 idtac "-------------------  nostutter_defn  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: nostutter_defn".
+idtac "#> Manually graded: nostutter".
 idtac "Possible points: 3".
-print_manual_grade score_nostutter_defn.
+print_manual_grade manual_grade_for_nostutter.
 idtac " ".
 
 idtac "-------------------  filter_challenge  --------------------".
@@ -218,7 +225,7 @@ idtac " ".
 idtac "#> Manually graded: filter_challenge".
 idtac "Advanced".
 idtac "Possible points: 4".
-print_manual_grade score_filter_challenge.
+print_manual_grade manual_grade_for_filter_challenge.
 idtac " ".
 
 idtac " ".

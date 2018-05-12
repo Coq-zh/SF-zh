@@ -1,21 +1,28 @@
 Set Warnings "-notation-overridden,-parsing".
+From Coq Require Export String.
 Require Import Types.
-Parameter MISSING: Type.   
+Parameter MISSING: Type. 
 
-Module Check.  
+Module Check. 
 
-Ltac check_type A B :=  
-match type of A with  
+Ltac check_type A B := 
+match type of A with 
 | context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]  
-end.  
+| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
+end. 
 
-Ltac print_manual_grade A :=  
-first [  
-match eval compute in A with  
-| ?T => idtac "Score:" T  
-end  
-| idtac "Score: Ungraded"].  
+Ltac print_manual_grade A := 
+match eval compute in A with 
+| Some (pair ?S ?C) => 
+idtac "Score:"  S; 
+match eval compute in C with  
+| ""%string => idtac "Comment: None"  
+| _ => idtac "Comment:" C 
+end 
+| None => 
+idtac "Score: Ungraded"; 
+idtac "Comment: None" 
+end. 
 
 End Check.
 
@@ -68,7 +75,7 @@ idtac " ".
 idtac "#> Manually graded: finish_progress_informal".
 idtac "Advanced".
 idtac "Possible points: 3".
-print_manual_grade score_finish_progress_informal.
+print_manual_grade manual_grade_for_finish_progress_informal.
 idtac " ".
 
 idtac "-------------------  finish_preservation  --------------------".
@@ -90,7 +97,7 @@ idtac " ".
 idtac "#> Manually graded: finish_preservation_informal".
 idtac "Advanced".
 idtac "Possible points: 3".
-print_manual_grade score_finish_preservation_informal.
+print_manual_grade manual_grade_for_finish_preservation_informal.
 idtac " ".
 
 idtac "-------------------  preservation_alternate_proof  --------------------".
@@ -127,7 +134,7 @@ idtac " ".
 
 idtac "#> Manually graded: subject_expansion".
 idtac "Possible points: 2".
-print_manual_grade score_subject_expansion.
+print_manual_grade manual_grade_for_subject_expansion.
 idtac " ".
 
 idtac "-------------------  variation1  --------------------".
@@ -135,7 +142,7 @@ idtac " ".
 
 idtac "#> Manually graded: variation1".
 idtac "Possible points: 2".
-print_manual_grade score_variation1.
+print_manual_grade manual_grade_for_variation1.
 idtac " ".
 
 idtac "-------------------  variation2  --------------------".
@@ -143,7 +150,7 @@ idtac " ".
 
 idtac "#> Manually graded: variation2".
 idtac "Possible points: 2".
-print_manual_grade score_variation2.
+print_manual_grade manual_grade_for_variation2.
 idtac " ".
 
 idtac "-------------------  remove_predzero  --------------------".
@@ -151,7 +158,7 @@ idtac " ".
 
 idtac "#> Manually graded: remove_predzero".
 idtac "Possible points: 1".
-print_manual_grade score_remove_predzero.
+print_manual_grade manual_grade_for_remove_predzero.
 idtac " ".
 
 idtac "-------------------  prog_pres_bigstep  --------------------".
@@ -160,7 +167,7 @@ idtac " ".
 idtac "#> Manually graded: prog_pres_bigstep".
 idtac "Advanced".
 idtac "Possible points: 4".
-print_manual_grade score_prog_pres_bigstep.
+print_manual_grade manual_grade_for_prog_pres_bigstep.
 idtac " ".
 
 idtac " ".

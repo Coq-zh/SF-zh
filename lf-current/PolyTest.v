@@ -1,21 +1,28 @@
 Set Warnings "-notation-overridden,-parsing".
+From Coq Require Export String.
 Require Import Poly.
-Parameter MISSING: Type.   
+Parameter MISSING: Type. 
 
-Module Check.  
+Module Check. 
 
-Ltac check_type A B :=  
-match type of A with  
+Ltac check_type A B := 
+match type of A with 
 | context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]  
-end.  
+| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
+end. 
 
-Ltac print_manual_grade A :=  
-first [  
-match eval compute in A with  
-| ?T => idtac "Score:" T  
-end  
-| idtac "Score: Ungraded"].  
+Ltac print_manual_grade A := 
+match eval compute in A with 
+| Some (pair ?S ?C) => 
+idtac "Score:"  S; 
+match eval compute in C with  
+| ""%string => idtac "Comment: None"  
+| _ => idtac "Comment:" C 
+end 
+| None => 
+idtac "Score: Ungraded"; 
+idtac "Comment: None" 
+end. 
 
 End Check.
 
@@ -29,7 +36,7 @@ idtac " ".
 
 idtac "#> Manually graded: mumble_grumble".
 idtac "Possible points: 2".
-print_manual_grade score_mumble_grumble.
+print_manual_grade manual_grade_for_mumble_grumble.
 idtac " ".
 
 idtac "-------------------  split  --------------------".
@@ -150,7 +157,7 @@ idtac " ".
 idtac "#> Manually graded: fold_types_different".
 idtac "Advanced".
 idtac "Possible points: 1".
-print_manual_grade score_fold_types_different.
+print_manual_grade manual_grade_for_fold_types_different.
 idtac " ".
 
 idtac "-------------------  fold_length  --------------------".
@@ -169,9 +176,9 @@ idtac " ".
 idtac "-------------------  fold_map  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: fold_map".
+idtac "#> Manually graded: Exercises.fold_map".
 idtac "Possible points: 3".
-print_manual_grade score_fold_map.
+print_manual_grade Exercises.manual_grade_for_fold_map.
 idtac " ".
 
 idtac "-------------------  currying  --------------------".
@@ -204,19 +211,19 @@ idtac " ".
 idtac "-------------------  nth_error_informal  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: nth_error_informal".
+idtac "#> Manually graded: Exercises.informal_proof".
 idtac "Advanced".
 idtac "Possible points: 2".
-print_manual_grade score_nth_error_informal.
+print_manual_grade Exercises.manual_grade_for_informal_proof.
 idtac " ".
 
 idtac "-------------------  church_numerals  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: church_numerals".
+idtac "#> Manually graded: Exercises.succ_plus_mult_exp".
 idtac "Advanced".
 idtac "Possible points: 4".
-print_manual_grade score_church_numerals.
+print_manual_grade Exercises.manual_grade_for_succ_plus_mult_exp.
 idtac " ".
 
 idtac " ".

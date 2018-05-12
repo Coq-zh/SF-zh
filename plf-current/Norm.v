@@ -1,5 +1,12 @@
 (** * Norm: Normalization of STLC *)
 
+Set Warnings "-notation-overridden,-parsing".
+Require Import Coq.Lists.List. Import ListNotations.
+Require Import Maps.
+Require Import Smallstep.
+
+Hint Constructors multi.
+
 (* Chapter written and maintained by Andrew Tolmach *)
 
 (** This optional chapter is based on chapter 12 of _Types and
@@ -46,6 +53,8 @@
     straightforward induction on the size of a well-typed term? *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_norm_fail : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 5 stars, recommended (norm)  *)
@@ -54,6 +63,8 @@
     parts of the following development, including some proofs of lemmas
     and the all the cases involving products and conditionals.  Fill them
     in. *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_norm : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -67,13 +78,6 @@
 
 (* ----------------------------------------------------------------- *)
 (** *** Syntax and Operational Semantics *)
-
-Set Warnings "-notation-overridden,-parsing".
-Require Import Coq.Lists.List. Import ListNotations.
-Require Import Maps.
-Require Import Smallstep.
-
-Hint Constructors multi.
 
 Inductive ty : Type :=
   | TBool : ty
@@ -605,7 +609,7 @@ Fixpoint R (T:ty) (t:tm) {struct T} : Prop :=
    | TArrow T1 T2 => (forall s, R T1 s -> R T2 (tapp t s))
 
    (* ... edit the next line when dealing with products *)
-   | TProd T1 T2 => False 
+   | TProd T1 T2 => False
    end).
 
 (** As immediate consequences of this definition, we have that every

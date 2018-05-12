@@ -1421,6 +1421,8 @@ Proof.
 (** State and prove a specification of [XtimesYinZ]. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_XtimesYinZ_spec : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 3 stars, recommended (loop_never_stops)  *)
@@ -1477,6 +1479,8 @@ Proof.
 (** Use either [no_whiles] or [no_whilesR], as you prefer. *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_no_whiles_terminating : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)

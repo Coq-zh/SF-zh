@@ -557,6 +557,8 @@ Inductive R : nat -> nat -> nat -> Prop :=
 
 (* 请在此处解答 *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_R_provability : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (R_fact)  *)
@@ -573,6 +575,8 @@ Proof.
 End R.
 
 (** **** Exercise: 4 stars, advanced (subsequence)  *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_subsequence : option (prod nat string) := None.
 (** 如果一个列表的所有元素以相同的顺序出现在另一个列表之中（但允许其中出现其他额外的元素），
     我们把第一个列表称作第二个列表的_'子序列'_。 例如：
 
@@ -1365,6 +1369,8 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
   end.
   contradiction H1; auto. Qed.
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_nostutter : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (filter_challenge)  *)
@@ -1398,6 +1404,8 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
     not a [Fixpoint].)  *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced, optional (filter_challenge_2)  *)
@@ -1432,6 +1440,8 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
 *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (palindrome_converse)  *)
@@ -1476,9 +1486,13 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
     [disjoint], [NoDup] and [++] (list append).  *)
 
 (* 请在此处解答 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_NoDup_disjoint_etc : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (pigeonhole_principle)  *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_check_repeats : option (prod nat string) := None.
 (** The _pigeonhole principle_ states a basic fact about counting: if
     we distribute more than [n] items into [n] pigeonholes, some
     pigeonhole must contain at least two items.  As often happens, this

@@ -8,6 +8,7 @@
     with repeats, where the order does not matter.  One simple
     representation of a multiset is a function from values to [nat]. *)
 
+Require Import Coq.Strings.String.
 Require Import Perm.
 Require Import Sort.
 Require Export FunctionalExtensionality.
@@ -134,6 +135,8 @@ Qed.
       - [ ] multisets
 
    Put an X in one box in each list. *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_permutations_vs_multiset : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -221,9 +224,9 @@ Proof.
   clear v bl Heqcl.
 
   (** From this point on, you don't need induction.
-    Use the lemmas [perm_trans], [delete_contents], 
+    Use the lemmas [perm_trans], [delete_contents],
      [in_perm_delete], [contents_in].   At _certain points_
-     you'll need to unfold the definitions of 
+     you'll need to unfold the definitions of
      [multiset_delete], [union], [singleton]. *)
 
   (* 请在此处解答 *) Admitted.
@@ -248,5 +251,3 @@ Proof.
   destruct (H al); split; auto;
   apply same_contents_iff_perm; auto.
 Qed.
-
-

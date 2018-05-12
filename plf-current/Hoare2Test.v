@@ -1,21 +1,28 @@
 Set Warnings "-notation-overridden,-parsing".
+From Coq Require Export String.
 Require Import Hoare2.
-Parameter MISSING: Type.   
+Parameter MISSING: Type. 
 
-Module Check.  
+Module Check. 
 
-Ltac check_type A B :=  
-match type of A with  
+Ltac check_type A B := 
+match type of A with 
 | context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]  
-end.  
+| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
+end. 
 
-Ltac print_manual_grade A :=  
-first [  
-match eval compute in A with  
-| ?T => idtac "Score:" T  
-end  
-| idtac "Score: Ungraded"].  
+Ltac print_manual_grade A := 
+match eval compute in A with 
+| Some (pair ?S ?C) => 
+idtac "Score:"  S; 
+match eval compute in C with  
+| ""%string => idtac "Comment: None"  
+| _ => idtac "Comment:" C 
+end 
+| None => 
+idtac "Score: Ungraded"; 
+idtac "Comment: None" 
+end. 
 
 End Check.
 
@@ -27,50 +34,50 @@ Goal True.
 idtac "-------------------  if_minus_plus_reloaded  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: if_minus_plus_reloaded".
+idtac "#> Manually graded: decorations_in_if_minus_plus_reloaded".
 idtac "Possible points: 2".
-print_manual_grade score_if_minus_plus_reloaded.
+print_manual_grade manual_grade_for_decorations_in_if_minus_plus_reloaded.
 idtac " ".
 
 idtac "-------------------  slow_assignment  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: slow_assignment".
+idtac "#> Manually graded: decorations_in_slow_assignment".
 idtac "Possible points: 2".
-print_manual_grade score_slow_assignment.
+print_manual_grade manual_grade_for_decorations_in_slow_assignment.
 idtac " ".
 
 idtac "-------------------  factorial  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: factorial".
+idtac "#> Manually graded: decorations_in_factorial".
 idtac "Possible points: 3".
-print_manual_grade score_factorial.
+print_manual_grade manual_grade_for_decorations_in_factorial.
 idtac " ".
 
 idtac "-------------------  Min_Hoare  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: Min_Hoare".
+idtac "#> Manually graded: decorations_in_Min_Hoare".
 idtac "Possible points: 3".
-print_manual_grade score_Min_Hoare.
+print_manual_grade manual_grade_for_decorations_in_Min_Hoare.
 idtac " ".
 
 idtac "-------------------  two_loops  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: two_loops".
+idtac "#> Manually graded: decorations_in_two_loops".
 idtac "Possible points: 3".
-print_manual_grade score_two_loops.
+print_manual_grade manual_grade_for_decorations_in_two_loops.
 idtac " ".
 
 idtac "-------------------  slow_assignment_dec  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: slow_assignment_dec".
+idtac "#> Manually graded: check_defn_of_slow_assignment_dec".
 idtac "Advanced".
 idtac "Possible points: 1".
-print_manual_grade score_slow_assignment_dec.
+print_manual_grade manual_grade_for_check_defn_of_slow_assignment_dec.
 idtac " ".
 
 idtac "#> slow_assignment_dec_correct".
@@ -90,7 +97,7 @@ idtac " ".
 idtac "#> Manually graded: factorial_dec".
 idtac "Advanced".
 idtac "Possible points: 4".
-print_manual_grade score_factorial_dec.
+print_manual_grade manual_grade_for_factorial_dec.
 idtac " ".
 
 idtac " ".
