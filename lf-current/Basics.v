@@ -204,12 +204,6 @@ Proof. simpl. reflexivity. Qed.
     中的断言都能被 Coq 验证通过。（仿照前面 [orb] 测试的模式，移除每一个
     [Admitted.] 并补充证明。）此函数应在两个输入之一或二者均为 [false]
     时返回 [true] 。  *)
-(** Remove "[Admitted.]" and complete the definition of the following
-    function; then make sure that the [Example] assertions below can
-    each be verified by Coq.  (Remove "[Admitted.]" and fill in each
-    proof, following the model of the [orb] tests above.) The function
-    should return [true] if either or both of its inputs are
-    [false]. *)
 (** Every chapter comes with a [[*Test.v]] file, containing scripts
     that check some of the exercises. After you finish an exercise in
     this file, you can run [[make BasicsTest.vo]] and check its
