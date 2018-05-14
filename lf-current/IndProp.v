@@ -628,19 +628,14 @@ Definition manual_grade_for_subsequence : option (prod nat string) := None.
 
 
 (* ################################################################# *)
-(** * Case Study: Regular Expressions *)
+(** * 案例学习：正则表达式 *)
 
-(** The [ev] property provides a simple example for illustrating
-    inductive definitions and the basic techniques for reasoning about
-    them, but it is not terribly exciting -- after all, it is
-    equivalent to the two non-inductive definitions of evenness that
-    we had already seen, and does not seem to offer any concrete
-    benefit over them.  To give a better sense of the power of
-    inductive definitions, we now show how to use them to model a
-    classic concept in computer science: _regular expressions_. *)
+(** 性质 [ev] 提供了一个简单的例子来展示归纳定义和基础推理技巧，
+    但这还不是什么激动人心的东西－－毕竟，[ev] 等价于我们之前见过的两个非归纳的定义，
+    而看起来归纳定义并没有提供什么好处。为了更好地展示归纳定义的表达能力，
+    我们继续使用它来建模计算机科学中的一个经典概念－－正则表达式。 *)
 
-(** Regular expressions are a simple language for describing strings,
-    defined as follows: *)
+(** 正则表达式是用来描述字符串的一种简单语言，定义如下： *)
 
 Inductive reg_exp {T : Type} : Type :=
 | EmptySet : reg_exp
@@ -650,42 +645,33 @@ Inductive reg_exp {T : Type} : Type :=
 | Union : reg_exp -> reg_exp -> reg_exp
 | Star : reg_exp -> reg_exp.
 
-(** Note that this definition is _polymorphic_: Regular
-    expressions in [reg_exp T] describe strings with characters drawn
-    from [T] -- that is, lists of elements of [T].
+(** 请注意这个定义是_'多态的'_：[reg_exp T] 通过正则表达式描述了字符串，
+    而其中的字符取自 [T] －－也即，[T] 的元素构成的列表。
 
-    (We depart slightly from standard practice in that we do not
-    require the type [T] to be finite.  This results in a somewhat
-    different theory of regular expressions, but the difference is not
-    significant for our purposes.) *)
+    （同一般的实践略有不同，我们不要求类型 [T] 是有限的。由此可形成一些关于正则表达式
+    不同的理论，但对于我们在本章的目的而言并无不同。） *)
 
-(** We connect regular expressions and strings via the following
-    rules, which define when a regular expression _matches_ some
-    string:
+(** 我们通过以下规则来构建正则表达式和字符串，这些规则定义了正则表达式何时匹配一个字符串：
 
-      - The expression [EmptySet] does not match any string.
+      - 表达式 [EmptySet] 不匹配任何字符串。
 
-      - The expression [EmptyStr] matches the empty string [[]].
+      - 表达式 [EmptyStr] 匹配空字符串 [[]].
 
-      - The expression [Char x] matches the one-character string [[x]].
+      - 表达式 [Char x] 匹配单个字符构成的字符串 [[x]].
 
-      - If [re1] matches [s1], and [re2] matches [s2], then [App re1
-        re2] matches [s1 ++ s2].
+      - 如果 [re1] 匹配 [s1], 且 [re2] 匹配 [s2], 那么 [App re1
+        re2] 匹配 [s1 ++ s2].
 
-      - If at least one of [re1] and [re2] matches [s], then [Union re1
-        re2] matches [s].
+      - 如果 [re1] 和 [re2] 中至少一个匹配 [s], 那么 [Union re1
+        re2] 匹配 [s].
 
-      - Finally, if we can write some string [s] as the concatenation of
-        a sequence of strings [s = s_1 ++ ... ++ s_k], and the
-        expression [re] matches each one of the strings [s_i], then
-        [Star re] matches [s].
+      - 最后，如果我们写下某个字符串 [s] 作为一个字符串序列的连接
+        [s = s_1 ++ ... ++ s_k]，且表达式 [re] 匹配其中每一个字符串 [s_i]，
+        那么 [Star re] 匹配 [s]。
+        
+        作为特殊情况，此字符串序列可能为空，因此无论 [re] 是什么 [Star re] 总是匹配空字符串 [[]]。*)
 
-        As a special case, the sequence of strings may be empty, so
-        [Star re] always matches the empty string [[]] no matter what
-        [re] is. *)
-
-(** We can easily translate this informal definition into an
-    [Inductive] one as follows: *)
+(** 我们可以把非形式化的定义翻译为使用 [Inductive] 的定义：*)
 
 Inductive exp_match {T} : list T -> reg_exp -> Prop :=
 | MEmpty : exp_match [] EmptyStr
@@ -706,9 +692,8 @@ Inductive exp_match {T} : list T -> reg_exp -> Prop :=
                exp_match s2 (Star re) ->
                exp_match (s1 ++ s2) (Star re).
 
-(** Again, for readability, we can also display this definition using
-    inference-rule notation.  At the same time, let's introduce a more
-    readable infix notation. *)
+(** 出于可读性的考虑，在此我们也展示使用推断规则表示的定义。
+    于此同时，我们引入可读性更好的中缀表示法。*)
 
 Notation "s =~ re" := (exp_match s re) (at level 80).
 
@@ -740,26 +725,19 @@ Notation "s =~ re" := (exp_match s re) (at level 80).
                         s1 ++ s2 =~ Star re
 *)
 
-(** Notice that these rules are not _quite_ the same as the informal
-    ones that we gave at the beginning of the section.  First, we
-    don't need to include a rule explicitly stating that no string
-    matches [EmptySet]; we just don't happen to include any rule that
-    would have the effect of some string matching [EmptySet].  (Indeed,
-    the syntax of inductive definitions doesn't even _allow_ us to
-    give such a "negative rule.")
+(** 请注意这些规则不_'完全'_等同于之前给出的非形式化定义。
+    首先，我们并不需要一个规则来直接表述无字符串匹配 [EmptySet]；
+    我们做的仅仅是不囊括任何可能导致有字符串被 [EmptySet] 所匹配的规则。
+    （的确，归纳定义的语法并不_'允许'_我们表达类似的「否定规则」（negative rule））。
+    
+    其次，非形式化定义中的 [Union] 和 [Star] 各自对应了两个构造子：
+    [MUnionL] / [MUnionR]，和 [MStar0] / [MStarApp]。这在逻辑上等价于
+    原始的定义，但在 Coq 中这样更加方便，因为递归出现的 [exp_match] 是作为构造子的
+    直接参数给定的，这在对证据进行归纳时更简单。
+    （练习 [exp_match_ex1] 和 [exp_match_ex2] 会要求你证明归纳定义中给定的构造子
+    和从非形式化规则的表述中提炼的规则确实是等价的。）
 
-    Second, the informal rules for [Union] and [Star] correspond
-    to two constructors each: [MUnionL] / [MUnionR], and [MStar0] /
-    [MStarApp].  The result is logically equivalent to the original
-    rules but more convenient to use in Coq, since the recursive
-    occurrences of [exp_match] are given as direct arguments to the
-    constructors, making it easier to perform induction on evidence.
-    (The [exp_match_ex1] and [exp_match_ex2] exercises below ask you
-    to prove that the constructors given in the inductive declaration
-    and the ones that would arise from a more literal transcription of
-    the informal rules are indeed equivalent.)
-
-    Let's illustrate these rules with a few examples. *)
+    接下来我们对一些例子使用这些规则： *)
 
 Example reg_exp_ex1 : [1] =~ Char 1.
 Proof.
@@ -773,23 +751,18 @@ Proof.
   - apply MChar.
 Qed.
 
-(** (Notice how the last example applies [MApp] to the strings [[1]]
-    and [[2]] directly.  Since the goal mentions [[1; 2]] instead of
-    [[1] ++ [2]], Coq wouldn't be able to figure out how to split the
-    string on its own.)
+(** （请注意，后一个例子对字符串 [[1]] 和 [[2]] 直接应用了 [MApp]。
+    由于目标的形式是 [[1; 2]] 而非 [[1] ++ [2]]，Coq 并不知道如何分解这个字符串。） 
 
-    Using [inversion], we can also show that certain strings do _not_
-    match a regular expression: *)
+    使用 [inversion]，我们还可以证明某些字符串_'不'_匹配一个正则表达式： *)
 
 Example reg_exp_ex3 : ~ ([1; 2] =~ Char 1).
 Proof.
   intros H. inversion H.
 Qed.
 
-(** We can define helper functions for writing down regular
-    expressions. The [reg_exp_of_list] function constructs a regular
-    expression that matches exactly the list that it receives as an
-    argument: *)
+(** 我们可以定义一些辅助函数来简化正则表达式的书写。函数 [reg_exp_of_list]
+    接受一个列表做参数，并构造一个正则表达式来精确地匹配这个列表：*)
 
 Fixpoint reg_exp_of_list {T} (l : list T) :=
   match l with
@@ -808,9 +781,8 @@ Proof.
   apply MEmpty.
 Qed.
 
-(** We can also prove general facts about [exp_match].  For instance,
-    the following lemma shows that every string [s] that matches [re]
-    also matches [Star re]. *)
+(** 我们还可以证明一些关于 [exp_match] 的性质。比如，下面的引理显示
+    任意一个匹配 [re] 的字符串 [s] 也匹配 [Star re]。 *)
 
 Lemma MStar1 :
   forall T s (re : @reg_exp T) ,
@@ -824,13 +796,10 @@ Proof.
   - apply MStar0.
 Qed.
 
-(** (Note the use of [app_nil_r] to change the goal of the theorem to
-    exactly the same shape expected by [MStarApp].) *)
+(** （请注意对 [app_nil_r] 的使用改变了目标，以此可匹配 [MStarApp] 所需要的形式。）*)
 
 (** **** Exercise: 3 stars (exp_match_ex1)  *)
-(** The following lemmas show that the informal matching rules given
-    at the beginning of the chapter can be obtained from the formal
-    inductive definition. *)
+(** 下面的引理显示从形式化的归纳定义中可以得到本章开始的非形式化匹配规则。 *)
 
 Lemma empty_is_empty : forall T (s : list T),
   ~ (s =~ EmptySet).
@@ -843,10 +812,9 @@ Lemma MUnion' : forall T (s : list T) (re1 re2 : @reg_exp T),
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** The next lemma is stated in terms of the [fold] function from the
-    [Poly] chapter: If [ss : list (list T)] represents a sequence of
-    strings [s1, ..., sn], then [fold app ss []] is the result of
-    concatenating them all together. *)
+(** 接下来的引理使用了 [Poly] 一章中出现的 [fold] 函数：
+    如果 [ss : list (list T)] 表示一个字符串序列 [s1, ..., sn]，那么
+    [fold app ss []] 是将所有字符串连接的结果。*)
 
 Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp),
   (forall s, In s ss -> s =~ re) ->
@@ -856,8 +824,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 4 stars, optional (reg_exp_of_list_spec)  *)
-(** Prove that [reg_exp_of_list] satisfies the following
-    specification: *)
+(** 请证明 [reg_exp_of_list] 满足以下规范： *)
 
 
 Lemma reg_exp_of_list_spec : forall T (s1 s2 : list T),
@@ -866,18 +833,15 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Since the definition of [exp_match] has a recursive
-    structure, we might expect that proofs involving regular
-    expressions will often require induction on evidence. *)
+(** 由于 [exp_match] 以递归方式定义，我们可能会发现
+    关于正则表达式的证明常常需要对证据进行归纳。*)
 
 
-(** For example, suppose that we wanted to prove the following
-    intuitive result: If a regular expression [re] matches some string
-    [s], then all elements of [s] must occur as character literals
-    somewhere in [re].
+(** 比如，假设我们想要证明以下显然的结果：如果正则表达式 [re] 匹配某个字符串 [s]，
+    那么 [s] 中的所有元素必在 [re] 中某处以字符字面量的形式出现。
 
-    To state this theorem, we first define a function [re_chars] that
-    lists all characters that occur in a regular expression: *)
+    为了表达这个定理，我们首先定义函数 [re_chars] 来列举一个正则表达式中出现的
+    所有字符：*)
 
 Fixpoint re_chars {T} (re : reg_exp) : list T :=
   match re with
@@ -889,7 +853,7 @@ Fixpoint re_chars {T} (re : reg_exp) : list T :=
   | Star re => re_chars re
   end.
 
-(** We can then phrase our theorem as follows: *)
+(** 接下来我们这样陈述此定理： *)
 
 Theorem in_re_match : forall T (s : list T) (re : reg_exp) (x : T),
   s =~ re ->
@@ -922,14 +886,12 @@ Proof.
   - (* MStar0 *)
     destruct Hin.
 
-(** Something interesting happens in the [MStarApp] case.  We obtain
-    _two_ induction hypotheses: One that applies when [x] occurs in
-    [s1] (which matches [re]), and a second one that applies when [x]
-    occurs in [s2] (which matches [Star re]).  This is a good
-    illustration of why we need induction on evidence for [exp_match],
-    as opposed to [re]: The latter would only provide an induction
-    hypothesis for strings that match [re], which would not allow us
-    to reason about the case [In x s2]. *)
+(** 特别关注一下对 [MStarApp] 分类的证明。我们得到了_'两个'_归纳假设：
+    一个适用于 [x] 出现在 [s1] 中（当匹配 [re] 时），另一个则适用于
+    [x] 出现在 [s2] 中（当匹配 [Star re] 时）。
+    这是一个很好的例子来表明为什么我们需要对 [exp_match] 的证据而非 [re]
+    进行归纳：对后者的归纳仅仅提供匹配 [re] 的字符串的归纳假设，却无法允许我们
+    对 [In x s2] 分类进行推理。 *)
 
   - (* MStarApp *)
     simpl. rewrite In_app_iff in Hin.
@@ -941,9 +903,8 @@ Proof.
 Qed.
 
 (** **** Exercise: 4 stars (re_not_empty)  *)
-(** Write a recursive function [re_not_empty] that tests whether a
-    regular expression matches some string. Prove that your function
-    is correct. *)
+(** 请编写一个递归函数 [re_not_empty] 用来测试某个正则表达式是否会匹配一些字符串。
+    并证明你的函数是正确的。*)
 
 Fixpoint re_not_empty {T : Type} (re : @reg_exp T) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -955,13 +916,11 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** The [remember] Tactic *)
+(** ** [remember] 策略 *)
 
-(** One potentially confusing feature of the [induction] tactic is
-    that it happily lets you try to set up an induction over a term
-    that isn't sufficiently general.  The effect of this is to lose
-    information (much as [destruct] can do), and leave you unable to
-    complete the proof.  Here's an example: *)
+(** [induction] 策略让人困惑的一个特点是它会欣然接受任意一个项并尝试归纳，
+    即使这个项不够一般（general）。其副作用是会丢失掉一些信息（类似 [destruct]），
+    并且使你无法完成证明。比如： *)
 
 Lemma star_app: forall T (s1 s2 : list T) (re : @reg_exp T),
   s1 =~ Star re ->
@@ -970,47 +929,39 @@ Lemma star_app: forall T (s1 s2 : list T) (re : @reg_exp T),
 Proof.
   intros T s1 s2 re H1.
 
-(** Just doing an [inversion] on [H1] won't get us very far in
-    the recursive cases. (Try it!). So we need induction (on
-    evidence!). Here is a naive first attempt: *)
+(** 仅仅对 [H1] 反演并不会对处理含有递归的分类有太多帮助。
+    （尝试一下！）
+    因此我们需要对证据进行归纳！下面是一个朴素的尝试：*)
 
   induction H1
     as [|x'|s1 re1 s2' re2 Hmatch1 IH1 Hmatch2 IH2
         |s1 re1 re2 Hmatch IH|re1 s2' re2 Hmatch IH
         |re''|s1 s2' re'' Hmatch1 IH1 Hmatch2 IH2].
 
-(** But now, although we get seven cases (as we would expect from the
-    definition of [exp_match]), we have lost a very important bit of
-    information from [H1]: the fact that [s1] matched something of the
-    form [Star re].  This means that we have to give proofs for _all_
-    seven constructors of this definition, even though all but two of
-    them ([MStar0] and [MStarApp]) are contradictory.  We can still
-    get the proof to go through for a few constructors, such as
-    [MEmpty]... *)
+(** 但是现在，尽管我们得到了七个分类（正由我们从 [exp_match] 的定义中期待的那样），
+     [H1] 还是丢失了一个非常重要的信息： [s1] 匹配了某种形式的 [Star re] 的事实。
+    这意味着对于_'全部'_的七个构造子分类我们都需要给出证明，尽管其中两个（[MStar0] 
+    和 [MStarApp]）是自相矛盾的。
+    我们仍然可以在一些构造子上继续证明，比如 [MEmpty] …… *)
 
   - (* MEmpty *)
     simpl. intros H. apply H.
 
-(** ... but most cases get stuck.  For [MChar], for instance, we
-    must show that
+(** …… 但有一些分类我们却卡住了。比如，对于 [MChar]，我们需要证明
 
     s2 =~ Char x' -> x' :: s2 =~ Char x',
 
-    which is clearly impossible. *)
+    这显然是不可能完成的。 *)
 
-  - (* MChar. Stuck... *)
+  - (* MChar. 卡住了…… *)
 Abort.
 
-(** The problem is that [induction] over a Prop hypothesis only works
-    properly with hypotheses that are completely general, i.e., ones
-    in which all the arguments are variables, as opposed to more
-    complex expressions, such as [Star re].
+(** 问题是，只有当 [Prop] 的假设是完全一般的时候，对其使用 [induction] 的才会起作用，
+    也即，其所有的参数都是变量，而非更复杂的表达式，比如 [Star re]。
 
-    (In this respect, [induction] on evidence behaves more like
-    [destruct] than like [inversion].)
+    （由此，对证据使用 [induction] 的行为更像是 [destruct] 而非 [inversion]。）
 
-    We can solve this problem by generalizing over the problematic
-    expressions with an explicit equality: *)
+    通过显式地添加一个等式来一般化这个有问题的表达式，我们便可以解决这个问题： *)
 
 Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp),
   re' = Star re ->
@@ -1018,21 +969,16 @@ Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp),
   s2 =~ Star re ->
   s1 ++ s2 =~ Star re.
 
-(** We can now proceed by performing induction over evidence directly,
-    because the argument to the first hypothesis is sufficiently
-    general, which means that we can discharge most cases by inverting
-    the [re' = Star re] equality in the context.
+(** 我们现在可以直接对证据进行归纳，因为第一个假设的参数已经足够一般，
+    这意味着我们通过反演当前上下文中的 [re' = Star re] 来消解掉多数分类。
 
-    This idiom is so common that Coq provides a tactic to
-    automatically generate such equations for us, avoiding thus the
-    need for changing the statements of our theorems. *)
+    这在 Coq 中是一种常用的技巧，因此 Coq 提供了策略来自动生成这种等式，
+    并且我们也不必改写定理的陈述。*)
 
 Abort.
 
-(** Invoking the tactic [remember e as x] causes Coq to (1) replace
-    all occurrences of the expression [e] by the variable [x], and (2)
-    add an equation [x = e] to the context.  Here's how we can use it
-    to show the above result: *)
+(** 在 Coq 中使用 [remember e as x] 策略会（1）替换所有表达式 [e] 为变量 [x]，
+    （2）在当前上下文中添加一个等式 [x = e]。我们可以这样使用它来证明上面的结果： *)
 
 Lemma star_app: forall T (s1 s2 : list T) (re : reg_exp),
   s1 =~ Star re ->
@@ -1042,7 +988,7 @@ Proof.
   intros T s1 s2 re H1.
   remember (Star re) as re'.
 
-(** We now have [Heqre' : re' = Star re]. *)
+(** 我们现在有 [Heqre' : re' = Star re]. *)
 
   generalize dependent s2.
   induction H1
@@ -1050,8 +996,7 @@ Proof.
         |s1 re1 re2 Hmatch IH|re1 s2' re2 Hmatch IH
         |re''|s1 s2' re'' Hmatch1 IH1 Hmatch2 IH2].
 
-(** The [Heqre'] is contradictory in most cases, which allows us to
-    conclude immediately. *)
+(**  [Heqre'] 与多数分类相互矛盾，因此我们可以直接结束这些分类。*)
 
   - (* MEmpty *)  inversion Heqre'.
   - (* MChar *)   inversion Heqre'.
@@ -1059,10 +1004,9 @@ Proof.
   - (* MUnionL *) inversion Heqre'.
   - (* MUnionR *) inversion Heqre'.
 
-(** The interesting cases are those that correspond to [Star].  Note
-    that the induction hypothesis [IH2] on the [MStarApp] case
-    mentions an additional premise [Star re'' = Star re'], which
-    results from the equality generated by [remember]. *)
+(** 值得注意的分类是关于 [Star] 的。请注意 [MStarApp] 分类的归纳假设 [IH2]
+    涉及到一个额外的前提 [Star re'' = Star re']，这是由 [remember] 添加的
+    等式所产生的。*)
 
   - (* MStar0 *)
     inversion Heqre'. intros s H. apply H.
@@ -1079,9 +1023,8 @@ Qed.
 
 (** **** Exercise: 4 stars, optional (exp_match_ex2)  *)
 
-(** The [MStar''] lemma below (combined with its converse, the
-    [MStar'] exercise above), shows that our definition of [exp_match]
-    for [Star] is equivalent to the informal one given previously. *)
+(** 下面的引理 [MStar''](以及它的逆，之前的练习题中的 [MStar']）显示 [exp_match]
+    定义中的 [Star] 等价于前面给出的非形式化定义。*)
 
 Lemma MStar'' : forall T (s : list T) (re : reg_exp),
   s =~ Star re ->
@@ -1093,17 +1036,13 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced (pumping)  *)
-(** One of the first really interesting theorems in the theory of
-    regular expressions is the so-called _pumping lemma_, which
-    states, informally, that any sufficiently long string [s] matching
-    a regular expression [re] can be "pumped" by repeating some middle
-    section of [s] an arbitrary number of times to produce a new
-    string also matching [re].
+(** 正则表达式中一个非常有趣的定理叫做_'泵引理（Pumping Lemma）'_，
+    非形式化地来讲，它陈述了任意某个足够长的字符串 [s] 若匹配一个正则表达式 [re]，
+    则可以被抽取（pumped）——将 [s] 的某个中间部分重复任意次产生的新字符串
+    仍然匹配 [re]。
 
-    To begin, we need to define "sufficiently long."  Since we are
-    working in a constructive logic, we actually need to be able to
-    calculate, for each regular expression [re], the minimum length
-    for strings [s] to guarantee "pumpability." *)
+    我们首先定义什么是「足够长」。由于使用的是构造性逻辑，我们事实上需要计算
+    对于任何一个正则表达式 [re] 其最小的「可被抽取（pumpability）」长度。*)
 
 Module Pumping.
 
@@ -1119,8 +1058,7 @@ Fixpoint pumping_constant {T} (re : @reg_exp T) : nat :=
   | Star _ => 1
   end.
 
-(** Next, it is useful to define an auxiliary function that repeats a
-    string (appends it to itself) some number of times. *)
+(** 接下来，定义一个辅助函数来重复一个字符串（连接到它自己）特定次数。*)
 
 Fixpoint napp {T} (n : nat) (l : list T) : list T :=
   match n with
@@ -1137,14 +1075,10 @@ Proof.
   - simpl. rewrite IHn, app_assoc. reflexivity.
 Qed.
 
-(** Now, the pumping lemma itself says that, if [s =~ re] and if the
-    length of [s] is at least the pumping constant of [re], then [s]
-    can be split into three substrings [s1 ++ s2 ++ s3] in such a way
-    that [s2] can be repeated any number of times and the result, when
-    combined with [s1] and [s3] will still match [re].  Since [s2] is
-    also guaranteed not to be the empty string, this gives us
-    a (constructive!) way to generate strings matching [re] that are
-    as long as we like. *)
+(** 现在，泵引理是说，如果 [s =~ re] 且 [s] 的长度最小是 [re] 的抽取常数（pumping constant），
+    那么 [s] 可分割成三个子字符串 [s1 ++ s2 ++ s3]，其中 [s2] 可被重复任意次，
+    其结果同 [s1] 和 [s3] 合并后仍然匹配 [re]。由于 [s2] 必须为非空字符串，
+    这是一种（构造性的）方式来以我们想要的长度生成匹配 [re] 的字符串。 *)
 
 Lemma pumping : forall T (re : @reg_exp T) s,
   s =~ re ->
@@ -1154,13 +1088,10 @@ Lemma pumping : forall T (re : @reg_exp T) s,
     s2 <> [] /\
     forall m, s1 ++ napp m s2 ++ s3 =~ re.
 
-(** To streamline the proof (which you are to fill in), the [omega]
-    tactic, which is enabled by the following [Require], is helpful in
-    several places for automatically completing tedious low-level
-    arguments involving equalities or inequalities over natural
-    numbers.  We'll return to [omega] in a later chapter, but feel
-    free to experiment with it now if you like.  The first case of the
-    induction gives an example of how it is used. *)
+(** 为了简化证明（也就是接下来你需要填写的），我们使用 [Require] 来引入 [omega] 策略，
+    其可用于自动化地完成一些涉及到自然数上的等式和不等式的枯燥证明。
+    我们在后面的章节中会详细解释 [omega]，不过请尝试做一些实验。
+    下面的第一个归纳分类中展示了如何使用它。 *)
 
 Import Coq.omega.Omega.
 
@@ -1178,13 +1109,10 @@ End Pumping.
 (** [] *)
 
 (* ################################################################# *)
-(** * Case Study: Improving Reflection *)
+(** * 案例学习：改进互映 *)
 
-(** We've seen in the [Logic] chapter that we often need to
-    relate boolean computations to statements in [Prop].  But
-    performing this conversion as we did it there can result in
-    tedious proof scripts.  Consider the proof of the following
-    theorem: *)
+(** 在 [Logic] 一章中，我们经常需要关联起对布尔值的计算和 [Prop] 
+    中的陈述。然而进行这样的关联往往会导致冗长的证明。请考虑以下定理的证明：*)
 
 Theorem filter_not_empty_In : forall n l,
   filter (beq_nat n) l <> [] ->
@@ -1202,36 +1130,29 @@ Proof.
       intros H'. right. apply IHl'. apply H'.
 Qed.
 
-(** In the first branch after [destruct], we explicitly apply
-    the [beq_nat_true_iff] lemma to the equation generated by
-    destructing [beq_nat n m], to convert the assumption [beq_nat n m
-    = true] into the assumption [n = m]; then we had to [rewrite]
-    using this assumption to complete the case. *)
+(** 在 [destruct] 后的第一个分支中，我们解构 [beq_nat n m] 
+    后生成的等式显式地使用了 [beq_nat_true_iff] 引理，以此将假设
+    [beq_nat n m] 转换为假设 [n = m]；接着使用 [rewrite] 和这个假设
+    来完成此分支的证明。*)
 
-(** We can streamline this by defining an inductive proposition that
-    yields a better case-analysis principle for [beq_nat n m].
-    Instead of generating an equation such as [beq_nat n m = true],
-    which is generally not directly useful, this principle gives us
-    right away the assumption we really need: [n = m]. *)
+(** 为了简化这样的证明，我们可定义一个归纳命题，其对 [beq_nat n m] 
+    可产生更好的分类讨论原理。
+    它不会生成类似 [beq_nat n m = true] 这样的等式，因为一般来说这并不直接有用，
+    其生成的分类讨论原理正是我们所需要的假设: [n = m]。*)
 
 Inductive reflect (P : Prop) : bool -> Prop :=
 | ReflectT : P -> reflect P true
 | ReflectF : ~ P -> reflect P false.
 
-(** The [reflect] property takes two arguments: a proposition
-    [P] and a boolean [b].  Intuitively, it states that the property
-    [P] is _reflected_ in (i.e., equivalent to) the boolean [b]: that
-    is, [P] holds if and only if [b = true].  To see this, notice
-    that, by definition, the only way we can produce evidence that
-    [reflect P true] holds is by showing that [P] is true and using
-    the [ReflectT] constructor.  If we invert this statement, this
-    means that it should be possible to extract evidence for [P] from
-    a proof of [reflect P true].  Conversely, the only way to show
-    [reflect P false] is by combining evidence for [~ P] with the
-    [ReflectF] constructor.
-
-    It is easy to formalize this intuition and show that the two
-    statements are indeed equivalent: *)
+(** 性质 [reflect] 接受两个参数：一个命题 [P] 和一个布尔值 [b]。
+    直观地讲，它陈述了性质 [P] 在布尔值 [b] 中所_'映现'_（也即，等价）：
+    换句话说，[P] 成立当且进当 [b = true]。为了理解这一点，请注意，根据定义，
+    我们能够产生 [reflect P true] 的证据的唯一方式是证明 [P] 为真且使用
+    [ReflectT] 构造子。如果我们反转这个陈述，意味着从 [reflect P true] 
+    的证明中抽取出 [P] 的证据也是可能的。相反地，显示 [reflect P false]
+    的唯一方式是合并 [~ P] 的证据和 [ReflectF] 构造子。
+    
+    形式化这种直觉并证明两个表述确实等价是十分容易的：*)
 
 Theorem iff_reflect : forall P b, (P <-> b = true) -> reflect P b.
 Proof.
@@ -1247,11 +1168,10 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** The advantage of [reflect] over the normal "if and only if"
-    connective is that, by destructing a hypothesis or lemma of the
-    form [reflect P b], we can perform case analysis on [b] while at
-    the same time generating appropriate hypothesis in the two
-    branches ([P] in the first subgoal and [~ P] in the second). *)
+(** 使用 [reflect] 而非「当且仅当」连词的好处是，通过解构一个具有
+    [reflect P b] 形式的假设或引理，我们可以对 [b] 
+    进行分类讨论，同时为两个分支生成适当的假设（第一个子目标中的 [P] 和
+    第二个中的 [~ P]）。 *)
 
 
 Lemma beq_natP : forall n m, reflect (n = m) (beq_nat n m).
@@ -1259,14 +1179,11 @@ Proof.
   intros n m. apply iff_reflect. rewrite beq_nat_true_iff. reflexivity.
 Qed.
 
-(** The new proof of [filter_not_empty_In] now goes as follows.
-    Notice how the calls to [destruct] and [apply] are combined into a
-    single call to [destruct]. *)
+(** [filter_not_empty_In] 的新证明如下所示。请注意对 [destruct] 和 [apply]
+    的使用是如何合并成一个 [destruct] 的使用。 *)
 
-(** (To see this clearly, look at the two proofs of
-    [filter_not_empty_In] with Coq and observe the differences in
-    proof state at the beginning of the first case of the
-    [destruct].) *)
+(** （为了更清晰地看到这点，使用 Coq 查看 [filter_not_empty_In] 
+    的两个证明，并观察在 [destruct] 的第一个分类开始时证明状态的区别。） *)
 
 Theorem filter_not_empty_In' : forall n l,
   filter (beq_nat n) l <> [] ->
@@ -1284,7 +1201,7 @@ Proof.
 Qed.
 
 (** **** Exercise: 3 stars, recommended (beq_natP_practice)  *)
-(** Use [beq_natP] as above to prove the following: *)
+(** 使用上面的 [beq_natP] 证明以下定理：*)
 
 Fixpoint count n l :=
   match l with
@@ -1298,47 +1215,34 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** In this small example, this technique gives us only a rather small
-    gain in convenience for the proofs we've seen; however, using
-    [reflect] consistently often leads to noticeably shorter and
-    clearer scripts as proofs get larger.  We'll see many more
-    examples in later chapters and in _Programming Language
-    Foundations_.
-
-    The use of the [reflect] property was popularized by _SSReflect_,
-    a Coq library that has been used to formalize important results in
-    mathematics, including as the 4-color theorem and the
-    Feit-Thompson theorem.  The name SSReflect stands for _small-scale
-    reflection_, i.e., the pervasive use of reflection to simplify
-    small proof steps with boolean computations. *)
+(** 在这个小例子中，这种技术仅仅在证明时提升了一点方便；然而，当证明变得庞大时，
+    使用 [reflect] 往往更容易写出清晰和简短的证明脚本。我们将会在后面的章节
+    和_'编程语言基础'_一卷中看到更多的例子。
+    
+    对 [reflect] 性质的使用是随着 _'SSReflect'_ 而流行开来的，这是一个
+    Coq 程序库，用于形式化一些数学上的重要结果，包括四色定理和法伊特－汤普森定理。
+    SSReflect 的名字代表着 _'small-scale reflection'_，也即，普遍性地使用
+    互映来简化与布尔值计算有关的证明。*)
 
 (* ################################################################# *)
-(** * Additional Exercises *)
+(** * 额外练习 *)
 
 (** **** Exercise: 3 stars, recommended (nostutter_defn)  *)
-(** Formulating inductive definitions of properties is an important
-    skill you'll need in this course.  Try to solve this exercise
-    without any help at all.
-
-    We say that a list "stutters" if it repeats the same element
-    consecutively.  (This is different from the [NoDup] property in 
-    the exercise above: the sequence [1;4;1] repeats but does not
-    stutter.)  The property "[nostutter mylist]" means that
-    [mylist] does not stutter.  Formulate an inductive definition for
-    [nostutter]. *)
+(** 写出一个性质的归纳定义是本课程中你需要的重要技能。请尝试去独立解决
+    以下的练习。
+    
+    如果一个列表连续地重复一个元素，那么我们说这个列表是百叶窗式的（stutters）。
+    （这和上面练习中的 [NoDup] 性质是不同的：列表 [1;4;1] 虽然有重复但并不是
+    百叶窗式的。） [nostutter mylist] 表示 [mylist] 不是百叶窗式的。
+    请尝试写出 [nostutter] 的归纳定义。*)
 
 Inductive nostutter {X:Type} : list X -> Prop :=
  (* 请在此处解答 *)
 .
-(** Make sure each of these tests succeeds, but feel free to change
-    the suggested proof (in comments) if the given one doesn't work
-    for you.  Your definition might be different from ours and still
-    be correct, in which case the examples might need a different
-    proof.  (You'll notice that the suggested proofs use a number of
-    tactics we haven't talked about, to make them more robust to
-    different possible ways of defining [nostutter].  You can probably
-    just uncomment and use them as-is, but you can also prove each
-    example with more basic tactics.)  *)
+(** 请确保以下测试成功，但如果你觉得建议的证明（在注释中）并不工作，也可随意更改他们。
+    你的定义若与我们的不同，但可能仍然是正确的，在这种情况下可能需要不同的证明。
+    （你会注意到建议的证明中使用了一些我们尚未讨论过的策略，这可以让证明对可能不同的 [nostutter]
+    定义方式更加健壮。你可以取消注释并直接使用他们，但也可以用基础的策略证明这些例子。） *)
 
 Example test_nostutter_1: nostutter [3;1;4;1;5;6].
 (* 请在此处解答 *) Admitted.
@@ -1374,34 +1278,30 @@ Definition manual_grade_for_nostutter : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (filter_challenge)  *)
-(** Let's prove that our definition of [filter] from the [Poly]
-    chapter matches an abstract specification.  Here is the
-    specification, written out informally in English:
-
-    A list [l] is an "in-order merge" of [l1] and [l2] if it contains
-    all the same elements as [l1] and [l2], in the same order as [l1]
-    and [l2], but possibly interleaved.  For example,
+(** 让我们证明在 [Poly] 一章中 [filter] 的定义匹配某个抽象的规范。
+    可以这样非形式化地描述这个规范：
+    
+    列表 [l] 是一个 [l1] 和 [l2] 的「顺序合并」（in-order merge），如果它以 
+    [l1] 和 [l2] 中元素的顺序包含 [l1] 和 [l2] 中的所有元素，尽管可能是交替的。比如：
 
     [1;4;6;2;3]
 
-    is an in-order merge of
+    是
 
     [1;6;2]
 
-    and
+    和
 
     [4;3].
 
-    Now, suppose we have a set [X], a function [test: X->bool], and a
-    list [l] of type [list X].  Suppose further that [l] is an
-    in-order merge of two lists, [l1] and [l2], such that every item
-    in [l1] satisfies [test] and no item in [l2] satisfies test.  Then
-    [filter test l = l1].
+    的顺序合并。
+    
+    现在，假设我们有集合 [X]，函数 [test: X->bool]，和一个类型为 [list X] 的列表 
+    [l]。接着接设如果 [l] 是 [l1] 和 [l2] 的顺序合并，且 [l1] 中的每个元素满足 [test]，
+    而 [l2] 中没有元素满足 [test]，那么 [filter test l = l1]。
 
-    Translate this specification into a Coq theorem and prove
-    it.  (You'll need to begin by defining what it means for one list
-    to be a merge of two others.  Do this with an inductive relation,
-    not a [Fixpoint].)  *)
+    请将这段规范翻译为 Coq 中的定理并证明它。（你首先需要定义合并两个列表的含义是什么。
+    请使用归纳关系而非 [Fixpoint] 来完成。）*)
 
 (* 请在此处解答 *)
 (* Do not modify the following line: *)
@@ -1409,32 +1309,27 @@ Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced, optional (filter_challenge_2)  *)
-(** A different way to characterize the behavior of [filter] goes like
-    this: Among all subsequences of [l] with the property that [test]
-    evaluates to [true] on all their members, [filter test l] is the
-    longest.  Formalize this claim and prove it. *)
+(** 另一种刻画 [filter] 行为的方式是：在 [l] 的所有其元素满足 [test] 的子序列中，
+    [filter test l] 是最长的那个。请形式化这个命题并证明它。*)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (** **** Exercise: 4 stars, optional (palindromes)  *)
-(** A palindrome is a sequence that reads the same backwards as
-    forwards.
+(** 回文是倒序排列与正序排列相同的序列。
 
-    - Define an inductive proposition [pal] on [list X] that
-      captures what it means to be a palindrome. (Hint: You'll need
-      three cases.  Your definition should be based on the structure
-      of the list; just having a single constructor like
+    - 在 [listX] 上定义一个归纳命题 [pal] 来表达回文的含义。
+      （提示：你需要三个分类。定义应当基于列表的结构；仅仅使用一个构造子，例如 
 
         c : forall l, l = rev l -> pal l
 
-      may seem obvious, but will not work very well.)
+      看起来十分显而易见，但并不会很好的工作。)
 
-    - Prove ([pal_app_rev]) that
+    - 证明（[pal_app_rev]）
 
        forall l, pal (l ++ rev l).
 
-    - Prove ([pal_rev] that)
+    - 证明（[pal_rev] that）
 
        forall l, pal l -> l = rev l.
 *)
@@ -1445,9 +1340,7 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) :
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (palindrome_converse)  *)
-(** Again, the converse direction is significantly more difficult, due
-    to the lack of evidence.  Using your definition of [pal] from the
-    previous exercise, prove that
+(** 由于缺乏证据，反方向的证明要困难许多。请之前练习中你定义的 [pal] 证明
 
      forall l, l = rev l -> pal l.
 *)
@@ -1456,9 +1349,7 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) :
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (NoDup)  *)
-(** Recall the definition of the [In] property from the [Logic]
-    chapter, which asserts that a value [x] appears at least once in a
-    list [l]: *)
+(** 请回忆一下 [Logic] 章节中性质 [In] 的定义，其断言值 [x] 在列表 [l] 中至少出现一次：*)
 
 (* Fixpoint In (A : Type) (x : A) (l : list A) : Prop :=
    match l with
@@ -1466,24 +1357,19 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) :
    | x' :: l' => x' = x \/ In A x l'
    end *)
 
-(** Your first task is to use [In] to define a proposition [disjoint X
-    l1 l2], which should be provable exactly when [l1] and [l2] are
-    lists (with elements of type X) that have no elements in
-    common. *)
+(** 你的第一个任务是使用 [In] 来定义命题 [disjoint X l1 l2]，其可被证明仅当列表 [l1]
+    和 [l2] （元素的类型为 [X]）不含有相同的元素。*)
 
 (* 请在此处解答 *)
 
-(** Next, use [In] to define an inductive proposition [NoDup X
-    l], which should be provable exactly when [l] is a list (with
-    elements of type [X]) where every member is different from every
-    other.  For example, [NoDup nat [1;2;3;4]] and [NoDup
-    bool []] should be provable, while [NoDup nat [1;2;1]] and
-    [NoDup bool [true;true]] should not be.  *)
+(** 接下来，使用 [In]　定义归纳命题 [NoDup X l]，其可被证明仅当列表 [l]
+    （元素类型为 [X]）的每个元素都不相同。比如，[NoDup nat [1;2;3;4]] 
+    和 [NoDup bool []] 是可被证明的，然而 [NoDup nat [1;2;1]] 
+    和 [NoDup bool [true;true]] 是不行的。*)
 
 (* 请在此处解答 *)
 
-(** Finally, state and prove one or more interesting theorems relating
-    [disjoint], [NoDup] and [++] (list append).  *)
+(** 最后，使用 [disjoint]，[NoDup] 和 [++] （列表连接）陈述并证明一个或多个有趣的定理。 *)
 
 (* 请在此处解答 *)
 (* Do not modify the following line: *)
@@ -1493,13 +1379,12 @@ Definition manual_grade_for_NoDup_disjoint_etc : option (prod nat string) := Non
 (** **** Exercise: 4 stars, advanced, optional (pigeonhole_principle)  *)
 (* Do not modify the following line: *)
 Definition manual_grade_for_check_repeats : option (prod nat string) := None.
-(** The _pigeonhole principle_ states a basic fact about counting: if
-    we distribute more than [n] items into [n] pigeonholes, some
-    pigeonhole must contain at least two items.  As often happens, this
-    apparently trivial fact about numbers requires non-trivial
-    machinery to prove, but we now have enough... *)
+(** _鸽笼原理（Pigeonhole Principle）'_陈述了一个关于计数的基本事实：
+    如果我们将超过 [n] 个项分布于 [n] 个鸽笼，那么一些鸽笼
+    必定含有至少两个项。往往有之，这个看起来关于数字的平凡事实却需要
+    非平凡的手段来证明，但我们现在已经有了…… *)
 
-(** First prove an easy useful lemma. *)
+(** 首先容易证明一个有用的引理。 *)
 
 Lemma in_split : forall (X:Type) (x:X) (l:list X),
   In x l ->
@@ -1507,25 +1392,21 @@ Lemma in_split : forall (X:Type) (x:X) (l:list X),
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** Now define a property [repeats] such that [repeats X l] asserts
-    that [l] contains at least one repeated element (of type [X]).  *)
+(** 现在请定一个性质 [repeats]，这样 [repeats X l] 断言 [l] 包含
+    至少一个重复的元素（类型为 [X]）。  *)
 
 Inductive repeats {X:Type} : list X -> Prop :=
   (* 请在此处解答 *)
 .
 
-(** Now, here's a way to formalize the pigeonhole principle.  Suppose
-    list [l2] represents a list of pigeonhole labels, and list [l1]
-    represents the labels assigned to a list of items.  If there are
-    more items than labels, at least two items must have the same
-    label -- i.e., list [l1] must contain repeats.
+(** 现在，我们这样来形式化鸽笼原理。假设列表 [l2] 表示鸽笼标签的列表，列表 [l1]
+    表示标签被指定给一个列表里的元素。如果元素的个数多于标签的个数，那么至少有两个
+    元素被指定了同一个标签——也即，列表 [l1] 含有重复元素。
 
-    This proof is much easier if you use the [excluded_middle]
-    hypothesis to show that [In] is decidable, i.e., [forall x l, (In x
-    l) \/ ~ (In x l)].  However, it is also possible to make the proof
-    go through _without_ assuming that [In] is decidable; if you
-    manage to do this, you will not need the [excluded_middle]
-    hypothesis. *)
+    如果使用 [excluded_middule] 假设来证明 [In] 是可决定的（decidable），
+    即，[forall x l, (In x l) \/ ~ (In x l)]，这个证明会容易很多。
+    然而，_'不'_假设 [In] 是可决定的也同样可以证明它；如果你可以完成它，
+    那么便不必使用 [excluded_middle] 假设。 *)
 
 Theorem pigeonhole_principle: forall (X:Type) (l1  l2:list X),
    excluded_middle ->
@@ -1539,56 +1420,40 @@ Proof.
 
 
 (* ================================================================= *)
-(** ** Extended Exercise: A Verified Regular-Expression Matcher *)
+(** ** 扩展练习：验证正则表达式匹配器 *)
 
-(** We have now defined a match relation over regular expressions and
-    polymorphic lists. We can use such a definition to manually prove that
-    a given regex matches a given string, but it does not give us a
-    program that we can run to determine a match autmatically.
+(** 我们现在已经定义了正则表达式的匹配关系和多态列表。我们可以使用定义手工证明
+    给定的正则表达式匹配某个给定的字符串，但这并不是一个我们可以运行的程序来自动地
+    判断是否匹配。
+    
+    有理由期待，用于构造匹配关系证据的归纳规则可以被翻译为一个递归函数，
+    其在正则表达式上的递归对应于这种关系。然而，定义这样的函数并没有那么直接，
+    由于给定的正则表达式会被 Coq 识别为递归变量，作为结果，Coq 并不会接受这个函数，
+    即使它总是停机。
 
-    It would be reasonable to hope that we can translate the definitions
-    of the inductive rules for constructing evidence of the match relation
-    into cases of a recursive function reflects the relation by recursing
-    on a given regex. However, it does not seem straightforward to define
-    such a function in which the given regex is a recursion variable
-    recognized by Coq. As a result, Coq will not accept that the function
-    always terminates.
+    重度优化的正则表达式匹配器会将正则表达式翻译为一个状态机，并决定状态机是否接受
+    某个字符串。然而，正则表达式匹配也可以通过一个算法来实现，其仅仅操作字符串和
+    正则表达式，无需定义和维护额外的数据类型，例如状态机。我们将会实现这样的算法，
+    并验证其值与匹配关系是互映的。 *)
 
-    Heavily-optimized regex matchers match a regex by translating a given
-    regex into a state machine and determining if the state machine
-    accepts a given string. However, regex matching can also be
-    implemented using an algorithm that operates purely on strings and
-    regexes without defining and maintaining additional datatypes, such as
-    state machines. We'll implemement such an algorithm, and verify that
-    its value reflects the match relation. *)
-
-(** We will implement a regex matcher that matches strings represeneted
-    as lists of ASCII characters: *)
+(** 我们将要实现的正则表达式匹配器会匹配由 ASCII 字符构成的列表：*)
 Require Export Coq.Strings.Ascii.
 
 Definition string := list ascii.
 
-(** The Coq standard library contains a distinct inductive definition
-    of strings of ASCII characters. However, we will use the above
-    definition of strings as lists as ASCII characters in order to apply
-    the existing definition of the match relation.
+(** Coq 标准库中包含了一个不同的 ASCII 字符串的归纳定义。然而，为了应用
+    之前定义的匹配关系，我们在此使用刚刚给出的 ASCII 字符列表作为定义。
+    
+    我们也可以定义工作在多态列表上的正则表达式匹配器，而非特定于 ASCII 字符列表。
+    我们将要实现的匹配算法需要知道如何对列表中的元素判断相等，因此需要给定一个
+    相等性测试函数。一般化我们给出的定义、定理和证明有一点枯燥，但是可行的。 *)
 
-    We could also define a regex matcher over polymorphic lists, not lists
-    of ASCII characters specifically. The matching algorithm that we will
-    implement needs to be able to test equality of elements in a given
-    list, and thus needs to be given an equality-testing
-    function. Generalizing the definitions, theorems, and proofs that we
-    define for such a setting is a bit tedious, but workable. *)
-
-(** The proof of correctness of the regex matcher will combine
-    properties of the regex-matching function with properties of the
-    [match] relation that do not depend on the matching function. We'll go
-    ahead and prove the latter class of properties now. Most of them have
-    straightforward proofs, which have been given to you, although there
-    are a few key lemmas that are left for you to prove. *)
+(** 正则表达式匹配器的正确性证明会由匹配函数的性质和 [match] 关系的性质组成，
+    [match] 关系并不依赖匹配函数。我们将会首先证明后一类性质。他们中的多数
+    将会是很直接的证明，已经被直接给出，少部分关键的引理会留给你来证明。 *)
 
 
-(** Each provable [Prop] is equivalent to [True]. *)
+(** 每个可被证明的 [Prop] 等价于 [True]。 *)
 Lemma provable_equiv_true : forall (P : Prop), P -> (P <-> True).
 Proof.
   intros.
@@ -1597,7 +1462,7 @@ Proof.
   - intros _. apply H.
 Qed.
 
-(** Each [Prop] whose negation is provable is equivalent to [False]. *)
+(** 其逆可被证明的 [Prop] 等价于 [False]。 *)
 Lemma not_equiv_false : forall (P : Prop), ~P -> (P <-> False).
 Proof.
   intros.
@@ -1606,7 +1471,7 @@ Proof.
   - intros. inversion H0.
 Qed.
 
-(** [EmptySet] matches no string. *)
+(** [EmptySet] 不匹配字符串。 *)
 Lemma null_matches_none : forall (s : string), (s =~ EmptySet) <-> False.
 Proof.
   intros. 
@@ -1614,7 +1479,7 @@ Proof.
   unfold not. intros. inversion H.
 Qed.
 
-(** [EmptyStr] only matches the empty string. *)
+(** [EmptyStr] 仅匹配空字符串。 *)
 Lemma empty_matches_eps : forall (s : string), s =~ EmptyStr <-> s = [ ].
 Proof.
   split.
@@ -1622,7 +1487,7 @@ Proof.
   - intros. rewrite H. apply MEmpty.
 Qed.
 
-(** [EmptyStr] matches no non-empty string. *)
+(** [EmptyStr] 不匹配非空字符串。 *)
 Lemma empty_nomatch_ne : forall (a : ascii) s, (a :: s =~ EmptyStr) <-> False.
 Proof.
   intros.
@@ -1630,7 +1495,7 @@ Proof.
   unfold not. intros. inversion H.
 Qed.
 
-(** [Char a] matches no string that starts with a non-[a] character. *)
+(** [Char a] 不匹配不以 [a] 字符开始的字符串。 *)
 Lemma char_nomatch_char :
   forall (a b : ascii) s, b <> a -> (b :: s =~ Char a <-> False).
 Proof.
@@ -1643,7 +1508,7 @@ Proof.
   reflexivity.
 Qed. 
 
-(** If [Char a] matches a non-empty string, then the string's tail is empty. *)
+(** 如果 [Char a] 匹配一个非空字符串，那么这个字符串的尾（tail）为空。 *)
 Lemma char_eps_suffix : forall (a : ascii) s, a :: s =~ Char a <-> s = [ ].
 Proof.
   split.
@@ -1651,8 +1516,8 @@ Proof.
   - intros. rewrite H. apply MChar.
 Qed.
 
-(** [App re0 re1] matches string [s] iff [s = s0 ++ s1], where [s0]
-    matches [re0] and [s1] matches [re1]. *)
+(** [App re0 re1] 匹配字符串 [s] 当且仅当 [s = s0 ++ s1]，其中 [s0]
+    匹配 [re0] 且 [s1] 匹配 [re1]。 *)
 Lemma app_exists : forall (s : string) re0 re1,
     s =~ App re0 re1 <->
     exists s0 s1, s = s0 ++ s1 /\ s0 =~ re0 /\ s1 =~ re1.
@@ -1667,14 +1532,12 @@ Proof.
 Qed.
 
 (** **** Exercise: 3 stars, optional (app_ne)  *)
-(** [App re0 re1] matches [a::s] iff [re0] matches the empty string
-    and [a::s] matches [re1] or [s=s0++s1], where [a::s0] matches [re0]
-    and [s1] matches [re1].
+(** [App re0 re1] 匹配 [a::s] 当且仅当 [re0] 匹配空字符串 
+    且 [a::s] 匹配 [re1] 或 [s=s0++s1]，其中 [a::s0] 匹配 [re0]
+    且 [s1] 匹配 [re1]。
 
-    Even though this is a property of purely the match relation, it is a
-    critical observation behind the design of our regex matcher. So (1)
-    take time to understand it, (2) prove it, and (3) look for how you'll
-    use it later. *)
+    尽管这个性质由纯粹的匹配关系构成，它是一个重要的观察隐藏在我们匹配器的设计背后。
+    因此（1）花一些时间理解它，（2）证明它，并且（3）留心后面你会如何使用它。*)
 Lemma app_ne : forall (a : ascii) s re0 re1,
     a :: s =~ (App re0 re1) <->
     ([ ] =~ re0 /\ a :: s =~ re1) \/
@@ -1683,7 +1546,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** [s] matches [Union re0 re1] iff [s] matches [re0] or [s] matches [re1]. *)
+(** [s] 匹配 [Union re0 re1] 当且仅当 [s] 匹配 [re0] 或 [s] 匹配 [re1]. *)
 Lemma union_disj : forall (s : string) re0 re1,
     s =~ Union re0 re1 <-> s =~ re0 \/ s =~ re1.
 Proof.
@@ -1697,19 +1560,16 @@ Proof.
 Qed.
 
 (** **** Exercise: 3 stars, optional (star_ne)  *)
-(** [a::s] matches [Star re] iff [s = s0 ++ s1], where [a::s0] matches
-    [re] and [s1] matches [Star re]. Like [app_ne], this observation is
-    critical, so understand it, prove it, and keep it in mind.
+(** [a::s] 匹配 [Star re] 当且仅当 [s = s0 ++ s1]，其中 [a::s0] 匹配
+    [re] 且 [s1] 匹配 [Star re]。 同 [app_ne]一样，这个观察很重要，
+    因此理解，证明并留意它。
 
-    Hint: you'll need to perform induction. There are quite a few
-    reasonable candidates for [Prop]'s to prove by induction. The only one
-    that will work is splitting the [iff] into two implications and
-    proving one by induction on the evidence for [a :: s =~ Star re]. The
-    other implication can be proved without induction.
+    提示：你需要进行归纳。的确是有几个合理的候选 [Prop] 来进行归纳。
+    但唯一其作用的方式是首先拆分 [iff] 为两个蕴含式，然后在 [a :: s =~ Star re]
+    的证据上进行归纳来证明其中一个。另一个蕴含式可以无需使用归纳来证明。
 
-    In order to prove the right property by induction, you'll need to
-    rephrase [a :: s =~ Star re] to be a [Prop] over general variables,
-    using the [remember] tactic.  *)
+    为了在正确的性质上归纳，你需要使用 [remember] 策略来重新表述 [a :: s =~ Star re]，
+    使其成为一般变量上的 [Prop]。 *)
 
 Lemma star_ne : forall (a : ascii) s re,
     a :: s =~ Star re <->
@@ -1718,62 +1578,51 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** The definition of our regex matcher will include two fixpoint
-    functions. The first function, given regex [re], will evaluate to a
-    value that reflects whether [re] matches the empty string. The
-    function will satisfy the following property: *)
+(** 我们的正则表达式匹配器定义包括两个不动点函数。第一个函数对给定的正则表达式 [re] 
+    进行求值，结果映射了 [re] 是否匹配空字符串。这个函数满足以下性质： *)
 Definition refl_matches_eps m :=
   forall re : @reg_exp ascii, reflect ([ ] =~ re) (m re).
 
 (** **** Exercise: 2 stars, optional (match_eps)  *)
-(** Complete the definition of [match_eps] so that it tests if a given
-    regex matches the empty string: *)
+(** 完成 [match_eps] 的定义，其测试给定的正则表达式是否匹配空字符串： *)
 Fixpoint match_eps (re: @reg_exp ascii) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (match_eps_refl)  *)
-(** Now, prove that [match_eps] indeed tests if a given regex matches
-    the empty string.  (Hint: You'll want to use the reflection lemmas
-    [ReflectT] and [ReflectF].) *)
+(** 现在，请证明 [match_eps] 确实测试了给定的正则表达式是否匹配空字符串。
+    （提示：你会使用到互映引理 [ReflectT] 和 [ReflectF]。） *)
 Lemma match_eps_refl : refl_matches_eps match_eps.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** We'll define other functions that use [match_eps]. However, the
-    only property of [match_eps] that you'll need to use in all proofs
-    over these functions is [match_eps_refl]. *)
+(** 我们将会定义其他函数也使用到 [match_eps]。然而，这些函数的证明中你唯一会用到的 
+    [match_eps] 的性质是 [match_eps_refl]。*)
 
 
-(** The key operation that will be performed by our regex matcher will
-    be to iteratively construct a sequence of regex derivatives. For each
-    character [a] and regex [re], the derivative of [re] on [a] is a regex
-    that matches all suffixes of strings matched by [re] that start with
-    [a]. I.e., [re'] is a derivative of [re] on [a] if they satisfy the
-    following relation: *)
+(** 我们匹配器所进行的关键操作是迭代地构造一个正则表达式生成式的序列。
+    对于字符 [a] 和正则表达式 [re]，[re] 在 [a] 上的生成式是一个正则表达式，
+    其匹配所有匹配 [re] 且以 [a] 开始的字符串的后缀。也即，[re'] 
+    是 [re] 在 [a] 上的一个生成式如果他们满足以下关系：*)
 
 Definition is_der re (a : ascii) re' :=
   forall s, a :: s =~ re <-> s =~ re'.
 
-(** A function [d] derives strings if, given character [a] and regex
-    [re], it evaluates to the derivative of [re] on [a]. I.e., [d]
-    satisfies the following property: *)
+(** 函数 [d] 生成字符串如果对于给定的字符 [a] 和正则表达式 [re]，
+    它求值为 [re] 在 [a] 上的生成式。也即，[d] 满足以下关系： *)
 Definition derives d := forall a re, is_der re a (d a re).
 
 (** **** Exercise: 3 stars, optional (derive)  *)
-(** Define [derive] so that it derives strings. One natural
-    implementation uses [match_eps] in some cases to determine if key
-    regex's match the empty string. *)
+(** 请定义 [derive] 使其生成字符串。一个自然的实现是在某些分类使用 
+    [match_eps] 来判断正则表达式是否匹配空字符串。 *)
 Fixpoint derive (a : ascii) (re : @reg_exp ascii) : @reg_exp ascii
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
-(** The [derive] function should pass the following tests. Each test
-    establishes an equality between an expression that will be
-    evaluated by our regex matcher and the final value that must be
-    returned by the regex matcher. Each test is annotated with the
-    match fact that it reflects. *)
+(** [derive] 函数应当通过以下测试。每个测试都在将被匹配器所求值的表达式和
+    最终被匹配器返回的结果之间确立一种相等性。
+    每个测试也被添加了它所反映的匹配事实的注解。*)
 Example c := ascii_of_nat 99.
 Example d := ascii_of_nat 100.
 
@@ -1820,60 +1669,50 @@ Proof.
   (* 请在此处解答 *) Admitted.
 
 (** **** Exercise: 4 stars, optional (derive_corr)  *)
-(** Prove that [derive] in fact always derives strings.
+(** 请证明 [derive] 确实总是会生成字符串。
 
-    Hint: one proof performs induction on [re], although you'll need
-    to carefully choose the property that you prove by induction by
-    generalizing the appropriate terms.
+    提示：一种证明方法是对 [re] 归纳，尽管你需要通过归纳和一般化合适的项来
+    仔细选择要证明的性质。
 
-    Hint: if your definition of [derive] applies [match_eps] to a
-    particular regex [re], then a natural proof will apply
-    [match_eps_refl] to [re] and destruct the result to generate cases
-    with assumptions that the [re] does or does not match the empty
-    string.
+    提示：如果你定义的 [derive] 对某个正则表达式 [re] 使用了 [match_eps]，
+    那么可对 [re] 应用 [match_eps_refl]，接着对结果解构并生成
+    分类，其中你可以假设 [re] 匹配或不匹配空字符串。
 
-    Hint: You can save quite a bit of work by using lemmas proved
-    above. In particular, to prove many cases of the induction, you
-    can rewrite a [Prop] over a complicated regex (e.g., [s =~ Union
-    re0 re1]) to a Boolean combination of [Prop]'s over simple
-    regex's (e.g., [s =~ re0 \/ s =~ re1]) using lemmas given above
-    that are logical equivalences. You can then reason about these
-    [Prop]'s naturally using [intro] and [destruct]. *)
+    提示：通过使用之前证明过的引理可以帮助一点你的工作。特别是，在证明归纳的
+    许多分类时，通过之前的引理，你可以用一个复杂的正则表达式（比如，
+    [s =~ Union re0 re1]）来重写命题，得到一个简单正则表达式上的命
+    题构成的布尔表达式（比如，[s =~ re0 \/ s =~ re1]）。
+    你可以使用 [intro] 和 [destruct] 来对这些命题进行推理。*)
 Lemma derive_corr : derives derive.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** We'll define the regex matcher using [derive]. However, the only
-    property of [derive] that you'll need to use in all proofs of
-    properties of the matcher is [derive_corr]. *)
+(** 我们将会使用 [derive] 来定义正则表达式匹配器。然而，在匹配器的性质的证明中你唯一会用到
+    的关于 [derive] 的性质是 [derive_corr]。 *)
 
 
-(** A function [m] matches regexes if, given string [s] and regex [re],
-    it evaluates to a value that reflects whether [s] is matched by
-    [re]. I.e., [m] holds the following property: *)
+(** 函数 [m] 匹配正则表达式如果对给定的字符串 [s] 和正则表达式 [re]，
+    它求值的结果映射了 [s] 是否被 [re] 匹配。也即，[m] 满足以下性质：*)
 Definition matches_regex m : Prop :=
   forall (s : string) re, reflect (s =~ re) (m s re).
 
 (** **** Exercise: 2 stars, optional (regex_match)  *)
-(** Complete the definition of [regex_match] so that it matches
-    regexes. *)
+(** 完成 [regex_match] 的定义，使其可以匹配正则表达式。*)
 Fixpoint regex_match (s : string) (re : @reg_exp ascii) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (regex_refl)  *)
-(** Finally, prove that [regex_match] in fact matches regexes.
-
-    Hint: if your definition of [regex_match] applies [match_eps] to
-    regex [re], then a natural proof applies [match_eps_refl] to [re]
-    and destructs the result to generate cases in which you may assume
-    that [re] does or does not match the empty string.
-
-    Hint: if your definition of [regex_match] applies [derive] to
-    character [x] and regex [re], then a natural proof applies
-    [derive_corr] to [x] and [re] to prove that [x :: s =~ re] given
-    [s =~ derive x re], and vice versa. *)
+(** 最后，证明 [regex_match] 确实可以匹配正则表达式。
+    
+    提示：如果你定义的 [regex_match] 对正则表达式 [re] 使用了 [match_eps]，
+    那么可对 [re] 应用 [match_eps_refl]，接着对结果解构并生成
+    分类，其中你可以假设 [re] 匹配或不匹配空字符串。
+    
+    提示：如果你定义的 [regex_match] 对字符 [x] 和正则表达式 [re] 使用了 [derive]，
+    那么可对 [x] 和 [re] 应用 [derive_corr]，以此证明 [x :: s =~ re] 当给定
+    [s =~ derive x re] 时，反之亦然。 *)
 Theorem regex_refl : matches_regex regex_match.
 Proof.
   (* 请在此处解答 *) Admitted.
