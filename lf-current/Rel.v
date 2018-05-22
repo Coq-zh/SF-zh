@@ -10,7 +10,7 @@ Set Warnings "-notation-overridden,-parsing".
 Require Export IndProp.
 
 (* ################################################################# *)
-(** * Relations *)
+(** * 关系 *)
 
 (** 集合 [X] 上的二元_'关系（Relation）'_指所有由两个 [X] 中的元素参数化的命题，
     即，有关一对 [X] 中的元素的命题。 *)
