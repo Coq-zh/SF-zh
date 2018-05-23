@@ -204,11 +204,9 @@ Proof. simpl. reflexivity. Qed.
     中的断言都能被 Coq 验证通过。（仿照前面 [orb] 测试的模式，移除每一个
     [Admitted.] 并补充证明。）此函数应在两个输入之一或二者均为 [false]
     时返回 [true] 。  *)
-(** Every chapter comes with a [[*Test.v]] file, containing scripts
-    that check some of the exercises. After you finish an exercise in
-    this file, you can run [[make BasicsTest.vo]] and check its
-    output. If you did correctly, it will show "Type: ok", based on no
-    "Assumptions". *)
+(** 每章节附有 [[*Test.v]] 测试脚本。以本章为例：当你完成练习，可在命令行下执行
+    [[make BasicsTest.vo]] 并检查其输出。正确的结果显示为 "Type: ok" 且不依赖任
+    何假设 "Assumptions"。 *)
 
 Definition nandb (b1:bool) (b2:bool) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
