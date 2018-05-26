@@ -232,7 +232,7 @@
 
 (** 本书的「发布版」以及所有源代码的压缩包
     （其中包含一组 Coq 脚本和 HTML 文件）可访问
-    http://www.cis.upenn.edu/~bcpierce/sf 获取。
+    http://softwarefoundations.cis.upenn.edu 获取。
 
     本书的中文版可访问 https://github.com/Coq-zh/SF-zh 获取。
 

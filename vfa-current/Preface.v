@@ -115,7 +115,7 @@
 
 (** A tar file containing the full sources for the "release version"
     of this book (as a collection of Coq scripts and HTML files) is
-    available at http://www.cis.upenn.edu/~bcpierce/sf.
+    available at http://softwarefoundations.cis.upenn.edu.
 
     (If you are using the book as part of a class, your professor may
     give you access to a locally modified version of the files, which
