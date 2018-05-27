@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>ProofObjects: The Curry-Howard Correspondence</title>
+<title>ProofObjects: 柯里-霍华德对应</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
 
-<h1 class="libtitle">ProofObjects<span class="subtitle">The Curry-Howard Correspondence</span></h1>
+<h1 class="libtitle">ProofObjects<span class="subtitle">柯里-霍华德对应</span></h1>
 
 
 <div class="code code-tight">
@@ -39,47 +39,40 @@
 </div>
 
 <div class="doc">
-<div class="quote">"_Algorithms are the computational content of proofs_."  &mdash;Robert Harper</div> 
+<div class="quote">"<b>算法是证明的计算性内容。</b>"  &mdash;Robert Harper</div> 
 <div class="paragraph"> </div>
 
- We have seen that Coq has mechanisms both for _programming_,
-    using inductive data types like <span class="inlinecode"><span class="id" type="var">nat</span></span> or <span class="inlinecode"><span class="id" type="var">list</span></span> and functions over
-    these types, and for _proving_ properties of these programs, using
-    inductive propositions (like <span class="inlinecode"><span class="id" type="var">ev</span></span>), implication, universal
-    quantification, and the like.  So far, we have mostly treated
-    these mechanisms as if they were quite separate, and for many
-    purposes this is a good way to think.  But we have also seen hints
-    that Coq's programming and proving facilities are closely related.
-    For example, the keyword <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> is used to declare both data
-    types and propositions, and <span class="inlinecode">→</span> is used both to describe the type
-    of functions on data and logical implication.  This is not just a
-    syntactic accident!  In fact, programs and proofs in Coq are
-    almost the same thing.  In this chapter we will study how this
-    works.
+ 我们已经知道Coq的机制有两种不同的目的。一种是为了<b>编程</b>，
+    使用归纳数据类型如 <span class="inlinecode"><span class="id" type="var">nat</span></span> 和 <span class="inlinecode"><span class="id" type="var">list</span></span>，以及在这些类型上的函数；另一种是
+    为了<b>证明</b>程序的性质，使用归纳命题（如 <span class="inlinecode"><span class="id" type="var">ev</span></span>），蕴含式，全称量化等
+    等。目前为止，我们一直认为这些机制是相当不同的。有些时候，这也确实
+    是比较好的思考方式。但是我们也看到过一些暗示，表明Coq的编程和证明
+    的各种工具是非常相关的。例如，关键字 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 同时用于声明数据
+    类型和命题，以及 <span class="inlinecode">→</span> 同时用于描述函数类型和逻辑蕴含式。这可并不是
+    语法上的巧合！事实上，在Coq里面程序和证明几乎就是同一件事情。这一
+    章我们会学习背后的原理。
 
 <div class="paragraph"> </div>
 
-    We have already seen the fundamental idea: provability in Coq is
-    represented by concrete _evidence_.  When we construct the proof
-    of a basic proposition, we are actually building a tree of
-    evidence, which can be thought of as a data structure.
+    我们已经知道这个基础的思想：在Coq里面，可证明性表现为拥有具体的 <b>证据</b>。
+    当我们为一个基本的命题构造证明的时候，我们实际上是在构造证
+    据树。证据树可被认为是一种数据结构。
 
 <div class="paragraph"> </div>
 
-    If the proposition is an implication like <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">B</span></span>, then its proof
-    will be an evidence _transformer_: a recipe for converting
-    evidence for A into evidence for B.  So at a fundamental level,
-    proofs are simply programs that manipulate evidence. 
+    如果这个命题是一个蕴含式，像是 <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">B</span></span>，那么它的证明是一个证据
+    的 <b>转换器 (Transformer)</b>：一个将 A 的证据转换为 B 的证据的配方。
+    所以从根本上来讲，证明仅仅就是操纵证据的程序。 
 <div class="paragraph"> </div>
 
- Question: If evidence is data, what are propositions themselves?
+ 问题：如果是证据是数据，那么命题本身是什么？
 
 <div class="paragraph"> </div>
 
-    Answer: They are types! 
+    答案：它们是类型！ 
 <div class="paragraph"> </div>
 
- Look again at the formal definition of the <span class="inlinecode"><span class="id" type="var">ev</span></span> property.  
+ 回顾一下 <span class="inlinecode"><span class="id" type="var">ev</span></span> 这个性质的形式化定义。  
 </div>
 <div class="code code-tight">
 
@@ -92,27 +85,27 @@
 </div>
 
 <div class="doc">
-Suppose we introduce an alternative pronunciation of "<span class="inlinecode">:</span>".
-    Instead of "has type," we can say "is a proof of."  For example,
-    the second line in the definition of <span class="inlinecode"><span class="id" type="var">ev</span></span> declares that <span class="inlinecode"><span class="id" type="var">ev_0</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">ev</span></span>
-    <span class="inlinecode">0</span>.  Instead of "<span class="inlinecode"><span class="id" type="var">ev_0</span></span> has type <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span>," we can say that "<span class="inlinecode"><span class="id" type="var">ev_0</span></span>
-    is a proof of <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span>." 
+假设我们引入 “<span class="inlinecode">:</span>” 的另外一种阅读方式。我们不说“...的类型是...”，
+    而说“...是...的证明”。例如，<span class="inlinecode"><span class="id" type="var">ev</span></span> 定义的第二行声明了 <span class="inlinecode"><span class="id" type="var">ev_0</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span>。
+    我们不说“<span class="inlinecode"><span class="id" type="var">ev_0</span></span> 拥有类型 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span>”，而说“<span class="inlinecode"><span class="id" type="var">ev_0</span></span> 是 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span> 的证明”。
+    
 <div class="paragraph"> </div>
 
- This pun between types and propositions &mdash; between <span class="inlinecode">:</span> as "has type"
-    and <span class="inlinecode">:</span> as "is a proof of" or "is evidence for" &mdash; is called the
-    _Curry-Howard correspondence_.  It proposes a deep connection
-    between the world of logic and the world of computation:
+ 这个类型和命题之间的双关语，或者说，<span class="inlinecode">:</span> 的两种阅读方式“...的类型是...”
+    和“...是...的证明”之间的双关语，称为 <b>柯里-霍华德对应 (Curry-Howard)</b>。
+    它提出了逻辑世界和计算世界之间深层次的关联：
+
+<div class="paragraph"> </div>
+
 <pre>
-                 propositions  ~  types
-                 proofs        ~  data values
+                 命题           ~  类型
+                 证明           ~  数据值
 </pre>
-    See <a href="Bib.html#Wadler 2015"><span class="inlineref">[Wadler 2015]</span></a> for a brief history and up-to-date exposition. 
+    <a href="Bib.html#Wadler 2015"><span class="inlineref">[Wadler 2015]</span></a> 里有简单的历史和最新的详细介绍可供参考。 
 <div class="paragraph"> </div>
 
- Many useful insights follow from this connection.  To begin with,
-    it gives us a natural interpretation of the type of the <span class="inlinecode"><span class="id" type="var">ev_SS</span></span>
-    constructor: 
+ 很多有用的简介都来自这一关联。首先，它赋予了 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 这个构造器的
+    类型的一个自然的理解： 
 </div>
 <div class="code code-tight">
 
@@ -123,12 +116,11 @@ Suppose we introduce an alternative pronunciation of "<span class="inlinecode">:
 </div>
 
 <div class="doc">
-This can be read "<span class="inlinecode"><span class="id" type="var">ev_SS</span></span> is a constructor that takes two
-    arguments &mdash; a number <span class="inlinecode"><span class="id" type="var">n</span></span> and evidence for the proposition <span class="inlinecode"><span class="id" type="var">ev</span></span>
-    <span class="inlinecode"><span class="id" type="var">n</span></span> &mdash; and yields evidence for the proposition <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span>." 
+这可以读为“<span class="inlinecode"><span class="id" type="var">ev_SS</span></span>是一个构造器，接受两个参数——一个数字 <span class="inlinecode"><span class="id" type="var">n</span></span> 和一
+    个命题 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>的证据——然后产生一个命题 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span> 的证据。” 
 <div class="paragraph"> </div>
 
- Now let's look again at a previous proof involving <span class="inlinecode"><span class="id" type="var">ev</span></span>. 
+ 现在让我们回顾一下之前有关 <span class="inlinecode"><span class="id" type="var">ev</span></span> 的一个证明。 
 </div>
 <div class="code code-tight">
 
@@ -138,9 +130,8 @@ This can be read "<span class="inlinecode"><span class="id" type="var">ev_SS</sp
 </div>
 
 <div class="doc">
-As with ordinary data values and functions, we can use the <span class="inlinecode"><span class="id" type="keyword">Print</span></span>
-    command to see the _proof object_ that results from this proof
-    script. 
+就像是处理普通的数据值和函数一样，我们可以使用 <span class="inlinecode"><span class="id" type="keyword">Print</span></span> 命令来查看
+    这个证明脚本所产生的 <b>证据对象 (proof object)</b> 
 </div>
 <div class="code code-tight">
 
@@ -150,8 +141,7 @@ As with ordinary data values and functions, we can use the <span class="inlineco
 </div>
 
 <div class="doc">
-Indeed, we can also write down this proof object _directly_,
-    without the need for a separate proof script: 
+实际上，我们也可以 <b>直接（directly)</b> 写出证明对象本身，不需要一个单独的证明脚本。 
 </div>
 <div class="code code-tight">
 
@@ -160,31 +150,18 @@ Indeed, we can also write down this proof object _directly_,
 </div>
 
 <div class="doc">
-The expression <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> <span class="inlinecode">2</span> <span class="inlinecode">(<span class="id" type="var">ev_SS</span></span> <span class="inlinecode">0</span> <span class="inlinecode"><span class="id" type="var">ev_0</span>)</span> can be thought of as
-    instantiating the parameterized constructor <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> with the
-    specific arguments <span class="inlinecode">2</span> and <span class="inlinecode">0</span> plus the corresponding proof
-    objects for its premises <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">2</span> and <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span>.  Alternatively, we can
-    think of <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> as a primitive "evidence constructor" that, when
-    applied to a particular number, wants to be further applied to
-    evidence that that number is even; its type,
-
+表达式 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> <span class="inlinecode">2</span> <span class="inlinecode">(<span class="id" type="var">ev_SS</span></span> <span class="inlinecode">0</span> <span class="inlinecode"><span class="id" type="var">ev_0</span>)</span> 可以被认为是将参数化的构造器
+    <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 使用具体的参数 <span class="inlinecode">2</span>， <span class="inlinecode">0</span>，以及它们对应的证明对象 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">2</span> 和
+    <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span> 给实例化了。 或者，我们可以将 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 认为是一个原子的“对
+    象构造器”，当被应用到一个具体的数字时，它要求给出这个数字是偶数的
+    证据。这个功能可以通过它的类型 <span class="inlinecode">[</span> <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)),</span> <span class="inlinecode">]</span> 看
+    出；类似的例子有，多态类型 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span>,</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 表明了构造器 <span class="inlinecode"><span class="id" type="var">nil</span></span> 可以被认为
+    是一个从类型到该类型的空列表的函数。 
 <div class="paragraph"> </div>
 
-<div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">n</span>,&nbsp;<span class="id" type="var">ev</span>&nbsp;<span class="id" type="var">n</span>&nbsp;→&nbsp;<span class="id" type="var">ev</span>&nbsp;(<span class="id" type="var">S</span>&nbsp;(<span class="id" type="var">S</span>&nbsp;<span class="id" type="var">n</span>)),
-<div class="paragraph"> </div>
-
-</div>
-    expresses this functionality, in the same way that the polymorphic
-    type <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span>,</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> expresses the fact that the constructor
-    <span class="inlinecode"><span class="id" type="var">nil</span></span> can be thought of as a function from types to empty lists
-    with elements of that type. 
-<div class="paragraph"> </div>
-
- We saw in the <a href="Logic.html"><span class="inlineref">Logic</span></a> chapter that we can use function
-    application syntax to instantiate universally quantified variables
-    in lemmas, as well as to supply evidence for assumptions that
-    these lemmas impose.  For instance: 
+ 我们在 <a href="Logic.html"><span class="inlineref">Logic</span></a> 这一章中已经了解到，我们可以使用函数应用
+    的语法来实例化引理中的全称量化变量，也可以使用该语法提供引理所要求
+    的假设。例如： 
 </div>
 <div class="code code-tight">
 
@@ -195,18 +172,15 @@ The expression <span class="inlinecode"><span class="id" type="var">ev_SS</span>
 </div>
 
 <div class="doc">
-<a name="lab257"></a><h1 class="section">Proof Scripts</h1>
+<a name="lab257"></a><h1 class="section">证明脚本</h1>
 
 <div class="paragraph"> </div>
 
- The _proof objects_ we've been discussing lie at the core of how
-    Coq operates.  When Coq is following a proof script, what is
-    happening internally is that it is gradually constructing a proof
-    object &mdash; a term whose type is the proposition being proved.  The
-    tactics between <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> and <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> tell it how to build up a term
-    of the required type.  To see this process in action, let's use
-    the <span class="inlinecode"><span class="id" type="keyword">Show</span></span> <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> command to display the current state of the proof
-    tree at various points in the following tactic proof. 
+ 我们一直在讨论的<b>证明对象 (proof objects)</b>是Coq如何运作的核心。
+    当Coq执行一个证明脚本的时候，在内部，Coq逐渐构造出一个证明对象 &mdash;
+    一个类型是想要证明的命题的项。在 <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> 和 <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> 之间的策略告诉
+    Coq如何构造该项。为了了解这个过程是如何进行的，在下面的策略证明里，
+    我们在多个地方使用 <span class="inlinecode"><span class="id" type="keyword">Show</span></span> <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> 命令来显示当前证明树的状态。 
 </div>
 <div class="code code-tight">
 
@@ -223,23 +197,18 @@ The expression <span class="inlinecode"><span class="id" type="var">ev_SS</span>
 </div>
 
 <div class="doc">
-At any given moment, Coq has constructed a term with a
-    "hole" (indicated by <span class="inlinecode">?<span class="id" type="keyword">Goal</span></span> here, and so on), and it knows what
-    type of evidence is needed to fill this hole.  
+在任意的给定时刻，Coq已经构造了一个包含一个“洞(hole)”（即
+    <span class="inlinecode">?<span class="id" type="keyword">Goal</span></span> ）的项，并且Coq知道该洞需要什么类型的证据来填补。
 
 <div class="paragraph"> </div>
 
-    Each hole corresponds to a subgoal, and the proof is
-    finished when there are no more subgoals.  At this point, the
-    evidence we've built stored in the global context under the name
-    given in the <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> command. 
+    每一个洞对应一个子目标。当没有子目标时，代表证明已经完成。此时，我
+    们构造的证明将会以我们在 <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> 里给定的名字被存储在全局环境中。 
 <div class="paragraph"> </div>
 
- Tactic proofs are useful and convenient, but they are not
-    essential: in principle, we can always construct the required
-    evidence by hand, as shown above. Then we can use <span class="inlinecode"><span class="id" type="keyword">Definition</span></span>
-    (rather than <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span>) to give a global name directly to this
-    evidence. 
+ 策略证明非常有用且方便，但是它们并不是必要的：原则上，我们总是能够
+    手动构造想要的证据，如下所示。此处我们可以通过 <span class="inlinecode"><span class="id" type="keyword">Definition</span></span> （而不
+    是 <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span>）来直接给这个证据一个全局名称。 
 </div>
 <div class="code code-tight">
 
@@ -248,8 +217,7 @@ At any given moment, Coq has constructed a term with a
 </div>
 
 <div class="doc">
-All these different ways of building the proof lead to exactly the
-    same evidence being saved in the global environment. 
+所有这些构造证明的不同方式，对应的存储在全局环境中的证明是完全一样的。 
 </div>
 <div class="code code-tight">
 
@@ -265,7 +233,7 @@ All these different ways of building the proof lead to exactly the
 
 <div class="doc">
 <a name="lab258"></a><h4 class="section">Exercise: 2 stars (eight_is_even)</h4>
- Give a tactic proof and a proof object showing that <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">8</span>. 
+ 写出对应 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">8</span> 的策略证明和证明对象。 
 </div>
 <div class="code code-tight">
 
@@ -279,24 +247,22 @@ All these different ways of building the proof lead to exactly the
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab259"></a><h1 class="section">Quantifiers, Implications, Functions</h1>
+<a name="lab259"></a><h1 class="section">量词，蕴含式，函数</h1>
 
 <div class="paragraph"> </div>
 
- In Coq's computational universe (where data structures and
-    programs live), there are two sorts of values with arrows in their
-    types: _constructors_ introduced by <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span>ly defined data
-    types, and _functions_.
+ 在Coq的计算世界里（即所有的数据结构和程序存在的地方），有两种值的
+    类型里拥有箭头：<b>构造子(Constructors)</b>，通过归纳地定义数据类型
+    引入，和<b>函数(Functions)</b>。
 
 <div class="paragraph"> </div>
 
-    Similarly, in Coq's logical universe (where we carry out proofs),
-    there are two ways of giving evidence for an implication:
-    constructors introduced by <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span>ly defined propositions,
-    and... functions! 
+    类似地，在Coq的逻辑世界里（即我们运用证明的地方），有两种方式来给
+    与蕴含式需要的证据：构造子，通过归纳地定义命题引入，和...函数！
+    
 <div class="paragraph"> </div>
 
- For example, consider this statement: 
+ 例如，考虑下列陈述： 
 </div>
 <div class="code code-tight">
 
@@ -310,17 +276,17 @@ All these different ways of building the proof lead to exactly the
 </div>
 
 <div class="doc">
-What is the proof object corresponding to <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span>?
+对应 <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span> 的证明对象是什么？
 
 <div class="paragraph"> </div>
 
-    We're looking for an expression whose _type_ is <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span>
-    <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> &mdash; that is, a _function_ that takes two arguments (one
-    number and a piece of evidence) and returns a piece of evidence!
+    我们在寻找一个<b>类型(Type)</b>是 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> 的表达式
+ 也就是说，一个接受两个参数（一个数字和一个证据）并返回一个证据
+    的<b>函数(Function)</b>!
 
 <div class="paragraph"> </div>
 
-    Here it is: 
+    它的证据对象： 
 </div>
 <div class="code code-tight">
 
@@ -330,9 +296,9 @@ What is the proof object corresponding to <span class="inlinecode"><span class="
 </div>
 
 <div class="doc">
-Recall that <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">blah</span></span> means "the function that, given <span class="inlinecode"><span class="id" type="var">n</span></span>,
-    yields <span class="inlinecode"><span class="id" type="var">blah</span></span>," and that Coq treats <span class="inlinecode">4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span></span> and <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)))</span>
-    as synonyms. Another equivalent way to write this definition is: 
+回顾 <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">blah</span></span> 意味着“一个函数，给定 <span class="inlinecode"><span class="id" type="var">n</span></span>，产生 <span class="inlinecode"><span class="id" type="var">blah</span></span>”，
+    并且Coq认为 <span class="inlinecode">4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span></span> 和 <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)))</span> 是同义词，所以另一种写出
+    这个定义的方式是： 
 </div>
 <div class="code code-tight">
 
@@ -345,38 +311,23 @@ Recall that <span class="inlinecode"><span class="id" type="keyword">fun</span><
 </div>
 
 <div class="doc">
-When we view the proposition being proved by <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span> as a
-    function type, one interesting point becomes apparent: The second
-    argument's type, <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>, mentions the _value_ of the first
-    argument, <span class="inlinecode"><span class="id" type="var">n</span></span>.
+当我们将 <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span> 证明的命题视为一个函数类型时，我们可以发现一个
+    有趣的现象：第二个参数的类型，<span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>，依赖于第一个参数 <span class="inlinecode"><span class="id" type="var">n</span></span> 的<b>值</b>。
 
 <div class="paragraph"> </div>
 
-    While such _dependent types_ are not found in conventional
-    programming languages, they can be useful in programming too, as
-    the recent flurry of activity in the functional programming
-    community demonstrates. 
+    虽然这样的<b>依赖类型 (Dependent types)</b>在传统的编程语言中并不存在，
+    但是它们对于编程来说有时候非常有用。最近它们在函数式编程社区里的活
+    跃很好地表明了这一点。 
 <div class="paragraph"> </div>
 
- Notice that both implication (<span class="inlinecode">→</span>) and quantification (<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>)
-    correspond to functions on evidence.  In fact, they are really the
-    same thing: <span class="inlinecode">→</span> is just a shorthand for a degenerate use of
-    <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>where there is no dependency, i.e., no need to give a
-    name to the type on the left-hand side of the arrow:
-
+ 注意到蕴含式（<span class="inlinecode">→</span>）和量化（<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>）都表示证据上的函数。事实上，他们
+    是同一个东西：当我们使用<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>时没有依赖，就可以简写为当<span class="inlinecode">→</span>。即，我
+    们没有必要给与箭头左边的类型一个名字：<span class="inlinecode">[</span> <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode">(<span class="id" type="var">x</span>:<span class="id" type="var">nat</span>),</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode">(<span class="id" type="var">_</span>:<span class="id" type="var">nat</span>),</span>
+    <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">]</span> 
 <div class="paragraph"> </div>
 
-<div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">x</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span>&nbsp;&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">_</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span>&nbsp;&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span class="id" type="var">nat</span>&nbsp;→&nbsp;<span class="id" type="var">nat</span>
-<div class="paragraph"> </div>
-
-</div>
-
-<div class="paragraph"> </div>
-
- For example, consider this proposition: 
+ 例如，考虑下列命题： 
 </div>
 <div class="code code-tight">
 
@@ -385,12 +336,10 @@ When we view the proposition being proved by <span class="inlinecode"><span clas
 </div>
 
 <div class="doc">
-A proof term inhabiting this proposition would be a function
-    with two arguments: a number <span class="inlinecode"><span class="id" type="var">n</span></span> and some evidence <span class="inlinecode"><span class="id" type="var">E</span></span> that <span class="inlinecode"><span class="id" type="var">n</span></span> is
-    even.  But the name <span class="inlinecode"><span class="id" type="var">E</span></span> for this evidence is not used in the rest
-    of the statement of <span class="inlinecode"><span class="id" type="var">ev_plus2</span></span>, so it's a bit silly to bother
-    making up a name for it.  We could write it like this instead,
-    using the dummy identifier <span class="inlinecode"><span class="id" type="var">_</span></span> in place of a real name: 
+这个命题的一个证明项会是一个拥有两个参数的函数：一个数字<span class="inlinecode"><span class="id" type="var">n</span></span>
+    和一个表明<span class="inlinecode"><span class="id" type="var">n</span></span>是偶数的证据<span class="inlinecode"><span class="id" type="var">E</span></span>。但是对于这个证据来说，名字<span class="inlinecode"><span class="id" type="var">E</span></span>并没有
+    在<span class="inlinecode"><span class="id" type="var">ev_plus2</span></span>剩余的陈述里面被使用，所以还专门为它取一个名字并没有意
+    义。因此我们可以使用虚拟标志符<span class="inlinecode"><span class="id" type="var">_</span></span>来替换真实的名字： 
 </div>
 <div class="code code-tight">
 
@@ -399,7 +348,7 @@ A proof term inhabiting this proposition would be a function
 </div>
 
 <div class="doc">
-Or, equivalently, we can write it in more familiar notation: 
+或者，等同地，我们可以使用更加熟悉的记号： 
 </div>
 <div class="code code-tight">
 
@@ -408,19 +357,17 @@ Or, equivalently, we can write it in more familiar notation:
 </div>
 
 <div class="doc">
-In general, "<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>" is just syntactic sugar for
-    "<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode">(<span class="id" type="var">_</span>:<span class="id" type="var">P</span>),</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>". 
+总的来说，"<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>"只是 "<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode">(<span class="id" type="var">_</span>:<span class="id" type="var">P</span>),</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>"的语法糖。 
 </div>
 
 <div class="doc">
-<a name="lab260"></a><h1 class="section">Programming with Tactics</h1>
+<a name="lab260"></a><h1 class="section">使用策略编程</h1>
 
 <div class="paragraph"> </div>
 
- If we can build proofs by giving explicit terms rather than
-    executing tactic scripts, you may be wondering whether we can
-    build _programs_ using _tactics_ rather than explicit terms.
-    Naturally, the answer is yes! 
+ 如果我们可以通过显式地给出项，而不是执行策略脚本，来构造证明，你可
+    能会好奇我们是否可以通过<b>策略</b>，而不是显式地给出项，来构造<b>程序</b>。
+    自然地，答案是可以！
 </div>
 <div class="code code-tight">
 
@@ -440,32 +387,27 @@ In general, "<span class="inlinecode"><span class="id" type="var">P</span></span
 </div>
 
 <div class="doc">
-Notice that we terminate the <span class="inlinecode"><span class="id" type="keyword">Definition</span></span> with a <span class="inlinecode">.</span> rather than
-    with <span class="inlinecode">:=</span> followed by a term.  This tells Coq to enter _proof
-    scripting mode_ to build an object of type <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span>.  Also, we
-    terminate the proof with <span class="inlinecode"><span class="id" type="keyword">Defined</span></span> rather than <span class="inlinecode"><span class="id" type="keyword">Qed</span></span>; this makes
-    the definition _transparent_ so that it can be used in computation
-    like a normally-defined function.  (<span class="inlinecode"><span class="id" type="keyword">Qed</span></span>-defined objects are
-    opaque during computation.)
+注意到我们通过使用<span class="inlinecode">.</span>终止了<span class="inlinecode"><span class="id" type="keyword">Definition</span></span>，而不是使用<span class="inlinecode">:=</span>和一个项来
+    定义它。这个记号会告诉Coq进入<b>证明脚本模式(Proof Scripting
+    Mode)</b>来构造类型是<span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span>的项。并且，我们通过使用<span class="inlinecode"><span class="id" type="keyword">Defined</span></span>而不是
+    <span class="inlinecode"><span class="id" type="keyword">Qed</span></span>来终止证明；这使得这个定义是<b>透明的(Transparent)</b>，所以它可
+    以在计算中就像正常定义的函数一样被使用。（通过<span class="inlinecode"><span class="id" type="keyword">Qed</span></span>定义的对象在计
+    算中是不透明的。）
 
 <div class="paragraph"> </div>
 
-    This feature is mainly useful for writing functions with dependent
-    types, which we won't explore much further in this book.  But it
-    does illustrate the uniformity and orthogonality of the basic
-    ideas in Coq. 
+    这个特性主要是在定义拥有依赖类型的函数时非常有用。我们不会在本书中
+    详细讨论后者。但是它确实表明了Coq里面基本思想的一致性和正交性。 
 </div>
 
 <div class="doc">
-<a name="lab261"></a><h1 class="section">Logical Connectives as Inductive Types</h1>
+<a name="lab261"></a><h1 class="section">逻辑联结词作为归纳类型</h1>
 
 <div class="paragraph"> </div>
 
- Inductive definitions are powerful enough to express most of the
-    connectives and quantifiers we have seen so far.  Indeed, only
-    universal quantification (and thus implication) is built into Coq;
-    all the others are defined inductively.  We'll see these
-    definitions in this section. 
+ 归纳定义足够用于表达我们目前为止遇到的大多数的联结词和量词。事实上，
+    只有全称量化（因此也包括蕴含式）是Coq内置的，所有其他的都是被归纳
+    定义的。在这一节中我们会看到它们的定义。 
 </div>
 <div class="code code-tight">
 
@@ -473,15 +415,14 @@ Notice that we terminate the <span class="inlinecode"><span class="id" type="key
 </div>
 
 <div class="doc">
-<a name="lab262"></a><h2 class="section">Conjunction</h2>
+<a name="lab262"></a><h2 class="section">合取</h2>
 
 
 <div class="paragraph"> </div>
 
-    To prove that <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span> holds, we must present evidence for both
-    <span class="inlinecode"><span class="id" type="var">P</span></span> and <span class="inlinecode"><span class="id" type="var">Q</span></span>.  Thus, it makes sense to define a proof object for <span class="inlinecode"><span class="id" type="var">P</span></span>
-    <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span> as consisting of a pair of two proofs: one for <span class="inlinecode"><span class="id" type="var">P</span></span> and
-    another one for <span class="inlinecode"><span class="id" type="var">Q</span></span>. This leads to the following definition. 
+    为了证明<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>成立，我们必须同时给出<span class="inlinecode"><span class="id" type="var">P</span></span>和<span class="inlinecode"><span class="id" type="var">Q</span></span>的证据。因此，我们可
+    以合理地将<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>的证明对象定义为包含两个证明的元祖：一个是<span class="inlinecode"><span class="id" type="var">P</span></span>的
+    证明，另一个是<span class="inlinecode"><span class="id" type="var">Q</span></span>的证明。即我们拥有如下定义。 
 </div>
 <div class="code code-tight">
 
@@ -492,9 +433,8 @@ Notice that we terminate the <span class="inlinecode"><span class="id" type="key
 </div>
 
 <div class="doc">
-Notice the similarity with the definition of the <span class="inlinecode"><span class="id" type="var">prod</span></span> type,
-    given in chapter <a href="Poly.html"><span class="inlineref">Poly</span></a>; the only difference is that <span class="inlinecode"><span class="id" type="var">prod</span></span> takes
-    <span class="inlinecode"><span class="id" type="keyword">Type</span></span> arguments, whereas <span class="inlinecode"><span class="id" type="var">and</span></span> takes <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> arguments. 
+注意到这个定义与在章节<a href="Poly.html"><span class="inlineref">Poly</span></a>中给出的<span class="inlinecode"><span class="id" type="var">prod</span></span>定义的类型的相似处；
+    唯一的不同之处在于，<span class="inlinecode"><span class="id" type="var">prod</span></span>的参数是<span class="inlinecode"><span class="id" type="keyword">Type</span></span>，而<span class="inlinecode"><span class="id" type="var">and</span></span>的类型是<span class="inlinecode"><span class="id" type="keyword">Prop</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -505,12 +445,10 @@ Notice the similarity with the definition of the <span class="inlinecode"><span 
 </div>
 
 <div class="doc">
-This should clarify why <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> and <span class="inlinecode"><span class="id" type="tactic">intros</span></span> patterns can be
-    used on a conjunctive hypothesis.  Case analysis allows us to
-    consider all possible ways in which <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span> was proved &mdash; here
-    just one (the <span class="inlinecode"><span class="id" type="var">conj</span></span> constructor).  Similarly, the <span class="inlinecode"><span class="id" type="tactic">split</span></span> tactic
-    actually works for any inductively defined proposition with only
-    one constructor.  In particular, it works for <span class="inlinecode"><span class="id" type="var">and</span></span>: 
+这个定义能够解释为什么<span class="inlinecode"><span class="id" type="tactic">destruct</span></span>和<span class="inlinecode"><span class="id" type="tactic">intros</span></span>模式能用于一个合取前提。
+    情况分析允许我们考虑所有<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>可能被证明的方式&mdash;只有一种方式（即
+    <span class="inlinecode"><span class="id" type="var">conj</span></span>构造子）。类似地，<span class="inlinecode"><span class="id" type="tactic">split</span></span>策略能够用于所有只有一个构造子的归
+    纳定义命题。特别地，它能够用于<span class="inlinecode"><span class="id" type="var">and</span></span>： 
 </div>
 <div class="code code-tight">
 
@@ -527,9 +465,8 @@ This should clarify why <span class="inlinecode"><span class="id" type="tactic">
 </div>
 
 <div class="doc">
-This shows why the inductive definition of <span class="inlinecode"><span class="id" type="var">and</span></span> can be
-    manipulated by tactics as we've been doing.  We can also use it to
-    build proofs directly, using pattern-matching.  For instance: 
+这解释了为什么一直以来我们能够使用策略来操作<span class="inlinecode"><span class="id" type="var">and</span></span>的归纳定义。我们
+    也可以使用模式匹配来用它直接构造证明。例如： 
 </div>
 <div class="code code-tight">
 
@@ -543,7 +480,7 @@ This shows why the inductive definition of <span class="inlinecode"><span class=
 
 <div class="doc">
 <a name="lab263"></a><h4 class="section">Exercise: 2 stars, optional (conj_fact)</h4>
- Construct a proof object demonstrating the following proposition. 
+ 构造一个证明对象来证明下列命题。 
 </div>
 <div class="code code-tight">
 
@@ -555,13 +492,12 @@ This shows why the inductive definition of <span class="inlinecode"><span class=
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab264"></a><h2 class="section">Disjunction</h2>
+<a name="lab264"></a><h2 class="section">析取</h2>
 
 
 <div class="paragraph"> </div>
 
-    The inductive definition of disjunction uses two constructors, one
-    for each side of the disjunct: 
+    析取的归纳定义有两个构造子，分别用于析取的两边： 
 </div>
 <div class="code code-tight">
 
@@ -573,19 +509,17 @@ This shows why the inductive definition of <span class="inlinecode"><span class=
 </div>
 
 <div class="doc">
-This declaration explains the behavior of the <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> tactic on
-    a disjunctive hypothesis, since the generated subgoals match the
-    shape of the <span class="inlinecode"><span class="id" type="var">or_introl</span></span> and <span class="inlinecode"><span class="id" type="var">or_intror</span></span> constructors.
+这个声明解释了<span class="inlinecode"><span class="id" type="tactic">destruct</span></span>策略在一个析取前提上的行为，产生的子类型和
+    <span class="inlinecode"><span class="id" type="var">or_introl</span></span>以及<span class="inlinecode"><span class="id" type="var">or_intror</span></span>构造子的形状相匹配。
 
 <div class="paragraph"> </div>
 
-    Once again, we can also directly write proof objects for theorems
-    involving <span class="inlinecode"><span class="id" type="var">or</span></span>, without resorting to tactics. 
+    又一次地，我们可以不使用策略，直接写出涉及<span class="inlinecode"><span class="id" type="var">or</span></span>的定义的证明对象。 
 <div class="paragraph"> </div>
 
 <a name="lab265"></a><h4 class="section">Exercise: 2 stars, optional (or_commut'')</h4>
- Try to write down an explicit proof object for <span class="inlinecode"><span class="id" type="var">or_commut</span></span> (without
-    using <span class="inlinecode"><span class="id" type="keyword">Print</span></span> to peek at the ones we already defined!). 
+ 尝试写下<span class="inlinecode"><span class="id" type="var">or_commut</span></span>的显式证明对象。（不要使用<span class="inlinecode"><span class="id" type="keyword">Print</span></span>来偷看我们已经
+    定义的版本！） 
 </div>
 <div class="code code-tight">
 
@@ -597,14 +531,12 @@ This declaration explains the behavior of the <span class="inlinecode"><span cla
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab266"></a><h2 class="section">Existential Quantification</h2>
+<a name="lab266"></a><h2 class="section">存在量化</h2>
 
 
 <div class="paragraph"> </div>
 
-    To give evidence for an existential quantifier, we package a
-    witness <span class="inlinecode"><span class="id" type="var">x</span></span> together with a proof that <span class="inlinecode"><span class="id" type="var">x</span></span> satisfies the property
-    <span class="inlinecode"><span class="id" type="var">P</span></span>: 
+    为了给出存在量词的证据，我们将一个证据类型<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">x</span></span>满足性质<span class="inlinecode"><span class="id" type="var">P</span></span>的证明打包在一起： 
 </div>
 <div class="code code-tight">
 
@@ -615,16 +547,13 @@ This declaration explains the behavior of the <span class="inlinecode"><span cla
 </div>
 
 <div class="doc">
-This may benefit from a little unpacking.  The core definition is
-    for a type former <span class="inlinecode"><span class="id" type="var">ex</span></span> that can be used to build propositions of
-    the form <span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>, where <span class="inlinecode"><span class="id" type="var">P</span></span> itself is a _function_ from witness
-    values in the type <span class="inlinecode"><span class="id" type="var">A</span></span> to propositions.  The <span class="inlinecode"><span class="id" type="var">ex_intro</span></span>
-    constructor then offers a way of constructing evidence for <span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>,
-    given a witness <span class="inlinecode"><span class="id" type="var">x</span></span> and a proof of <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>. 
+打包之后的命题可以通过解包操作受益。这里的核心定义是为了用于构造
+    <span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>命题的类型构造器<span class="inlinecode"><span class="id" type="var">ex</span></span>，其中<span class="inlinecode"><span class="id" type="var">P</span></span>自身是一个从类型为<span class="inlinecode"><span class="id" type="var">A</span></span>的证据类型
+    值到命题的<b>函数(Function)</b>。构造子<span class="inlinecode"><span class="id" type="var">ex_intro</span></span>提供了一个给定
+    证据类型<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>的证 明，可以构造<span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>的证据的方式。 
 <div class="paragraph"> </div>
 
- The more familiar form <span class="inlinecode"><span style='font-size:120%;'>&exist;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> desugars to an expression
-    involving <span class="inlinecode"><span class="id" type="var">ex</span></span>: 
+ 我们更加熟悉的类型<span class="inlinecode"><span style='font-size:120%;'>&exist;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>可以转换为一个涉及<span class="inlinecode"><span class="id" type="var">ex</span></span>的表达式： 
 </div>
 <div class="code code-tight">
 
@@ -634,7 +563,7 @@ This may benefit from a little unpacking.  The core definition is
 </div>
 
 <div class="doc">
-Here's how to define an explicit proof object involving <span class="inlinecode"><span class="id" type="var">ex</span></span>: 
+下面是我们如何定义一个涉及<span class="inlinecode"><span class="id" type="var">ex</span></span>的显式证明对象： 
 </div>
 <div class="code code-tight">
 
@@ -644,7 +573,7 @@ Here's how to define an explicit proof object involving <span class="inlinecode"
 
 <div class="doc">
 <a name="lab267"></a><h4 class="section">Exercise: 2 stars, optional (ex_ev_Sn)</h4>
- Complete the definition of the following proof object: 
+ 完成下列证明对象的定义： 
 </div>
 <div class="code code-tight">
 
@@ -656,11 +585,11 @@ Here's how to define an explicit proof object involving <span class="inlinecode"
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab268"></a><h2 class="section"><span class="inlinecode"><span class="id" type="var">True</span></span> and <span class="inlinecode"><span class="id" type="var">False</span></span></h2>
+<a name="lab268"></a><h2 class="section"><span class="inlinecode"><span class="id" type="var">True</span></span>和<span class="inlinecode"><span class="id" type="var">False</span></span></h2>
 
 <div class="paragraph"> </div>
 
- The inductive definition of the <span class="inlinecode"><span class="id" type="var">True</span></span> proposition is simple: 
+ <span class="inlinecode"><span class="id" type="var">True</span></span>命题的归纳定义很简单： 
 </div>
 <div class="code code-tight">
 
@@ -669,12 +598,12 @@ Here's how to define an explicit proof object involving <span class="inlinecode"
 </div>
 
 <div class="doc">
-It has one constructor (so every proof of <span class="inlinecode"><span class="id" type="var">True</span></span> is the same, so
-    being given a proof of <span class="inlinecode"><span class="id" type="var">True</span></span> is not informative.) 
+它拥有一个构造子（因此<span class="inlinecode"><span class="id" type="var">True</span></span>的所有证据都是一样的，所以给出一个
+    <span class="inlinecode"><span class="id" type="var">True</span></span>的证明并没有信息量。） 
 <div class="paragraph"> </div>
 
- <span class="inlinecode"><span class="id" type="var">False</span></span> is equally simple &mdash; indeed, so simple it may look
-    syntactically wrong at first glance! 
+ <span class="inlinecode"><span class="id" type="var">False</span></span>也一样的简单&mdash;事实上，它是如此简单，以致于第一眼看上去像是一个
+    语法错误。 
 </div>
 <div class="code code-tight">
 
@@ -682,8 +611,8 @@ It has one constructor (so every proof of <span class="inlinecode"><span class="
 </div>
 
 <div class="doc">
-That is, <span class="inlinecode"><span class="id" type="var">False</span></span> is an inductive type with _no_ constructors &mdash;
-    i.e., no way to build evidence for it. 
+也就是说， <span class="inlinecode"><span class="id" type="var">False</span></span>是一个<b>没有</b>构造子的归纳类型&mdash;即，没有任何方式能
+    够构造一个它的证明。 
 </div>
 <div class="code code-tight">
 
@@ -691,14 +620,13 @@ That is, <span class="inlinecode"><span class="id" type="var">False</span></span
 </div>
 
 <div class="doc">
-<a name="lab269"></a><h1 class="section">Equality</h1>
+<a name="lab269"></a><h1 class="section">相等性</h1>
 
 <div class="paragraph"> </div>
 
- Even Coq's equality relation is not built in.  It has the
-    following inductive definition.  (Actually, the definition in the
-    standard library is a small variant of this, which gives an
-    induction principle that is slightly easier to use.) 
+ 在Coq里，甚至连相等性都不是内置的。它拥有如下的归纳定义。（事实上，
+    在标准库里的定义是这里给出的定义的轻微变体，前者给出了稍微容易使用
+    一些的归纳原理。） 
 </div>
 <div class="code code-tight">
 
@@ -711,28 +639,24 @@ That is, <span class="inlinecode"><span class="id" type="var">False</span></span
 </div>
 
 <div class="doc">
-The way to think about this definition is that, given a set <span class="inlinecode"><span class="id" type="var">X</span></span>,
-    it defines a _family_ of propositions "<span class="inlinecode"><span class="id" type="var">x</span></span> is equal to <span class="inlinecode"><span class="id" type="var">y</span></span>,"
-    indexed by pairs of values (<span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span>) from <span class="inlinecode"><span class="id" type="var">X</span></span>.  There is just
-    one way of constructing evidence for each member of this family:
-    applying the constructor <span class="inlinecode"><span class="id" type="var">eq_refl</span></span> to a type <span class="inlinecode"><span class="id" type="var">X</span></span> and a value <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">:</span>
-    <span class="inlinecode"><span class="id" type="var">X</span></span> yields evidence that <span class="inlinecode"><span class="id" type="var">x</span></span> is equal to <span class="inlinecode"><span class="id" type="var">x</span></span>. 
+我们可以这样理解这个定义，给定一个集合<span class="inlinecode"><span class="id" type="var">X</span></span>，它定义了由<span class="inlinecode"><span class="id" type="var">X</span></span>的一对值
+    (<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">y</span></span>)所索引的“<span class="inlinecode"><span class="id" type="var">x</span></span>与<span class="inlinecode"><span class="id" type="var">y</span></span>相等”的一<b>系列(Family)</b>的命题。只有
+    一种方式能够构造该系列中任意成员的证据：将构造子<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>应用到一
+    个类型<span class="inlinecode"><span class="id" type="var">X</span></span>和一个值<span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">X</span></span>，产生一个<span class="inlinecode"><span class="id" type="var">x</span></span>等于<span class="inlinecode"><span class="id" type="var">x</span></span>的证据。 
 <div class="paragraph"> </div>
 
- We can use <span class="inlinecode"><span class="id" type="var">eq_refl</span></span> to construct evidence that, for example, <span class="inlinecode">2</span> <span class="inlinecode">=</span>
-    <span class="inlinecode">2</span>.  Can we also use it to construct evidence that <span class="inlinecode">1</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> <span class="inlinecode">=</span> <span class="inlinecode">2</span>?
-    Yes, we can.  Indeed, it is the very same piece of evidence!
+ 我们可以使用<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>来构造证据，比如说，<span class="inlinecode">2</span> <span class="inlinecode">=</span> <span class="inlinecode">2</span>。那么我们能否使用
+    它来构造证据<span class="inlinecode">1</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> <span class="inlinecode">=</span> <span class="inlinecode">2</span>呢？答案是肯定的。事实上，它就是同一个证据！
 
 <div class="paragraph"> </div>
 
-    The reason is that Coq treats as "the same" any two terms that are
-    _convertible_ according to a simple set of computation rules.
+    原因是如果两个项能够通过一些简单的计算规则<b>可转换(convertible)</b> ，
+    那么Coq认为两者“相等”。
 
 <div class="paragraph"> </div>
 
-    These rules, which are similar to those used by <span class="inlinecode"><span class="id" type="var">Compute</span></span>, include
-    evaluation of function application, inlining of definitions, and
-    simplification of <span class="inlinecode"><span class="id" type="keyword">match</span></span>es.  
+    这些计算规则，与<span class="inlinecode"><span class="id" type="var">Compute</span></span>所使用的规则相似，包括函数应用的计算，定
+    义的内联，<span class="inlinecode"><span class="id" type="keyword">match</span></span>语句的化简。 
 </div>
 <div class="code code-tight">
 
@@ -743,19 +667,17 @@ The way to think about this definition is that, given a set <span class="inlinec
 </div>
 
 <div class="doc">
-The <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span> tactic that we have used to prove equalities up
-    to now is essentially just short-hand for <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">eq_refl</span></span>.
+至今为止我们所用来证据相等性的<span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span>策略本质上只是<span class="inlinecode"><span class="id" type="tactic">apply</span></span>
+    <span class="inlinecode"><span class="id" type="var">eq_refl</span></span>的简写。
 
 <div class="paragraph"> </div>
 
-    In tactic-based proofs of equality, the conversion rules are
-    normally hidden in uses of <span class="inlinecode"><span class="id" type="tactic">simpl</span></span> (either explicit or implicit in
-    other tactics such as <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span>).
+    在基于策略的相等性证明中，转换规则通常隐藏在<span class="inlinecode"><span class="id" type="tactic">simpl</span></span>的使用后面（在
+    其他策略中或显式或隐式，例如<span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span>）。
 
 <div class="paragraph"> </div>
 
-    But you can see them directly at work in the following explicit
-    proof objects: 
+    而在如下的显式证明对象中，你可以直接看到它们： 
 </div>
 <div class="code code-tight">
 
@@ -768,9 +690,9 @@ The <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></
 
 <div class="doc">
 <a name="lab270"></a><h4 class="section">Exercise: 2 stars (equality__leibniz_equality)</h4>
- The inductive definition of equality implies _Leibniz equality_:
-    what we mean when we say "<span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span> are equal" is that every
-    property on <span class="inlinecode"><span class="id" type="var">P</span></span> that is true of <span class="inlinecode"><span class="id" type="var">x</span></span> is also true of <span class="inlinecode"><span class="id" type="var">y</span></span>.  
+ 相等性的归纳定义隐含了 <b>Leibniz相等性(Leibniz equality)</b>：当我们
+    说“<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">y</span></span>相等的时候”，我们意味着所有<span class="inlinecode"><span class="id" type="var">x</span></span>满足的性质<span class="inlinecode"><span class="id" type="var">P</span></span>，对于<span class="inlinecode"><span class="id" type="var">y</span></span>
+    来说也满足。 
 </div>
 <div class="code code-tight">
 
@@ -785,8 +707,8 @@ The <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></
 <div class="paragraph"> </div>
 
 <a name="lab271"></a><h4 class="section">Exercise: 5 stars, optional (leibniz_equality__equality)</h4>
- Show that, in fact, the inductive definition of equality is
-    _equivalent_ to Leibniz equality: 
+ 请说明，事实上，相等性的归纳定义和Leibniz相等性是
+    <b>相同的(equivalent)</b>。 
 </div>
 <div class="code code-tight">
 
@@ -799,65 +721,57 @@ The <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab272"></a><h2 class="section">Inversion, Again</h2>
+<a name="lab272"></a><h2 class="section">反演, 再一次</h2>
 
 <div class="paragraph"> </div>
 
- We've seen <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> used with both equality hypotheses and
-    hypotheses about inductively defined propositions.  Now that we've
-    seen that these are actually the same thing, we're in a position
-    to take a closer look at how <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> behaves.
+ 我们曾经见过<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>被同时用于相等性前提，和关于被归纳定义的命
+    题的前提。现在我们明白了实际上它们是同一件事情。那么我们现在可以细
+    究一下<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>是如何工作的。
 
 <div class="paragraph"> </div>
 
-    In general, the <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> tactic...
-
-<div class="paragraph"> </div>
-
-<ul class="doclist">
-<li> takes a hypothesis <span class="inlinecode"><span class="id" type="var">H</span></span> whose type <span class="inlinecode"><span class="id" type="var">P</span></span> is inductively defined,
-      and
-
-<div class="paragraph"> </div>
-
-
-</li>
-<li> for each constructor <span class="inlinecode"><span class="id" type="var">C</span></span> in <span class="inlinecode"><span class="id" type="var">P</span></span>'s definition,
+    一般来说，<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>策略...
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> generates a new subgoal in which we assume <span class="inlinecode"><span class="id" type="var">H</span></span> was
-        built with <span class="inlinecode"><span class="id" type="var">C</span></span>,
+<li> 接受一个前提<span class="inlinecode"><span class="id" type="var">H</span></span>，该前提的类型<span class="inlinecode"><span class="id" type="var">P</span></span>是通过归纳定义的，以及
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> adds the arguments (premises) of <span class="inlinecode"><span class="id" type="var">C</span></span> to the context of
-        the subgoal as extra hypotheses,
+<li> 对于<span class="inlinecode"><span class="id" type="var">P</span></span>的定义里的每一个构造子<span class="inlinecode"><span class="id" type="var">C</span></span>，
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> 产生一个新的子目标，在该子目标中我们假设<span class="inlinecode"><span class="id" type="var">H</span></span>是通过<span class="inlinecode"><span class="id" type="var">C</span></span>构造的，
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> matches the conclusion (result type) of <span class="inlinecode"><span class="id" type="var">C</span></span> against the
-        current goal and calculates a set of equalities that must
-        hold in order for <span class="inlinecode"><span class="id" type="var">C</span></span> to be applicable,
+<li> 作为额外的假设，在子目标的上下文中增加<span class="inlinecode"><span class="id" type="var">C</span></span>的论据（前提），
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> adds these equalities to the context (and, for convenience,
-        rewrites them in the goal), and
+<li> 将<span class="inlinecode"><span class="id" type="var">C</span></span>的结论（结果类型）与当前的目标相匹配，计算出为了能够应用<span class="inlinecode"><span class="id" type="var">C</span></span>而必须成立的一些相等关系，
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> if the equalities are not satisfiable (e.g., they involve
-        things like <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">O</span></span>), immediately solves the subgoal. 
+<li> 将这些相等关系加入上下文中（以及，为了方便，在目标中替换它们），以及
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> 如果这些相等关系无法满足（例如，它们涉及到<span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">O</span></span>），那么立即解决这个子目标。 
 </li>
 </ul>
 
@@ -866,28 +780,23 @@ The <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></
 
 <div class="paragraph"> </div>
 
- _Example_: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">or</span></span>, there are
-    two constructors, so two subgoals get generated.  The
-    conclusion (result type) of the constructor (<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>) doesn't
-    place any restrictions on the form of <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode"><span class="id" type="var">Q</span></span>, so we don't get
-    any extra equalities in the context of the subgoal. 
+ <b>例子</b>：如果我们反演一个使用<span class="inlinecode"><span class="id" type="var">or</span></span>构造的前提，它有两个构
+    造子，所以产生了两个子目标。构造子的结论（结果类型，即<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>）
+    并没有对于<span class="inlinecode"><span class="id" type="var">P</span></span>和<span class="inlinecode"><span class="id" type="var">Q</span></span>的形式有任何要求，所以在子目标的上下文中我们不会
+    获得额外的相等关系。 
 <div class="paragraph"> </div>
 
- _Example_: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">and</span></span>, there is
-    only one constructor, so only one subgoal gets generated.  Again,
-    the conclusion (result type) of the constructor (<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>) doesn't
-    place any restrictions on the form of <span class="inlinecode"><span class="id" type="var">P</span></span> or <span class="inlinecode"><span class="id" type="var">Q</span></span>, so we don't get
-    any extra equalities in the context of the subgoal.  The
-    constructor does have two arguments, though, and these can be seen
-    in the context in the subgoal. 
+ <b>例子</b>：如果我们反演一个使用<span class="inlinecode"><span class="id" type="var">and</span></span>构造的前提，它只有一个构造子，
+    所以只产生一个子目标。再一次地，构造子的结论（结果类型，即<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>）
+    并没有对于<span class="inlinecode"><span class="id" type="var">P</span></span>和<span class="inlinecode"><span class="id" type="var">Q</span></span>的形式有任何要求，所以在子目标的上下文中我们不会
+    获得额外的相等关系。不过，这个构造子有两个额外的参数，我们能够在子
+    目标的上下文中看到它们。 
 <div class="paragraph"> </div>
 
- _Example_: If we invert a hypothesis built with <span class="inlinecode"><span class="id" type="var">eq</span></span>, there is
-    again only one constructor, so only one subgoal gets generated.
-    Now, though, the form of the <span class="inlinecode"><span class="id" type="var">refl_equal</span></span> constructor does give us
-    some extra information: it tells us that the two arguments to <span class="inlinecode"><span class="id" type="var">eq</span></span>
-    must be the same!  The <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> tactic adds this fact to the
-    context. 
+ <b>例子</b>：如果我们反演一个使用<span class="inlinecode"><span class="id" type="var">eq</span></span>构造的前提，它也只有一个构造子，
+    所以只产生一个子目标。但是，现在<span class="inlinecode"><span class="id" type="var">refl_equal</span></span>构造子的形式给我们带来
+    的额外的信息：它告诉<span class="inlinecode"><span class="id" type="var">eq</span></span>的两个参数必须是一样的。于是<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>策
+    略会将这个事实加入到上下文中。 
 </div>
 </div>
 
