@@ -8,107 +8,85 @@ Require Import Coq.omega.Omega.
 Require Import Imp. 
 Require Import Maps.
 
-(** In the final chaper of _Logical Foundations_ (_Software
-    Foundations_, volume 1), we began applying the mathematical tools
-    developed in the first part of the course to studying the theory
-    of a small programming language, Imp.
+(** 在 _'逻辑基础'_ (_'软件基础'_ 的第一章) 中，
+    我们用课程前面的部分中学习的数学工具研究了一个小型编程语言 Imp 。
 
-    - We defined a type of _abstract syntax trees_ for Imp, together
-      with an _evaluation relation_ (a partial function on states)
-      that specifies the _operational semantics_ of programs.
+    - 我们给 Imp 定义了 _'抽象语法树 (abstract syntax trees)'_；
+      还有 _'求值关系 (evaluation relation)'_ (一个在状态上的偏函数)，
+      它给出了程序的 _'操作语义 (operational semantics)'_。
 
-      The language we defined, though small, captures some of the key
-      features of full-blown languages like C, C++, and Java,
-      including the fundamental notion of mutable state and some
-      common control structures.
+      我们定义的这个小型语言实现了一些完善语言（例如 C、C++ 和 Java）
+      的关键功能，包括基础的可变状态和控制流的概念。
 
-    - We proved a number of _metatheoretic properties_ -- "meta" in
-      the sense that they are properties of the language as a whole,
-      rather than of particular programs in the language.  These
-      included:
+    - 我们证明了许多 _'元理论性质 (metatheoretic properties)'_，也就是
+      从高层次角度来说，这些性质是关于这整个语言的，而不是关于任何一段
+      单独的程序。这包括了：
 
-        - determinism of evaluation
+        - 求值过程的确定性
 
-        - equivalence of some different ways of writing down the
-          definitions (e.g., functional and relational definitions of
-          arithmetic expression evaluation)
+        - 用不同方式写下的定义之等价性（例如，用求值函数和求值关系来定
+          义算术表达式的化简规则）
 
-        - guaranteed termination of certain classes of programs
+        - 保证一系列程序必会停机
 
-        - correctness (in the sense of preserving meaning) of a number
-          of useful program transformations
+        - 保证许多有用的程序变换是正确的（也就是它们不改变程序的含义）
 
-        - behavioral equivalence of programs (in the [Equiv]
-          chapter). *)
+        - 程序的等价性（在 [Equiv] 这一章里）。 *)
 
-(** If we stopped here, we would already have something useful: a set
-    of tools for defining and discussing programming languages and
-    language features that are mathematically precise, flexible, and
-    easy to work with, applied to a set of key properties.  All of
-    these properties are things that language designers, compiler
-    writers, and users might care about knowing.  Indeed, many of them
-    are so fundamental to our understanding of the programming
-    languages we deal with that we might not consciously recognize
-    them as "theorems."  But properties that seem intuitively obvious
-    can sometimes be quite subtle (sometimes also subtly wrong!).
+(** 如果在这里打住，我们已经有了一些实用的东西了：一套用来定义并讨论
+    程序语言和它们的功能的工具。这些工具针对了程序语言的一些关键性质，
+    是（从数学角度来讲）严谨的，灵活的，并且是易于使用的。
+    所有这些性质都是程序语言的设计者，编译器作者，以及用户所最关心的。 
+    当然，这些性质中的很多是极为基础的，以至于在我们对编程语言的认知
+    中甚至不会把它们自然地当做“定理”来对待。不过那些看起来十分显然的
+    属性有时候十分难以证明（甚至它们中的一些是错的这一点都很难）。
 
-    We'll return to the theme of metatheoretic properties of whole
-    languages later in this volume when we discuss _types_ and _type
-    soundness_.  In this chapter, though, we turn to a different set
-    of issues.
+    在这一卷稍后，我们将会在讨论 _'类型 (types)'_ 和 _'类型可靠性
+    (type soundness)'_ 时，回归到整个语言的元理论性质研究。不过现在
+    我们要着眼于另外一些问题。
+    
+    我们的目标是给出一些 _'软件形式化验证 (program verification)'_
+    的例子，也就是说，用 Imp 的精确定义来形式地证明某段程序符合某
+    个规范。我们会建立一个叫做 _'弗洛伊德-豪尔逻辑 (Floyd-Hoare Logic)'_
+    的系统（一般简称 _'豪尔逻辑 (Hoare Logic)'_），它是 Imp 的语法构造
+    加上了一个通用的“验证规则”的组合，可以用来说明包含这段结构的程序
+    之正确性。
 
-    Our goal is to carry out some simple examples of _program
-    verification_ -- i.e., to use the precise definition of Imp to
-    prove formally that particular programs satisfy particular
-    specifications of their behavior.  We'll develop a reasoning
-    system called _Floyd-Hoare Logic_ -- often shortened to just
-    _Hoare Logic_ -- in which each of the syntactic constructs of Imp
-    is equipped with a generic "proof rule" that can be used to reason
-    compositionally about the correctness of programs involving this
-    construct.
+    豪尔逻辑发源于1960年代，至今为止依然是活跃的研究主题。它处于大量
+    用来规范并验证在真实世界中工作的，学术与工业程序的软件系统的核心
+    地位。
 
-    Hoare Logic originated in the 1960s, and it continues to be the
-    subject of intensive research right up to the present day.  It
-    lies at the core of a multitude of tools that are being used in
-    academia and industry to specify and verify real software systems.
+    豪尔逻辑组合了两个美好的想法：一种自然的，写下程序 _'规范 (specifications)'_
+    的方式；还有一种用来证明程序在这种规范下是正确的， _'复合证明技巧
+    (compositional proof technique)'_ —— 其中“复合”的意思是，这些证
+    明的结构直接反映了相应程序的结构。*)
 
-    Hoare Logic combines two beautiful ideas: a natural way of writing
-    down _specifications_ of programs, and a _compositional proof
-    technique_ for proving that programs are correct with respect to
-    such specifications -- where by "compositional" we mean that the
-    structure of proofs directly mirrors the structure of the programs
-    that they are about. *)
+(** 在这一章里：
+      - 一个在 Imp 中系统得讨论程序的 _'功能正确性 (functional correctness)'_ 的系统方法
 
-(** This chapter:
-      - A systematic method for reasoning about the _functional
-        correctness_ of programs in Imp
+    目标：
+      - 一种自然表达 _'程序规范 (program specifications)'_ 的记号
+      - 一种关于程序正确性的 _'复合的 (compositional)'_ 证明技巧
 
-    Goals:
-      - a natural notation for _program specifications_ and
-      - a _compositional_ proof technique for program correctness
-
-    Plan:
-      - specifications (assertions / Hoare triples)
-      - proof rules
-      - loop invariants
+    计划：
+      - 程序规范（断言或者霍尔三元组）
+      - 证明规则
+      - 循环不变式
       - decorated programs
-      - examples *)
+      - 例子 *)
 
 (* ################################################################# *)
-(** * Assertions *)
+(** * 断言 *)
 
-(** To talk about specifications of programs, the first thing we
-    need is a way of making _assertions_ about properties that hold at
-    particular points during a program's execution -- i.e., claims
-    about the current state of the memory when execution reaches that
-    point.  Formally, an assertion is just a family of propositions
-    indexed by a [state]. *)
+(** 要讨论程序的规范，我们需要的首先是一种在程序执行过程中某个时刻，
+    关于程序性质做出 _'断言 (assertions)'_ 的方法。也就是说，我们要讨论执
+    行到某处时，当时的内存状态。形式化地说，一项断言就是一系列关于 [state]
+    的命题。*)
 
 Definition Assertion := state -> Prop.
 
 (** **** Exercise: 1 star, optional (assertions)  *)
-(** Paraphrase the following assertions in English (or your favorite
-    natural language). *)
+(** 用中文重新表述下列断言（或者用你最喜欢的语言）。 *)
 
 Module ExAssertions.
 Definition as1 : Assertion := fun st => st X = 3.
@@ -124,35 +102,30 @@ Definition as6 : Assertion := fun st => False.
 End ExAssertions.
 (** [] *)
 
-(** This way of writing assertions can be a little bit heavy,
-    for two reasons: (1) every single assertion that we ever write is
-    going to begin with [fun st => ]; and (2) this state [st] is the
-    only one that we ever use to look up variables in assertions (we
-    will never need to talk about two different memory states at the
-    same time).  For discussing examples informally, we'll adopt some
-    simplifying conventions: we'll drop the initial [fun st =>], and
-    we'll write just [X] to mean [st X].  Thus, instead of writing *)
+(** 这种写下断言的方式可能过于繁琐，理由如下：
+    (1) 我们写的每个断言都将以 [fun st => ] 开头；
+    (2) 状态 [st] 是唯一我们希望用来再断言中查找变量的状态（我们将不会
+    讨论在同一时间的两种不同状态。
+    当我们非正式地讨论某些例子的时候，我们会简化一下：我们把开头的
+    [fun st =>] 去掉，并且用 [X] 来代替 [st X] 所以，我们将把*)
 (**
 
       fun st => (st Z) * (st Z) <= m /\
                 ~ ((S (st Z)) * (S (st Z)) <= m)
 
-    we'll write just
+    写成
 
       Z * Z <= m /\ ~((S Z) * (S Z) <= m).
 *)
 
-(** This example also illustrates a convention that we'll use
-    throughout the Hoare Logic chapters: in informal assertions,
-    capital letters like [X], [Y], and [Z] are Imp variables, while
-    lowercase letters like [x], [y], [m], and [n] are ordinary Coq
-    variables (of type [nat]).  This is why, when translating from
-    informal to formal, we replace [X] with [st X] but leave [m]
-    alone. *)
+(** 这个例子也同时展示了我们将使用的另一种简便写法，我们将
+    在关于霍尔逻辑的章节里都使用它：在非正式的断言中，大写字母例如 [X]、
+    [Y]、[Z] 是 Imp 变量，而小写字母例如 [x]、[y]、[m]、[n] 则是一般的 Coq
+    变量（类型是 [nat]）。这就是当我们把非正式断言翻译成正式断言时，把
+    [X] 换成 [st X] 而留下 [m] 不变的理由。*)
 
-(** Given two assertions [P] and [Q], we say that [P] _implies_ [Q],
-    written [P ->> Q], if, whenever [P] holds in some state [st], [Q]
-    also holds. *)
+(** 给出两断言 [P] 与 [Q]，我们说 [P] _'蕴含'_ [Q]，
+    写作 [P ->> Q]，如果当 [P] 在 [st] 下成立，[Q] 也成立。*)
 
 Definition assert_implies (P Q : Assertion) : Prop :=
   forall st, P st -> Q st.
@@ -161,37 +134,30 @@ Notation "P ->> Q" := (assert_implies P Q)
                       (at level 80) : hoare_spec_scope.
 Open Scope hoare_spec_scope.
 
-(** (The [hoare_spec_scope] annotation here tells Coq that this
-    notation is not global but is intended to be used in particular
-    contexts.  The [Open Scope] tells Coq that this file is one such
-    context.) *)
+(** 这里的记号 [hoare_spec_scope] 告诉 Coq， 这个记号不是全局的，
+    我们打算把它用在特定的上下文里。[Open Scope] 告诉 Coq，这个文件就是
+    一个我们将采用此记号的上下文。 *)
 
-(** We'll also want the "iff" variant of implication between
-    assertions: *)
+(** 我们也需要一个断言之间“当且仅当”蕴含关系的变体：*)
 
 Notation "P <<->> Q" :=
   (P ->> Q /\ Q ->> P) (at level 80) : hoare_spec_scope.
 
 (* ################################################################# *)
-(** * Hoare Triples *)
+(** * 霍尔三元组 *)
 
-(** Next, we need a way of making formal claims about the
-    behavior of commands. *)
+(** 接下来，我们需要一种描述命令行为的方式。*)
 
-(** In general, the behavior of a command is to transform one state to
-    another, so it is natural to express claims about commands in
-    terms of assertions that are true before and after the command
-    executes:
+(** 广泛而言，一个命令的行为就是把一个状态转变成另一个状态，所以
+    我们可以自然地通过命令运行前后的断言来描述一个命令。
 
-      - "If command [c] is started in a state satisfying assertion
-        [P], and if [c] eventually terminates in some final state,
-        then this final state will satisfy the assertion [Q]."
+      - “如果命令 [c] 在一个复合断言 [P] 的状态开始，并且如果 [c]
+        最终在一个结束状态停机，这个结束状态会满足断言 [Q]。”
 
-    Such a claim is called a _Hoare Triple_.  The assertion [P] is
-    called the _precondition_ of [c], while [Q] is the
-    _postcondition_.  *)
+    这样的描述叫做 _'霍尔三元组 (Hoare Triple)'_。断言 [P] 叫做 [c]
+    的 _'前置条件 (precondition)'_，而 [Q] 叫做 _'后置条件 (postcondition)'_。*)
 
-(** Formally: *)
+(** 形式化地： *)
 
 Definition hoare_triple
            (P:Assertion) (c:com) (Q:Assertion) : Prop :=
@@ -200,20 +166,20 @@ Definition hoare_triple
      P st  ->
      Q st'.
 
-(** Since we'll be working a lot with Hoare triples, it's useful to
-    have a compact notation:
+(** 因为我们将会在霍尔三元组上做很多研究，所以一个紧凑的记号是非常便
+    利的：
 
        {{P}} c {{Q}}.
 *)
-(** (The traditional notation is [{P} c {Q}], but single braces
-    are already used for other things in Coq.)  *)
+(** （传统的记号是 [{P} c {Q}]，不过单花括号已经被用在 Coq 中其
+    它东西上了。*)
 
 Notation "{{ P }}  c  {{ Q }}" :=
   (hoare_triple P c Q) (at level 90, c at next level)
   : hoare_spec_scope.
 
 (** **** Exercise: 1 star, optional (triples)  *)
-(** Paraphrase the following Hoare triples in English.
+(** 用中文重新表述下列霍尔三元组。
 
    1) {{True}} c {{X = 5}}
 
@@ -235,8 +201,8 @@ Notation "{{ P }}  c  {{ Q }}" :=
 (** [] *)
 
 (** **** Exercise: 1 star, optional (valid_triples)  *)
-(** Which of the following Hoare triples are _valid_ -- i.e., the
-    claimed relation between [P], [c], and [Q] is true?
+(** 下列的霍尔三元组是否 _'有效'_，亦即，表述的 [P]、[c]、[Q] 之间的
+    关系是否为真？
 
    1) {{True}} X ::= 5 {{X = 5}}
 
@@ -262,8 +228,8 @@ Notation "{{ P }}  c  {{ Q }}" :=
 *)
 (** [] *)
 
-(** To get us warmed up for what's coming, here are two simple facts
-    about Hoare triples.  (Make sure you understand what they mean.) *)
+(** 为了热身，这里有两个关于霍尔三元组的简单定理。
+    （确保你弄懂它们的意思。）*)
 
 Theorem hoare_post_true : forall (P Q : Assertion) c,
   (forall st, Q st) ->
@@ -283,61 +249,51 @@ Proof.
   inversion HP.  Qed.
 
 (* ################################################################# *)
-(** * Proof Rules *)
+(** * 证明规则 *)
 
-(** The goal of Hoare logic is to provide a _compositional_
-    method for proving the validity of specific Hoare triples.  That
-    is, we want the structure of a program's correctness proof to
-    mirror the structure of the program itself.  To this end, in the
-    sections below, we'll introduce a rule for reasoning about each of
-    the different syntactic forms of commands in Imp -- one for
-    assignment, one for sequencing, one for conditionals, etc. -- plus
-    a couple of "structural" rules for gluing things together.  We
-    will then be able to prove programs correct using these proof
-    rules, without ever unfolding the definition of [hoare_triple]. *)
+(** 霍尔逻辑的目标是提供一种 _组合的_ 方法，
+    用来证明特定三元组的正确性。
+    就是，我们希望一段程序的正确性证明的结构反映程序本身。
+    为了达成这个目的，在下面的小节中，我们会引入一个用来推论每一个不同的
+    Imp 命令的语法形式的规则：一个是关于赋值的，一个是关于顺序执行的，
+    一个是关于条件执行的，等等。还有一些“结构的”规则用来组合它们。
+    然后我们将能证明一段程序是正确的，用这些证明规则，甚至不用展开
+    [hoare_triple] 的定义。 *)
 
 (* ================================================================= *)
-(** ** Assignment *)
+(** ** 赋值 *)
 
-(** The rule for assignment is the most fundamental of the Hoare logic
-    proof rules.  Here's how it works.
+(** 赋值是霍尔逻辑的规则中最基础的一个。下述是它的工作方式。
 
-    Consider this valid Hoare triple:
+    考虑这个有效的霍尔三元组：
 
        {{ Y = 1 }}  X ::= Y  {{ X = 1 }}
 
-    In English: if we start out in a state where the value of [Y]
-    is [1] and we assign [Y] to [X], then we'll finish in a
-    state where [X] is [1].  
-    That is, the property of being equal to [1] gets transferred 
-    from [Y] to [X]. *)
+    用中文讲：如果我们从一个 [Y] 是 [1] 的状态开始，
+    然后我们把 [Y] 赋给 [X]，我们最终会得到一个 [X] 是 [1] 的状态。  
+    也即，“等于 [1]”这个属性被从 [Y] 传递给了 [X]。 *)
 
-(** Similarly, in
+(** 相似地，在
 
        {{ Y + Z = 1 }}  X ::= Y + Z  {{ X = 1 }}
 
-    the same property (being equal to one) gets transferred to
-    [X] from the expression [Y + Z] on the right-hand side of
-    the assignment. *)
+    里，同样的属性（等于 [1]）被从赋值命令的右侧 [Y + Z] 传递给了 [X]。*)
 
-(** More generally, if [a] is _any_ arithmetic expression, then
+(** 更加普遍地, 如果 [a] 是 _'任何一个'_ 算术表达式，那么
 
        {{ a = 1 }}  X ::= a {{ X = 1 }}
 
-    is a valid Hoare triple. *)
+    是一个有效的霍尔三元组。 *)
 
-(** Even more generally, to conclude that an arbitrary assertion [Q]
-    holds after [X ::= a], we need to assume that [Q] holds before [X
-    ::= a], but _with all occurrences of_ [X] replaced by [a] in
-    [Q]. This leads to the Hoare rule for assignment
+(** 还要更加普遍地，为了得到 [Q] 在 [X ::= a] 后仍然成立，我们需要先有
+    [Q] 在 [X ::= a] 前成立，不过 _'所有在其中出现的的'_ [X] 在 [Q] 中
+    替换为 [a]。这给出了霍尔逻辑中赋值的规则
 
       {{ Q [X |-> a] }} X ::= a {{ Q }}
 
-    where "[Q [X |-> a]]" is pronounced "[Q] where [a] is substituted
-    for [X]". *)
+    其中 "[Q [X |-> a]]" 读作 “在 [Q] 中把 [X] 换成 [a]”。 *)
 
-(** For example, these are valid applications of the assignment
-    rule:
+(** 例如，下列这些是赋值规则正确的应用：
 
       {{ (X <= 5) [X |-> X + 1]
          i.e., X + 1 <= 5 }}
@@ -355,17 +311,14 @@ Proof.
       {{ 0 <= X /\ X <= 5 }}
 *)
 
-(** To formalize the rule, we must first formalize the idea of
-    "substituting an expression for an Imp variable in an assertion",
-    which we refer to as assertion substitution, or [assn_sub].  That
-    is, given a proposition [P], a variable [X], and an arithmetic
-    expression [a], we want to derive another proposition [P'] that is
-    just the same as [P] except that [P'] should mention [a] wherever
-    [P] mentions [X]. *)
+(** 为了形式化这个规则，我们必须先把“在一个断言中将 Imp 变量替换为一个
+    表达式” 的概念形式化，我们把这叫做“断言代换”，或者是 [assn_sub]。
+    也就是说，给出命题 [P]、变量 [X]、算术表达式 [a]，我们想要生成一个
+    新的命题 [P']，它和 [P] 一样，不过 [P'] 应该用 [a] 来取代所有
+    [P] 提及 [X] 之处。*)
 
-(** Since [P] is an arbitrary Coq assertion, we can't directly "edit"
-    its text.  However, we can achieve the same effect by evaluating
-    [P] in an updated state: *)
+(** 因为 [P] 是一个未知的 Coq 断言，我们不能直接“编辑”它的文本部分。不
+    过，我们可以通过将 [P] 在下述新的状态中计算来达到相同的效果：*)
 
 Definition assn_sub X a P : Assertion :=
   fun (st : state) =>
@@ -373,66 +326,62 @@ Definition assn_sub X a P : Assertion :=
 
 Notation "P [ X |-> a ]" := (assn_sub X a P) (at level 10).
 
-(** That is, [P [X |-> a]] stands for an assertion -- let's call it [P'] -- 
-    that is just like [P] except that, wherever [P] looks up the 
-    variable [X] in the current state, [P'] instead uses the value 
-    of the expression [a]. *)
+(** 也就是说，[P [X |-> a]] 是一个新的断言——我们把它叫做 [P'] ——
+    它就是 [P]，不过当 [P] 在当前状态中查找变量 [X] 的时候，[P'] 使用表
+    达式 [a] 的值。*)
 
-(** To see how this works, let's calculate what happens with a couple
-    of examples.  First, suppose [P'] is [(X <= 5) [X |-> 3]] -- that
-    is, more formally, [P'] is the Coq expression
+(** 为了演示工作原理，我们来计算一下这几个例子中发生了些什么。首先，假设
+    [P'] 是 [(X <= 5) [X |-> 3]] ——或者，更形式化地， [P'] 是 Coq 表达式
 
     fun st =>
       (fun st' => st' X <= 5)
-      (st & { X --> aeval st 3 }),
+      (st & { X --> aeval st 3 })
 
-    which simplifies to
+    它简化为
 
     fun st =>
       (fun st' => st' X <= 5)
       (st & { X --> 3 })
 
-    and further simplifies to
+    并且可以进一步简化为
 
     fun st =>
       ((st & { X --> 3 }) X) <= 5
 
-    and finally to
+   最终是
 
     fun st =>
       3 <= 5.
 
-    That is, [P'] is the assertion that [3] is less than or equal to
-    [5] (as expected). *)
+    也就是说，[P'] 是一个断言指出 [3] 小于等于 [5]（像我们想的一样）。*)
 
-(** For a more interesting example, suppose [P'] is [(X <= 5) [X |->
-    X+1]].  Formally, [P'] is the Coq expression
+(** 一个更有趣的例子是，假设 [P'] 是 [(X <= 5) [X |-> X+1]]。形式化地，[P']
+    是 Coq 表达式
 
     fun st =>
       (fun st' => st' X <= 5)
       (st & { X --> aeval st (X+1) }),
 
-    which simplifies to
+    它简化为
 
     fun st =>
       (st & { X --> aeval st (X+1) }) X <= 5
 
-    and further simplifies to
+    并且进一步简化为
 
     fun st =>
       (aeval st (X+1)) <= 5.
 
-    That is, [P'] is the assertion that [X+1] is at most [5].
+    也就是说，[P'] 指出 [X+1] 最多是 [5]。
 *)
 
-(** Now, using the concept of substitution, we can give the precise 
-    proof rule for assignment:
+(** 现在，利用替换的概念，我们可以给出下述赋值证明规则的严谨证明：
 
       ------------------------------ (hoare_asgn)
       {{Q [X |-> a]}} X ::= a {{Q}}
 *)
 
-(** We can prove formally that this rule is indeed valid. *)
+(** 我们可以形式化地证明这个规则是正确的。*)
 
 Theorem hoare_asgn : forall Q X a,
   {{Q [X |-> a]}} (X ::= a) {{Q}}.
@@ -442,7 +391,7 @@ Proof.
   inversion HE. subst.
   unfold assn_sub in HQ. assumption.  Qed.
 
-(** Here's a first formal proof using this rule. *)
+(** 下述是一个利用这个规则的形式化证明。*)
 
 Example assn_sub_example :
   {{(fun st => st X < 5) [X |-> X+1]}}
@@ -452,15 +401,14 @@ Proof.
   (* 课上已完成 *)
   apply hoare_asgn.  Qed.
 
-(** Of course, what would be even more helpful is to prove this
-    simpler triple:
+(** 当然，更加有帮助的是证明这个更简单的三元组：
 
       {{X < 4}} (X ::= X+1) {{X < 5}}
 
-   We will see how to do so in the next section. *)		  
+    我们会在下一节中了解怎么做。*)		  
 
 (** **** Exercise: 2 stars (hoare_asgn_examples)  *)
-(** Translate these informal Hoare triples...
+(** 将下列非正式的霍尔三元组……
 
     1) {{ (X <= 10) [X |-> 2 * X] }}
        X ::= 2 * X
@@ -470,8 +418,8 @@ Proof.
        X ::= 3
        {{ 0 <= X /\ X <= 5 }}
 
-   ...into formal statements (use the names [assn_sub_ex1] 
-   and [assn_sub_ex2]) and use [hoare_asgn] to prove them. *)
+   ……翻译成正式的表达（名字叫 [assn_sub_ex1] 和 [assn_sub_ex2]）
+   并且用 [hoare_asgn] 来证明它们。*)
 
 (* 请在此处解答 *)
 (* Do not modify the following line: *)
@@ -479,19 +427,16 @@ Definition manual_grade_for_hoare_asgn_examples : option (prod nat string) := No
 (** [] *)
 
 (** **** Exercise: 2 stars, recommended (hoare_asgn_wrong)  *)
-(** The assignment rule looks backward to almost everyone the first
-    time they see it.  If it still seems puzzling, it may help
-    to think a little about alternative "forward" rules.  Here is a
-    seemingly natural one:
+(** 几乎所有人在看赋值规则第一眼就会觉得它是反向的。如果你还感觉很
+    迷惑，思考一些“正向”的规则可能有帮助。这里是一个看起来挺自然的
+    霍尔三元组：
 
       ------------------------------ (hoare_asgn_wrong)
       {{ True }} X ::= a {{ X = a }}
 
-    Give a counterexample showing that this rule is incorrect and 
-    argue informally that it is really a counterexample.  (Hint: 
-    The rule universally quantifies over the arithmetic expression 
-    [a], and your counterexample needs to exhibit an [a] for which 
-    the rule doesn't work.) *)
+    请给出一个说明能说明这个规则是错误的反例，并非正式地说明它确实
+    是个反例。（提示： 这个规则量化的是所有的算术表达式 [a]，你的
+    反例应该包含一个使这个规则不能正确工作的 [a]。）*)
 
 (* 请在此处解答 *)
 (* Do not modify the following line: *)
@@ -501,20 +446,18 @@ Definition manual_grade_for_hoare_asgn_wrong : option (prod nat string) := None.
 Local Close Scope aexp_scope.
 
 (** **** Exercise: 3 stars, advanced (hoare_asgn_fwd)  *)
-(** However, by using a _parameter_ [m] (a Coq number) to remember the 
-    original value of [X] we can define a Hoare rule for assignment 
-    that does, intuitively, "work forwards" rather than backwards.
+(** 然而，通过引入一个 _'参数'_ [m]（一个 Coq 整数）来记录 [X] 原
+    来的值，我们可以定义一个赋值的证明规则，它可以，直觉性地，“正向地
+    工作”。
 
        ------------------------------------------ (hoare_asgn_fwd)
        {{fun st => P st /\ st X = m}}
          X ::= a
        {{fun st => P st' /\ st X = aeval st' a }}
-       (where st' = st & { X --> m })
+       (其中 st' = st & { X --> m })
 
-    Note that we use the original value of [X] to reconstruct the
-    state [st'] before the assignment took place. Prove that this rule
-    is correct.  (Also note that this rule is more complicated than 
-    [hoare_asgn].)
+    可以注意到其中我们用 [X] 原来的值在赋值发生之前重新构造了状态
+    [st']。证明这个规则是正确的。（注意，这个规则比 [hoare_asgn] 复杂些。)
 *)
 
 Theorem hoare_asgn_fwd :
@@ -528,9 +471,8 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 2 stars, advanced, optional (hoare_asgn_fwd_exists)  *)
-(** Another way to define a forward rule for assignment is to
-    existentially quantify over the previous value of the assigned
-    variable.  Prove that it is correct.
+(** 另外一种定义正向赋值规则的方式是，对变量在赋值之前的值做存在量化。
+    证明这是正确的。
 
       ------------------------------------ (hoare_asgn_fwd_exists)
       {{fun st => P st}}
@@ -551,29 +493,25 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Consequence *)
+(** ** 缩放 *)
 
-(** Sometimes the preconditions and postconditions we get from the
-    Hoare rules won't quite be the ones we want in the particular
-    situation at hand -- they may be logically equivalent but have a
-    different syntactic form that fails to unify with the goal we are
-    trying to prove, or they actually may be logically weaker (for
-    preconditions) or stronger (for postconditions) than what we need.
+(** 有的时候我们从其它证明规则中得到的前置条件和后置条件可能并不
+    是我们想使用的那个情形：它们可能在逻辑上符合需要，但是有着不同的
+    表达而无法和期望的情形匹配；或者我们所得到的这个三元组的前条件
+    太弱，抑或是后条件太强。
 
-    For instance, while
+    例如，
 
-      {{(X = 3) [X |-> 3]}} X ::= 3 {{X = 3}},
+      {{(X = 3) [X |-> 3]}} X ::= 3 {{X = 3}}
 
-    follows directly from the assignment rule,
+    可以直接由赋值规则所得，而
 
       {{True}} X ::= 3 {{X = 3}}
 
-    does not.  This triple is valid, but it is not an instance of
-    [hoare_asgn] because [True] and [(X = 3) [X |-> 3]] are not
-    syntactically equal assertions.  However, they are logically
-    _equivalent_, so if one triple is valid, then the other must
-    certainly be as well.  We can capture this observation with the
-    following rule:
+    却不行。这个三元组是有效的，不过它并不是 [hoare_asgn] 的实例，因
+    为 [True] and [(X = 3) [X |-> 3]] 在语法上并不是相同的断言。然而，
+    它们在逻辑上 _'等价'_，所以前面那个三元组成立，后者也一定成立。
+    我们把这种想法用下列规则写出来：
 
                 {{P'}} c {{Q}}
                   P <<->> P'
@@ -581,10 +519,9 @@ Proof.
                 {{P}} c {{Q}}
 *)
 
-(** Taking this line of thought a bit further, we can see that
-    strengthening the precondition or weakening the postcondition of a
-    valid triple always produces another valid triple. This
-    observation is captured by two _Rules of Consequence_.
+(** 仔细考虑一下这个想法，我们可以看到对一个有效的三元组加强前置条件
+    或者减弱后置条件总是能得到一个有效的三元组。这种想法可以用两条
+    _'缩放规则 (Rules of Consequence)'_ 来描述：
 
                 {{P'}} c {{Q}}
                    P ->> P'
@@ -597,7 +534,7 @@ Proof.
                 {{P}} c {{Q}}
 *)
 
-(** Here are the formal versions: *)
+(** 下列是形式化的版本： *)
 
 Theorem hoare_consequence_pre : forall (P P' Q : Assertion) c,
   {{P'}} c {{Q}} ->
@@ -619,14 +556,14 @@ Proof.
   apply (Hhoare st st').
   assumption. assumption. Qed.
 
-(** For example, we can use the first consequence rule like this:
+(** 例如，我们可以这样应用第一条规则：
 
                 {{ True }} ->>
                 {{ 1 = 1 }}
     X ::= 1
                 {{ X = 1 }}
 
-    Or, formally... *)
+    或者，形式化地：*)
 
 Example hoare_asgn_example1 :
   {{fun st => True}} (X ::= 1) {{fun st => st X = 1}}.
@@ -638,14 +575,14 @@ Proof.
   intros st H. unfold assn_sub, t_update. simpl. reflexivity.
 Qed.
 
-(** We can also use it to prove the example mentioned earlier.
+(** 我们也可以用它来证明之前提到的例子。
 
 		{{ X < 4 }} ->>
 		{{ (X < 5)[X |-> X+1] }}
     X ::= X + 1
 	        {{ X < 5 }}
 
-   Or, formally ... *)
+   或者，形式化地：*)
 
 Example assn_sub_example2 :
   {{(fun st => st X < 4)}}
@@ -659,9 +596,8 @@ Proof.
   intros st H. unfold assn_sub, t_update. simpl. omega.
 Qed.
 
-(** Finally, for convenience in proofs, here is a combined rule of 
-    consequence that allows us to vary both the precondition and the 
-    postcondition in one go.
+(** 最后，为了证明中的方便，我们有一个组合起来的缩放规则，可以让
+    我们同时改变前置条件和后置条件。
 
                 {{P'}} c {{Q'}}
                    P ->> P'
@@ -681,28 +617,22 @@ Proof.
   apply hoare_consequence_post with (Q' := Q').
   assumption. assumption. assumption.  Qed.
 
-(* ================================================================= *)
-(** ** Digression: The [eapply] Tactic *)
+(** ** 题外话：[eapply] 策略*)
 
-(** This is a good moment to take another look at the [eapply] tactic,
-    which we introduced briefly in the [Auto] chapter of
-    _Logical Foundations_.
+(** 这又是一个来看一下 [eapply] 策略的好机会。我们在逻辑基础的
+    [Auto] 一章中已经简略介绍过了。
 
-    We had to write "[with (P' := ...)]" explicitly in the proof of
-    [hoare_asgn_example1] and [hoare_consequence] above, to make sure
-    that all of the metavariables in the premises to the
-    [hoare_consequence_pre] rule would be set to specific
-    values.  (Since [P'] doesn't appear in the conclusion of
-    [hoare_consequence_pre], the process of unifying the conclusion
-    with the current goal doesn't constrain [P'] to a specific
-    assertion.)
+    在 [hoare_asgn_example1] 和 [hoare_consequence] 中，我们必
+    须要显式地写出 "[with (P' := ...)]" 来保证 [hoare_consequence]
+    中假定的所有元变量都被设为了一个具体的值。（这是因为 [P']
+    没有在 [hoare_consequence_pre] 的结论中出现，将结论匹配于
+    当前的目标并不能把 [P'] 约束到一个具体的断言上。）
 
-    This is annoying, both because the assertion is a bit long and
-    also because, in [hoare_asgn_example1], the very next thing we are
-    going to do -- applying the [hoare_asgn] rule -- will tell us
-    exactly what it should be!  We can use [eapply] instead of [apply]
-    to tell Coq, essentially, "Be patient: The missing part is going
-    to be filled in later in the proof." *)
+    这很烦人，既因为这个断言有点长，而且，在 [hoare_asgn_example1] 中，
+    我们紧接着的下一步——应用  [hoare_asgn] 规则——将会直接给出
+    这个断言应该是什么！这时，我们可以用 [eapply] 代替 [apply]
+    来告诉 Coq，基本上，“耐心点儿：空缺的那部分会在证明中过会儿
+    再填上。” *)
 
 Example hoare_asgn_example1' :
   {{fun st => True}}
@@ -713,19 +643,16 @@ Proof.
   apply hoare_asgn.
   intros st H.  reflexivity.  Qed.
 
-(** In general, [eapply H] tactic works just like [apply H] except
-    that, instead of failing if unifying the goal with the conclusion
-    of [H] does not determine how to instantiate all of the variables
-    appearing in the premises of [H], [eapply H] will replace these
-    variables with _existential variables_ (written [?nnn]), which
-    function as placeholders for expressions that will be
-    determined (by further unification) later in the proof. *)
+(** 广泛来说，[eapply H] 策略和 [apply H] 的工作方式相同，不过
+    它在将当前目标和 [H] 的结论匹配的过程中无法确定各个在 [H]
+    的前提中出现的具体变量时不会失败。[eapply H] 会把这些变量
+    替换为 _'存在变量 (existential variables)'_ （写为 [?nnn]）, 
+    它的功能是作为在证明过程中接下来会确定（通过进一步的匹配归一）
+    的变量的占位符。*)
 
-(** In order for [Qed] to succeed, all existential variables need to
-    be determined by the end of the proof. Otherwise Coq
-    will (rightly) refuse to accept the proof. Remember that the Coq
-    tactics build proof objects, and proof objects containing
-    existential variables are not complete. *)
+(** 如果要 [Qed] 成功，所有的存在变量都要在证明结束前被确定。
+    否则 Coq 将会（正义地）拒绝接受这个证明。回想，Coq 策略
+    将构建证明对象，证明对象中还有一些存在变量没有被确定。*)
 
 Lemma silly1 : forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
   (forall x y : nat, P x y) ->
@@ -734,18 +661,15 @@ Lemma silly1 : forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
 Proof.
   intros P Q HP HQ. eapply HQ. apply HP.
 
-(** Coq gives a warning after [apply HP].  ("All the remaining goals
-    are on the shelf," means that we've finished all our top-level
-    proof obligations but along the way we've put some aside to be
-    done later, and we have not finished those.)  Trying to close the
-    proof with [Qed] gives an error. *)
+(** Coq 在 [apply HP] 之后提出了一个警告。（"All the remaining goals
+    are on the shelf," 意思是我们已经完成了所有的顶层的证明目标，
+    然而在这个过程中我们将一些放到一边打算待会做，我们还没有完成它们。）
+    用 [Qed] 结束证明会产生一个错误。*)
 Abort.
 
-(** An additional constraint is that existential variables cannot be
-    instantiated with terms containing ordinary variables that did not
-    exist at the time the existential variable was created.  (The
-    reason for this technical restriction is that allowing such
-    instantiation would lead to inconsistency of Coq's logic.) *)
+(** 一个附加的限制是，存在变量不能被一个包括在它被创建时还不存
+    在的变量的项填上。（原因当然是如果我们允许这样做逻辑系统就会
+    变得不再自洽。） *)
 
 Lemma silly2 :
   forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
@@ -755,12 +679,11 @@ Lemma silly2 :
 Proof.
   intros P Q HP HQ. eapply HQ. destruct HP as [y HP'].
 
-(** Doing [apply HP'] above fails with the following error:
+(** 在这里使用 [apply HP'] 将会失败并产生如下错误：
 
      Error: Impossible to unify "?175" with "y".
 
-    In this case there is an easy fix: doing [destruct HP] _before_
-    doing [eapply HQ]. *)
+    有一个简单的解决办法：把 [destruct HP] 提到 [eapply HQ] _'之前'_。 *)
 
 Abort.
 
@@ -774,14 +697,12 @@ Proof.
   eapply HQ. apply HP'.
 Qed.
 
-(** The [apply HP'] in the last step unifies the existential variable
-    in the goal with the variable [y].
+(** 最后一步中的 [apply HP'] 将目标中的存在变量匹配于变量 [y]。
 
-    Note that the [assumption] tactic doesn't work in this case, since
-    it cannot handle existential variables.  However, Coq also
-    provides an [eassumption] tactic that solves the goal if one of
-    the premises matches the goal up to instantiations of existential
-    variables. We can use it instead of [apply HP'] if we like. *)
+    注意，[assumption] 策略并不能在这里正常工作，因为它不能处理
+    存在变量。然而，Coq 也提供了一个 [eassumption] 策略，如果当
+    前有一个前提通过将结论中的存在变量填好而匹配，它就解决目标。
+    我们可以用它来代替 [apply HP']，如果你想的话。 *)
 
 Lemma silly2_eassumption : forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
   (exists y, P 42 y) ->
@@ -792,14 +713,13 @@ Proof.
 Qed.
 
 (** **** Exercise: 2 stars (hoare_asgn_examples_2)  *)
-(** Translate these informal Hoare triples...
+(** 将下述的非形式化霍尔三元组
 
        {{ X + 1 <= 5 }}  X ::= X + 1  {{ X <= 5 }}
        {{ 0 <= 3 /\ 3 <= 5 }}  X ::= 3  {{ 0 <= X /\ X <= 5 }}
 
-   ...into formal statements (name them [assn_sub_ex1'] and 
-   [assn_sub_ex2']) and use [hoare_asgn] and [hoare_consequence_pre] 
-   to prove them. *)
+   翻译成正式的表达（把它们叫做 [assn_sub_ex1'] 和 [assn_sub_ex2']）
+   并且使用 [hoare_asgn] 和 [hoare_consequence_pre] 证明它们。 *)
 
 (* 请在此处解答 *)
 (* Do not modify the following line: *)
@@ -808,10 +728,9 @@ Definition manual_grade_for_hoare_asgn_examples_2 : option (prod nat string) := 
 
 
 (* ================================================================= *)
-(** ** Skip *)
+(** ** 跳过 *)
 
-(** Since [SKIP] doesn't change the state, it preserves any
-    assertion [P]:
+(** 因为 [SKIP] 并不改变当前状态，它会保持 [P]：
 
       --------------------  (hoare_skip)
       {{ P }} SKIP {{ P }}
@@ -824,13 +743,12 @@ Proof.
   assumption.  Qed.
 
 (* ================================================================= *)
-(** ** Sequencing *)
+(** ** 组合 *)
 
-(** More interestingly, if the command [c1] takes any state where
-    [P] holds to a state where [Q] holds, and if [c2] takes any
-    state where [Q] holds to one where [R] holds, then doing [c1]
-    followed by [c2] will take any state where [P] holds to one
-    where [R] holds:
+(** 更加有趣的是，如果命令 [c1] 将一个 [P] 成立的状态转变为 [Q]
+    成立的状态，而如果 [c2] 将 [Q] 成立的状态转变为 [R] 成立的，
+    那么先执行 [c1] 然后执行 [c2] 将会把一个 [P] 成立的状态转变
+    为一个 [R] 成立的状态：
 
         {{ P }} c1 {{ Q }}
         {{ Q }} c2 {{ R }}
@@ -848,27 +766,22 @@ Proof.
   apply (H1 st'0 st'); try assumption.
   apply (H2 st st'0); assumption. Qed.
 
-(** Note that, in the formal rule [hoare_seq], the premises are
-    given in backwards order ([c2] before [c1]).  This matches the
-    natural flow of information in many of the situations where we'll
-    use the rule, since the natural way to construct a Hoare-logic
-    proof is to begin at the end of the program (with the final
-    postcondition) and push postconditions backwards through commands
-    until we reach the beginning. *)
+(** 可以注意到在 [hoare_seq] 中，前提以一个相反的顺序给出
+    （先 [c2] 再 [c1]）。这符合在大部分情况中自然的信息输入顺序，
+    因为最自然的构造一个霍尔逻辑证明的方式是从这个程序的末尾开始
+    （在后置条件的状态中），然后逆推直到程序开始的地方。 *)
 
-(** Informally, a nice way of displaying a proof using the sequencing
-    rule is as a "decorated program" where the intermediate assertion
-    [Q] is written between [c1] and [c2]:
+(** 一种非形式化地展示利用组合规则的证明的方式是将其写为“带标注
+    的程序”，其中中间状态断言 [Q] 写在 [c1] 和 [c2] 之间：
 
       {{ a = n }}
     X ::= a;;
-      {{ X = n }}    <---- decoration for Q
+      {{ X = n }}    <----
     SKIP
       {{ X = n }}
 *)
 
-(** Here's an example of a program involving both assignment and
-    sequencing. *)
+(** 下面是一个同时包括赋值和组合的例子。 *)
 
 Example hoare_asgn_example3 : forall a n,
   {{fun st => aeval st a = n}}
@@ -876,19 +789,18 @@ Example hoare_asgn_example3 : forall a n,
   {{fun st => st X = n}}.
 Proof.
   intros a n. eapply hoare_seq.
-  - (* right part of seq *)
+  - (* 组合右侧 *)
     apply hoare_skip.
-  - (* left part of seq *)
+  - (* 组合左侧 *)
     eapply hoare_consequence_pre. apply hoare_asgn.
     intros st H. subst. reflexivity. 
 Qed.
 
-(** We typically use [hoare_seq] in conjunction with
-    [hoare_consequence_pre] and the [eapply] tactic, as in this
-    example. *)
+(** 我们一般会将 [hoare_seq] 和
+    [hoare_consequence_pre] 以及 [eapply] 策略一起使用，如上所示。*)
 
 (** **** Exercise: 2 stars, recommended (hoare_asgn_example4)  *)
-(** Translate this "decorated program" into a formal proof:
+(** 将这个“标注程序”翻译成正式证明：
 
                    {{ True }} ->>
                    {{ 1 = 1 }}
@@ -898,8 +810,7 @@ Qed.
     Y ::= 2
                    {{ X = 1 /\ Y = 2 }}
 
-   (Note the use of "[->>]" decorations, each marking a use of 
-   [hoare_consequence_pre].) *)
+   （带 “[->>]” 的标记代表了使用 [hoare_consequence_pre]。） *)
 
 Example hoare_asgn_example4 :
   {{fun st => True}} (X ::= 1;; Y ::= 2)
@@ -909,12 +820,12 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 3 stars (swap_exercise)  *)
-(** Write an Imp program [c] that swaps the values of [X] and [Y] and
-    show that it satisfies the following specification:
+(** 写一个 Imp 程序 [c]，用来交换变量 [X] 和 [Y] 并且说明
+    它符合如下规范：
 
       {{X <= Y}} c {{Y <= X}}
 
-    Your proof should not need to use [unfold hoare_triple]. *)
+     你的证明应该不用 [unfold hoare_triple]。 *)
 
 Definition swap_program : com 
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -928,7 +839,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 3 stars (hoarestate1)  *)
-(** Explain why the following proposition can't be proven:
+(** 解释为何下列命题无法被证明：
 
       forall (a : aexp) (n : nat),
          {{fun st => aeval st a = n}}
@@ -942,14 +853,12 @@ Definition manual_grade_for_hoarestate1 : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Conditionals *)
+(** ** 条件 *)
 
-(** What sort of rule do we want for reasoning about conditional
-    commands?  
+(** 我们需要什么样的规则来推理条件命令呢？
 
-    Certainly, if the same assertion [Q] holds after executing 
-    either of the branches, then it holds after the whole conditional.  
-    So we might be tempted to write:
+    当然，如果断言 [Q] 在两个分支执行后都成立，它就对整个条件命令成立。  
+    所以我们可以试着给出：
 
               {{P}} c1 {{Q}}
               {{P}} c2 {{Q}}
@@ -957,8 +866,7 @@ Definition manual_grade_for_hoarestate1 : option (prod nat string) := None.
       {{P}} IFB b THEN c1 ELSE c2 {{Q}}
 *)
 
-(** However, this is rather weak. For example, using this rule,
-   we cannot show 
+(** 然而，这个规则太弱了。例如，用这个规则我们并不能推理出
 
      {{ True }}
      IFB X = 0
@@ -967,16 +875,12 @@ Definition manual_grade_for_hoarestate1 : option (prod nat string) := None.
      FI
      {{ X <= Y }}
 
-   since the rule tells us nothing about the state in which the
-   assignments take place in the "then" and "else" branches. *)
+   因为这个规则并没有告诉我们在“THEN”和“ELSE”分支中赋值时的状态。*)
 
-(** Fortunately, we can say something more precise.  In the
-    "then" branch, we know that the boolean expression [b] evaluates to
-    [true], and in the "else" branch, we know it evaluates to [false].
-    Making this information available in the premises of the rule gives
-    us more information to work with when reasoning about the behavior
-    of [c1] and [c2] (i.e., the reasons why they establish the
-    postcondition [Q]). *)
+(** 不过我们还是可以表述得更精确。在“THEN”分支中，[b] 化简为
+    [true]，而在“ELSE”分支中我们知道它化简为 [false]。
+    我们可以让这个信息作为 [c1] 和 [c2] 的假设出现可以让我们分别研究
+    [c1] 和 [c2] 的行为（亦即它们为什么能导出后置条件 [Q]）。*)
 (**
 
               {{P /\  b}} c1 {{Q}}
@@ -985,18 +889,16 @@ Definition manual_grade_for_hoarestate1 : option (prod nat string) := None.
       {{P}} IFB b THEN c1 ELSE c2 FI {{Q}}
 *)
 
-(** To interpret this rule formally, we need to do a little work.
-    Strictly speaking, the assertion we've written, [P /\ b], is the
-    conjunction of an assertion and a boolean expression -- i.e., it
-    doesn't typecheck.  To fix this, we need a way of formally
-    "lifting" any bexp [b] to an assertion.  We'll write [bassn b] for
-    the assertion "the boolean expression [b] evaluates to [true] (in
-    the given state)." *)
+(** 要形式化地解释这个规则，我们还需要做一点微小的工作。
+    严格来说，我们写下的断言 [P /\ b]，是一个断言和一个布尔表达式的
+    合取——也就是说，它并不能通过类型检查。为了让它正常工作，
+    我们必须要把 [b] “升格” 为一个断言。我们用 [bassn b] 来表示“
+    [b] 在给定的状态中化简到 [true]”。*)
 
 Definition bassn b : Assertion :=
   fun st => (beval st b = true).
 
-(** A couple of useful facts about [bassn]: *)
+(** 下列是一些有关于 [bassn] 的有用的引理：*)
 
 Lemma bexp_eval_true : forall b st,
   beval st b = true -> (bassn b) st.
@@ -1011,8 +913,7 @@ Proof.
   unfold bassn in contra.
   rewrite -> contra in Hbe. inversion Hbe.  Qed.
 
-(** Now we can formalize the Hoare proof rule for conditionals
-    and prove it correct. *)
+(** 现在我们就可以形式化对于条件命令的证明规则，并且可以证明它的正确性。*)
 
 Theorem hoare_if : forall P Q b c1 c2,
   {{fun st => P st /\ bassn b st}} c1 {{Q}} ->
@@ -1021,12 +922,12 @@ Theorem hoare_if : forall P Q b c1 c2,
 Proof.
   intros P Q b c1 c2 HTrue HFalse st st' HE HP.
   inversion HE; subst.
-  - (* b is true *) 
+  - (* b 是 true *) 
     apply (HTrue st st').
       assumption.
       split. assumption.
       apply bexp_eval_true. assumption.
-  - (* b is false *)
+  - (* b 是 false *)
     apply (HFalse st st').
       assumption.
       split. assumption.
@@ -1035,8 +936,7 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** Example *)
 
-(** Here is a formal proof that the program we used to motivate the
-    rule satisfies the specification we gave. *)
+(** 下面是刚刚例子的形式化证明，我们用规则来证明程序符合规范。*)
 
 Example if_example :
     {{fun st => True}}
@@ -1061,8 +961,7 @@ Proof.
 Qed.
 
 (** **** Exercise: 2 stars (if_minus_plus)  *)
-(** Prove the following hoare triple using [hoare_if].  Do not
-    use [unfold hoare_triple].  *)
+(** 用 [hoare_if] 证明下面的三元组。不要使用 [unfold hoare_triple]。*)
 
 Theorem if_minus_plus :
   {{fun st => True}}
@@ -1076,22 +975,18 @@ Proof.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Exercise: One-sided conditionals *)
+(** *** 练习：单侧条件 *)
 
 (** **** Exercise: 4 stars (if1_hoare)  *)
-(** In this exercise we consider extending Imp with "one-sided
-    conditionals" of the form [IF1 b THEN c FI]. Here [b] is a boolean
-    expression, and [c] is a command. If [b] evaluates to [true], then
-    command [c] is evaluated. If [b] evaluates to [false], then [IF1 b
-    THEN c FI] does nothing.
+(** 在这个练习中我们考虑对 Imp 加入形如  [IF1 b THEN c FI] 的 “单边条件”。
+    这里 [b] 是个布尔表达式而 [c] 是一个命令。如果 [b] 化简为 [true]， [c]
+    就被执行，而如果 [b] 化简为 [false]， [IF1 b THEN c FI] 就啥也不做。
 
-    We recommend that you complete this exercise before attempting the
-    ones that follow, as it should help solidify your understanding of
-    the material. *)
+    我们推荐你，在尝试之后的联系之前，先完成这个。因为它应该会让你对材料
+    有更加完善的认知。*)
 
-(** The first step is to extend the syntax of commands and introduce
-    the usual notations.  (We've done this for you.  We use a separate
-    module to prevent polluting the global name space.) *)
+(** 第一步是引入之前出现的命令和记号，并且加入新的命令。（我们已经
+    帮你弄好了。在这里用一个分离的模组来避免污染全局命名空间。）*)
 
 Module If1.
 
@@ -1116,9 +1011,8 @@ Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
 Notation "'IF1' b 'THEN' c 'FI'" :=
   (CIf1 b c) (at level 80, right associativity).
 
-(** Next we need to extend the evaluation relation to accommodate
-    [IF1] branches.  This is for you to do... What rule(s) need to be
-    added to [ceval] to evaluate one-sided conditionals? *)
+(** 接下来我们需要拓展求值规则以包含 [IF1] 的情形。我们把任务交给你……
+    应该网 [ceval] 中加入哪条（那些）命令来化简单边分支命令？*)
 
 Reserved Notation "c1 '/' st '\\' st'" (at level 40, st at level 39).
 
@@ -1145,7 +1039,7 @@ Inductive ceval : com -> state -> state -> Prop :=
 
   where "c1 '/' st '\\' st'" := (ceval c1 st st').
 
-(** Now we repeat (verbatim) the definition and notation of Hoare triples. *)
+(** 现在我们把霍尔三元组的定义和记号重新写在这里。*)
 
 Definition hoare_triple (P:Assertion) (c:com) (Q:Assertion) : Prop :=
   forall st st',
@@ -1157,15 +1051,13 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
                                   (at level 90, c at next level)
                                   : hoare_spec_scope.
 
-(** Finally, we (i.e., you) need to state and prove a theorem,
-    [hoare_if1], that expresses an appropriate Hoare logic proof rule
-    for one-sided conditionals. Try to come up with a rule that is
-    both sound and as precise as possible. *)
+(** 最终你得证明一个定理 [hoare_if1]，指出一个关于单边条件语句的证明规则。
+    你得试着尽可能让它既正确又精准。*)
 
 (* 请在此处解答 *)
 
-(** For full credit, prove formally [hoare_if1_good] that your rule is
-    precise enough to show the following valid Hoare triple:
+(** 要拿到全部的分数，你还得证明一个定理 [hoare_if1_good] 指出你的规则足够精细，
+    能够证明下列的霍尔三元组是有效的：
 
   {{ X + Y = Z }}
   IF1 !(Y = 0) THEN
@@ -1174,9 +1066,8 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
   {{ X = Z }}
 *)
 
-(** Hint: Your proof of this triple may need to use the other proof
-    rules also. Because we're working in a separate module, you'll
-    need to copy here the rules you find necessary. *)
+(** Hint: 提示，你的证明会用到其它证明规则。因为我们开了个新模组，你得把你用到
+    的那些都拷到这来。*)
 
 Lemma hoare_if1_good :
   {{ fun st => st X + st Y = st Z }}
@@ -1192,71 +1083,63 @@ Definition manual_grade_for_if1_hoare : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Loops *)
+(** ** 循环 *)
 
-(** Finally, we need a rule for reasoning about while loops. *)
+(** 最后，我们需要一个用来推理循环的规则。 *)
 
-(** Suppose we have a loop
+(** 假设我们有一个循环
 
       WHILE b DO c END
 
-    and we want to find a pre-condition [P] and a post-condition
-    [Q] such that
+    我们希望找到一个前置条件 [P] 和一个后置条件 [Q] 满足使
 
       {{P}} WHILE b DO c END {{Q}}
 
-    is a valid triple. *)
+    成为一个有效的霍尔三元组。 *)
 
-(** First of all, let's think about the case where [b] is false at the
-    beginning -- i.e., let's assume that the loop body never executes
-    at all.  In this case, the loop behaves like [SKIP], so we might
-    be tempted to write: *)
+(** 首先，让我们考虑 [b] 在开始的时候是 [false] 的情况，
+    也就是说，让我们假设这个循环的循环体根本不执行。在这种情形
+    下，这个循环的行为类似于 [SKIP]，所以我们可能可以试着先这样
+    写：*)
 
 (**
 
       {{P}} WHILE b DO c END {{P}}.
 *)
 
-(** But, as we remarked above for the conditional, we know a
-    little more at the end -- not just [P], but also the fact
-    that [b] is false in the current state.  So we can enrich the
-    postcondition a little: *)
+(** 不过就像我们在上面对条件语句分析时那样，我们还会有一点附加
+    的信息：除了 [P] 成立以外，[b] 会在执行完毕以后化简为 [false]。
+    所以，我们可以再添补一下后置条件： *)
 (**
 
       {{P}} WHILE b DO c END {{P /\ ~b}}
 *)
 
-(** What about the case where the loop body _does_ get executed?
-    In order to ensure that [P] holds when the loop finally
-    exits, we certainly need to make sure that the command [c]
-    guarantees that [P] holds whenever [c] is finished.
-    Moreover, since [P] holds at the beginning of the first
-    execution of [c], and since each execution of [c]
-    re-establishes [P] when it finishes, we can always assume
-    that [P] holds at the beginning of [c].  This leads us to the
-    following rule: *)
+(** 那么循环体被执行的情形呢？为了确保 [P] 在循环最终退出
+    的时候成立，我们当然需要保证命令 [c] 执行后 [P] 成立。
+    进一步说，因为 [P] 在 [c] 第一次执行前成立，每次 [c] 执行完成
+    都会重新满足作为后置条件的 [P]，我们可以假设 [P] 在 [c] 执行前
+    就成立。总结为以下规则：*)
 (**
 
                    {{P}} c {{P}}
         -----------------------------------
         {{P}} WHILE b DO c END {{P /\ ~b}}
 *)
-(** This is almost the rule we want, but again it can be improved a
-    little: at the beginning of the loop body, we know not only that
-    [P] holds, but also that the guard [b] is true in the current
-    state. *)
+(** 这几乎就是我们想要的规则，不过它还有一点可以改进的地方：在循环体
+    开始是的时候，我们不止知道 [P] 成立，还有条件 [b] 会在当前状态
+    中化简为 [true]。*)
 
-(** This gives us a little more information to use in
-    reasoning about [c] (showing that it establishes the invariant by
-    the time it finishes).  *)
-(** This gives us the final version of the rule: *)
+(** 这给我们带来了一点额外的信息用来推论 [c] （用来说明它结束时
+    满足不变式）。*)
+(** 这让我们可以给出这个规则的最终版本：*)
 (**
 
                {{P /\ b}} c {{P}}
         -----------------------------------  (hoare_while)
         {{P}} WHILE b DO c END {{P /\ ~b}}
 
-    The proposition [P] is called an _invariant_ of the loop.
+    断言 [P] 叫做 _'循环不变式 (invariant of the loop)'_。
 *)
 
 Theorem hoare_while : forall P b c,
@@ -1264,9 +1147,8 @@ Theorem hoare_while : forall P b c,
   {{P}} WHILE b DO c END {{fun st => P st /\ ~ (bassn b st)}}.
 Proof.
   intros P b c Hhoare st st' He HP.
-  (* Like we've seen before, we need to reason by induction
-     on [He], because, in the "keep looping" case, its hypotheses
-     talk about the whole loop instead of just [c]. *)
+  (* 像我们之前见到过地，我们需要通过在 [He] 上做归纳来推论。
+     因为，在“继续循环”的情形中，假设会是关于整个循环而不只是关于 [c] 的。*)
   remember (WHILE b DO c END) as wcom eqn:Heqwcom.
   induction He;
     try (inversion Heqwcom); subst; clear Heqwcom.
@@ -1279,21 +1161,17 @@ Proof.
 Qed.
 
 
-(** One subtlety in the terminology is that calling some assertion [P]
-    a "loop invariant" doesn't just mean that it is preserved by the
-    body of the loop in question (i.e., [{{P}} c {{P}}], where [c] is
-    the loop body), but rather that [P] _together with the fact that
-    the loop's guard is true_ is a sufficient precondition for [c] to
-    ensure [P] as a postcondition.
+(** 令人费解的事情是，我们把断言 [P] 叫做“循环不变式” 并不代表它只是由
+    （上述问题中的）循环体所保证（也就是 [{{P}} c {{P}}]，[c] 是循环体），
+    而实际上 [P] _'加上循环条件为真的前提'_ 才是 [c] 能够推出后置条件所
+    需要的前置条件。
 
-    This is a slightly (but importantly) weaker requirement.  For
-    example, if [P] is the assertion [X = 0], then [P] _is_ an
-    invariant of the loop
+    这是一个（十分重要的）偏弱的前提。例如，如果 [P] 是断言 [X = 0]，那么 
+    [P] _'是'_ 下述循环的不变式：
 
     WHILE X = 2 DO X := 1 END
 
-    although it is clearly _not_ preserved by the body of the
-    loop. *)
+    即使它很明显 _'不是'_ 只由循环体所导出。*)
 
 Example while_example :
     {{fun st => st X <= 3}}
@@ -1312,7 +1190,7 @@ Proof.
     exfalso. apply Hb; reflexivity.
     apply leb_iff_conv in Heqle. omega.
 Qed.
-(** We can use the WHILE rule to prove the following Hoare triple... *)
+(** 我们可以使用 WHILE 规则来证明下列的霍尔三元组。 *)
 
 Theorem always_loop_hoare : forall P Q,
   {{P}} WHILE true DO SKIP END {{Q}}.
@@ -1322,37 +1200,29 @@ Proof.
   apply hoare_consequence_pre with (P' := fun st : state => True).
   eapply hoare_consequence_post.
   apply hoare_while.
-  - (* Loop body preserves invariant *)
+  - (* 循环体维持不变式 *)
     apply hoare_post_true. intros st. apply I.
-  - (* Loop invariant and negated guard imply postcondition *)
+  - (* 循环体和循环条件不成立可以导出后条件 *)
     simpl. intros st [Hinv Hguard].
     exfalso. apply Hguard. reflexivity.
-  - (* Precondition implies invariant *)
+  - (* 前条件可以导出不变式 *)
     intros st H. constructor.  Qed.
 
-(** Of course, this result is not surprising if we remember that
-    the definition of [hoare_triple] asserts that the postcondition
-    must hold _only_ when the command terminates.  If the command
-    doesn't terminate, we can prove anything we like about the
-    post-condition. *)
+(** 这很显然，因为我们知道 [hoare_triple] 后条件成立，仅当
+    该命令停机。如果命令不停机，我们可以在后置条件中证明任何我们需要的
+    东西。*)
 
-(** Hoare rules that only talk about what happens when commands
-    terminate (without proving that they do) are often said to
-    describe a logic of "partial" correctness.  It is also possible to
-    give Hoare rules for "total" correctness, which build in the fact
-    that the commands terminate. However, in this course we will only
-    talk about partial correctness. *)
+(** 我们一般把那些只讨论当命令最终停机（不证明它们确实停机）的
+    证明规则叫做“部分正确”的。我们也可以给出一系列“完全正确”（也就是
+    带有命令停机的假设）的证明规则。不过在这章里我们只介绍部分正确的。*)
 
 (* ----------------------------------------------------------------- *)
-(** *** Exercise: [REPEAT] *)
+(** *** 练习：[REPEAT] *)
 
 (** **** Exercise: 4 stars, advanced (hoare_repeat)  *)
-(** In this exercise, we'll add a new command to our language of
-    commands: [REPEAT] c [UNTIL] a [END]. You will write the
-    evaluation rule for [repeat] and add a new Hoare rule to the
-    language for programs involving it.  (You may recall that the
-    evaluation rule is given in an example in the [Auto] chapter.
-    Try to figure it out yourself here rather than peeking.) *)
+(** 在这个练习中，我们会往 Imp 里面加一种新的命令：[REPEAT] c [UNTIL] a [END]。
+    请你写出 [repeat] 的求值规则，并且写一个关于它的霍尔逻辑证明规则。
+    （回想在 [Auto] 中给出的规则，试着自己把这个写出来，别偷看。）*)
 
 Module RepeatExercise.
 
@@ -1364,10 +1234,9 @@ Inductive com : Type :=
   | CWhile : bexp -> com -> com
   | CRepeat : com -> bexp -> com.
 
-(** [REPEAT] behaves like [WHILE], except that the loop guard is
-    checked _after_ each execution of the body, with the loop
-    repeating as long as the guard stays _false_.  Because of this,
-    the body will always execute at least once. *)
+(** [REPEAT] 的行为类似于 [WHILE]，除了它的循环条件是在循环体结束
+    _'后'_ 检查的，并且只要循环条件是 [false] 循环就会被执行。因为
+    这样，循环体至少会被执行一次。*)
 
 Notation "'SKIP'" :=
   CSkip.
@@ -1382,10 +1251,9 @@ Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
 Notation "'REPEAT' e1 'UNTIL' b2 'END'" :=
   (CRepeat e1 b2) (at level 80, right associativity).
 
-(** Add new rules for [REPEAT] to [ceval] below.  You can use the rules
-    for [WHILE] as a guide, but remember that the body of a [REPEAT]
-    should always execute at least once, and that the loop ends when
-    the guard becomes true. *)
+(** 在下面为 [ceval] 加入 [REPEAT]。你可以把 [WHILE] 的规则当作一个
+    模板，不过注意 [REPEAT] 的循环体至少要执行一次，并且循环会在条件
+    为真的时候结束。*)
 
 Inductive ceval : state -> com -> state -> Prop :=
   | E_Skip : forall st,
@@ -1416,8 +1284,7 @@ Inductive ceval : state -> com -> state -> Prop :=
 (* 请在此处解答 *)
 .
 
-(** A couple of definitions from above, copied here so they use the
-    new [ceval]. *)
+(** 下面是一些之前出现的定义，我们把它重新写一遍它就会用新的 [ceval]。 *)
 
 Notation "c1 '/' st '\\' st'" := (ceval st c1 st')
                                  (at level 40, st at level 39).
@@ -1429,8 +1296,8 @@ Definition hoare_triple (P:Assertion) (c:com) (Q:Assertion)
 Notation "{{ P }}  c  {{ Q }}" :=
   (hoare_triple P c Q) (at level 90, c at next level).
 
-(** To make sure you've got the evaluation rules for [REPEAT] right,
-    prove that [ex1_repeat] evaluates correctly. *)
+(** 为了保证写出了正确的 [REPEAT] 计算规则，请你证明 [ex1_repeat]
+    能够正常计算。*)
 
 Definition ex1_repeat :=
   REPEAT
@@ -1443,14 +1310,14 @@ Theorem ex1_repeat_works :
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** Now state and prove a theorem, [hoare_repeat], that expresses an
-    appropriate proof rule for [repeat] commands.  Use [hoare_while]
-    as a model, and try to make your rule as precise as possible. *)
+(** 现在写出并证明一个定理 [hoare_repeat] 表达一个 [repeat] 
+    命令的合理证明规则。你可以把 [hoare_while] 当作一个模型，
+    试着让你的规则尽可能地精确。 *)
 
 (* 请在此处解答 *)
 
-(** For full credit, make sure (informally) that your rule can be used
-    to prove the following valid Hoare triple:
+(** 要拿到全部的分数，请确保（非正式即可）你的规则可以用来证明以下
+    的霍尔三元组成立。
 
   {{ X > 0 }}
   REPEAT
@@ -1466,10 +1333,10 @@ Definition manual_grade_for_hoare_repeat : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
-(** * Summary *)
+(** * 总结 *)
 
-(** So far, we've introduced Hoare Logic as a tool for reasoning about
-    Imp programs. The rules of Hoare Logic are:
+(** 到此为止，我们引入了用来推理 Imp 程序的工具，霍尔逻辑。霍尔逻辑
+    的证明规则有：
 
              ------------------------------ (hoare_asgn)
              {{Q [X |-> a]}} X::=a {{Q}}
@@ -1497,20 +1364,18 @@ Definition manual_grade_for_hoare_repeat : option (prod nat string) := None.
          -----------------------------   (hoare_consequence)
                 {{P}} c {{Q}}
 
-    In the next chapter, we'll see how these rules are used to prove
-    that programs satisfy specifications of their behavior. *)
+    下一章中我们会看如何用这些规则证明程序满足它们行为的规范。 *)
 
 (* ################################################################# *)
-(** * Additional Exercises *)
+(** * 附加练习 *)
 
 
 (** **** Exercise: 3 stars (hoare_havoc)  *)
-(** In this exercise, we will derive proof rules for a [HAVOC]
-    command, which is similar to the nondeterministic [any] expression
-    from the the [Imp] chapter.
+(** 在这个练习中我们将会为一种 [HAVOC] 命令实现证明规则，这个命令类似于
+    [Imp] 中的 [any] 表达式。
 
-    First, we enclose this work in a separate module, and recall the
-    syntax and big-step semantics of Himp commands. *)
+    首先我们把这些命令放在一个分离的模块里，并且把命令的语法和粗略语义
+    写下来。*)
 
 Module Himp.
 
@@ -1560,7 +1425,7 @@ Inductive ceval : com -> state -> state -> Prop :=
 
   where "c1 '/' st '\\' st'" := (ceval c1 st st').
 
-(** The definition of Hoare triples is exactly as before. *)
+(** 对霍尔三元组的定义和之前完全一致。 *)
 
 Definition hoare_triple (P:Assertion) (c:com) (Q:Assertion) : Prop :=
   forall st st', c / st \\ st' -> P st -> Q st'.
@@ -1569,8 +1434,8 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
                                   (at level 90, c at next level)
                                   : hoare_spec_scope.
 
-(** Complete the Hoare rule for [HAVOC] commands below by defining
-    [havoc_pre] and prove that the resulting rule is correct. *)
+(** 请通过定义 [havoc_pre] 来创建一个关于 [HAVOC] 的证明规则，并
+    证明此规则是正确的。*)
 
 Definition havoc_pre (X : string) (Q : Assertion) : Assertion 
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
