@@ -93,8 +93,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 1 star, optional (apply_rewrite)  *)
-(** 请简单解释一下 [apply] 和 [rewrite] 这两个策略的区别。
-    在什么场景下二者可被有效地应用？ *)
+(** 简述 [apply] 与 [rewrite] 策略之区别。哪些情况下二者均可有效利用？ *)
 
 (* 请在此处解答 *)
 (** [] *)
