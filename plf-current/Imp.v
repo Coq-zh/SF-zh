@@ -1,11 +1,9 @@
-(** * Imp: Simple Imperative Programs *)
+(** * Imp: 简单的指令式程序 *)
 
-(** In this chapter, we'll take a more serious look at how to use Coq
-    to study interesting things outside of itself.  Our case study is
-    a _simple imperative programming language_ called Imp, embodying a
-    tiny core fragment of conventional mainstream languages such as C
-    and Java.  Here is a familiar mathematical function written in
-    Imp.
+(** 在本章中，我们会更加认真地看待如何用 Coq 来研究自身以外的有趣的东西。
+    我们的案例研究是一个名为 Imp 的_'简单的指令式编程语言'_，
+    它包含了传统主流语言（如 C 和 Java）的一小部分核心片段。下面是一个用
+    Imp 编写的常见数学函数：
 
        Z ::= X;;
        Y ::= 1;;
@@ -15,11 +13,10 @@
        END
 *)
 
-(** This chapter looks at how to define the _syntax_ and _semantics_
-    of Imp; further chapters in _Programming Language Foundations_
-    (_Software Foundations_, volume 2) develop a theory of _program
-    equivalence_ and introduce _Hoare Logic_, a widely used logic for
-    reasoning about imperative programs. *)
+(** 本章关注于如何定义 Imp 的_'语法'_和_'语义'_；_'《编程语言基础》
+    （Programming Language Foundations）'_（_'《软件基础》'_第二卷）
+    中的章节则发展了_'程序等价性（Program Equivalence）'_并引入了
+    _'霍尔逻辑（Hoare Logic）'_，它是一种广泛用于推理指令式程序的逻辑。 *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
@@ -33,20 +30,18 @@ Import ListNotations.
 Require Import Maps.
 
 (* ################################################################# *)
-(** * Arithmetic and Boolean Expressions *)
+(** * 算术和布尔表达式 *)
 
-(** We'll present Imp in three parts: first a core language of
-    _arithmetic and boolean expressions_, then an extension of these
-    expressions with _variables_, and finally a language of _commands_
-    including assignment, conditions, sequencing, and loops. *)
+(** 我们会分三部分来展示 Imp：首先是_'算术和布尔表达式'_的核心语言，
+    之后是用_'变量'_对表达式的扩展，最后是一个包括赋值、条件、串连和循环的
+    _'命令'_语言。 *)
 
 (* ================================================================= *)
-(** ** Syntax *)
+(** ** 语法 *)
 
 Module AExp.
 
-(** These two definitions specify the _abstract syntax_ of
-    arithmetic and boolean expressions. *)
+(** 以下两个定义指定了算术和布尔表达式的_'抽象语法（Abstract Syntax）'_。 *)
 
 Inductive aexp : Type :=
   | ANum : nat -> aexp
@@ -62,22 +57,16 @@ Inductive bexp : Type :=
   | BNot : bexp -> bexp
   | BAnd : bexp -> bexp -> bexp.
 
-(** In this chapter, we'll mostly elide the translation from the
-    concrete syntax that a programmer would actually write to these
-    abstract syntax trees -- the process that, for example, would
-    translate the string ["1+2*3"] to the AST
+(** 在本章中，我们省略了大部分从程序员实际编写的具体语法到其抽象语法树的翻译
+    -- 例如，它会将字符串 ["1+2*3"] 翻译成如下 AST：
 
       APlus (ANum 1) (AMult (ANum 2) (ANum 3)).
 
-    The optional chapter [ImpParser] develops a simple
-    implementation of a lexical analyzer and parser that can perform
-    this translation.  You do _not_ need to understand that chapter to
-    understand this one, but if you haven't taken a course where these
-    techniques are covered (e.g., a compilers course) you may want to
-    skim it. *)
+    可选的章节 [ImpParser] 中开发了一个简单的词法分析器和解析器的实现，
+    它可以进行这种翻译。你_'无需'_通过理解该章来理解本章，
+    但如果你没有上过涵盖这些技术的课程（例如编译器课程），可能想要略读一下该章节。 *)
 
-(** For comparison, here's a conventional BNF (Backus-Naur Form)
-    grammar defining the same abstract syntax:
+(** 作为对比，下面是用约定的 BNF（巴克斯-诺尔范式）文法定义的同样的抽象语法：
 
     a ::= nat
         | a + a
@@ -92,42 +81,31 @@ Inductive bexp : Type :=
         | b and b
 *)
 
-(** Compared to the Coq version above...
+(** 与前面的 Coq 版本相对比...
 
-       - The BNF is more informal -- for example, it gives some
-         suggestions about the surface syntax of expressions (like the
-         fact that the addition operation is written [+] and is an
-         infix symbol) while leaving other aspects of lexical analysis
-         and parsing (like the relative precedence of [+], [-], and
-         [*], the use of parens to explicitly group subexpressions,
-         etc.) unspecified.  Some additional information (and human
-         intelligence) would be required to turn this description into
-         a formal definition, for example when implementing a
-         compiler.
+       - BNF 是非形式化的 -- 例如，它给出了表达式表面上的语法的建议
+         （例如加法运算写作 [+] 且它是一个中缀符），而没有指定词法分析和解析的其它方面
+         （如 [+]、[-] 和 [*] 的相对优先级，用括号来明确子表达式的分组等）。
+         在实现编译器时，需要一些附加的信息（以及人类的智慧）
+         才能将此描述转换成形式化的定义。
 
-         The Coq version consistently omits all this information and
-         concentrates on the abstract syntax only.
+         Coq 版本则始终忽略了所有这些信息，只专注于抽象语法。
 
-       - On the other hand, the BNF version is lighter and easier to
-         read.  Its informality makes it flexible, a big advantage in
-         situations like discussions at the blackboard, where
-         conveying general ideas is more important than getting every
-         detail nailed down precisely.
+       - 另一方面 BNF 版本则更加清晰易读。它的非形式化使其更加灵活，
+         在讨论和在黑板上书写时，它有很大的优势，
+         此时传达一般的概念要比精确定下所有细节更加重要。
 
-         Indeed, there are dozens of BNF-like notations and people
-         switch freely among them, usually without bothering to say
-         which form of BNF they're using because there is no need to:
-         a rough-and-ready informal understanding is all that's
-         important.
+         确实，存在很多种类似 BNF 的记法，人们可以随意使用它们，
+         而无需关心具体使用了哪种 BNF 的形式，因为没有必要：
+         大致的理解是非常重要的。
 
-    It's good to be comfortable with both sorts of notations: informal
-    ones for communicating between humans and formal ones for carrying
-    out implementations and proofs. *)
+    适应这两种记法都很有必要：非形式化的用语人类之间的交流，
+    而形式化的则用于实现和证明。 *)
 
 (* ================================================================= *)
-(** ** Evaluation *)
+(** ** 求值 *)
 
-(** _Evaluating_ an arithmetic expression produces a number. *)
+(** 对算术表达式进行_'求值（Evaluation）'_会得到数值。 *)
 
 Fixpoint aeval (a : aexp) : nat :=
   match a with
@@ -141,7 +119,7 @@ Example test_aeval1:
   aeval (APlus (ANum 2) (ANum 2)) = 4.
 Proof. reflexivity. Qed.
 
-(** Similarly, evaluating a boolean expression yields a boolean. *)
+(** 同样，对布尔表达式求值会得到布尔值。 *)
 
 Fixpoint beval (b : bexp) : bool :=
   match b with
@@ -154,13 +132,11 @@ Fixpoint beval (b : bexp) : bool :=
   end.
 
 (* ================================================================= *)
-(** ** Optimization *)
+(** ** 优化 *)
 
-(** We haven't defined very much yet, but we can already get
-    some mileage out of the definitions.  Suppose we define a function
-    that takes an arithmetic expression and slightly simplifies it,
-    changing every occurrence of [0+e] (i.e., [(APlus (ANum 0) e])
-    into just [e]. *)
+(** 我们尚未定义太多东西，不过从这些定义出发，已经能前进不少了。
+    假设我们定义了一个接收算术表达式并对它稍微进行化简的函数，即将所有的
+    [0+e]（如 [(APlus (ANum 0) e]）化简为 [e]。 *)
 
 Fixpoint optimize_0plus (a:aexp) : aexp :=
   match a with
@@ -176,8 +152,7 @@ Fixpoint optimize_0plus (a:aexp) : aexp :=
       AMult (optimize_0plus e1) (optimize_0plus e2)
   end.
 
-(** To make sure our optimization is doing the right thing we
-    can test it on some examples and see if the output looks OK. *)
+(** 要保证我们的优化是正确的，可以在某些示例中测试它并观察其输出出否正确。 *)
 
 Example test_optimize_0plus:
   optimize_0plus (APlus (ANum 2)
@@ -186,9 +161,8 @@ Example test_optimize_0plus:
   = APlus (ANum 2) (ANum 1).
 Proof. reflexivity. Qed.
 
-(** But if we want to be sure the optimization is correct --
-    i.e., that evaluating an optimized expression gives the same
-    result as the original -- we should prove it. *)
+(** 但如果要确保该优化的正确性，即优化后的表达式与原表达式的求值结果相同，
+    那么我们应当证明它。 *)
 
 Theorem optimize_0plus_sound: forall a,
   aeval (optimize_0plus a) = aeval a.
@@ -214,156 +188,130 @@ Proof.
     simpl. rewrite IHa1. rewrite IHa2. reflexivity.  Qed.
 
 (* ################################################################# *)
-(** * Coq Automation *)
+(** * Coq 自动化 *)
 
-(** The amount of repetition in this last proof is a little
-    annoying.  And if either the language of arithmetic expressions or
-    the optimization being proved sound were significantly more
-    complex, it would start to be a real problem.
+(** 上一个证明中的大量重复很让人烦躁。无论算术表达式的语言，
+    还是证明优化的可靠性明显都更加复杂，因此它会成为一个真正的问题。
 
-    So far, we've been doing all our proofs using just a small handful
-    of Coq's tactics and completely ignoring its powerful facilities
-    for constructing parts of proofs automatically.  This section
-    introduces some of these facilities, and we will see more over the
-    next several chapters.  Getting used to them will take some
-    energy -- Coq's automation is a power tool -- but it will allow us
-    to scale up our efforts to more complex definitions and more
-    interesting properties without becoming overwhelmed by boring,
-    repetitive, low-level details. *)
+    目前为止，我们所有的证明都只使用了一点趁手的 Coq 的策略，
+    而它自动构造部分证明的强大功能则完全被忽略了。本节引入了这样的一些功能，
+    而在下一章中我们会看到更多。要使用它们需要耗费点精力 --
+    Coq 的自动化是个强大的工具 -- 不过它能让我们从无聊、重复、
+    底层的细节中解放出来，专注于更加复杂的定义和更加有趣的性质。 *)
 
 (* ================================================================= *)
-(** ** Tacticals *)
+(** ** 泛策略 *)
 
-(** _Tacticals_ is Coq's term for tactics that take other tactics as
-    arguments -- "higher-order tactics," if you will.  *)
+(** _'泛策略（Tacticals）'_是 Coq 中的术语，它表示一个接受其它策略作为参数的策略，
+    当然，你愿意的话也可以把它称为「高阶策略」。 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** The [try] Tactical *)
+(** *** [try] 泛策略 *)
 
-(** If [T] is a tactic, then [try T] is a tactic that is just like [T]
-    except that, if [T] fails, [try T] _successfully_ does nothing at
-    all (instead of failing). *)
+(** 如果 [T] 是一个策略，那么 [try T] 是一个和 [T] 一样的策略，只是如果
+    [T] 失败的话，[try T] 就会_'成功地'_什么也不做（而非失败）。 *)
 
 Theorem silly1 : forall ae, aeval ae = aeval ae.
-Proof. try reflexivity. (* this just does [reflexivity] *) Qed.
+Proof. try reflexivity. (* 它和 [reflexivity] 做的一样 *) Qed.
 
 Theorem silly2 : forall (P : Prop), P -> P.
 Proof.
   intros P HP.
-  try reflexivity. (* just [reflexivity] would have failed *)
-  apply HP. (* we can still finish the proof in some other way *)
+  try reflexivity. (* 和 [reflexivity] 失败时一样 *)
+  apply HP. (* 我们仍然可以换种方式来结束此证明 *)
 Qed.
 
-(** There is no real reason to use [try] in completely manual
-    proofs like these, but it is very useful for doing automated
-    proofs in conjunction with the [;] tactical, which we show
-    next. *)
+(** 我们并没有真正的理由在像这样的手动证明中使用 [try]，不过在连同
+    [;] 泛策略一起进行自动化证明时它会非常有用，接下来我们来展示它。 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** The [;] Tactical (Simple Form) *)
+(** *** [;] 泛策略（简单形式） *)
 
-(** In its most common form, the [;] tactical takes two tactics as
-    arguments.  The compound tactic [T;T'] first performs [T] and then
-    performs [T'] on _each subgoal_ generated by [T]. *)
+(** 在最常用的形式中，[;] 泛策略会接受两个策略作为参数。复合策略 [T;T']
+    会在 [T] 生成的_'每个子目标'_中先执行 [T] 再执行 [T']。 *)
 
-(** For example, consider the following trivial lemma: *)
+(** 例如，考虑以下平凡的引理： *)
 
 Lemma foo : forall n, leb 0 n = true.
 Proof.
   intros.
   destruct n.
-    (* Leaves two subgoals, which are discharged identically...  *)
+    (* 会产生两个执行过程相同的子目标...  *)
     - (* n=0 *) simpl. reflexivity.
     - (* n=Sn' *) simpl. reflexivity.
 Qed.
 
-(** We can simplify this proof using the [;] tactical: *)
+(** 我们可以用 [;] 泛策略来化简它： *)
 
 Lemma foo' : forall n, leb 0 n = true.
 Proof.
   intros.
-  (* [destruct] the current goal *)
+  (* [destruct] 解构当前子目标 *)
   destruct n;
-  (* then [simpl] each resulting subgoal *)
+  (* 然后用 [simpl] 化简每个产生的子目标 *)
   simpl;
-  (* and do [reflexivity] on each resulting subgoal *)
+  (* 之后再对每个产生的子目标执行 [reflexivity] *)
   reflexivity.
 Qed.
 
-(** Using [try] and [;] together, we can get rid of the repetition in
-    the proof that was bothering us a little while ago. *)
+(** [try] 配合 [;] 一同使用，我们可以从之前证明中麻烦的重复里解脱出来。 *)
 
 Theorem optimize_0plus_sound': forall a,
   aeval (optimize_0plus a) = aeval a.
 Proof.
   intros a.
   induction a;
-    (* Most cases follow directly by the IH... *)
+    (* 大部分情况后面直接就是 IH... *)
     try (simpl; rewrite IHa1; rewrite IHa2; reflexivity).
-    (* ... but the remaining cases -- ANum and APlus --
-       are different: *)
+    (* ... 不过剩下的情况 -- ANum 和 APlus -- 则不同： *)
   - (* ANum *) reflexivity.
   - (* APlus *)
     destruct a1;
-      (* Again, most cases follow directly by the IH: *)
+      (* 同样，大部分情况后面直接就是 IH： *)
       try (simpl; simpl in IHa1; rewrite IHa1;
            rewrite IHa2; reflexivity).
-    (* The interesting case, on which the [try...]
-       does nothing, is when [e1 = ANum n]. In this
-       case, we have to destruct [n] (to see whether
-       the optimization applies) and rewrite with the
-       induction hypothesis. *)
+    (* 当 [e1 = ANum n] 时出现了有趣的情况，其中 [try...] 什么也不做。
+       此时，我们需要解构 [n]（来确认优化是否应用）并用归纳假设来改写它。 *)
     + (* a1 = ANum n *) destruct n;
       simpl; rewrite IHa2; reflexivity.   Qed.
 
-(** Coq experts often use this "[...; try... ]" idiom after a tactic
-    like [induction] to take care of many similar cases all at once.
-    Naturally, this practice has an analog in informal proofs.  For
-    example, here is an informal proof of the optimization theorem
-    that matches the structure of the formal one:
+(** Coq 专家经常在像 [induction] 这样的策略之后使用这种「[...; try... ]」的习语，
+    以便一次处理所有相似的情况。自然，在非形式化证明中也有同样的做法。
+    例如，以下对该优化定理的非形式化证明与形式化证明的结构一致：
 
-    _Theorem_: For all arithmetic expressions [a],
+    _'定理'_：对于所有的算术表达式 [a]，
 
        aeval (optimize_0plus a) = aeval a.
 
-    _Proof_: By induction on [a].  Most cases follow directly from the
-    IH.  The remaining cases are as follows:
+    _'证明'_：对 [a] 进行归纳。大部分情况根据即可 IH 得证。其余情况如下：
 
-      - Suppose [a = ANum n] for some [n].  We must show
+      - 假设设对于某些 [n] 有 [a = ANum n] for some [n]。我们必须证明
 
           aeval (optimize_0plus (ANum n)) = aeval (ANum n).
 
-        This is immediate from the definition of [optimize_0plus].
+        这一点根据 [optimize_0plus] 的定义即可得证。
 
-      - Suppose [a = APlus a1 a2] for some [a1] and [a2].  We must
-        show
+      - 假设对于某些 [a1] 和 [a2] 有 [a = APlus a1 a2]。我们必须证明
 
           aeval (optimize_0plus (APlus a1 a2)) = aeval (APlus a1 a2).
 
-        Consider the possible forms of [a1].  For most of them,
-        [optimize_0plus] simply calls itself recursively for the
-        subexpressions and rebuilds a new expression of the same form
-        as [a1]; in these cases, the result follows directly from the
-        IH.
+        考虑 [a1] 可能的形式。对于大部分的情况，[optimize_0plus]
+        会对子表达式简单地递归调用自身并重建一个与 [a1] 形式相同的新表达式；
+        在这些情况下，其结果根据 IH 即可得证。
 
-        The interesting case is when [a1 = ANum n] for some [n].  If
-        [n = 0], then
+        对某些 [n] 有 [a1 = ANum n] 是个有趣的情况。若 [n = 0]，则
 
           optimize_0plus (APlus a1 a2) = optimize_0plus a2
 
-        and the IH for [a2] is exactly what we need.  On the other
-        hand, if [n = S n'] for some [n'], then again [optimize_0plus]
-        simply calls itself recursively, and the result follows from
-        the IH.  [] *)
+        而 [a2] 的 IH 正是所需的。另一方面，如果对于某些 [n'] 有 [n = S n']
+        那么同样 [optimize_0plus] 会简单地递归调用自身，而其结果根据
+        IH 即可得证。 [] *)
 
-(** However, this proof can still be improved: the first case (for
-    [a = ANum n]) is very trivial -- even more trivial than the cases
-    that we said simply followed from the IH -- yet we have chosen to
-    write it out in full.  It would be better and clearer to drop it
-    and just say, at the top, "Most cases are either immediate or
-    direct from the IH.  The only interesting case is the one for
-    [APlus]..."  We can make the same improvement in our formal proof
-    too.  Here's how it looks: *)
+(** 然而，此证明仍然可以改进：第一种情况（[a = ANum n]）非常平凡，
+    甚至比我们根据归纳假设化简的那个情况还要平凡，然而我们却把它完整地写了出来。
+    为了更加清楚，最好把它去掉，然后在最上面说：「大部分情况可以立即得出，
+    或直接从归纳假设得出。唯一有趣的情况是 [APlus]...」
+    我们也可以在形式化证明中做出这种改进，方法如下： *)
 
 Theorem optimize_0plus_sound'': forall a,
   aeval (optimize_0plus a) = aeval a.
@@ -382,39 +330,35 @@ Proof.
       simpl; rewrite IHa2; reflexivity. Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** The [;] Tactical (General Form) *)
+(** *** [;] 泛策略（一般形式） *)
 
-(** The [;] tactical also has a more general form than the simple
-    [T;T'] we've seen above.  If [T], [T1], ..., [Tn] are tactics,
-    then
+(** [;] 除了我们前面见到的简单形式 [T;T'] 外，还有种更一般的形式。
+    如果 [T], [T1], ..., [Tn] 都是策略，那么
 
       T; [T1 | T2 | ... | Tn]
 
-    is a tactic that first performs [T] and then performs [T1] on the
-    first subgoal generated by [T], performs [T2] on the second
-    subgoal, etc.
+   就是一个首先执行 [T]，然后在 [T] 生成的第一个字母表中执行 [T1]，
+   在第二个子目标中执行 [T2]，以此类推。
 
-    So [T;T'] is just special notation for the case when all of the
-    [Ti]'s are the same tactic; i.e., [T;T'] is shorthand for:
+   因此，[T;T'] 只是一种当所有 [Ti] 为相同策略时的特殊记法，即，[T;T']
+   是以下形式的简写：
 
       T; [T' | T' | ... | T']
 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** The [repeat] Tactical *)
+(** *** [repeat] 泛策略 *)
 
-(** The [repeat] tactical takes another tactic and keeps applying this
-    tactic until it fails. Here is an example showing that [10] is in
-    a long list using repeat. *)
+(** [repeat] 泛策略接受另一个测略并重复应用它直至失败。以下示例用
+    [repeat] 证明了 [10] 在一个长列表中。 *)
 
 Theorem In10 : In 10 [1;2;3;4;5;6;7;8;9;10].
 Proof.
   repeat (try (left; reflexivity); right).
 Qed.
 
-(** The tactic [repeat T] never fails: if the tactic [T] doesn't apply
-    to the original goal, then repeat still succeeds without changing
-    the original goal (i.e., it repeats zero times). *)
+(** 策略 [repeat T] 永远不会失败：如果策略 [T] 并未应用到原始目标上，
+    那么 [repeat] 仍然会成功而不改变原始目标（即，它重复了零次）。 *)
 
 Theorem In10' : In 10 [1;2;3;4;5;6;7;8;9;10].
 Proof.
@@ -422,24 +366,18 @@ Proof.
   repeat (right; try (left; reflexivity)).
 Qed.
 
-(** The tactic [repeat T] also does not have any upper bound on the
-    number of times it applies [T].  If [T] is a tactic that always
-    succeeds, then repeat [T] will loop forever (e.g., [repeat simpl]
-    loops, since [simpl] always succeeds).  While evaluation in Coq's
-    term language, Gallina, is guaranteed to terminate, tactic
-    evaluation is not!  This does not affect Coq's logical
-    consistency, however, since the job of [repeat] and other tactics
-    is to guide Coq in constructing proofs; if the construction
-    process diverges, this simply means that we have failed to
-    construct a proof, not that we have constructed a wrong one. *)
+(** 策略 [repeat T] 应用 [T] 的次数也没有任何上界。如果 [T] 策略总是成功，
+    那么重复 [T] 会永远循环（例如 [repeat simpl] 会一直循环，因为 [simpl]
+    总是会成功）。虽然 Coq 的主语言 Gallina 中的求值保证会终止，
+    然而策略却不会！然而这并不会影响 Coq 的逻辑一致性，因为 [repeat]
+    和其它策略的工作就是指导 Coq 去构造证明；如果构造过程发散（即不终止），
+    那就意味着我们构造证明失败，而非构造出了错误的证明。 *)
 
 (** **** Exercise: 3 stars (optimize_0plus_b_sound)  *)
-(** Since the [optimize_0plus] transformation doesn't change the value
-    of [aexp]s, we should be able to apply it to all the [aexp]s that
-    appear in a [bexp] without changing the [bexp]'s value.  Write a
-    function that performs this transformation on [bexp]s and prove
-    it is sound.  Use the tacticals we've just seen to make the proof
-    as elegant as possible. *)
+(** 由于 [optimize_0plus] 变换不会改变 [aexp] 的值，
+    因此我们可以将它应用到所有出现在 [bexp] 中的 [aexp] 上而不改变
+    [bexp] 的值。请编写一个对 [bexp] 执行此变换的函数，并证明它的可靠性。
+    利用我们刚学过的泛策略来构造一个尽可能优雅的证明。 *)
 
 Fixpoint optimize_0plus_b (b : bexp) : bexp
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -451,74 +389,58 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 4 stars, optional (optimizer)  *)
-(** _Design exercise_: The optimization implemented by our
-    [optimize_0plus] function is only one of many possible
-    optimizations on arithmetic and boolean expressions.  Write a more
-    sophisticated optimizer and prove it correct.  (You will probably
-    find it easiest to start small -- add just a single, simple
-    optimization and prove it correct -- and build up to something
-    more interesting incrementially.)  *)
+(** _'设计练习'_：[optimize_0plus] 函数只是众多算术和布尔表达式优化的方法之一。
+    请编写一个更加聪明的优化器并证明它的正确性。（最容易的方法就是从小处着手：
+    一开始只添加单个简单的优化并证明它的正确性，然后逐渐增加其它更有趣的优化。） *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (* ================================================================= *)
-(** ** Defining New Tactic Notations *)
+(** ** 定义新的策略记法 *)
 
-(** Coq also provides several ways of "programming" tactic
-scripts.
+(** Coq 还提供了几种对策略脚本进行「编程」的方式。
 
-    - The [Tactic Notation] idiom illustrated below gives a handy way
-      to define "shorthand tactics" that bundle several tactics into a
-      single command.
+    - 下面展示的 [Tactic Notation] 习语给出了定义「简写策略」的简便方式，
+      它将多个策略封装成单条命令。
 
-    - For more sophisticated programming, Coq offers a built-in
-      language called [Ltac] with primitives that can examine and
-      modify the proof state.  The details are a bit too complicated
-      to get into here (and it is generally agreed that [Ltac] is not
-      the most beautiful part of Coq's design!), but they can be found
-      in the reference manual and other books on Coq, and there are
-      many examples of [Ltac] definitions in the Coq standard library
-      that you can use as examples.
+    - 对于更加复杂的编程，Coq 提供了内建的 [Ltac] 语言，
+      它带有可以检查和修改证明状态的原语。由于详情太过复杂，这里不便展开
+      （[Ltac] 通常也被认为不是 Coq 的设计中最美妙的部分！），
+      你可以在参考手册和其它关于 Coq 的书中找到它，Coq 的标准库中有很多
+      [Ltac] 定义的例子，你也可以参考它们。
 
-    - There is also an OCaml API, which can be used to build tactics
-      that access Coq's internal structures at a lower level, but this
-      is seldom worth the trouble for ordinary Coq users.
+    - 还有 OCaml 的 API，它可以构建从底层访问 Coq 内部结构的策略，
+      不过普通 Coq 用于很少需要麻烦它。
 
-    The [Tactic Notation] mechanism is the easiest to come to grips
-    with, and it offers plenty of power for many purposes.  Here's an
-    example. *)
+    [Tactic Notation] 机制是最易于掌握的，它为很多用途提供了强大的能力。
+    下面就是个例子。 *)
 
 Tactic Notation "simpl_and_try" tactic(c) :=
   simpl;
   try c.
 
-(** This defines a new tactical called [simpl_and_try] that takes one
-    tactic [c] as an argument and is defined to be equivalent to the
-    tactic [simpl; try c].  Now writing "[simpl_and_try reflexivity.]"
-    in a proof will be the same as writing "[simpl; try
-    reflexivity.]" *)
+(** 这定义了一个新的名为 [simpl_and_try] 的泛策略，它接受一个策略 [c]
+    作为参数，其定义等价于策略 [simpl; try c]。现在在证明中写
+    「[simpl_and_try reflexivity.]」和写「[simpl; try reflexivity.]」是一样的。 *)
 
 (* ================================================================= *)
-(** ** The [omega] Tactic *)
+(** ** [omega] 策略 *)
 
-(** The [omega] tactic implements a decision procedure for a subset of
-    first-order logic called _Presburger arithmetic_.  It is based on
-    the Omega algorithm invented by William Pugh [Pugh 1991] (in Bib.v).
+(** [omega] 实现了一种决策过程，它是名为_'Presburger 算术'_的一阶逻辑的一个子集。
+    它基于启发自 William Pugh [Pugh 1991] (in Bib.v) 的 Omega 算法。
 
-    If the goal is a universally quantified formula made out of
+    如果证明目标是由以下元素构成的式子：
 
-      - numeric constants, addition ([+] and [S]), subtraction ([-]
-        and [pred]), and multiplication by constants (this is what
-        makes it Presburger arithmetic),
+      - 数值常量、加法（[+] 和 [S]）、减法（[-] 和 [pred]）以及常量乘法
+        （这就是 Presburger 算术的构成要素）
 
-      - equality ([=] and [<>]) and ordering ([<=]), and
+      - 相等性（[=] 和 [<>]）和序（[<=]）
 
-      - the logical connectives [/\], [\/], [~], and [->],
+      - 逻辑连结 [/\]、[\/]、[~] 和 [->]
 
-    then invoking [omega] will either solve the goal or fail, meaning
-    that the goal is actually false.  (If the goal is _not_ of this
-    form, [omega] will also fail.) *)
+    那么调用 [omega] 要么会解决该证明目标，要么就会失败，这意味着该目标为假
+    （目标_'不满足'_此形式也会失败。） *)
 
 Example silly_presburger_example : forall m n o p,
   m + n <= n + o /\ o + 3 = p + 3 ->
@@ -527,52 +449,43 @@ Proof.
   intros. omega.
 Qed.
 
-(** (Note the [Require Import Coq.omega.Omega.] at the top of
-    the file.) *)
+(** （注意本文件顶部 [Require Import Coq.omega.Omega.]。）*)
 
 (* ================================================================= *)
-(** ** A Few More Handy Tactics *)
+(** ** 更多方便的策略 *)
 
-(** Finally, here are some miscellaneous tactics that you may find
-    convenient.
+(** 最后，下面列出一些方便的其它技巧。
 
-     - [clear H]: Delete hypothesis [H] from the context.
+     - [clear H]：从上下文中删除前提 [H]。
 
-     - [subst x]: Find an assumption [x = e] or [e = x] in the
-       context, replace [x] with [e] throughout the context and
-       current goal, and clear the assumption.
+     - [subst x]：在上下文中查找假设 [x = e] 或 [e = x]，
+       将整个上下文和当前目标中的所有 [x] 替换为 [e] 并清除该假设。
 
-     - [subst]: Substitute away _all_ assumptions of the form [x = e]
-       or [e = x].
+     - [subst]：替换掉_'所有'_形如 [x = e] 或 [e = x] 的假设。
 
-     - [rename... into...]: Change the name of a hypothesis in the
-       proof context.  For example, if the context includes a variable
-       named [x], then [rename x into y] will change all occurrences
-       of [x] to [y].
+     - [rename... into...]：更改证明上下文中前提的名字。例如，
+       如果上下文中包含名为 [x] 的变量，那么 [rename x into y]
+       就会将所有出现的 [x] 重命名为 [y]。
 
-     - [assumption]: Try to find a hypothesis [H] in the context that
-       exactly matches the goal; if one is found, behave like [apply
-       H].
+     - [assumption]：尝试在上下文中查找完全匹配目标的前提 [H]。
+       如果找到了，那么其行为与 [apply H] 相同。
 
-     - [contradiction]: Try to find a hypothesis [H] in the current
-       context that is logically equivalent to [False].  If one is
-       found, solve the goal.
+     - [contradiction]：尝试在当前上下文中查找逻辑等价于 [False] 的前提 [H]。
+      如果找到了，就解决该目标。
 
-     - [constructor]: Try to find a constructor [c] (from some
-       [Inductive] definition in the current environment) that can be
-       applied to solve the current goal.  If one is found, behave
-       like [apply c].
+     - [constructor]：尝试在当前环境中的 [Inductive]
+       定义中查找可用于解决当前目标的构造子 [c]。如果找到了，那么其行为与
+       [apply c] 相同。
 
-    We'll see examples as we go along. *)
+    我们之后会看到它们的例子。 *)
 
 (* ################################################################# *)
-(** * Evaluation as a Relation *)
+(** * 求值作为关系 *)
 
-(** We have presented [aeval] and [beval] as functions defined by
-    [Fixpoint]s.  Another way to think about evaluation -- one that we
-    will see is often more flexible -- is as a _relation_ between
-    expressions and their values.  This leads naturally to [Inductive]
-    definitions like the following one for arithmetic expressions... *)
+(** 我们已经展示了用 [Fixpoint] 定义的函数 [aeval] 和 [beval]。
+    另一种通常更加灵活的思考求值的方式，就是把它当做表达式与其值的_'关系'_。
+    （译注：求值关系不满足对称性，因为它是有方向的。）
+    这会自然地导出如下这种算术表达式的 [Inductive] 定义... *)
 
 Module aevalR_first_try.
 
@@ -592,9 +505,8 @@ Inductive aevalR : aexp -> nat -> Prop :=
       aevalR e2 n2 ->
       aevalR (AMult e1 e2) (n1 * n2).
 
-(** It will be convenient to have an infix notation for
-    [aevalR].  We'll write [e \\ n] to mean that arithmetic expression
-    [e] evaluates to value [n]. *)
+(** 如果 [aevalR] 有中缀记法的话会很方便。我们用 [e \\ n]
+    表示算术表达式 [e] 求值为 [n]。 *)
 
 Notation "e '\\' n"
          := (aevalR e n)
@@ -603,15 +515,11 @@ Notation "e '\\' n"
 
 End aevalR_first_try.
 
-(** In fact, Coq provides a way to use this notation in the
-    definition of [aevalR] itself.  This reduces confusion by avoiding
-    situations where we're working on a proof involving statements in
-    the form [e \\ n] but we have to refer back to a definition
-    written using the form [aevalR e n].
+(** 实际上，Coq 提供了一种在 [aevalR] 自身内使用此记法的方式。
+    这样可以避免在进行涉及 [e \\ n] 形式的证明时，必须向前引用
+    [aevalR e n] 形式的定义的情况，从而减少混淆。
 
-    We do this by first "reserving" the notation, then giving the
-    definition together with a declaration of what the notation
-    means. *)
+    具体做法是，我们先「保留」该记法，然后在给出定义的同时声明它的意义。*)
 
 Reserved Notation "e '\\' n" (at level 50, left associativity).
 
@@ -628,22 +536,21 @@ Inductive aevalR : aexp -> nat -> Prop :=
   where "e '\\' n" := (aevalR e n) : type_scope.
 
 (* ================================================================= *)
-(** ** Inference Rule Notation *)
+(** ** 推理规则的记法 *)
 
-(** In informal discussions, it is convenient to write the rules for
-    [aevalR] and similar relations in the more readable graphical form
-    of _inference rules_, where the premises above the line justify
-    the conclusion below the line (we have already seen them in the
-    [IndProp] chapter). *)
+(** 在非形式化的讨论中，将 [aevalR] 和类似的关系写成更加易读的
+    _'推理规则（Inference Rule）'_的图像形式会十分方便，
+    其中横线上方的前提证明了横线下方的结论是正确的（我们已经在
+    [IndProp] 一章中见过它们了）。 *)
 
-(** For example, the constructor [E_APlus]...
+(** 例如，构造子 [E_APlus]...
 
       | E_APlus : forall (e1 e2: aexp) (n1 n2: nat),
           aevalR e1 n1 ->
           aevalR e2 n2 ->
           aevalR (APlus e1 e2) (n1 + n2)
 
-    ...would be written like this as an inference rule:
+    ...的推理规则写作：
 
                                e1 \\ n1
                                e2 \\ n2
@@ -651,23 +558,16 @@ Inductive aevalR : aexp -> nat -> Prop :=
                          APlus e1 e2 \\ n1+n2
 *)
 
-(** Formally, there is nothing deep about inference rules: they
-    are just implications.  You can read the rule name on the right as
-    the name of the constructor and read each of the linebreaks
-    between the premises above the line (as well as the line itself)
-    as [->].  All the variables mentioned in the rule ([e1], [n1],
-    etc.) are implicitly bound by universal quantifiers at the
-    beginning. (Such variables are often called _metavariables_ to
-    distinguish them from the variables of the language we are
-    defining.  At the moment, our arithmetic expressions don't include
-    variables, but we'll soon be adding them.)  The whole collection
-    of rules is understood as being wrapped in an [Inductive]
-    declaration.  In informal prose, this is either elided or else
-    indicated by saying something like "Let [aevalR] be the smallest
-    relation closed under the following rules...". *)
+(** 形式上来说，推理规则没什么深刻的含义：它们只是蕴含关系。
+    你可以将右侧的规则名看做构造子名，将横线上每个前提见的换行（以及横线本身）
+    看做 [->]。规则中涉及的所有变量（如 [e1]、[n1] 等）从一开始都是全称量化的。
+    （这种变量通常称为_'元变量（Metavariables）'_，以区别于我们在语言中定义的变量。
+    目前，我们的算术表达式中还不包含变量，不过之后会加入它们。）
+    整个规则集合都被认为包裹在 [Inductive] 声明中。在非正式的叙述中，
+    这一点要么会忽略，要么会通过类似于「令 [aevalR] 为对以下规则封闭的最小关系...」
+    的句子来表述。 *)
 
-(** For example, [\\] is the smallest relation closed under these
-    rules:
+(** 例如，[\\] 是对以下规则封闭的最小关系：
 
                              -----------                               (E_ANum)
                              ANum n \\ n
@@ -689,10 +589,9 @@ Inductive aevalR : aexp -> nat -> Prop :=
 *)
 
 (* ================================================================= *)
-(** ** Equivalence of the Definitions *)
+(** ** 定义的等价性 *)
 
-(** It is straightforward to prove that the relational and functional
-    definitions of evaluation agree: *)
+(** 求值的函数式定义与关系式定义之间的一致性证明非常直观： *)
 
 Theorem aeval_iff_aevalR : forall a n,
   (a \\ n) <-> aeval a = n.
@@ -729,8 +628,7 @@ Proof.
       apply IHa2. reflexivity.
 Qed.
 
-(** We can make the proof quite a bit shorter by making more
-    use of tacticals. *)
+(** 我们可以利用泛策略将此证明缩减到很短。 *)
 
 Theorem aeval_iff_aevalR' : forall a n,
   (a \\ n) <-> aeval a = n.
@@ -746,8 +644,7 @@ Proof.
 Qed.
 
 (** **** Exercise: 3 stars (bevalR)  *)
-(** Write a relation [bevalR] in the same style as
-    [aevalR], and prove that it is equivalent to [beval].*)
+(** 用和 [aevalR] 同样的方式写出关系 [bevalR]，并证明它等价于 [beval]。 *)
 
 Inductive bevalR: bexp -> bool -> Prop :=
 (* 请在此处解答 *)
@@ -762,31 +659,26 @@ Proof.
 End AExp.
 
 (* ================================================================= *)
-(** ** Computational vs. Relational Definitions *)
+(** ** 计算式定义与关系式定义 *)
 
-(** For the definitions of evaluation for arithmetic and boolean
-    expressions, the choice of whether to use functional or relational
-    definitions is mainly a matter of taste: either way works.
+(** 对于算术和布尔表达式求值的定义方式而言，函数式和关系式二者均可，
+    选择哪种主要取决于品味。
 
-    However, there are circumstances where relational definitions of
-    evaluation work much better than functional ones.  *)
+    然而在某些情况下，求值的关系式定义比函数式定义要更好。  *)
 
 Module aevalR_division.
 
-(** For example, suppose that we wanted to extend the arithmetic
-    operations by considering also a division operation:*)
+(** 例如，假设我们想要用除法运算来扩展算术运算： *)
 
 Inductive aexp : Type :=
   | ANum : nat -> aexp
   | APlus : aexp -> aexp -> aexp
   | AMinus : aexp -> aexp -> aexp
   | AMult : aexp -> aexp -> aexp
-  | ADiv : aexp -> aexp -> aexp.   (* <--- new *)
+  | ADiv : aexp -> aexp -> aexp.   (* <--- 新增的 *)
 
-(** Extending the definition of [aeval] to handle this new operation
-    would not be straightforward (what should we return as the result
-    of [ADiv (ANum 5) (ANum 0)]?).  But extending [aevalR] is
-    straightforward. *)
+(** 扩展 [aeval] 的定义来处理此讯算并不是很直观（我们要返回什么作为
+    [ADiv (ANum 5) (ANum 0)] 的结果？）。然而扩展 [aevalR] 却很直观。*)
 
 Reserved Notation "e '\\' n"
                   (at level 50, left associativity).
@@ -810,12 +702,10 @@ End aevalR_division.
 
 Module aevalR_extended.
 
-(** Suppose, instead, that we want to extend the arithmetic operations
-    by a nondeterministic number generator [any] that, when evaluated,
-    may yield any number.  (Note that this is not the same as making a
-    _probabilistic_ choice among all possible numbers -- we're not
-    specifying any particular distribution of results, but just saying
-    what results are _possible_.) *)
+(** 假设，我们转而想要用非确定性的数值生成器 [any] 来扩展算术运算，
+    该生成器会在求值时产生任何数。（注意，这不同于在所有可能的数值中作出
+    _'概率上的'_选择 -- 我们没有为结果指定任何具体的分布，只是说了
+    _'可能的结果'_。） *)
 
 Reserved Notation "e '\\' n" (at level 50, left associativity).
 
@@ -826,9 +716,8 @@ Inductive aexp : Type :=
   | AMinus : aexp -> aexp -> aexp
   | AMult : aexp -> aexp -> aexp.
 
-(** Again, extending [aeval] would be tricky, since now evaluation is
-    _not_ a deterministic function from expressions to numbers, but
-    extending [aevalR] is no problem... *)
+(** 同样，扩展 [aeval] 会很棘手，因为现在的求值_'并不是'_一个从表达式到数值的确定性函数，
+    而扩展 [aevalR] 则无此问题... *)
 
 Inductive aevalR : aexp -> nat -> Prop :=
   | E_Any : forall (n:nat),
@@ -846,94 +735,72 @@ where "a '\\' n" := (aevalR a n) : type_scope.
 
 End aevalR_extended.
 
-(** At this point you maybe wondering: which style should I use by
-    default?  The examples above show that relational definitions are
-    fundamentally more powerful than functional ones.  For situations
-    like these, where the thing being defined is not easy to express
-    as a function, or indeed where it is _not_ a function, there is no
-    choice.  But what about when both styles are workable?
+(** 这时你可能会问：默认情况下应该使用哪种风格？
+    上面的例子表明关系式定义从根本上要比函数式的更加强大。
+    对于这种定义的东西不太容易用函数表达，或者确实_'不是'_函数的情况来说，
+    明显别无选择。但如果两种风格均可行呢？
 
-    One point in favor of relational definitions is that they can be
-    more elegant and easier to understand.
+    关系式定义的一个优点是，它们会更优雅，更容易理解。
 
-    Another is that Coq automatically generates nice inversion and
-    induction principles from [Inductive] definitions. *)
+    另一个优点是，Coq 会根据 [Inductive] 定义自动生成不错的反函数的归纳原理。 *)
 
-(** On the other hand, functional definitions can often be more
-    convenient:
-     - Functions are by definition deterministic and defined on all
-       arguments; for a relation we have to show these properties
-       explicitly if we need them.
-     - With functions we can also take advantage of Coq's computation
-       mechanism to simplify expressions during proofs.
+(** 另一方面，函数式定义通常会更方便：
+     - 函数的定义是确定性的，且在所有参数上定义；而对于关系式定义来说，
+       我们需要这些性质时必须显式地证明它们。
+     - 有了函数，我们还可以利用 Coq 的计算机制在证明过程中简化表达式。
 
-    Furthermore, functions can be directly "extracted" to executable
-    code in OCaml or Haskell. *)
+    此外，函数还可以直「提取为」OCaml 或 Haskell 的可执行代码。 *)
 
-(** Ultimately, the choice often comes down to either the specifics of
-    a particular situation or simply a question of taste.  Indeed, in
-    large Coq developments it is common to see a definition given in
-    _both_ functional and relational styles, plus a lemma stating that
-    the two coincide, allowing further proofs to switch from one point
-    of view to the other at will.*)
+(** 最终，选择视具体情况而定，或者只是品味问题。确实，在大型的 Coq
+    开发中，经常可以看到一个定义同时给出了函数式和关系式_'两种'_风格，
+    加上一条陈述了二者等价的引理，以便在之后的证明中能够在这两种视角下随意切换。 *)
 
 (* ################################################################# *)
-(** * Expressions With Variables *)
+(** * 带变量的表达式 *)
 
-(** Let's turn our attention back to defining Imp.  The next thing we
-    need to do is to enrich our arithmetic and boolean expressions
-    with variables.  To keep things simple, we'll assume that all
-    variables are global and that they only hold numbers. *)
+(** 让我们回到 Imp 的定义上来。接下来我们要为算术和布尔表达式加上变量。
+    为简单起见，我们会假设所有变量是都全局的，且它们只保存数值。 *)
 
 (* ================================================================= *)
-(** ** States *)
+(** ** 状态 *)
 
-(** Since we'll want to look variables up to find out their current
-    values, we'll reuse maps from the [Maps] chapter, with
-    [string]s as the type of variables in Imp.
+(** 由于需要查找变量来获得它们的具体值，因此我们重用了 [Maps]
+    一章中的映射。我们在 Imp 中以 [string] 作为变量的类型。
 
-    A _machine state_ (or just _state_) represents the current values
-    of _all_ variables at some point in the execution of a program. *)
+    _'机器的状态'_（简称_'状态'_）表示程序执行中某一时刻_'所有变量'_的值。 *)
 
-(** For simplicity, we assume that the state is defined for
-    _all_ variables, even though any given program is only going to
-    mention a finite number of them.  The state captures all of the
-    information stored in memory.  For Imp programs, because each
-    variable stores a natural number, we can represent the state as a
-    mapping from strings to [nat], and will use [0] as default value
-    in the store. For more complex programming languages, the state
-    might have more structure. *)
+(** 虽然任何给定的程序只会涉及有限数量的变量，不过为简单起见，
+    我们假设状态为_'所有的'_变量定义。状态会捕获内存中所有的信息。
+    对 Imp 程序而言，由于每个变量都存储了一个自然数，
+    因此我们可以将状态表示为一个从字符串到 [nat] 的映射，并且用 [0]
+    作为存储中的默认值。对于更复杂的编程语言，状态会有更多结构。 *)
 
 Definition state := total_map nat.
 
 (* ================================================================= *)
-(** ** Syntax  *)
+(** ** 语法  *)
 
-(** We can add variables to the arithmetic expressions we had before by
-    simply adding one more constructor: *)
+(** 我们只需为之前的算术表达式再加一个构造子就能添加变量： *)
 
 Inductive aexp : Type :=
   | ANum : nat -> aexp
-  | AId : string -> aexp                (* <----- NEW *)
+  | AId : string -> aexp                (* <----- 新增的 *)
   | APlus : aexp -> aexp -> aexp
   | AMinus : aexp -> aexp -> aexp
   | AMult : aexp -> aexp -> aexp.
 
-(** Defining a few variable names as notational shorthands will make
-    examples easier to read: *)
+(** 为几个变量名定义简单记法能让示例更加易读： *)
 
 Definition W : string := "W".
 Definition X : string := "X".
 Definition Y : string := "Y".
 Definition Z : string := "Z".
 
-(** (This convention for naming program variables ([X], [Y],
-    [Z]) clashes a bit with our earlier use of uppercase letters for
-    types.  Since we're not using polymorphism heavily in the chapters
-    developed to Imp, this overloading should not cause confusion.) *)
+(** （这种命名程序变量的约定（[X]、[Y]、[Z]）
+    与我们之前使用大写字母表示类型有点冲突。由于我们在本章中开发 Imp
+    时没怎么使用多态，所以这种重载应该不会产生混淆。） *)
 
-(** The definition of [bexp]s is unchanged (except that it now refers
-    to the new [aexp]s): *)
+(** [bexp] 的定义现在除了引用了新的 [aexp] 之外并未更改： *)
 
 Inductive bexp : Type :=
   | BTrue : bexp
@@ -944,22 +811,16 @@ Inductive bexp : Type :=
   | BAnd : bexp -> bexp -> bexp.
 
 (* ================================================================= *)
-(** ** Notations *)
-(** To make Imp programs easier to read and write, we introduce some
-    notations and implicit coercions.
+(** ** 记法 *)
+(** 要让 Imp 程序更易读写，我们引入了一些记法和隐式转换（Coercion）。
 
-    You do not need to understand what these declarations do in detail
-    to follow this chapter.  Briefly, though, the [Coercion]
-    declaration in Coq stipulates that a function (or constructor) can
-    be implicitly used by the type system to coerce a value of the
-    input type to a value of the output type.  For instance, the
-    coercion declaration for [AId] allows us to use plain strings when
-    an [aexp] is expected; the string will implicitly be wrapped with
-    [AId]. *)
+    在本章中你无需理解以下声明具体做了些什么。简言而之，Coq 中的 [Coercion]
+    声明规定了一个函数（或构造子）可以被类型系统隐式地用于将一个输入类型的值
+    转换成输出类型的值。例如，[AId] 的转换声明在需要一个 [aexp]
+    时直接使用普通的字符串，该字符串会被隐式地用 [AId] 来包装。 *)
 
-(** The notations below are declared in specific _notation scopes_, in
-    order to avoid conflicts with other interpretations of the same
-    symbols.  Again, it is not necessary to understand the details. *)
+(** 下列记法在具体的_'记法作用域'_中声明，以避免与其它符号相同的解释相冲突。
+    同样，你也暂时无需理解其中的细节。 *)
 
 Coercion AId : string >-> aexp.
 Coercion ANum : nat >-> aexp.
@@ -977,20 +838,19 @@ Infix "=" := BEq : bexp_scope.
 Infix "&&" := BAnd : bexp_scope.
 Notation "'!' b" := (BNot b) (at level 60) : bexp_scope.
 
-(** We can now write [3 + (X * 2)] instead  of [APlus 3 (AMult X 2)],
-    and [true && !(X <= 4)] instead of [BAnd true (BNot (BLe X 4))]. *)
+(** 现在我们可以用 [3 + (X * 2)] 来代替 [APlus 3 (AMult X 2)] 了，同样可以用
+    [true && !(X <= 4)] 来代替 [BAnd true (BNot (BLe X 4))] *)
 
 (* ================================================================= *)
-(** ** Evaluation *)
+(** ** 求值 *)
 
-(** The arith and boolean evaluators are extended to handle
-    variables in the obvious way, taking a state as an extra
-    argument: *)
+(** 算术和布尔求值器被扩展成以很显然的方式来处理变量，
+    它接受一个状态作为额外的参数： *)
 
 Fixpoint aeval (st : state) (a : aexp) : nat :=
   match a with
   | ANum n => n
-  | AId x => st x                                (* <----- NEW *)
+  | AId x => st x                                (* <----- 新增 *)
   | APlus a1 a2 => (aeval st a1) + (aeval st a2)
   | AMinus a1 a2  => (aeval st a1) - (aeval st a2)
   | AMult a1 a2 => (aeval st a1) * (aeval st a2)
@@ -1006,8 +866,7 @@ Fixpoint beval (st : state) (b : bexp) : bool :=
   | BAnd b1 b2  => andb (beval st b1) (beval st b2)
   end.
 
-(** We specialize our notation for total maps to the specific case of states,
-    i.e. using [{ --> 0 }] as empty state. *)
+(** 我们为具体状态的全映射声明具体的记法，即使用 [{ --> 0 }] 作为空状态。 *)
 
 Notation "{ a --> x }" :=
   (t_update { --> 0 } a x) (at level 0).
@@ -1033,25 +892,23 @@ Example bexp1 :
 Proof. reflexivity. Qed.
 
 (* ################################################################# *)
-(** * Commands *)
+(** * 命令 *)
 
-(** Now we are ready define the syntax and behavior of Imp
-    _commands_ (sometimes called _statements_). *)
+(** 现在我们可以定义 Imp _'命令（Command）'_（有时称作_'语句（Statement）'_）
+    的语法和行为了。 *)
 
 (* ================================================================= *)
-(** ** Syntax *)
+(** ** 语法 *)
 
-(** Informally, commands [c] are described by the following BNF
-    grammar.  (We choose this slightly awkward concrete syntax for the
-    sake of being able to define Imp syntax using Coq's Notation
-    mechanism.  In particular, we use [IFB] to avoid conflicting with
-    the [if] notation from the standard library.)
+(** 命令 [c] 可以用以下 BNF 文法非形式化地描述。（为了能够使用 Coq
+    的记法机制来定义 Imp 语法，我们选择了这种略尴尬的具体语法。具体来说，
+    我们使用了 [IFB] 来避免与表中库中的 [if] 记法相冲突。)
 
      c ::= SKIP | x ::= a | c ;; c | IFB b THEN c ELSE c FI
          | WHILE b DO c END
 *)
 (**
-    For example, here's factorial in Imp:
+    例如，下面是用 Imp 编写的阶乘：
 
      Z ::= X;;
      Y ::= 1;;
@@ -1060,11 +917,9 @@ Proof. reflexivity. Qed.
        Z ::= Z - 1
      END
 
-   When this command terminates, the variable [Y] will contain the
-   factorial of the initial value of [X]. *)
+   当此命令终止后，[Y] 会保存初始值 [X] 的阶乘。 *)
 
-(** Here is the formal definition of the abstract syntax of
-    commands: *)
+(** 下面是命令的抽象语法的形式化定义： *)
 
 Inductive com : Type :=
   | CSkip : com
@@ -1073,8 +928,7 @@ Inductive com : Type :=
   | CIf : bexp -> com -> com -> com
   | CWhile : bexp -> com -> com.
 
-(** As for expressions, we can use a few [Notation] declarations to make
-    reading and writing Imp programs more convenient. *)
+(** 至于表达式，我们可以用一些 [Notation] 声明来让 Imp 程序的读写更加方便。 *)
 
 Bind Scope com_scope with com.
 Notation "'SKIP'" :=
@@ -1088,12 +942,10 @@ Notation "'WHILE' b 'DO' c 'END'" :=
 Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
   (CIf c1 c2 c3) (at level 80, right associativity) : com_scope.
 
-(** The following declaration is needed to be able to use the
-    notations in match patterns. *)
+(** 以下声明可以让这些记法在模式匹配中使用。 *)
 Open Scope com_scope.
 
-(** For example, here is the factorial function again, written as a
-    formal definition to Coq: *)
+(** 例如，下面是个阶乘函数，写成 Coq 的形式化定义： *)
 
 Definition fact_in_coq : com :=
   Z ::= X;;
@@ -1104,9 +956,9 @@ Definition fact_in_coq : com :=
   END.
 
 (* ================================================================= *)
-(** ** More Examples *)
+(** ** 更多示例 *)
 
-(** Assignment: *)
+(** 赋值： *)
 
 Definition plus2 : com :=
   X ::= X + 2.
@@ -1140,17 +992,15 @@ Definition loop : com :=
   END.
 
 (* ################################################################# *)
-(** * Evaluating Commands *)
+(** * 求值命令 *)
 
-(** Next we need to define what it means to evaluate an Imp command.
-    The fact that [WHILE] loops don't necessarily terminate makes
-    defining an evaluation function tricky... *)
+(** 接下来我们要定义对 Imp 命令进行求值是什么意思。
+    [WHILE] 未必会终止的事实让定义它的求值函数有点棘手... *)
 
 (* ================================================================= *)
-(** ** Evaluation as a Function (Failed Attempt) *)
+(** ** 求值作为函数（失败的尝试） *)
 
-(** Here's an attempt at defining an evaluation function for commands,
-    omitting the [WHILE] case. *)
+(** 下面是一次为命令定义求值函数的尝试，我们忽略了 [WHILE] 的情况。 *)
 
 Fixpoint ceval_fun_no_while (st : state) (c : com)
                           : state :=
@@ -1167,11 +1017,11 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
           then ceval_fun_no_while st c1
           else ceval_fun_no_while st c2
     | WHILE b DO c END =>
-        st  (* bogus *)
+        st  (* 假装能用 *)
   end.
 
-(** In a traditional functional programming language like OCaml or
-    Haskell we could add the [WHILE] case as follows:
+(** 在 OCaml 或 Haskell 这类传统的函数式编程语言中，我们可以像下面这样添加
+    [WHILE] 的情况：
 
         Fixpoint ceval_fun (st : state) (c : com) : state :=
           match c with
@@ -1182,52 +1032,41 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
                   else st
           end.
 
-    Coq doesn't accept such a definition ("Error: Cannot guess
-    decreasing argument of fix") because the function we want to
-    define is not guaranteed to terminate. Indeed, it _doesn't_ always
-    terminate: for example, the full version of the [ceval_fun]
-    function applied to the [loop] program above would never
-    terminate. Since Coq is not just a functional programming
-    language but also a consistent logic, any potentially
-    non-terminating function needs to be rejected. Here is
-    an (invalid!) program showing what would go wrong if Coq
-    allowed non-terminating recursive functions:
+    Coq 会拒绝这种定义（「Error: Cannot guess decreasing argument of fix」，
+    错误：无法猜测出固定的递减参数），因为我们想要定义的函数并不保证中值。
+    确实，它并不_'总是会终止'_：例如，[ceval_fun] 函数应用到上面的 [loop]
+    程序的完整版本永远不会终止。由于 Coq 不仅是一个函数式编程语言，
+    还是个逻辑一致的语言，因此任何潜在的不可终止函数都会被拒绝。下面是一个
+    （无效的）程序，它展示了如果 Coq 允许不可终止的递归函数的话会产生什么错误：
 
          Fixpoint loop_false (n : nat) : False := loop_false n.
 
-    That is, propositions like [False] would become provable
-    ([loop_false 0] would be a proof of [False]), which
-    would be a disaster for Coq's logical consistency.
+    也就是说，像 [False] 这样的假命题可以被证明（[loop_false 0] 会是 [False]
+    的一个证明），这对于 Coq 的逻辑一致性来说是个灾难。
 
-    Thus, because it doesn't terminate on all inputs,
-    of [ceval_fun] cannot be written in Coq -- at least not without
-    additional tricks and workarounds (see chapter [ImpCEvalFun]
-    if you're curious about what those might be). *)
+    由于它对于所有的输入都不会终止，因此 [ceval_fun] 无法在 Coq 中写出
+    -- 至少需要一些技巧和变通才行（如果你对此好奇的话请阅读
+    [ImpCEvalFun] 一章）。 *)
 
 (* ================================================================= *)
-(** ** Evaluation as a Relation *)
+(** ** 求值作为一种关系 *)
 
-(** Here's a better way: define [ceval] as a _relation_ rather than a
-    _function_ -- i.e., define it in [Prop] instead of [Type], as we
-    did for [aevalR] above. *)
+(** 下面是一种更好的方法：将 [ceval] 定义成一种_'关系'_而非一个_'函数'_
+    -- 即，用 [Prop] 而非用 [Type] 来定义它，和我们前面对 [aevalR] 做的那样。 *)
 
-(** This is an important change.  Besides freeing us from awkward
-    workarounds, it gives us a lot more flexibility in the definition.
-    For example, if we add nondeterministic features like [any] to the
-    language, we want the definition of evaluation to be
-    nondeterministic -- i.e., not only will it not be total, it will
-    not even be a function! *)
+(** 这是一个非常重要的更改。除了能将我们从尴尬的变通中解放出来之外，
+    它还给我们的定义赋予了更多的灵活性。例如，如果我们要为该语言添加更多像
+    [any] 这样非确定性的特性，我们需要让求值的定义也是非确定性的 --
+    即，它不仅会有不完全性，甚至还可以不是个函数！ *)
 
-(** We'll use the notation [c / st \\ st'] for the [ceval] relation:
-    [c / st \\ st'] means that executing program [c] in a starting
-    state [st] results in an ending state [st'].  This can be
-    pronounced "[c] takes state [st] to [st']". *)
+(** 我们将使用记法 [c / st \\ st'] 来表示 [ceval] 这种关系：[c / st \\ st']
+    表示在开始状态 [st] 下启动程序并在结束状态 [st'] 下产生结果。它可以读作：
+    「[c] 将状态 [st] 变成 [st']」。 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Operational Semantics *)
+(** *** 操作语义 *)
 
-(** Here is an informal definition of evaluation, presented as inference
-    rules for readability:
+(** 下面是求值的非形式化定义，为了可读性表示成推理规则：
 
                            ----------------                            (E_Skip)
                            SKIP / st \\ st
@@ -1262,8 +1101,7 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
                     WHILE b DO c END / st \\ st''
 *)
 
-(** Here is the formal definition.  Make sure you understand
-    how it corresponds to the inference rules. *)
+(** 下面是它的形式化定义。请确保你理解了它是如何与以上推理规则相对应的。 *)
 
 Reserved Notation "c1 '/' st '\\' st'"
                   (at level 40, st at level 39).
@@ -1297,10 +1135,8 @@ Inductive ceval : com -> state -> state -> Prop :=
 
   where "c1 '/' st '\\' st'" := (ceval c1 st st').
 
-(** The cost of defining evaluation as a relation instead of a
-    function is that we now need to construct _proofs_ that some
-    program evaluates to some result state, rather than just letting
-    Coq's computation mechanism do it for us. *)
+(** 将求值定义成关系而非函数的代价是，我们需要自己为某个程序求值成某种结束状态_'构造证明'_，
+    而不能只是交给 Coq 的计算机制去做了。 *)
 
 Example ceval_example1:
     (X ::= 2;;
@@ -1310,11 +1146,11 @@ Example ceval_example1:
      FI)
    / { --> 0 } \\ { X --> 2 ; Z --> 4 }.
 Proof.
-  (* We must supply the intermediate state *)
+  (* 我们必须提供中间状态 *)
   apply E_Seq with { X --> 2 }.
-  - (* assignment command *)
+  - (* 赋值命令 *)
     apply E_Ass. reflexivity.
-  - (* if command *)
+  - (* if 命令 *)
     apply E_IfFalse.
       reflexivity.
       apply E_Ass. reflexivity.  Qed.
@@ -1328,10 +1164,8 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (pup_to_n)  *)
-(** Write an Imp program that sums the numbers from [1] to
-   [X] (inclusive: [1 + 2 + ... + X]) in the variable [Y].
-   Prove that this program executes as intended for [X] = [2]
-   (this is trickier than you might expect). *)
+(** 写一个 Imp 程序对从 [1] 到 [X] 进行求值（包括：将 [1 + 2 + ... + X]) 赋予变量 [Y]。
+   证明此程序对于 [X] = [2] 会按预期执行（这可能比你预想的还要棘手）。 *)
 
 Definition pup_to_n : com
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1344,18 +1178,15 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Determinism of Evaluation *)
+(** ** 求值的确定性 *)
 
-(** Changing from a computational to a relational definition of
-    evaluation is a good move because it frees us from the artificial
-    requirement that evaluation should be a total function.  But it
-    also raises a question: Is the second definition of evaluation
-    really a partial function?  Or is it possible that, beginning from
-    the same state [st], we could evaluate some command [c] in
-    different ways to reach two different output states [st'] and
-    [st'']?
+(** 将求值从计算式定义换成关系式定义是个不错的改变，
+    因为它将我们从求值必须是全函数的人工需求中解放了出来。不过这仍然引发了一个问题：
+    求值的第二种定义真的是一个偏函数吗？从同样的 [st]
+    开始, 我们是否有可能按照不同的方式对某个命令 [c] 进行求值，
+    从而到达两个不同的输出状态 [st'] 和 [st'']?
 
-    In fact, this cannot happen: [ceval] _is_ a partial function: *)
+    实际上这不可能发生，因为 [ceval] _'确实'_是一个偏函数： *)
 
 Theorem ceval_deterministic: forall c st st1 st2,
      c / st \\ st1  ->
@@ -1370,36 +1201,34 @@ Proof.
   - (* E_Ass *) reflexivity.
   - (* E_Seq *)
     assert (st' = st'0) as EQ1.
-    { (* Proof of assertion *) apply IHE1_1; assumption. }
+    { (* 对断言的证明 *) apply IHE1_1; assumption. }
     subst st'0.
     apply IHE1_2. assumption.
-  - (* E_IfTrue, b1 evaluates to true *)
+  - (* E_IfTrue，b1 求值为 true *)
       apply IHE1. assumption.
-  - (* E_IfTrue,  b1 evaluates to false (contradiction) *)
+  - (* E_IfTrue，b1 求值为 false（矛盾） *)
       rewrite H in H5. inversion H5.
-  - (* E_IfFalse, b1 evaluates to true (contradiction) *)
+  - (* E_IfFalse, b1 求值为 true（矛盾） *)
     rewrite H in H5. inversion H5.
-  - (* E_IfFalse, b1 evaluates to false *)
+  - (* E_IfFalse，b1 求值为 false *)
       apply IHE1. assumption.
-  - (* E_WhileFalse, b1 evaluates to false *)
+  - (* E_WhileFalse，b1 求值为 false *)
     reflexivity.
-  - (* E_WhileFalse, b1 evaluates to true (contradiction) *)
+  - (* E_WhileFalse，b1 求值为 true（矛盾） *)
     rewrite H in H2. inversion H2.
-  - (* E_WhileTrue, b1 evaluates to false (contradiction) *)
+  - (* E_WhileTrue, b1 求值为 false（矛盾） *)
     rewrite H in H4. inversion H4.
-  - (* E_WhileTrue, b1 evaluates to true *)
+  - (* E_WhileTrue，b1 求值为 true *)
       assert (st' = st'0) as EQ1.
-      { (* Proof of assertion *) apply IHE1_1; assumption. }
+      { (* 对断言的证明 *) apply IHE1_1; assumption. }
       subst st'0.
       apply IHE1_2. assumption.  Qed.
 
 (* ################################################################# *)
-(** * Reasoning About Imp Programs *)
+(** * 对 Imp 进行推理 *)
 
-(** We'll get deeper into systematic techniques for reasoning about
-    Imp programs in _Programming Language Foundations_, but we can do
-    quite a bit just working with the bare definitions.  This section
-    explores some examples. *)
+(** 我们会在_'《编程语言基础》'_中更加深入地探讨对 Imp 程序进行推理的系统性技术，
+    不过目前只根据定义就能做很多工作。本节中会我们会探讨一些实例。 *)
 
 Theorem plus2_spec : forall st n st',
   st X = n ->
@@ -1408,16 +1237,15 @@ Theorem plus2_spec : forall st n st',
 Proof.
   intros st n st' HX Heval.
 
-  (** Inverting [Heval] essentially forces Coq to expand one step of
-      the [ceval] computation -- in this case revealing that [st']
-      must be [st] extended with the new value of [X], since [plus2]
-      is an assignment. *)
+  (** 反转 [Heval] 实际上会强制让 Coq 展开 [ceval] 求值的一个步骤 --
+      由于 [plus2] 是一个赋值，因此这种情况揭示了 [st'] 一定是 [st]
+      通过新的值 [X] 扩展而来的。 *)
 
   inversion Heval. subst. clear Heval. simpl.
   apply t_update_eq.  Qed.
 
 (** **** Exercise: 3 stars, recommended (XtimesYinZ_spec)  *)
-(** State and prove a specification of [XtimesYinZ]. *)
+(** 叙述并证明 [XtimesYinZ] 的规范（Specification）。 *)
 
 (* 请在此处解答 *)
 (* Do not modify the following line: *)
@@ -1432,16 +1260,14 @@ Proof.
   remember (WHILE true DO SKIP END) as loopdef
            eqn:Heqloopdef.
 
-  (** Proceed by induction on the assumed derivation showing that
-      [loopdef] terminates.  Most of the cases are immediately
-      contradictory (and so can be solved in one step with
-      [inversion]). *)
+  (** 通过对假设推导的归纳证明了 [loopdef] 会终止。大多数情况是矛盾的。
+      因此可以用 [inversion] 一步解决。 *)
 
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** Exercise: 3 stars (no_whiles_eqv)  *)
-(** Consider the following function: *)
+(** 考虑以下函数： *)
 
 Fixpoint no_whiles (c : com) : bool :=
   match c with
@@ -1457,10 +1283,9 @@ Fixpoint no_whiles (c : com) : bool :=
       false
   end.
 
-(** This predicate yields [true] just on programs that have no while
-    loops.  Using [Inductive], write a property [no_whilesR] such that
-    [no_whilesR c] is provable exactly when [c] is a program with no
-    while loops.  Then prove its equivalence with [no_whiles]. *)
+(** 此断言只对没有 [WHILE] 循环的程序产生 [true]。请用 [Inductive]
+    写出一个性质 [no_whilesR] 使得 [no_whilesR c] 仅当 [c] 是个没有
+    [WHILE] 循环的程序时才可以证明。之后证明它与 [no_whiles] 等价。 *)
 
 Inductive no_whilesR: com -> Prop :=
  (* 请在此处解答 *)
@@ -1473,9 +1298,9 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 4 stars (no_whiles_terminating)  *)
-(** Imp programs that don't involve while loops always terminate.
-    State and prove a theorem [no_whiles_terminating] that says this. *)
-(** Use either [no_whiles] or [no_whilesR], as you prefer. *)
+(** 不涉及 [WHILE] 循环的 Imp 程序一定会终止。请陈述并证明定理
+    [no_whiles_terminating] 来说明这一点。 *)
+(** 按照你的偏好使用 [no_whiles] 或 [no_whilesR]。 *)
 
 (* 请在此处解答 *)
 (* Do not modify the following line: *)
@@ -1483,21 +1308,19 @@ Definition manual_grade_for_no_whiles_terminating : option (prod nat string) := 
 (** [] *)
 
 (* ################################################################# *)
-(** * Additional Exercises *)
+(** * 附加练习 *)
 
 (** **** Exercise: 3 stars (stack_compiler)  *)
-(** Old HP Calculators, programming languages like Forth and Postscript,
-    and abstract machines like the Java Virtual Machine all evaluate
-    arithmetic expressions using a _stack_. For instance, the expression
+(** 旧式惠普计算器的编程语言类似于 Forth 和 Postscript，而其抽象机器类似于
+    Java 虚拟机，即所有对算术表达式的求值都使用_'栈'_来进行。例如，表达式
 
       (2*3)+(3*(4-2))
 
-   would be written as
+   会被写成
 
       2 3 * 3 4 2 - * +
 
-   and evaluated like this (where we show the program being evaluated
-   on the right and the contents of the stack on the left):
+   的形式，其求值过程如下（右侧为被求值的程序，左侧为栈中的内容）：
 
       [ ]           |    2 3 * 3 4 2 - * +
       [2]           |    3 * 3 4 2 - * +
@@ -1510,18 +1333,14 @@ Definition manual_grade_for_no_whiles_terminating : option (prod nat string) := 
       [6, 6]        |    +
       [12]          |
 
-  The goal of this exercise is to write a small compiler that
-  translates [aexp]s into stack machine instructions.
+  此练习的目的在于编写一个小型编译器，它将 [aexp] 翻译成栈机器指令。
 
-  The instruction set for our stack language will consist of the
-  following instructions:
-     - [SPush n]: Push the number [n] on the stack.
-     - [SLoad x]: Load the identifier [x] from the store and push it
-                  on the stack
-     - [SPlus]:   Pop the two top numbers from the stack, add them, and
-                  push the result onto the stack.
-     - [SMinus]:  Similar, but subtract.
-     - [SMult]:   Similar, but multiply. *)
+  栈语言的指令集由以下指令构成：
+     - [SPush n]：将数 [n] 压栈。
+     - [SLoad x]：从存储中加载标识符 [x] 并将其压栈。
+     - [SPlus]：  从栈顶弹出两个数，将二者相加，并将其结果压栈。
+     - [SMinus]： 类似，不过执行减法。
+     - [SMult]：  类似，不过执行乘法。 *)
 
 Inductive sinstr : Type :=
 | SPush : nat -> sinstr
@@ -1530,18 +1349,12 @@ Inductive sinstr : Type :=
 | SMinus : sinstr
 | SMult : sinstr.
 
-(** Write a function to evaluate programs in the stack language. It
-    should take as input a state, a stack represented as a list of
-    numbers (top stack item is the head of the list), and a program
-    represented as a list of instructions, and it should return the
-    stack after executing the program.  Test your function on the
-    examples below.
+(** 请编写一个函数对栈语言程序进行求值。它应当接受一个状态、
+    一个表示为数字列表的栈（栈顶项在表头），以及一个表示为指令列表的程序作为输入，
+    并在程序执行后返回该栈。请在以下示例中测试你的函数。
 
-    Note that the specification leaves unspecified what to do when
-    encountering an [SPlus], [SMinus], or [SMult] instruction if the
-    stack contains less than two elements.  In a sense, it is
-    immaterial what we do, since our compiler will never emit such a
-    malformed program. *)
+    注意，当栈中的元素少于两个时，规范并未指定 [SPlus]、[SMinus] 或 [SMult] 指令的行为。
+    从某种意义上说，这样做并无必要，因为我们的编译器永远不会产生这种畸形的程序。 *)
 
 Fixpoint s_execute (st : state) (stack : list nat)
                    (prog : list sinstr)
@@ -1560,15 +1373,13 @@ Example s_execute2 :
    = [15; 4].
 (* 请在此处解答 *) Admitted.
 
-(** Next, write a function that compiles an [aexp] into a stack
-    machine program. The effect of running the program should be the
-    same as pushing the value of the expression on the stack. *)
+(** 接下来请编写一个将 [aexp] 编译成栈机器程序的函数。运行此程序的效果
+    应当和将该表达式的值压入栈中一致。 *)
 
 Fixpoint s_compile (e : aexp) : list sinstr
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-(** After you've defined [s_compile], prove the following to test
-    that it works. *)
+(** 在定义完 [s_compile] 之后，请证明以下示例来测试它是否起作用。 *)
 
 Example s_compile1 :
   s_compile (X - (2 * Y))
@@ -1577,16 +1388,12 @@ Example s_compile1 :
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (stack_compiler_correct)  *)
-(** Now we'll prove the correctness of the compiler implemented in the
-    previous exercise.  Remember that the specification left
-    unspecified what to do when encountering an [SPlus], [SMinus], or
-    [SMult] instruction if the stack contains less than two
-    elements.  (In order to make your correctness proof easier you
-    might find it helpful to go back and change your implementation!)
+(** 现在我们将证明在之前练习中实现的编译器的正确性。记住当栈中的元素少于两个时，
+    规范并未指定 [SPlus]、[SMinus] 或 [SMult] 指令的行为。
+    （为了让正确性证明更加容易，你可能需要返回去修改你的实现！）
 
-    Prove the following theorem.  You will need to start by stating a
-    more general lemma to get a usable induction hypothesis; the main
-    theorem will then be a simple corollary of this lemma. *)
+    请证明以下定理。你需要先陈述一个更一般的引理来得到一个有用的归纳假设，
+    由它的话主定理就只是一个简单的推论了。 *)
 
 Theorem s_compile_correct : forall (st : state) (e : aexp),
   s_execute st [] (s_compile e) = [ aeval st e ].
@@ -1595,34 +1402,27 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (short_circuit)  *)
-(** Most modern programming languages use a "short-circuit" evaluation
-    rule for boolean [and]: to evaluate [BAnd b1 b2], first evaluate
-    [b1].  If it evaluates to [false], then the entire [BAnd]
-    expression evaluates to [false] immediately, without evaluating
-    [b2].  Otherwise, [b2] is evaluated to determine the result of the
-    [BAnd] expression.
+(** 大部分现代编程语言对布尔 [and] 运算提供了「短路求值」的方法：要对
+    [BAnd b1 b2] 进行求值，首先对 [b1] 求值。如果结果为 [false]，那么整个
+    [BAnd] 表达式的求值就是 [false]，而无需对 [b2] 求值。否则，[b2]
+    的求值结果就决定了 [BAnd] 表达式的值。
 
-    Write an alternate version of [beval] that performs short-circuit
-    evaluation of [BAnd] in this manner, and prove that it is
-    equivalent to [beval].  (N.b. This is only true because expression
-    evaluation in Imp is rather simple.  In a bigger language where
-    evaluating an expression might diverge, the short-circuiting [BAnd]
-    would _not_ be equivalent to the original, since it would make more
-    programs terminate.) *)
+    请编写 [beval] 的另一种版本，它能以这种方式对 [BAnd] 执行短路求值，
+    并证明它等价于 [beval]。（注：二者等价只是因为 Imp 的表达式求值相当简单。
+    在更大的语言中该表达式可能会发散，此时短路求值的 [BAnd] _'并不'_
+    等价于原始版本，因为它能让更多程序终止。） *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 Module BreakImp.
 (** **** Exercise: 4 stars, advanced (break_imp)  *)
-(** Imperative languages like C and Java often include a [break] or
-    similar statement for interrupting the execution of loops. In this
-    exercise we consider how to add [break] to Imp.  First, we need to
-    enrich the language of commands with an additional case. *)
+(** 像 C 和 Java 这样的指令式语言通常会包含 [break] 或类似地语句来中断循环的执行。
+    在本练习中，我们考虑如何为 Imp 加上 [break]。首先，我们需要丰富语言的命令。 *)
 
 Inductive com : Type :=
   | CSkip : com
-  | CBreak : com               (* <-- new *)
+  | CBreak : com               (* <-- 新增 *)
   | CAss : string -> aexp -> com
   | CSeq : com -> com -> com
   | CIf : bexp -> com -> com -> com
@@ -1641,18 +1441,13 @@ Notation "'WHILE' b 'DO' c 'END'" :=
 Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
   (CIf c1 c2 c3) (at level 80, right associativity).
 
-(** Next, we need to define the behavior of [BREAK].  Informally,
-    whenever [BREAK] is executed in a sequence of commands, it stops
-    the execution of that sequence and signals that the innermost
-    enclosing loop should terminate.  (If there aren't any
-    enclosing loops, then the whole program simply terminates.)  The
-    final state should be the same as the one in which the [BREAK]
-    statement was executed.
+(** 接着，我们需要定义 [BREAK] 的行为。非形式化地说，只要 [BREAK]
+    在命令序列中执行，它就会终止该序列的执行并发出最内层围绕它的循环应当终止的信号。
+    （如果没有任何围绕它的循环，那么就终止整个程序。）最终状态应当与
+    [BREAK] 语句执行后的状态相同。
 
-    One important point is what to do when there are multiple loops
-    enclosing a given [BREAK]. In those cases, [BREAK] should only
-    terminate the _innermost_ loop. Thus, after executing the
-    following...
+    其要点之一在于当一个给定的 [BREAK] 位于多个循环中时应该做什么。
+    此时，[BREAK] 应当只终止_'最内层'_的循环。因此，在执行完以下命令之后...
 
        X ::= 0;;
        Y ::= 1;;
@@ -1664,11 +1459,10 @@ Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
          Y ::= Y - 1
        END
 
-    ... the value of [X] should be [1], and not [0].
+    ...[X] 的值应为 [1] 而非 [0]。
 
-    One way of expressing this behavior is to add another parameter to
-    the evaluation relation that specifies whether evaluation of a
-    command executes a [BREAK] statement: *)
+    表达这种行为的一种方式求值为求值关系添加一个形参，指定某个命令是否会执行
+    [BREAK] 语句： *)
 
 Inductive result : Type :=
   | SContinue : result
@@ -1677,52 +1471,34 @@ Inductive result : Type :=
 Reserved Notation "c1 '/' st '\\' s '/' st'"
                   (at level 40, st, s at level 39).
 
-(** Intuitively, [c / st \\ s / st'] means that, if [c] is started in
-    state [st], then it terminates in state [st'] and either signals
-    that the innermost surrounding loop (or the whole program) should
-    exit immediately ([s = SBreak]) or that execution should continue
-    normally ([s = SContinue]).
+(** 直觉上说，[c / st \\ s / st'] 表示如果 [c] 在 [st] 状况下开始，
+    它会在 [st'] 状态下终止，围绕它的最内层循环（或整个程序）
+    要么收到立即退出的信号（[s = SBreak]），要么继续正常执行（[s = SContinue]）。
 
-    The definition of the "[c / st \\ s / st']" relation is very
-    similar to the one we gave above for the regular evaluation
-    relation ([c / st \\ st']) -- we just need to handle the
-    termination signals appropriately:
+    「[c / st \\ s / st']」关系的定义非常类似于之前我们为一般求值关系
+    （[c / st \\ st']）给出的定义 -- 我们只需要恰当地处理终止信号。
 
-    - If the command is [SKIP], then the state doesn't change and
-      execution of any enclosing loop can continue normally.
+    - 若命令为 [SKIP]，则状态不变，任何围绕它的循环继续正常执行。
 
-    - If the command is [BREAK], the state stays unchanged but we
-      signal a [SBreak].
+    - 若命令为 [BREAK]，则状态保持不变但发出 [SBreak] 的信号。
 
-    - If the command is an assignment, then we update the binding for
-      that variable in the state accordingly and signal that execution
-      can continue normally.
+    - 若命令为赋值，则根据状态更新该变量绑定的值，并发出继续正常执行的信号。
 
-    - If the command is of the form [IFB b THEN c1 ELSE c2 FI], then
-      the state is updated as in the original semantics of Imp, except
-      that we also propagate the signal from the execution of
-      whichever branch was taken.
+    - 若命令为 [IFB b THEN c1 ELSE c2 FI] 的形式，则按照 Imp 的原始语义更新状态，
+      除此之外我们还要从被选择执行的分支中传播信号。
 
-    - If the command is a sequence [c1 ;; c2], we first execute
-      [c1].  If this yields a [SBreak], we skip the execution of [c2]
-      and propagate the [SBreak] signal to the surrounding context;
-      the resulting state is the same as the one obtained by
-      executing [c1] alone. Otherwise, we execute [c2] on the state
-      obtained after executing [c1], and propagate the signal
-      generated there.
+    - 若命令为一系列 [c1 ;; c2]，我们首先执行 [c1]。如果它产生了
+      [SBreak]，我们就跳过 [c2] 的执行并将 [SBreak] 的信号传给其外围的上下文中;
+      结果状态与执行 [c1] 后获得的相同。否则，我们在执行完 [c1] 后的状态下执行
+      [c2] 并继续传递它产生的信号。
 
-    - Finally, for a loop of the form [WHILE b DO c END], the
-      semantics is almost the same as before. The only difference is
-      that, when [b] evaluates to true, we execute [c] and check the
-      signal that it raises.  If that signal is [SContinue], then the
-      execution proceeds as in the original semantics. Otherwise, we
-      stop the execution of the loop, and the resulting state is the
-      same as the one resulting from the execution of the current
-      iteration.  In either case, since [BREAK] only terminates the
-      innermost loop, [WHILE] signals [SContinue]. *)
+    - 最后，对于形如 [WHILE b DO c END] 的循环，其语义基本和此前相同。
+      唯一的不同是，当 [b] 求值为 [true] 时执行 [c] 并检查它产生的信号。
+      若信号为 [SContinue]，则按照原始语义继续执行。否则，我们终止此循环的执行，
+      而其结果状态与当前迭代执行的结果相同。对于其它情况，由于 [BREAK]
+      只终止最内层的循环，因此 [WHILE] 发出 [SContinue] 的信号。 *)
 
-(** Based on the above description, complete the definition of the
-    [ceval] relation. *)
+(** 基于以上描述，请完成 [ceval] 关系的定义。 *)
 
 Inductive ceval : com -> state -> result -> state -> Prop :=
   | E_Skip : forall st,
@@ -1731,7 +1507,7 @@ Inductive ceval : com -> state -> result -> state -> Prop :=
 
   where "c1 '/' st '\\' s '/' st'" := (ceval c1 st s st').
 
-(** Now prove the following properties of your definition of [ceval]: *)
+(** 现在证明你定义的 [ceval] 的如下性质： *)
 
 Theorem break_ignore : forall c st st' s,
      (BREAK;; c) / st \\ s / st' ->
@@ -1774,18 +1550,14 @@ Proof.
 End BreakImp.
 
 (** **** Exercise: 4 stars, optional (add_for_loop)  *)
-(** Add C-style [for] loops to the language of commands, update the
-    [ceval] definition to define the semantics of [for] loops, and add
-    cases for [for] loops as needed so that all the proofs in this
-    file are accepted by Coq.
+(** 为该语言添加 C 风格的 [for] 循环命令，更新 [ceval] 的定义来定义
+    [for] 循环，按需添加 [for] 循环的情况使得本文件中的所有证明都被
+    Coq 所接受。
 
-    A [for] loop should be parameterized by (a) a statement executed
-    initially, (b) a test that is run on each iteration of the loop to
-    determine whether the loop should continue, (c) a statement
-    executed at the end of each loop iteration, and (d) a statement
-    that makes up the body of the loop.  (You don't need to worry
-    about making up a concrete Notation for [for] loops, but feel free
-    to play with this too if you like.) *)
+    [for] 循环的参数应当包含 (a) 一个初始化执行的语句；
+    (b) 一个在循环的每次迭代中都执行的测试，它决定了循环是否应当继续；
+    (c) 一个在循环的每次迭代最后执行的语句，以及 (d) 一个创建循环体的语句
+    （你不必关心为 [for] 构造一个具体的记法，不过如果你喜欢，可以随意去做。） *)
 
 (* 请在此处解答 *)
 (** [] *)
