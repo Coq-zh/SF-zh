@@ -366,7 +366,7 @@ Hint Constructors has_type.
 (* ================================================================= *)
 (** ** Examples *)
 
-(** **** Exercise: 2 stars (examples)  *)
+(** **** 练习：2 星 (examples)  *)
 (** Finish the proofs below.  Feel free to use Coq's automation
     features in this proof.  However, if you are not confident about
     how the type system works, you may want to carry out the proofs

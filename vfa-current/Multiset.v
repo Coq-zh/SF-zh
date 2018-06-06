@@ -35,7 +35,7 @@ Definition union (a b : multiset) : multiset :=
 Definition singleton (v: value) : multiset :=
    fun x => if x =? v then 1 else 0.
 
-(** **** Exercise: 1 star (union_assoc)  *)
+(** **** 练习：1 星 (union_assoc)  *)
 (** Since multisets are represented as functions, to prove that one
     multiset equals another we must use the axiom of functional
     extensionality. *)
@@ -48,7 +48,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (union_comm)  *)
+(** **** 练习：1 星 (union_comm)  *)
 Lemma union_comm: forall a b : multiset,  (* comm stands for "commutative" *)
    union a b = union b a.
 Proof.
@@ -96,7 +96,7 @@ Qed.
 Definition is_a_sorting_algorithm' (f: list nat -> list nat) :=
   forall al, contents al = contents (f al) /\ sorted (f al).
 
-(** **** Exercise: 3 stars (insert_contents)  *)
+(** **** 练习：3 星 (insert_contents)  *)
 (** First, prove the auxiliary lemma [insert_contents], which will be
     useful for proving [sort_contents] below.  Your proof will be by
     induction.  You do not need to use [extensionality]. *)
@@ -106,7 +106,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (sort_contents)  *)
+(** **** 练习：3 星 (sort_contents)  *)
 (** Now prove that sort preserves contents. *)
 
 Theorem sort_contents: forall l, contents l = contents (sort l).
@@ -121,7 +121,7 @@ Proof.
 split. apply sort_contents. apply sort_sorted.
 Qed.
 
-(** **** Exercise: 1 star (permutations_vs_multiset)  *)
+(** **** 练习：1 星 (permutations_vs_multiset)  *)
 (** Compare your proofs of [insert_perm, sort_perm] with your proofs
     of [insert_contents, sort_contents].  Which proofs are simpler?
 
@@ -135,7 +135,7 @@ Qed.
       - [ ] multisets
 
    Put an X in one box in each list. *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_permutations_vs_multiset : option (prod nat string) := None.
 (** [] *)
 
@@ -148,7 +148,7 @@ Definition manual_grade_for_permutations_vs_multiset : option (prod nat string) 
 
        [Permutation al bl <-> contents al = contents bl.] *)
 
-(** **** Exercise: 3 stars (perm_contents)  *)
+(** **** 练习：3 星 (perm_contents)  *)
 (** The forward direction is easy, by induction on the evidence for
     [Permutation]: *)
 
@@ -172,7 +172,7 @@ Fixpoint list_delete (al: list value) (v: value) :=
 Definition multiset_delete (m: multiset) (v: value) :=
    fun x => if x =? v then pred(m x) else m x.
 
-(** **** Exercise: 3 stars (delete_contents)  *)
+(** **** 练习：3 星 (delete_contents)  *)
 Lemma delete_contents:
   forall v al,
    contents (list_delete al v) = multiset_delete (contents al) v.
@@ -187,21 +187,21 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (contents_perm_aux)  *)
+(** **** 练习：2 星 (contents_perm_aux)  *)
 Lemma contents_perm_aux:
  forall v b, empty = union (singleton v) b -> False.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (contents_in)  *)
+(** **** 练习：2 星 (contents_in)  *)
 Lemma contents_in:
   forall (a: value) (bl: list value) , contents bl a > 0 -> In a bl.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (in_perm_delete)  *)
+(** **** 练习：2 星 (in_perm_delete)  *)
 Lemma in_perm_delete:
   forall a bl,
   In a bl -> Permutation (a :: list_delete bl a) bl.
@@ -209,7 +209,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars (contents_perm)  *)
+(** **** 练习：4 星 (contents_perm)  *)
 Lemma contents_perm:
  forall al bl, contents al = contents bl -> Permutation al bl.
 Proof.

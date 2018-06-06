@@ -97,7 +97,7 @@ Module TreeTable <: TABLE.
     rewrite H1. apply t_update_eq.
    Qed.
 
-(** **** Exercise: 3 stars (TreeTable_gso)  *)
+(** **** 练习：3 星 (TreeTable_gso)  *)
 (** Prove this using techniques similar to the proof of [gss] just above. *)
 
  Theorem gso: forall j k v t,  j<>k -> get j (set k v t) = get j t.
@@ -181,7 +181,7 @@ Module TreeTable2 <: TABLE.
     rewrite H1. apply t_update_eq.
   Qed.
 
-(** **** Exercise: 3 stars (TreeTable_gso)  *)
+(** **** 练习：3 星 (TreeTable_gso)  *)
 (** Prove this using techniques similar to the proof of [gss] just above;
      don't use [unrealistically_strong_can_relate]. *)
 
@@ -336,7 +336,7 @@ induction i; destruct j,al; simpl; intros; auto; try omega.
 apply IHi. omega.
 Qed.
 
-(** **** Exercise: 4 stars, optional (listish_abstraction)  *)
+(** **** 练习：4 星, optional (listish_abstraction)  *)
 (** In this exercise we will not need a _representation invariant_.
     Define an abstraction relation: *)
 
@@ -386,7 +386,7 @@ Proof.  (* No induction needed in this proof! *)
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (fib_time_complexity)  *)
+(** **** 练习：2 星, optional (fib_time_complexity)  *)
 (** Suppose you run these three programs call-by-value, that is,
      as if they were ML programs.  
     [fibonacci N]

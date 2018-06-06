@@ -251,7 +251,7 @@ These decorations were constructed as follows:
     arbitrary natural numbers [n] and [m] (for example, [3 - 5 + 5 =
     5]). *)
 
-(** **** Exercise: 2 stars (if_minus_plus_reloaded)  *)
+(** **** 练习：2 星 (if_minus_plus_reloaded)  *)
 (** Fill in valid decorations for the following program:
 
        {{ True }}
@@ -268,7 +268,7 @@ These decorations were constructed as follows:
       FI
         {{ Y = X + Z }}
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_if_minus_plus_reloaded : option (prod nat string) := None.
 (** [] *)
 
@@ -554,7 +554,7 @@ Proof.
 (* ================================================================= *)
 (** ** Exercise: Slow Assignment *)
 
-(** **** Exercise: 2 stars (slow_assignment)  *)
+(** **** 练习：2 星 (slow_assignment)  *)
 (** A roundabout way of assigning a number currently stored in [X] to
     the variable [Y] is to start [Y] at [0], then decrement [X] until
     it hits [0], incrementing [Y] at each step. Here is a program that
@@ -572,14 +572,14 @@ Proof.
     is correct. *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_slow_assignment : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
 (** ** Exercise: Slow Addition *)
 
-(** **** Exercise: 3 stars, optional (add_slowly_decoration)  *)
+(** **** 练习：3 星, optional (add_slowly_decoration)  *)
 (** The following program adds the variable X into the variable Z
     by repeatedly decrementing X and incrementing Z.
 
@@ -645,7 +645,7 @@ Fixpoint parity x :=
     [parity]).  For verifying (c), we observe that, when [2 <= X], we
     have [parity X = parity (X-2)]. *)
 
-(** **** Exercise: 3 stars, optional (parity_formal)  *)
+(** **** 练习：3 星, optional (parity_formal)  *)
 (** Translate this proof to Coq. Refer to the [reduce_to_zero] example
     for ideas. You may find the following two lemmas useful: *)
 
@@ -821,7 +821,7 @@ Proof.
 (* ================================================================= *)
 (** ** Exercise: Factorial *)
 
-(** **** Exercise: 3 stars (factorial)  *)
+(** **** 练习：3 星 (factorial)  *)
 (** Recall that [n!] denotes the factorial of [n] (i.e., [n! =
     1*2*...*n]).  Here is an Imp program that calculates the factorial
     of the number initially stored in the variable [X] and puts it in
@@ -854,14 +854,14 @@ Proof.
     {{ Y = m! }}
 *)
 
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_factorial : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
 (** ** Exercise: Min *)
 
-(** **** Exercise: 3 stars (Min_Hoare)  *)
+(** **** 练习：3 星 (Min_Hoare)  *)
 (** Fill in valid decorations for the following program.
   For the [=>] steps in your annotations, you may rely (silently) 
   on the following facts about min
@@ -895,11 +895,11 @@ Definition manual_grade_for_decorations_in_factorial : option (prod nat string) 
   {{ Z = min a b }}
 *)
 
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_Min_Hoare : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 3 stars (two_loops)  *)
+(** **** 练习：3 星 (two_loops)  *)
 (** Here is a very inefficient way of adding 3 numbers:
 
   X ::= 0;;
@@ -947,14 +947,14 @@ Definition manual_grade_for_decorations_in_Min_Hoare : option (prod nat string) 
     {{ Z = a + b + c }}
 *)
 
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_two_loops : option (prod nat string) := None.
 (** [] *)
 
 (* ================================================================= *)
 (** ** Exercise: Power Series *)
 
-(** **** Exercise: 4 stars, optional (dpow2_down)  *)
+(** **** 练习：4 星, optional (dpow2_down)  *)
 (** Here is a program that computes the series:
     [1 + 2 + 2^2 + ... + 2^m = 2^(m+1) - 1]
 
@@ -1016,7 +1016,7 @@ Definition is_wp P c Q :=
     _weakest_ (easiest to satisfy) assertion that guarantees that 
     [Q] will hold after executing [c]. *)
 
-(** **** Exercise: 1 star, optional (wp)  *)
+(** **** 练习：1 星, optional (wp)  *)
 (** What are the weakest preconditions of the following commands
    for the following postconditions?
 
@@ -1041,7 +1041,7 @@ Definition is_wp P c Q :=
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced, optional (is_wp_formal)  *)
+(** **** 练习：3 星, advanced, optional (is_wp_formal)  *)
 (** Prove formally, using the definition of [hoare_triple], that [Y <= 4]
    is indeed the weakest precondition of [X ::= Y + 1] with respect to
    postcondition [X <= 5]. *)
@@ -1053,7 +1053,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced, optional (hoare_asgn_weakest)  *)
+(** **** 练习：2 星, advanced, optional (hoare_asgn_weakest)  *)
 (** Show that the precondition in the rule [hoare_asgn] is in fact the
     weakest precondition. *)
 
@@ -1063,7 +1063,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced, optional (hoare_havoc_weakest)  *)
+(** **** 练习：2 星, advanced, optional (hoare_havoc_weakest)  *)
 (** Show that your [havoc_pre] rule from the [himp_hoare] exercise
     in the [Hoare] chapter returns the weakest precondition. *)
 Module Himp2.
@@ -1950,7 +1950,7 @@ Qed.
 (* ================================================================= *)
 (** ** Further Exercises *)
 
-(** **** Exercise: 3 stars, advanced (slow_assignment_dec)  *)
+(** **** 练习：3 星, advanced (slow_assignment_dec)  *)
 (** In the [slow_assignment] exercise above, we saw a roundabout way
     of assigning a number currently stored in [X] to the variable [Y]:
     start [Y] at [0], then decrement [X] until it hits [0],
@@ -1963,11 +1963,11 @@ Example slow_assignment_dec (m:nat) : decorated
 Theorem slow_assignment_dec_correct : forall m,
   dec_correct (slow_assignment_dec m).
 Proof. (* 请在此处解答 *) Admitted.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_check_defn_of_slow_assignment_dec : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (factorial_dec)   *)
+(** **** 练习：4 星, advanced (factorial_dec)   *)
 (** Remember the factorial function we worked with before: *)
 
 Fixpoint real_fact (n:nat) : nat :=
@@ -1981,11 +1981,11 @@ Fixpoint real_fact (n:nat) : nat :=
     prove it correct as [factorial_dec_correct]. *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_factorial_dec : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (fib_eqn)  *)
+(** **** 练习：4 星, advanced, optional (fib_eqn)  *)
 (** The Fibonacci function is usually written like this:
 
       Fixpoint fib n :=
@@ -2018,7 +2018,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (fib)  *)
+(** **** 练习：4 星, advanced, optional (fib)  *)
 (** The following Imp program leaves the value of [fib n] in the
     variable [Y] when it terminates: 
 
@@ -2048,7 +2048,7 @@ Theorem dfib_correct : forall n,
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 5 stars, advanced, optional (improve_dcom)  *)
+(** **** 练习：5 星, advanced, optional (improve_dcom)  *)
 (** The formal decorated programs defined in this section are intended 
     to look as similar as possible to the informal ones defined earlier
     in the chapter.  If we drop this requirement, we can eliminate
@@ -2061,7 +2061,7 @@ Theorem dfib_correct : forall n,
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (implement_dcom)  *)
+(** **** 练习：4 星, advanced, optional (implement_dcom)  *)
 (** Adapt the parser for Imp presented in chapter [ImpParser]
     of _Logical Foundations_ to parse decorated commands (either ours
     or, even better, the ones you defined in the previous exercise). *)

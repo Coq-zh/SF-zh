@@ -82,13 +82,13 @@ Proof.
     - apply le_S. apply le_n. }
   inversion Nonsense.   Qed.
 
-(** **** Exercise: 2 stars, optional (total_relation_not_partial)  *)
+(** **** 练习：2 星, optional (total_relation_not_partial)  *)
 (** 请证明之前定义的 [total_relation] 不是偏函数。 *)
 
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (empty_relation_partial)  *)
+(** **** 练习：2 星, optional (empty_relation_partial)  *)
 (** 请证明之前定义的 [empty_relation] 是偏函数。 *)
 
 (* 请在此处解答 *)
@@ -133,7 +133,7 @@ Proof.
   apply Hnm.
   apply Hmo. Qed.
 
-(** **** Exercise: 2 stars, optional (le_trans_hard_way)  *)
+(** **** 练习：2 星, optional (le_trans_hard_way)  *)
 (** 我们也可以不用 [le_trans]，直接通过归纳法来证明 [lt_trans]，
     不过这会耗费更多精力。请完成以下定理的证明。 *)
 
@@ -147,7 +147,7 @@ Proof.
     (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (lt_trans'')  *)
+(** **** 练习：2 星, optional (lt_trans'')  *)
 (** 再将此定理证明一遍，不过这次要对 [o] 使用归纳法。 *)
 
 Theorem lt_trans'' :
@@ -169,14 +169,14 @@ Proof.
   - apply H.
 Qed.
 
-(** **** Exercise: 1 star, optional (le_S_n)  *)
+(** **** 练习：1 星, optional (le_S_n)  *)
 Theorem le_S_n : forall n m,
   (S n <= S m) -> (n <= m).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (le_Sn_n_inf)  *)
+(** **** 练习：2 星, optional (le_Sn_n_inf)  *)
 (** 请提写出以下定理的非形式化证明：
 
     Theorem: For every [n], [~ (S n <= n)]
@@ -188,7 +188,7 @@ Proof.
     (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 1 star, optional (le_Sn_n)  *)
+(** **** 练习：1 星, optional (le_Sn_n)  *)
 Theorem le_Sn_n : forall n,
   ~ (S n <= n).
 Proof.
@@ -206,7 +206,7 @@ Proof.
 Definition symmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a).
 
-(** **** Exercise: 2 stars, optional (le_not_symmetric)  *)
+(** **** 练习：2 星, optional (le_not_symmetric)  *)
 Theorem le_not_symmetric :
   ~ (symmetric le).
 Proof.
@@ -218,14 +218,14 @@ Proof.
 Definition antisymmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a) -> a = b.
 
-(** **** Exercise: 2 stars, optional (le_antisymmetric)  *)
+(** **** 练习：2 星, optional (le_antisymmetric)  *)
 Theorem le_antisymmetric :
   antisymmetric le.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (le_step)  *)
+(** **** 练习：2 星, optional (le_step)  *)
 Theorem le_step : forall n m p,
   n < m ->
   m <= S p ->
@@ -327,7 +327,7 @@ Proof.
   intros X R x y H.
   apply rt1n_trans with y. apply H. apply rt1n_refl.   Qed.
 
-(** **** Exercise: 2 stars, optional (rsc_trans)  *)
+(** **** 练习：2 星, optional (rsc_trans)  *)
 Lemma rsc_trans :
   forall (X:Type) (R: relation X) (x y z : X),
       clos_refl_trans_1n R x y  ->
@@ -340,7 +340,7 @@ Proof.
 (** 接着再用这些事实来证明这两个定义的自反性、
     传递性封闭确实定义了同样的关系。 *)
 
-(** **** Exercise: 3 stars, optional (rtc_rsc_coincide)  *)
+(** **** 练习：3 星, optional (rtc_rsc_coincide)  *)
 Theorem rtc_rsc_coincide :
          forall (X:Type) (R: relation X) (x y : X),
   clos_refl_trans R x y <-> clos_refl_trans_1n R x y.

@@ -180,7 +180,7 @@ Proof. reflexivity. Qed.
 
 (** （其中有些证明需要函数的外延性公理，我们在[Logic]一节中讨论过它）。 *)
 
-(** **** Exercise: 1 star, optional (t_apply_empty)  *)
+(** **** 练习：1 星, optional (t_apply_empty)  *)
 (** 首先，空映射对于所有的键都会返回默认元素（即，空映射总是返回默认元素）： *)
 
 Lemma t_apply_empty:  forall (A:Type) (x: string) (v: A), { --> v } x = v.
@@ -188,7 +188,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (t_update_eq)  *)
+(** **** 练习：2 星, optional (t_update_eq)  *)
 (** 接着，如果将映射 [m] 的键 [x] 关联的值更新为 [v]，然后在 [update]
     产生的新映射中查找 [x]，就会得到 [v]（即，更新某个键的映射，
     查找它就会得到更新后的值）： *)
@@ -199,7 +199,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (t_update_neq)  *)
+(** **** 练习：2 星, optional (t_update_neq)  *)
 (** 此外，如果将映射 [m] 的键 [x1] 更新后在返回的结果中查找_'另一个'_键
     [x2]，那么得到的结果与在 [m] 中查找它的结果相同
     （即，更新某个键的映射，不影响其它键的映射）： *)
@@ -212,7 +212,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (t_update_shadow)  *)
+(** **** 练习：2 星, optional (t_update_shadow)  *)
 (** 如果将映射 [m] 的键 [x] 关联的值更新为 [v1] 后，又将同一个键 [x]
     更新为另一个值 [v2]，那么产生的映射与仅将第二次 [update] 应用于 [m]
     所得到的映射表现一致（即二者应用到同一键时产生的结果相同）： *)
@@ -227,7 +227,7 @@ Proof.
     （Reflection idioms）来证明会十分方便。我们首先通过证明基本的_'互映引理'_，
     将 [id] 上的相等性命题与布尔函数 [beq_id] 关联起来。*)
 
-(** **** Exercise: 2 stars, optional (beq_stringP)  *)
+(** **** 练习：2 星, optional (beq_stringP)  *)
 (** 请仿照[IndProp]一章中对 [beq_natP] 的证明来证明以下引理： *)
 
 Lemma beq_stringP : forall x y, reflect (x = y) (beq_string x y).
@@ -240,7 +240,7 @@ Proof.
     的结果进行分类讨论的同时，生成关于 [x1] 和 [x2] （在 [=] 的意义上）
     的相等性前提。 *)
 
-(** **** Exercise: 2 stars (t_update_same)  *)
+(** **** 练习：2 星 (t_update_same)  *)
 (** 请仿照[IndProp]一章中的示例，用 [beq_stringP] 来证明以下定理，
     它陈述了：如果我们用映射 [m] 中已经与键 [x] 相关联的值更新了 [x]，
     那么其结果与 [m] 相等： *)
@@ -251,7 +251,7 @@ Theorem t_update_same : forall X x (m : total_map X),
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, recommended (t_update_permute)  *)
+(** **** 练习：3 星, recommended (t_update_permute)  *)
 (** 使用 [beq_stringP] 来证明最后一个 [update] 函数的性质：
     如果我们更新了映射 [m] 中两个不同的键，那么更新的顺序无关紧要。 *)
 

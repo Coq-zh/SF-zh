@@ -113,7 +113,7 @@ Proof. reflexivity.  Qed.
 
 
 
-(** **** Exercise: 2 stars (mumble_grumble)  *)
+(** **** 练习：2 星 (mumble_grumble)  *)
 (** 考虑以下两个归纳定义的类型： *)
 
 Module MumbleGrumble.
@@ -137,7 +137,7 @@ Inductive grumble (X:Type) : Type :=
       - [c] *)
 (* 请在此处解答 *)
 End MumbleGrumble.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_mumble_grumble : option (prod nat string) := None.
 (** [] *)
 
@@ -333,7 +333,7 @@ Definition list123''' := [1; 2; 3].
 (* ----------------------------------------------------------------- *)
 (** *** 练习 *)
 
-(** **** Exercise: 2 stars, optional (poly_exercises)  *)
+(** **** 练习：2 星, optional (poly_exercises)  *)
 (** 下面是一些简单的练习，和 [Lists] 一章中的一样。
     为了实践多态，请完成下面的证明。 *)
 
@@ -353,7 +353,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (more_poly_exercises)  *)
+(** **** 练习：2 星, optional (more_poly_exercises)  *)
 (** 这儿有些更有趣的东西... *)
 
 Theorem rev_app_distr: forall X (l1 l2 : list X),
@@ -420,7 +420,7 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
   | x :: tx, y :: ty => (x, y) :: (combine tx ty)
   end.
 
-(** **** Exercise: 1 star, optional (combine_checks)  *)
+(** **** 练习：1 星, optional (combine_checks)  *)
 (** 请尝试在纸上回答以下问题并在 Coq 中检验你的解答：
     - [combine] 的类型是什么？（即 [Check @combine] 会打印出什么？）
     - 以下命令会打印出什么？
@@ -429,7 +429,7 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, recommended (split)  *)
+(** **** 练习：2 星, recommended (split)  *)
 (** 函数 [split] 是 [combine] 的右逆（right inverse）：
     它接受一个序对的列表并返回一个列表的序对。
     在很多函数式语言中，它被称作 [unzip]。
@@ -484,7 +484,7 @@ Proof. reflexivity. Qed.
 Example test_nth_error3 : nth_error [true] 2 = None.
 Proof. reflexivity. Qed.
 
-(** **** Exercise: 1 star, optional (hd_error_poly)  *)
+(** **** 练习：1 星, optional (hd_error_poly)  *)
 (** 请完成上一章中 [hd_error] 的多态定义，确保它能通过下方的单元测试。 *)
 
 Definition hd_error {X : Type} (l : list X) : option X
@@ -595,7 +595,7 @@ Example test_filter2':
   = [ [3]; [4]; [8] ].
 Proof. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (filter_even_gt7)  *)
+(** **** 练习：2 星 (filter_even_gt7)  *)
 (** 使用 [filter]（而非 [Fixpoint]）来编写 Coq 函数 [filter_even_gt7]，
     它接受一个自然数列表作为输入，返回一个只包含大于 [7] 的偶数的列表。 *)
 
@@ -611,7 +611,7 @@ Example test_filter_even_gt7_2 :
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (partition)  *)
+(** **** 练习：3 星 (partition)  *)
 (** 使用 [filter] 编写一个 Coq 函数 [partition]：
 
       partition : forall X : Type,
@@ -671,7 +671,7 @@ Proof. reflexivity.  Qed.
 (* ----------------------------------------------------------------- *)
 (** *** 练习 *)
 
-(** **** Exercise: 3 stars (map_rev)  *)
+(** **** 练习：3 星 (map_rev)  *)
 (** 请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引力 *)
 
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
@@ -680,7 +680,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, recommended (flat_map)  *)
+(** **** 练习：2 星, recommended (flat_map)  *)
 (** 函数 [map] 通过一个类型为 [X -> Y] 的函数将 [list X] 映射到 [list Y]。
     我们可以定义一个类似的函数 [flat_map]，它通过一个类型为 [X -> list Y]
     的函数 [f] 将 [list X] 映射到 [list Y]。你的定义应当可以「压扁」[f]
@@ -710,7 +710,7 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
     | Some x => Some (f x)
   end.
 
-(** **** Exercise: 2 stars, optional (implicit_args)  *)
+(** **** 练习：2 星, optional (implicit_args)  *)
 (** [filter] 和 [map] 的定义和应用在很多地方使用了隐式参数。
     请将隐式参数外层的花括号替换为圆括号，然后在必要的地方补充显式类型形参并用
     Coq 检查你做的是否正确。（本练习并不会打分，你可以在本文件的_'副本'_中做它，
@@ -759,13 +759,13 @@ Example fold_example3 :
   fold app  [[1];[];[2;3];[4]] [] = [1;2;3;4].
 Proof. reflexivity. Qed.
 
-(** **** Exercise: 1 star, advanced (fold_types_different)  *)
+(** **** 练习：1 星, advanced (fold_types_different)  *)
 (** 我们观察到 [fold] 由 [X] 和 [Y] 这_'两个'_类型变量参数化，形参 [f]
     则是个接受 [X] 和 [Y] 并返回 [Y] 的二元操作符。你能想出一种 [X] 和
     [Y] 不同时的应用情景吗？ *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_fold_types_different : option (prod nat string) := None.
 (** [] *)
 
@@ -817,7 +817,7 @@ Proof. reflexivity.  Qed.
 
 Module Exercises.
 
-(** **** Exercise: 2 stars (fold_length)  *)
+(** **** 练习：2 星 (fold_length)  *)
 (** 列表的很多通用函数都可以通过 [fold] 来实现。例如，下面是
     [length] 的另一种实现： *)
 
@@ -835,7 +835,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (fold_map)  *)
+(** **** 练习：3 星 (fold_map)  *)
 (** 我们也可以用 [fold] 来定义 [map]。请完成下面的 [fold_map]。 *)
 
 Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y
@@ -844,11 +844,11 @@ Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y
 (** 在 Coq 中写出 [fold_map_correct] 来陈述 [fold_map] 是正确的，然后证明它。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_fold_map : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced (currying)  *)
+(** **** 练习：2 星, advanced (currying)  *)
 (** 在 Coq 中，函数 [f : A -> B -> C] 的类型其实是 [A -> (B -> C)]。
     也就是说，如果给 [f] 一个类型为 [A] 的值，它就会给你函数 [f' : B -> C]。
     如果再给 [f'] 一个类型为 [B] 的值，它就会返回一个类型为 [C] 的值。
@@ -896,7 +896,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced (nth_error_informal)  *)
+(** **** 练习：2 星, advanced (nth_error_informal)  *)
 (** 回想 [nth_error] 函数的定义：
 
    Fixpoint nth_error {X : Type} (l : list X) (n : nat) : option X :=
@@ -910,11 +910,11 @@ Proof.
    forall X n l, length l = n -> @nth_error X l n = None
 *)
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_informal_proof : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (church_numerals)  *)
+(** **** 练习：4 星, advanced (church_numerals)  *)
 (** 本练习使用_'邱奇数（Church numerals）'_探讨了另一种定义自然数的方式，
     它以数学家 Alonzo Church 命名。我们可以将自然数 [n] 表示为一个函数，
     它接受一个函数 [f] 作为参数并返回迭代了 [n] 次的 [f]。 *)
@@ -1009,7 +1009,7 @@ Example exp_3 : exp three zero = one.
 Proof. (* 请在此处解答 *) Admitted.
 
 End Church.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_succ_plus_mult_exp : option (prod nat string) := None.
 (** [] *)
 

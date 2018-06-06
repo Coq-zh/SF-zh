@@ -276,14 +276,14 @@ Proof.
 constructor.
 Qed.
 
-(** **** Exercise: 3 stars (lookup_relate)  *)
+(** **** 练习：3 星 (lookup_relate)  *)
 Theorem lookup_relate:
   forall k t cts ,   Abs t cts -> lookup k t =  cts (int2Z k).
 Proof.  (* Copy your proof from SearchTree.v, and adapt it. *)
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (insert_relate)  *)
+(** **** 练习：3 星 (insert_relate)  *)
 Theorem insert_relate:
  forall k v t cts,
     Abs t cts ->
@@ -292,7 +292,7 @@ Proof.  (* Copy your proof from SearchTree.v, and adapt it. *)
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (unrealistically_strong_can_relate)  *)
+(** **** 练习：1 星 (unrealistically_strong_can_relate)  *)
 Lemma unrealistically_strong_can_relate:
  forall t,  exists cts, Abs t cts.
 Proof.  (* Copy-paste your proof from SearchTree.v; it should work as is. *)

@@ -174,7 +174,7 @@ Definition test_ceval (st:state) (c:com) :=
    ====>
       Some (2, 0, 4)   *)
 
-(** **** Exercise: 2 stars, recommended (pup_to_n)  *)
+(** **** 练习：2 星, recommended (pup_to_n)  *)
 (** 编写一个 Imp 程序对 [1] 到 [X] 求和（即 [1 + 2 + ... + X]）并赋值给 [Y]。
     确保你的解答能满足之后的测试。 *)
 
@@ -190,7 +190,7 @@ Proof. reflexivity. Qed.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (peven)  *)
+(** **** 练习：2 星, optional (peven)  *)
 (** 编写一个 [While] 程序，它在 [X] 为偶数时将 [Z] 置为 [0]，否则置为 [1]。
     使用 [ceval_test] 来测试你的程序。 *)
 
@@ -257,14 +257,14 @@ Proof.
           apply E_WhileFalse.
           rewrite <- Heqr. subst. reflexivity.  Qed.
 
-(** **** Exercise: 4 stars (ceval_step__ceval_inf)  *)
+(** **** 练习：4 星 (ceval_step__ceval_inf)  *)
 (** 按照通常的模版写出 [ceval_step__ceval] 的非形式化证明，
     （对归纳定义的值进行分类讨论的模版，除了没有归纳假设外，
     应当看起来与归纳证明相同。）不要简单地翻译形式化证明的步骤，
     请让你的证明能够将主要想法传达给读者。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_ceval_step__ceval_inf : option (prod nat string) := None.
 (** [] *)
 
@@ -312,7 +312,7 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
       * (* i1'o = None *)
         simpl in Hceval. inversion Hceval.  Qed.
 
-(** **** Exercise: 3 stars, recommended (ceval__ceval_step)  *)
+(** **** 练习：3 星, recommended (ceval__ceval_step)  *)
 (** 请完成以下证明。你会在某些地方用到 [ceval_step_more] 以及一些关于
     [<=] 和 [plus] 的基本事实。 *)
 

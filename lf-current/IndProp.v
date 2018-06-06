@@ -109,7 +109,7 @@ Qed.
 
 (** 更一般地，我们可以证明以任意数字乘2是偶数： *)
 
-(** **** Exercise: 1 star (ev_double)  *)
+(** **** 练习：1 星 (ev_double)  *)
 Theorem ev_double : forall n,
   ev (double n).
 Proof.
@@ -227,7 +227,7 @@ Theorem one_not_even : ~ ev 1.
 Proof.
   intros H. inversion H. Qed.
 
-(** **** Exercise: 1 star (SSSSev__even)  *)
+(** **** 练习：1 星 (SSSSev__even)  *)
 (** 请使用 [inversion] 策略证明以下结果。 *)
 
 Theorem SSSSev__even : forall n,
@@ -236,7 +236,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (even5_nonsense)  *)
+(** **** 练习：1 星 (even5_nonsense)  *)
 (** 请使用 [inversion] 策略证明以下结果。 *)
 
 Theorem even5_nonsense :
@@ -345,13 +345,13 @@ Qed.
 
 (** 下面的练习提供了一些简单的例子，来帮助你熟悉这项技术。 *)
 
-(** **** Exercise: 2 stars (ev_sum)  *)
+(** **** 练习：2 星 (ev_sum)  *)
 Theorem ev_sum : forall n m, ev n -> ev m -> ev (n + m).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (ev'_ev)  *)
+(** **** 练习：4 星, advanced, optional (ev'_ev)  *)
 (** 一般来说，有很多种方式来归纳地定义一个性质。比如说，下面是关于 [ev] 的另一种（蹩脚的）定义：*)
 
 Inductive ev' : nat -> Prop :=
@@ -366,7 +366,7 @@ Proof.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced, recommended (ev_ev__ev)  *)
+(** **** 练习：3 星, advanced, recommended (ev_ev__ev)  *)
 (** 在本题中找到合适的项进行归纳需要一点技巧： *)
 
 Theorem ev_ev__ev : forall n m,
@@ -375,7 +375,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
+(** **** 练习：3 星, optional (ev_plus_plus)  *)
 (** 这个练习仅仅需要使用前述引理。不需要使用归纳和分类讨论，尽管一些重写可能会比较乏味。 *)
 
 Theorem ev_plus_plus : forall n m p,
@@ -452,19 +452,19 @@ Inductive next_even : nat -> nat -> Prop :=
   | ne_1 : forall n, ev (S n) -> next_even n (S n)
   | ne_2 : forall n, ev (S (S n)) -> next_even n (S (S n)).
 
-(** **** Exercise: 2 stars, optional (total_relation)  *)
+(** **** 练习：2 星, optional (total_relation)  *)
 (** 请定一个二元归纳关系 [total_relation] 对每一个自然数序对成立。 *)
 
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (empty_relation)  *)
+(** **** 练习：2 星, optional (empty_relation)  *)
 (** 请定一个二元归纳关系 [empty_relation] 对自然数永远为假。 *)
 
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (le_exercises)  *)
+(** **** 练习：3 星, optional (le_exercises)  *)
 (** 这里展示一些关于 [<=] 和 [<] 关系的事实，我们在接下来的课程中将会用到他们。
     证明他们将会是非常有益的练习。 *)
 
@@ -526,7 +526,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (leb_iff)  *)
+(** **** 练习：2 星, optional (leb_iff)  *)
 Theorem leb_iff : forall n m,
   leb n m = true <-> n <= m.
 Proof.
@@ -535,7 +535,7 @@ Proof.
 
 Module R.
 
-(** **** Exercise: 3 stars, recommended (R_provability)  *)
+(** **** 练习：3 星, recommended (R_provability)  *)
 (** 通过同样的方式，我们可以定义三元关系、四元关系等。例如，考虑以下定义在数字上的三元关系： *)
 
 Inductive R : nat -> nat -> nat -> Prop :=
@@ -557,11 +557,11 @@ Inductive R : nat -> nat -> nat -> Prop :=
 
 (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_R_provability : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (R_fact)  *)
+(** **** 练习：3 星, optional (R_fact)  *)
 (** 关系 [R] 其实编码了一个熟悉的函数。请找出这个函数，定义它并在 Coq 中证明他们等价。*)
 
 Definition fR : nat -> nat -> nat
@@ -574,8 +574,8 @@ Proof.
 
 End R.
 
-(** **** Exercise: 4 stars, advanced (subsequence)  *)
-(* Do not modify the following line: *)
+(** **** 练习：4 星, advanced (subsequence)  *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_subsequence : option (prod nat string) := None.
 (** 如果一个列表的所有元素以相同的顺序出现在另一个列表之中（但允许其中出现其他额外的元素），
     我们把第一个列表称作第二个列表的_'子序列'_。 例如：
@@ -610,7 +610,7 @@ Definition manual_grade_for_subsequence : option (prod nat string) := None.
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (R_provability2)  *)
+(** **** 练习：2 星, optional (R_provability2)  *)
 (** 假设我们在 Coq 中有如下定义：
 
     Inductive R : nat -> list nat -> Prop :=
@@ -798,7 +798,7 @@ Qed.
 
 (** （请注意对 [app_nil_r] 的使用改变了目标，以此可匹配 [MStarApp] 所需要的形式。）*)
 
-(** **** Exercise: 3 stars (exp_match_ex1)  *)
+(** **** 练习：3 星 (exp_match_ex1)  *)
 (** 下面的引理显示从形式化的归纳定义中可以得到本章开始的非形式化匹配规则。 *)
 
 Lemma empty_is_empty : forall T (s : list T),
@@ -823,7 +823,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, optional (reg_exp_of_list_spec)  *)
+(** **** 练习：4 星, optional (reg_exp_of_list_spec)  *)
 (** 请证明 [reg_exp_of_list] 满足以下规范： *)
 
 
@@ -902,7 +902,7 @@ Proof.
       apply (IH2 Hin).
 Qed.
 
-(** **** Exercise: 4 stars (re_not_empty)  *)
+(** **** 练习：4 星 (re_not_empty)  *)
 (** 请编写一个递归函数 [re_not_empty] 用来测试某个正则表达式是否会匹配一些字符串。
     并证明你的函数是正确的。*)
 
@@ -1021,7 +1021,7 @@ Proof.
       * apply H1.
 Qed.
 
-(** **** Exercise: 4 stars, optional (exp_match_ex2)  *)
+(** **** 练习：4 星, optional (exp_match_ex2)  *)
 
 (** 下面的引理 [MStar''](以及它的逆，之前的练习题中的 [MStar']）显示 [exp_match]
     定义中的 [Star] 等价于前面给出的非形式化定义。*)
@@ -1035,7 +1035,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 5 stars, advanced (pumping)  *)
+(** **** 练习：5 星, advanced (pumping)  *)
 (** 正则表达式中一个非常有趣的定理叫做_'泵引理（Pumping Lemma）'_，
     非形式化地来讲，它陈述了任意某个足够长的字符串 [s] 若匹配一个正则表达式 [re]，
     则可以被抽取（pumped）——将 [s] 的某个中间部分重复任意次产生的新字符串
@@ -1162,7 +1162,7 @@ Proof.
   - apply ReflectF. rewrite H. intros H'. inversion H'.
 Qed.
 
-(** **** Exercise: 2 stars, recommended (reflect_iff)  *)
+(** **** 练习：2 星, recommended (reflect_iff)  *)
 Theorem reflect_iff : forall P b, reflect P b -> (P <-> b = true).
 Proof.
   (* 请在此处解答 *) Admitted.
@@ -1200,7 +1200,7 @@ Proof.
       intros H'. right. apply IHl'. apply H'.
 Qed.
 
-(** **** Exercise: 3 stars, recommended (beq_natP_practice)  *)
+(** **** 练习：3 星, recommended (beq_natP_practice)  *)
 (** 使用上面的 [beq_natP] 证明以下定理：*)
 
 Fixpoint count n l :=
@@ -1227,7 +1227,7 @@ Proof.
 (* ################################################################# *)
 (** * 额外练习 *)
 
-(** **** Exercise: 3 stars, recommended (nostutter_defn)  *)
+(** **** 练习：3 星, recommended (nostutter_defn)  *)
 (** 写出一个性质的归纳定义是本课程中你需要的重要技能。请尝试去独立解决
     以下的练习。
     
@@ -1273,11 +1273,11 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
   end.
   contradiction H1; auto. Qed.
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_nostutter : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (filter_challenge)  *)
+(** **** 练习：4 星, advanced (filter_challenge)  *)
 (** 让我们证明在 [Poly] 一章中 [filter] 的定义匹配某个抽象的规范。
     可以这样非形式化地描述这个规范：
     
@@ -1304,18 +1304,18 @@ Definition manual_grade_for_nostutter : option (prod nat string) := None.
     请使用归纳关系而非 [Fixpoint] 来完成。）*)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 5 stars, advanced, optional (filter_challenge_2)  *)
+(** **** 练习：5 星, advanced, optional (filter_challenge_2)  *)
 (** 另一种刻画 [filter] 行为的方式是：在 [l] 的所有其元素满足 [test] 的子序列中，
     [filter test l] 是最长的那个。请形式化这个命题并证明它。*)
 
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 4 stars, optional (palindromes)  *)
+(** **** 练习：4 星, optional (palindromes)  *)
 (** 回文是倒序排列与正序排列相同的序列。
 
     - 在 [listX] 上定义一个归纳命题 [pal] 来表达回文的含义。
@@ -1335,11 +1335,11 @@ Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 5 stars, optional (palindrome_converse)  *)
+(** **** 练习：5 星, optional (palindrome_converse)  *)
 (** 由于缺乏证据，反方向的证明要困难许多。请之前练习中你定义的 [pal] 证明
 
      forall l, l = rev l -> pal l.
@@ -1348,7 +1348,7 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) :
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (NoDup)  *)
+(** **** 练习：4 星, advanced, optional (NoDup)  *)
 (** 请回忆一下 [Logic] 章节中性质 [In] 的定义，其断言值 [x] 在列表 [l] 中至少出现一次：*)
 
 (* Fixpoint In (A : Type) (x : A) (l : list A) : Prop :=
@@ -1372,12 +1372,12 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) :
 (** 最后，使用 [disjoint]，[NoDup] 和 [++] （列表连接）陈述并证明一个或多个有趣的定理。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_NoDup_disjoint_etc : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (pigeonhole_principle)  *)
-(* Do not modify the following line: *)
+(** **** 练习：4 星, advanced, optional (pigeonhole_principle)  *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_check_repeats : option (prod nat string) := None.
 (** _鸽笼原理（Pigeonhole Principle）'_陈述了一个关于计数的基本事实：
     如果我们将超过 [n] 个项分布于 [n] 个鸽笼，那么一些鸽笼
@@ -1531,7 +1531,7 @@ Proof.
     rewrite Happ. apply (MApp s0 _ s1 _ Hmat0 Hmat1).
 Qed.
 
-(** **** Exercise: 3 stars, optional (app_ne)  *)
+(** **** 练习：3 星, optional (app_ne)  *)
 (** [App re0 re1] 匹配 [a::s] 当且仅当 [re0] 匹配空字符串 
     且 [a::s] 匹配 [re1] 或 [s=s0++s1]，其中 [a::s0] 匹配 [re0]
     且 [s1] 匹配 [re1]。
@@ -1559,7 +1559,7 @@ Proof.
     + apply MUnionR. apply H. 
 Qed.
 
-(** **** Exercise: 3 stars, optional (star_ne)  *)
+(** **** 练习：3 星, optional (star_ne)  *)
 (** [a::s] 匹配 [Star re] 当且仅当 [s = s0 ++ s1]，其中 [a::s0] 匹配
     [re] 且 [s1] 匹配 [Star re]。 同 [app_ne]一样，这个观察很重要，
     因此理解，证明并留意它。
@@ -1583,13 +1583,13 @@ Proof.
 Definition refl_matches_eps m :=
   forall re : @reg_exp ascii, reflect ([ ] =~ re) (m re).
 
-(** **** Exercise: 2 stars, optional (match_eps)  *)
+(** **** 练习：2 星, optional (match_eps)  *)
 (** 完成 [match_eps] 的定义，其测试给定的正则表达式是否匹配空字符串： *)
 Fixpoint match_eps (re: @reg_exp ascii) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (match_eps_refl)  *)
+(** **** 练习：3 星, optional (match_eps_refl)  *)
 (** 现在，请证明 [match_eps] 确实测试了给定的正则表达式是否匹配空字符串。
     （提示：你会使用到互映引理 [ReflectT] 和 [ReflectF]。） *)
 Lemma match_eps_refl : refl_matches_eps match_eps.
@@ -1613,7 +1613,7 @@ Definition is_der re (a : ascii) re' :=
     它求值为 [re] 在 [a] 上的生成式。也即，[d] 满足以下关系： *)
 Definition derives d := forall a re, is_der re a (d a re).
 
-(** **** Exercise: 3 stars, optional (derive)  *)
+(** **** 练习：3 星, optional (derive)  *)
 (** 请定义 [derive] 使其生成字符串。一个自然的实现是在某些分类使用 
     [match_eps] 来判断正则表达式是否匹配空字符串。 *)
 Fixpoint derive (a : ascii) (re : @reg_exp ascii) : @reg_exp ascii
@@ -1668,7 +1668,7 @@ Example test_der7 :
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** **** Exercise: 4 stars, optional (derive_corr)  *)
+(** **** 练习：4 星, optional (derive_corr)  *)
 (** 请证明 [derive] 确实总是会生成字符串。
 
     提示：一种证明方法是对 [re] 归纳，尽管你需要通过归纳和一般化合适的项来
@@ -1697,13 +1697,13 @@ Proof.
 Definition matches_regex m : Prop :=
   forall (s : string) re, reflect (s =~ re) (m s re).
 
-(** **** Exercise: 2 stars, optional (regex_match)  *)
+(** **** 练习：2 星, optional (regex_match)  *)
 (** 完成 [regex_match] 的定义，使其可以匹配正则表达式。*)
 Fixpoint regex_match (s : string) (re : @reg_exp ascii) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (regex_refl)  *)
+(** **** 练习：3 星, optional (regex_refl)  *)
 (** 最后，证明 [regex_match] 确实可以匹配正则表达式。
     
     提示：如果你定义的 [regex_match] 对正则表达式 [re] 使用了 [match_eps]，

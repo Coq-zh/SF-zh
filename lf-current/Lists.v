@@ -88,14 +88,14 @@ Proof.
 (** 注意，在这里 [destruct] 的行为不同于对 [nat] 的行为，
     这次它只会生成一个子目标，因为 [natprod] 只能通过一种方式来构造。 *)
 
-(** **** Exercise: 1 star (snd_fst_is_swap)  *)
+(** **** 练习：1 星 (snd_fst_is_swap)  *)
 Theorem snd_fst_is_swap : forall (p : natprod),
   (snd p, fst p) = swap_pair p.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (fst_swap_is_snd)  *)
+(** **** 练习：1 星, optional (fst_swap_is_snd)  *)
 Theorem fst_swap_is_snd : forall (p : natprod),
   fst (swap_pair p) = snd p.
 Proof.
@@ -229,7 +229,7 @@ Proof. reflexivity.  Qed.
 (* ----------------------------------------------------------------- *)
 (** *** 练习 *)
 
-(** **** Exercise: 2 stars, recommended (list_funs)  *)
+(** **** 练习：2 星, recommended (list_funs)  *)
 (** 完成以下 [nonzeros]、[oddmembers] 和 [countoddmembers] 的定义，
     你可以查看测试函数来理解这些函数应该做什么。 *)
 
@@ -263,7 +263,7 @@ Example test_countoddmembers3:
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (alternate)  *)
+(** **** 练习：3 星, advanced (alternate)  *)
 (** 完成 [alternate] 的定义，它从两个列表中交替地取出元素并合并为一个列表，
     就像把拉链「拉」起来一样。更多具体示例见后面的测试。
 
@@ -300,7 +300,7 @@ Example test_alternate4:
 
 Definition bag := natlist.
 
-(** **** Exercise: 3 stars, recommended (bag_functions)  *)
+(** **** 练习：3 星, recommended (bag_functions)  *)
 (** 为袋子完成以下 [count]、[sum]、[add]、和 [member] 函数的定义。 *)
 
 Fixpoint count (v:nat) (s:bag) : nat
@@ -349,8 +349,8 @@ Example test_member2:             member 2 [1;4;1] = false.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (bag_more_functions)  *)
-(* Do not modify the following line: *)
+(** **** 练习：3 星, optional (bag_more_functions)  *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_bag_theorem : option (prod nat string) := None.
 (** 你可以把下面这些和 [bag] 有关的函数当作额外的练习 *)
 
@@ -397,7 +397,7 @@ Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, recommended (bag_theorem)  *)
+(** **** 练习：3 星, recommended (bag_theorem)  *)
 (** 写一个你认为有趣的关于袋子的定理 [bag_theorem]，然后证明它；
     这个定理需要用到 [count] 和 [add]。注意，这是个开放性问题。
     也许你写下的定理是正确的，但它可能会涉及到你尚未学过的技巧因而无法证明。
@@ -672,7 +672,7 @@ Proof.
 (* ================================================================= *)
 (** ** 列表练习，第一部分 *)
 
-(** **** Exercise: 3 stars (list_exercises)  *)
+(** **** 练习：3 星 (list_exercises)  *)
 (** 更多有关列表的实践： *)
 
 Theorem app_nil_r : forall l : natlist,
@@ -706,7 +706,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (beq_natlist)  *)
+(** **** 练习：2 星 (beq_natlist)  *)
 (** 填写 [beq_natlist] 的定义，它通过比较列表中的数字来判断是否相等。
     证明对于所有列表 [l]，[beq_natlist l l] 返回 [true]。 *)
 
@@ -736,7 +736,7 @@ Proof.
 
 (** 下面这组简单的定理用于证明你之前关于袋子的定义。 *)
 
-(** **** Exercise: 1 star (count_member_nonzero)  *)
+(** **** 练习：1 星 (count_member_nonzero)  *)
 Theorem count_member_nonzero : forall (s : bag),
   leb 1 (count 1 (1 :: s)) = true.
 Proof.
@@ -754,21 +754,21 @@ Proof.
   - (* S n' *)
     simpl.  rewrite IHn'.  reflexivity.  Qed.
 
-(** **** Exercise: 3 stars, advanced (remove_decreases_count)  *)
+(** **** 练习：3 星, advanced (remove_decreases_count)  *)
 Theorem remove_decreases_count: forall (s : bag),
   leb (count 0 (remove_one 0 s)) (count 0 s) = true.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (bag_count_sum)  *)
+(** **** 练习：3 星, optional (bag_count_sum)  *)
 (** 写下一个用到函数 [count] 和 [sum] 的，关于袋子的有趣定理 [bag_count_sum]，
     然后证明它。（你可能会发现该证明的难度取决于你如何定义 [count]！） *)
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (rev_injective)  *)
-(* Do not modify the following line: *)
+(** **** 练习：4 星, advanced (rev_injective)  *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_rev_injective : option (prod nat string) := None.
 (** 证明 [rev] 函数是单射的，也就是说，
 
@@ -850,7 +850,7 @@ Definition option_elim (d : nat) (o : natoption) : nat :=
   | None => d
   end.
 
-(** **** Exercise: 2 stars (hd_error)  *)
+(** **** 练习：2 星 (hd_error)  *)
  (** 用同样的思路修正之前的 [hd] 函数，使我们无需为 [nil] 的情况提供默认元素。  *)
 
 Definition hd_error (l : natlist) : natoption
@@ -866,7 +866,7 @@ Example test_hd_error3 : hd_error [5;6] = Some 5.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (option_elim_hd)  *)
+(** **** 练习：1 星, optional (option_elim_hd)  *)
  (** 此练习能帮助你在新的 [hd_error] 和旧的 [hd] 之间建立联系。 *)
 
 Theorem option_elim_hd : forall (l:natlist) (default:nat),
@@ -898,7 +898,7 @@ Definition beq_id (x1 x2 : id) :=
   | Id n1, Id n2 => beq_nat n1 n2
   end.
 
-(** **** Exercise: 1 star (beq_id_refl)  *)
+(** **** 练习：1 星 (beq_id_refl)  *)
 Theorem beq_id_refl : forall x, true = beq_id x x.
 Proof.
   (* 请在此处解答 *) Admitted.
@@ -938,7 +938,7 @@ Fixpoint find (x : id) (d : partial_map) : natoption :=
   end.
 
 
-(** **** Exercise: 1 star (update_eq)  *)
+(** **** 练习：1 星 (update_eq)  *)
 Theorem update_eq :
   forall (d : partial_map) (x : id) (v: nat),
     find x (update d x v) = Some v.
@@ -946,7 +946,7 @@ Proof.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (update_neq)  *)
+(** **** 练习：1 星 (update_neq)  *)
 Theorem update_neq :
   forall (d : partial_map) (x y : id) (o: nat),
     beq_id x y = false -> find x (update d y o) = find x d.
@@ -955,7 +955,7 @@ Proof.
 (** [] *)
 End PartialMap.
 
-(** **** Exercise: 2 stars (baz_num_elts)  *)
+(** **** 练习：2 星 (baz_num_elts)  *)
 (** 考虑以下归纳定义： *)
 
 Inductive baz : Type :=
@@ -965,7 +965,7 @@ Inductive baz : Type :=
 (** 类型 [baz] 有_'多少'_个元素？（请用汉语或你习惯的自然语言解答。） *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_baz_num_elts : option (prod nat string) := None.
 (** [] *)
 

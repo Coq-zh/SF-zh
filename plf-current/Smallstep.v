@@ -179,7 +179,7 @@ Example test_step_1 :
 Proof.
   apply ST_Plus1. apply ST_PlusConstConst.  Qed.
 
-(** **** Exercise: 1 star (test_step_2)  *)
+(** **** 练习：1 星 (test_step_2)  *)
 (** Right-hand sides of sums can take a step only when the
     left-hand side is finished: if [t2] can take a step to [t2'],
     then [P (C n) t2] steps to [P (C n)
@@ -426,7 +426,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(** **** Exercise: 3 stars, recommended (redo_determinism)  *)
+(** **** 练习：3 星, recommended (redo_determinism)  *)
 (** As a sanity check on this change, let's re-verify determinism.
 
     _Proof sketch_: We must show that if [x] steps to both [y1] and
@@ -568,7 +568,7 @@ Proof.
 (** Indeed, we could easily have written the definitions so that they
     would _not_ coincide. *)
 
-(** **** Exercise: 3 stars, optional (value_not_same_as_normal_form1)  *)
+(** **** 练习：3 星, optional (value_not_same_as_normal_form1)  *)
 (** We might, for example, mistakenly define [value] so that it
     includes some terms that are not finished reducing. *)
 (** (Even if you don't work this exercise and the following ones
@@ -604,7 +604,7 @@ End Temp1.
 
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (value_not_same_as_normal_form2)  *)
+(** **** 练习：2 星, optional (value_not_same_as_normal_form2)  *)
 (** Alternatively, we might mistakenly define [step] so that it
     permits something designated as a value to reduce further. *)
 
@@ -638,7 +638,7 @@ Proof.
 End Temp2.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (value_not_same_as_normal_form3)  *)
+(** **** 练习：3 星, optional (value_not_same_as_normal_form3)  *)
 (** Finally, we might define [value] and [step] so that there is some
     term that is not a value but that cannot take a step in the [step]
     relation.  Such terms are said to be _stuck_. In this case this is
@@ -703,7 +703,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(** **** Exercise: 1 star (smallstep_bools)  *)
+(** **** 练习：1 星 (smallstep_bools)  *)
 (** Which of the following propositions are provable?  (This is just a
     thought exercise, but for an extra challenge feel free to prove
     your answers in Coq.) *)
@@ -735,11 +735,11 @@ Definition bool_step_prop3 :=
        tfalse.
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_smallstep_bools : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (progress_bool)  *)
+(** **** 练习：3 星, optional (progress_bool)  *)
 (** Just as we proved a progress theorem for plus expressions, we can
     do so for boolean expressions, as well. *)
 
@@ -749,7 +749,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (step_deterministic)  *)
+(** **** 练习：2 星, optional (step_deterministic)  *)
 Theorem step_deterministic :
   deterministic step.
 Proof.
@@ -758,7 +758,7 @@ Proof.
 
 Module Temp5.
 
-(** **** Exercise: 2 stars (smallstep_bool_shortcut)  *)
+(** **** 练习：2 星 (smallstep_bool_shortcut)  *)
 (** Suppose we want to add a "short circuit" to the step relation for
     boolean expressions, so that it can recognize when the [then] and
     [else] branches of a conditional are the same value (either
@@ -806,7 +806,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (properties_of_altered_step)  *)
+(** **** 练习：3 星, optional (properties_of_altered_step)  *)
 (** It can be shown that the determinism and strong progress theorems
     for the step relation in the lecture notes also hold for the
     definition of step given above.  After we add the clause
@@ -973,14 +973,14 @@ Proof.
   eapply multi_step. apply ST_PlusConstConst.
   apply multi_refl.  Qed.
 
-(** **** Exercise: 1 star, optional (test_multistep_2)  *)
+(** **** 练习：1 星, optional (test_multistep_2)  *)
 Lemma test_multistep_2:
   C 3 ==>* C 3.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (test_multistep_3)  *)
+(** **** 练习：1 星, optional (test_multistep_3)  *)
 Lemma test_multistep_3:
       P (C 0) (C 3)
    ==>*
@@ -989,7 +989,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (test_multistep_4)  *)
+(** **** 练习：2 星 (test_multistep_4)  *)
 Lemma test_multistep_4:
       P
         (C 0)
@@ -1022,7 +1022,7 @@ Definition normal_form_of (t t' : tm) :=
     can actually pronounce [normal_form t t'] as "[t'] is _the_
     normal form of [t]." *)
 
-(** **** Exercise: 3 stars, optional (normal_forms_unique)  *)
+(** **** 练习：3 星, optional (normal_forms_unique)  *)
 Theorem normal_forms_unique:
   deterministic normal_form_of.
 Proof.
@@ -1063,7 +1063,7 @@ Proof.
         apply ST_Plus1. apply H.
         apply IHmulti.  Qed.
 
-(** **** Exercise: 2 stars (multistep_congr_2)  *)
+(** **** 练习：2 星 (multistep_congr_2)  *)
 Lemma multistep_congr_2 : forall t1 t2 t2',
      value t1 ->
      t2 ==>* t2' ->
@@ -1140,7 +1140,7 @@ Proof.
     thing!  They do, though it takes a little work to show it.  The
     details are left as an exercise. *)
 
-(** **** Exercise: 3 stars (eval__multistep)  *)
+(** **** 练习：3 星 (eval__multistep)  *)
 Theorem eval__multistep : forall t n,
   t \\ n -> t ==>* C n.
 
@@ -1178,19 +1178,19 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (eval__multistep_inf)  *)
+(** **** 练习：3 星, advanced (eval__multistep_inf)  *)
 (** Write a detailed informal version of the proof of [eval__multistep].
 
 (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_eval__multistep_inf : option (prod nat string) := None.
 (** [] *)
 
 (** For the other direction, we need one lemma, which establishes a
     relation between single-step reduction and big-step evaluation. *)
 
-(** **** Exercise: 3 stars (step__eval)  *)
+(** **** 练习：3 星 (step__eval)  *)
 Lemma step__eval : forall t t' n,
      t ==> t' ->
      t' \\ n ->
@@ -1209,7 +1209,7 @@ Proof.
 (** Make sure you understand the statement before you start to
     work on the proof.  *)
 
-(** **** Exercise: 3 stars (multistep__eval)  *)
+(** **** 练习：3 星 (multistep__eval)  *)
 Theorem multistep__eval : forall t t',
   normal_form_of t t' -> exists n, t' = C n /\ t \\ n.
 Proof.
@@ -1219,7 +1219,7 @@ Proof.
 (* ================================================================= *)
 (** ** Additional Exercises *)
 
-(** **** Exercise: 3 stars, optional (interp_tm)  *)
+(** **** 练习：3 星, optional (interp_tm)  *)
 (** Remember that we also defined big-step evaluation of terms as a
     function [evalF].  Prove that it is equivalent to the existing
     semantics.  (Hint: we just proved that [eval] and [multistep] are
@@ -1232,7 +1232,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars (combined_properties)  *)
+(** **** 练习：4 星 (combined_properties)  *)
 (** We've considered arithmetic and conditional expressions
     separately.  This exercise explores how the two interact. *)
 
@@ -1286,7 +1286,7 @@ Inductive step : tm -> tm -> Prop :=
 (* 请在此处解答 *)
 
 End Combined.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_combined_properties : option (prod nat string) := None.
 (** [] *)
 
@@ -1599,7 +1599,7 @@ Proof.
 
 (** More generally... *)
 
-(** **** Exercise: 3 stars, optional (par_body_n__Sn)  *)
+(** **** 练习：3 星, optional (par_body_n__Sn)  *)
 Lemma par_body_n__Sn : forall n st,
   st X = n /\ st Y = 0 ->
   par_loop / st ==>* par_loop / st & { X --> S n}.
@@ -1607,7 +1607,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (par_body_n)  *)
+(** **** 练习：3 星, optional (par_body_n)  *)
 Lemma par_body_n : forall n st,
   st X = 0 /\ st Y = 0 ->
   exists st',
@@ -1677,7 +1677,7 @@ Qed.
 
 Definition stack_multistep st := multi (stack_step st).
 
-(** **** Exercise: 3 stars, advanced (compiler_is_correct)  *)
+(** **** 练习：3 星, advanced (compiler_is_correct)  *)
 (** Remember the definition of [compile] for [aexp] given in the
     [Imp] chapter of _Logical Foundations_. We want now to
     prove [compile] correct with respect to the stack machine.

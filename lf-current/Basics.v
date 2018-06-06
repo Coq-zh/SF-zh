@@ -199,7 +199,7 @@ Proof. simpl. reflexivity. Qed.
     我们会练习中用它来表示留给你的部分，即你的练习作业就是将 [Admitted]
     替换为具体的证明。 *)
 
-(** **** Exercise: 1 star (nandb)  *)
+(** **** 练习：1 星 (nandb)  *)
 (** 移除「[Admitted.]」并补完以下函数的定义，然后确保下列每一个 [Example]
     中的断言都能被 Coq 验证通过。（仿照前面 [orb] 测试的模式，移除每一个
     [Admitted.] 并补充证明。）此函数应在两个输入之一或二者均为 [false]
@@ -221,7 +221,7 @@ Example test_nandb4:               (nandb true true) = false.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (andb3)  *)
+(** **** 练习：1 星 (andb3)  *)
 (** 与此前相同，完成下面的 [andb3] 函数。
     此函数应在所有输入均为 [true] 时返回 [true]，否则返回 [false]。 *)
 
@@ -496,7 +496,7 @@ Fixpoint exp (base power : nat) : nat :=
     | S p => mult base (exp base p)
   end.
 
-(** **** Exercise: 1 star (factorial)  *)
+(** **** 练习：1 星 (factorial)  *)
 (** 回想一下标准的阶乘函数：
 
        factorial(0)  =  1
@@ -572,7 +572,7 @@ Proof. simpl. reflexivity.  Qed.
 Example test_leb3:             (leb 4 2) = false.
 Proof. simpl. reflexivity.  Qed.
 
-(** **** Exercise: 1 star (blt_nat)  *)
+(** **** 练习：1 星 (blt_nat)  *)
 (** [blt_nat] 函数测试自然数 [nat] 的小于性 [lt]，并产生一个布尔值 [b]。
     这次不必完全重新定义一个 [Fixpoint]，可以利用前面已经定义的函数。 *)
 
@@ -695,7 +695,7 @@ Proof.
     若要从右往左改写，可以使用 [rewrite <-]。在上面的证明里试一试这种改变，
     看看 Coq 的反应有何不同。) *)
 
-(** **** Exercise: 1 star (plus_id_exercise)  *)
+(** **** 练习：1 星 (plus_id_exercise)  *)
 (** 删除 "[Admitted.]" 并补完证明。 *)
 
 Theorem plus_id_exercise : forall n m o : nat,
@@ -722,7 +722,7 @@ Proof.
   rewrite -> plus_O_n.
   reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (mult_S_1)  *)
+(** **** 练习：2 星 (mult_S_1)  *)
 Theorem mult_S_1 : forall n m : nat,
   m = S n ->
   m * (1 + n) = m * m.
@@ -895,7 +895,7 @@ Proof.
   - reflexivity.
 Qed.
 
-(** **** Exercise: 2 stars (andb_true_elim2)  *)
+(** **** 练习：2 星 (andb_true_elim2)  *)
 (** 证明以下断言, 当使用 [destruct] 时请用标号标出分类（以及子分类）。 *)
 
 Theorem andb_true_elim2 : forall b c : bool,
@@ -904,7 +904,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (zero_nbeq_plus_1)  *)
+(** **** 练习：1 星 (zero_nbeq_plus_1)  *)
 Theorem zero_nbeq_plus_1 : forall n : nat,
   beq_nat 0 (n + 1) = false.
 Proof.
@@ -967,7 +967,7 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     所有函数对于所有输入都能终止。然而，由于 Coq 的「递减分析」不是非常精致，
     因此有时必须用一点不同寻常的方式来编写函数。 *)
 
-(** **** Exercise: 2 stars, optional (decreasing)  *)
+(** **** 练习：2 星, optional (decreasing)  *)
 (** 为了能对此有更具体的认识，找出一种方式写出有效的 [Fixpoint] 定义
     (比如有关数字的简单函数)，在各种的输入下应当 _'确实'_ 能够终止，但是
     Coq 却受限于此而拒绝接受。 *)
@@ -978,7 +978,7 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
 (* ################################################################# *)
 (** * 更多练习 *)
 
-(** **** Exercise: 2 stars (boolean_functions)  *)
+(** **** 练习：2 星 (boolean_functions)  *)
 (** 用你已经学过的策略证明以下关于布尔函数的定理。 *)
 
 Theorem identity_fn_applied_twice :
@@ -997,11 +997,11 @@ Proof.
    chapters, but for the moment we just need syntax for literal
    strings for the grader comments. *)
 From Coq Require Export String.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_negation_fn_applied_twice : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (andb_eq_orb)  *)
+(** **** 练习：3 星, optional (andb_eq_orb)  *)
 (** 证明下列定理。（提示：此定理的证明可能会有点棘手，取决于你如何证明它。
     或许需要先证明一到两个辅助引理。或者，你要记得未必要同时引入所有前提。） *)
 
@@ -1014,7 +1014,7 @@ Proof.
 
 (** [] *)
 
-(** **** Exercise: 3 stars (binary)  *)
+(** **** 练习：3 星 (binary)  *)
 (** 设想一种不同的、更有效的表示自然数的方法，使用二进制，而不是一进制。
     换言之，并不是说每个自然数是零或者另一个自然数的后继，我们可以说每个
     自然数：
@@ -1048,7 +1048,7 @@ Proof.
         先自增再转换为一进制数，应该与将其先转换成一进制后再自增获得的结果相同。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_binary : option (prod nat string) := None.
 (** [] *)
 

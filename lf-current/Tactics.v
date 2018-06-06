@@ -54,7 +54,7 @@ Proof.
   intros n m eq1 eq2.
   apply eq2. apply eq1.  Qed.
 
-(** **** Exercise: 2 stars, optional (silly_ex)  *)
+(** **** 练习：2 星, optional (silly_ex)  *)
 (** 请完成以下证明，不要使用 [simpl]。 *)
 
 Theorem silly_ex :
@@ -81,7 +81,7 @@ Proof.
   simpl. (* （此处的 [simpl] 是可选的，因为 [apply] 会在需要时先进行化简。） *)
   apply H.  Qed.
 
-(** **** Exercise: 3 stars (apply_exercise1)  *)
+(** **** 练习：3 星 (apply_exercise1)  *)
 (** （_'提示'_：你可以配合之前定义的引理来使用 [apply]，不仅限于当前上下文中的前提。
     记住 [Search] 是你的朋友。） *)
 
@@ -92,7 +92,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (apply_rewrite)  *)
+(** **** 练习：1 星, optional (apply_rewrite)  *)
 (** 简述 [apply] 与 [rewrite] 策略之区别。哪些情况下二者均可有效利用？ *)
 
 (* 请在此处解答 *)
@@ -143,7 +143,7 @@ Proof.
     一般足够聪明来确定我们给出的实例。我们也可以写成：
     [apply trans_eq with [c;d]]。 *)
 
-(** **** Exercise: 3 stars, optional (apply_with_exercise)  *)
+(** **** 练习：3 星, optional (apply_with_exercise)  *)
 Example trans_eq_exercise : forall (n m o p : nat),
      m = (minustwo o) ->
      (n + p) = m ->
@@ -211,7 +211,7 @@ Theorem inversion_ex2 : forall (n m : nat),
 Proof.
   intros n m H. inversion H as [Hnm]. reflexivity.  Qed.
 
-(** **** Exercise: 1 star (inversion_ex3)  *)
+(** **** 练习：1 星 (inversion_ex3)  *)
 Example inversion_ex3 : forall (X : Type) (x y z : X) (l j : list X),
   x :: y :: l = z :: j ->
   y :: l = x :: j ->
@@ -266,7 +266,7 @@ Proof.
     相反，它认为，如果前提所描述的无意义的情况确实出现了，那么无意义的结论就会随之而来。
     我们会在下一章中探讨更多爆炸原理的详情。 *)
 
-(** **** Exercise: 1 star (inversion_ex6)  *)
+(** **** 练习：1 星 (inversion_ex6)  *)
 Example inversion_ex6 : forall (X : Type)
                           (x y z : X) (l j : list X),
   x :: y :: l = [] ->
@@ -341,7 +341,7 @@ Proof.
     它们使用的应该是正向推理。通常，Coq 习惯上倾向于使用反向推理，
     但在某些情况下，正向推理更易于思考。 *)
 
-(** **** Exercise: 3 stars, recommended (plus_n_n_injective)  *)
+(** **** 练习：3 星, recommended (plus_n_n_injective)  *)
 (** 请在此证明中练习使用「in」形式的变体。（提示：使用 [plus_n_Sm]。） *)
 
 Theorem plus_n_n_injective : forall n m,
@@ -484,16 +484,16 @@ Proof.
 
 (** 以下练习需要同样的模式。 *)
 
-(** **** Exercise: 2 stars (beq_nat_true)  *)
+(** **** 练习：2 星 (beq_nat_true)  *)
 Theorem beq_nat_true : forall n m,
     beq_nat n m = true -> n = m.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced (beq_nat_true_informal)  *)
+(** **** 练习：2 星, advanced (beq_nat_true_informal)  *)
 (** 给出一个详细的 [beq_nat_true] 的非形式化证明，量词要尽可能明确。 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_informal_proof : option (prod nat string) := None.
 
 (* 请在此处解答 *)
@@ -588,7 +588,7 @@ Proof.
   rewrite H'. reflexivity.
 Qed.
 
-(** **** Exercise: 3 stars, recommended (gen_dep_practice)  *)
+(** **** 练习：3 星, recommended (gen_dep_practice)  *)
 (** 通过对 [l] 进行归纳来证明它。 *)
 
 Theorem nth_error_after_last: forall (n : nat) (X : Type) (l : list X),
@@ -731,7 +731,7 @@ Proof.
     [c]，[destruct e] 都会生成一个子目标，其中（即目标和上下文中）所有的
     [e] 都会被替换成 [c]。*)
 
-(** **** Exercise: 3 stars, optional (combine_split)  *)
+(** **** 练习：3 星, optional (combine_split)  *)
 (** 以下是 [Poly] 一章中出现过的 [split] 函数的实现： *)
 
 Fixpoint split {X Y : Type} (l : list (X*Y))
@@ -804,7 +804,7 @@ Proof.
           rewrite -> Heqe5. reflexivity.
         + (* e5 = false *) inversion eq.  Qed.
 
-(** **** Exercise: 2 stars (destruct_eqn_practice)  *)
+(** **** 练习：2 星 (destruct_eqn_practice)  *)
 Theorem bool_fn_applied_thrice :
   forall (f : bool -> bool) (b : bool),
   f (f (f b)) = f b.
@@ -865,14 +865,14 @@ Proof.
 (* ################################################################# *)
 (** * 附加练习 *)
 
-(** **** Exercise: 3 stars (beq_nat_sym)  *)
+(** **** 练习：3 星 (beq_nat_sym)  *)
 Theorem beq_nat_sym : forall (n m : nat),
   beq_nat n m = beq_nat m n.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced, optional (beq_nat_sym_informal)  *)
+(** **** 练习：3 星, advanced, optional (beq_nat_sym_informal)  *)
 (** 根据前面你对该引理的形式化证明，给出与它对应的非形式化证明：
 
    定理：对于任何自然数 [n] [m]，[beq_nat n m = beq_nat m n].
@@ -881,7 +881,7 @@ Proof.
    (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (beq_nat_trans)  *)
+(** **** 练习：3 星, optional (beq_nat_trans)  *)
 Theorem beq_nat_trans : forall n m p,
   beq_nat n m = true ->
   beq_nat m p = true ->
@@ -890,7 +890,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (split_combine)  *)
+(** **** 练习：3 星, advanced (split_combine)  *)
 (** 在前面的练习中，我们证明了对于所有序对的列表，[combine] 是 [split]
     的反函数。你如何形式化陈述 [split] 是 [combine] 的反函数？何时此性质成立？
 
@@ -907,12 +907,12 @@ Definition split_combine_statement : Prop
 Theorem split_combine : split_combine_statement.
 Proof.
 (* 请在此处解答 *) Admitted.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_split_combine : option (prod nat string) := None.
 
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (filter_exercise)  *)
+(** **** 练习：3 星, advanced (filter_exercise)  *)
 (** 本练习有点难度。为你的归纳假设的形式花点心思。 *)
 
 Theorem filter_exercise : forall (X : Type) (test : X -> bool)
@@ -923,7 +923,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, recommended (forall_exists_challenge)  *)
+(** **** 练习：4 星, advanced, recommended (forall_exists_challenge)  *)
 (** 定义两个递归的 [Fixpoints]，[forallb] 和 [existsb]。
     第一个检查列表中的每一个元素是否均满足给定的断言：
 
@@ -950,7 +950,7 @@ Proof.
     最后，证明定理 [existsb_existsb'] 指出 [existsb'] 和 [existsb] 的行为相同。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_forall_exists_challenge : option (prod nat string) := None.
 (** [] *)
 

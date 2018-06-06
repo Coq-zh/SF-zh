@@ -256,7 +256,7 @@ Qed.
     benefit, make sure you also understand how to prove them on
     paper! *)
 
-(** **** Exercise: 2 stars (subtyping_example_1)  *)
+(** **** 练习：2 星 (subtyping_example_1)  *)
 Example subtyping_example_1 :
   subtype TRcd_kj TRcd_j.
 (* {k:A->A,j:B->B} <: {j:B->B} *)
@@ -264,7 +264,7 @@ Proof with eauto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (subtyping_example_2)  *)
+(** **** 练习：1 星 (subtyping_example_2)  *)
 Example subtyping_example_2 :
   subtype (TArrow TTop TRcd_kj)
           (TArrow (TArrow C C) TRcd_j).
@@ -273,7 +273,7 @@ Proof with eauto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (subtyping_example_3)  *)
+(** **** 练习：1 星 (subtyping_example_3)  *)
 Example subtyping_example_3 :
   subtype (TArrow TRNil (TRCons j A TRNil))
           (TArrow (TRCons k B TRNil) TRNil).
@@ -282,7 +282,7 @@ Proof with eauto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (subtyping_example_4)  *)
+(** **** 练习：2 星 (subtyping_example_4)  *)
 Example subtyping_example_4 :
   subtype (TRCons x A (TRCons y B (TRCons z C TRNil)))
           (TRCons z C (TRCons y B (TRCons x A TRNil))).
@@ -369,19 +369,19 @@ Proof with (eauto using wf_rcd_lookup).
     + (* subtype *)
       inversion H. subst. inversion H5. subst...  Qed.
 
-(** **** Exercise: 3 stars (rcd_types_match_informal)  *)
+(** **** 练习：3 星 (rcd_types_match_informal)  *)
 (** Write a careful informal proof of the [rcd_types_match]
     lemma. *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_rcd_types_match_informal : option (prod nat string) := None.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
 (** *** Inversion Lemmas *)
 
-(** **** Exercise: 3 stars, optional (sub_inversion_arrow)  *)
+(** **** 练习：3 星, optional (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
      subtype U (TArrow V1 V2) ->
      exists U1, exists U2,
@@ -442,7 +442,7 @@ Hint Constructors has_type.
 Module Examples2.
 Import Examples.
 
-(** **** Exercise: 1 star (typing_example_0)  *)
+(** **** 练习：1 星 (typing_example_0)  *)
 Definition trcd_kj :=
   (trcons k (tabs z A (tvar z))
            (trcons j (tabs z B (tvar z))
@@ -459,7 +459,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (typing_example_1)  *)
+(** **** 练习：2 星 (typing_example_1)  *)
 Example typing_example_1 :
   has_type empty
            (tapp (tabs x TRcd_j (tproj (tvar x) j))
@@ -472,7 +472,7 @@ Proof with eauto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (typing_example_2)  *)
+(** **** 练习：2 星, optional (typing_example_2)  *)
 Example typing_example_2 :
   has_type empty
            (tapp (tabs z (TArrow (TArrow C C) TRcd_j)
@@ -547,7 +547,7 @@ Proof with eauto.
 (* ----------------------------------------------------------------- *)
 (** *** Progress *)
 
-(** **** Exercise: 3 stars (canonical_forms_of_arrow_types)  *)
+(** **** 练习：3 星 (canonical_forms_of_arrow_types)  *)
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
      has_type Gamma s (TArrow T1 T2) ->
      value s ->

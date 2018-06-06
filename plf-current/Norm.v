@@ -48,22 +48,22 @@ Hint Constructors multi.
     entirely trivial to prove, since each reduction of a term can
     duplicate redexes in subterms. *)
 
-(** **** Exercise: 2 stars (norm_fail)  *)
+(** **** 练习：2 星 (norm_fail)  *)
 (** Where do we fail if we attempt to prove normalization by a
     straightforward induction on the size of a well-typed term? *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_norm_fail : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 5 stars, recommended (norm)  *)
+(** **** 练习：5 星, recommended (norm)  *)
 (** The best ways to understand an intricate proof like this is
     are (1) to help fill it in and (2) to extend it.  We've left out some
     parts of the following development, including some proofs of lemmas
     and the all the cases involving products and conditionals.  Fill them
     in. *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_norm : option (prod nat string) := None.
 (** [] *)
 

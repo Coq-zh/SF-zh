@@ -272,7 +272,7 @@ Check t_apply_empty. (* : forall (A : Type) (x : id) (v : A),
 Definition example_tree (v2 v4 v5 : V) :=
    T (T E 2 v2 E) 4 v4 (T E 5 v5 E).
 
-(** **** Exercise: 2 stars (example_map)  *)
+(** **** 练习：2 星 (example_map)  *)
 (* Fill in the definition of example_map with a total_map that
   you think example_tree should correspond to.  Use
   [t_update] and [(t_empty default)]. *)
@@ -297,7 +297,7 @@ Inductive Abs:  tree -> total_map V -> Prop :=
       Abs r b ->
       Abs (T l k v r)  (t_update (combine k a b) k v).
 
-(** **** Exercise: 3 stars (check_example_map)  *)
+(** **** 练习：3 星 (check_example_map)  *)
 (** Prove that your [example_map] is the right one.
      If it isn't, go back and fix your definition of [example_map].
      You will probably need the [bdestruct] tactic, and [omega]. *)
@@ -343,7 +343,7 @@ Proof.
 constructor.
 Qed.
 
-(** **** Exercise: 3 stars (lookup_relate)  *)
+(** **** 练习：3 星 (lookup_relate)  *)
 Theorem lookup_relate:
   forall k t cts ,
     Abs t cts -> lookup k t =  cts k.
@@ -351,7 +351,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars (insert_relate)  *)
+(** **** 练习：4 星 (insert_relate)  *)
 Theorem insert_relate:
  forall k v t cts,
     Abs t cts ->
@@ -377,7 +377,7 @@ Fixpoint list2map (el: list (key*V)) : total_map V :=
  | (i,v)::el' => t_update (list2map el') i v
  end.
 
-(** **** Exercise: 3 stars (elements_relate_informal)  *)
+(** **** 练习：3 星 (elements_relate_informal)  *)
 Theorem elements_relate:
   forall t cts,  Abs t cts -> list2map (elements t) = cts.
 Proof.
@@ -388,7 +388,7 @@ Proof.
 
   (* FILL IN YOUR EXPLANATION HERE *)
 Abort.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_elements_relate_informal : option (prod nat string) := None.
 (** [] *)
 
@@ -396,7 +396,7 @@ Definition manual_grade_for_elements_relate_informal : option (prod nat string) 
     prove that it's false!  That is, as long as type [V] contains at
     least two distinct values. *)
 
-(** **** Exercise: 4 stars (not_elements_relate)  *)
+(** **** 练习：4 星 (not_elements_relate)  *)
 Theorem not_elements_relate:
   forall v, v <> default ->
   ~ (forall t cts,  Abs t cts -> list2map (elements t) = cts).
@@ -532,7 +532,7 @@ Fixpoint slow_elements (s: tree) : list (key * V) :=
    is quadratic, because we're never going to really run it; it's just
    there to support the proof. *)
 
-(** **** Exercise: 3 stars, optional (elements_slow_elements)  *)
+(** **** 练习：3 星, optional (elements_slow_elements)  *)
 Theorem elements_slow_elements: elements = slow_elements.
 Proof.
 extensionality s.
@@ -542,7 +542,7 @@ assert (forall base, elements' s base = slow_elements s ++ base).
 (** [] *)
 
 
-(** **** Exercise: 3 stars, optional (slow_elements_range)  *)
+(** **** 练习：3 星, optional (slow_elements_range)  *)
 Lemma slow_elements_range:
  forall k v lo t hi,
   SearchTree' lo t hi ->
@@ -624,7 +624,7 @@ intros [v ?].
 apply H. exists v; right; auto.
 Qed.
 
-(** **** Exercise: 3 stars, optional (elements_relate)  *)
+(** **** 练习：3 星, optional (elements_relate)  *)
 Theorem elements_relate:
   forall t cts,
   SearchTree t ->
@@ -664,7 +664,7 @@ auto.
   [SearchTree]; and these are the only ways that you're supposed to
   build trees.  So we need to prove those two theorems. *)
 
-(** **** Exercise: 1 star (empty_tree_SearchTree)  *)
+(** **** 练习：1 星 (empty_tree_SearchTree)  *)
 Theorem empty_tree_SearchTree:  SearchTree empty_tree.
 Proof.
 clear default.  (* This is here to avoid a nasty interaction between Admitted
@@ -673,7 +673,7 @@ clear default.  (* This is here to avoid a nasty interaction between Admitted
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (insert_SearchTree)  *)
+(** **** 练习：3 星 (insert_SearchTree)  *)
 Theorem insert_SearchTree:
   forall k v t,
    SearchTree t -> SearchTree (insert k v t).
@@ -786,7 +786,7 @@ Qed.
 
    So as a general sanity check, we need the following theorem: *)
 
-(** **** Exercise: 2 stars (can_relate)  *)
+(** **** 练习：2 星 (can_relate)  *)
 Lemma can_relate:
  forall t,  SearchTree t -> exists cts, Abs t cts.
 Proof.
@@ -796,7 +796,7 @@ Proof.
 (** Now, because we happen to have a super-strong abstraction relation, that
    even works on bogus trees, we can prove a super-strong can_relate function: *)
 
-(** **** Exercise: 2 stars (unrealistically_strong_can_relate)  *)
+(** **** 练习：2 星 (unrealistically_strong_can_relate)  *)
 Lemma unrealistically_strong_can_relate:
  forall t,  exists cts, Abs t cts.
 Proof.
@@ -865,7 +865,7 @@ apply H0.
 apply H1.
 Qed.
 
-(** **** Exercise: 4 stars, optional (lookup_relateX)  *)
+(** **** 练习：4 星, optional (lookup_relateX)  *)
 Theorem lookup_relateX:
   forall k t cts ,
     SearchTree t -> AbsX t cts -> lookup k t =  cts k.

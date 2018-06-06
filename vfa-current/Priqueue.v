@@ -134,7 +134,7 @@ match l with
                else let (j,l') := select h t in (j, i::l')
 end.
 
-(** **** Exercise: 3 stars (select_perm_and_friends)  *)
+(** **** 练习：3 星 (select_perm_and_friends)  *)
 
 Lemma select_perm: forall i l, 
   let (j,r) := select i l in
@@ -238,7 +238,7 @@ Lemma delete_max_Some_priq:
       forall p q k, priq p -> delete_max p = Some(k,q) -> priq q.
 Proof. constructor. Qed.
 
-(** **** Exercise: 2 stars (simple_priq_proofs)  *)
+(** **** 练习：2 星 (simple_priq_proofs)  *)
 
 Lemma delete_max_None_relate:
   forall p, priq p -> 

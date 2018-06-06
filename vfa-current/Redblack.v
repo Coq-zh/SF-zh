@@ -370,7 +370,7 @@ repeat  match goal with
  repeat (constructor; auto).
 Qed.
 
-(** **** Exercise: 2 stars (ins_SearchTree)  *)
+(** **** 练习：2 星 (ins_SearchTree)  *)
 (** This one is pretty easy, even without proof automation.
   Copy-paste your proof of insert_SearchTree from Extract.v.
   You will need to apply [balance_SearchTree] in two places.
@@ -385,7 +385,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (valid)  *)
+(** **** 练习：2 星 (valid)  *)
 
 Lemma empty_tree_SearchTree: SearchTree empty_tree.
 (* 请在此处解答 *) Admitted.
@@ -433,7 +433,7 @@ Proof.
 constructor.
 Qed.
 
-(** **** Exercise: 3 stars (lookup_relate)  *)
+(** **** 练习：3 星 (lookup_relate)  *)
 Theorem lookup_relate:
   forall k t cts ,   Abs t cts -> lookup k t =  cts (int2Z k).
 Proof.  (* Copy your proof from Extract.v, and adapt it. *)
@@ -454,7 +454,7 @@ Ltac contents_equivalent_prover :=
  auto;
  omega.
 
-(** **** Exercise: 4 stars (balance_relate)  *)
+(** **** 练习：4 星 (balance_relate)  *)
 (** You will need proof automation for this one.  Study the methods used
   in [ins_not_E] and [balance_SearchTree], and try them here.
   Add one clause at a time to your [match goal]. *)
@@ -535,7 +535,7 @@ Definition how_many_subgoals_remaining :=
   ].
 (** [] *)
 
-(** **** Exercise: 3 stars (ins_relate)  *)
+(** **** 练习：3 星 (ins_relate)  *)
 Theorem ins_relate:
  forall k v t cts,
     SearchTree t ->
@@ -580,7 +580,7 @@ Check insert_relate.
      (1) preserves the representation invariant, and
      (2) respects the abstraction relation. *)
 
-(** **** Exercise: 4 stars, optional (elements)  *)
+(** **** 练习：4 星, optional (elements)  *)
 (** Prove the correctness of the [elements] function.  Because [elements]
     does not pay attention to colors, and does not rebalance the tree,
     then its proof should be a simple copy-paste from SearchTree.v,
@@ -624,7 +624,7 @@ Proof.
    stay approximately balanced; this tells us important information about
    their efficiency. *)
 
-(** **** Exercise: 4 stars (is_redblack_properties)   *)
+(** **** 练习：4 星 (is_redblack_properties)   *)
 (** The relation [is_redblack] ensures that there are exactly [n] black 
    nodes in every path from the root to a leaf, and that there are never
    two red nodes in a row. *)

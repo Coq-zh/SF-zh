@@ -391,7 +391,7 @@ where "'[' x ':=' s ']' t" := (subst x s t).
 (** See, for example, [Aydemir 2008] (in Bib.v) for further discussion
     of this issue. *)
 
-(** **** Exercise: 3 stars (substi_correct)  *)
+(** **** 练习：3 星 (substi_correct)  *)
 (** The definition that we gave above uses Coq's [Fixpoint] facility
     to define substitution as a _function_.  Suppose, instead, we
     wanted to define substitution as an inductive _relation_ [substi].
@@ -596,7 +596,7 @@ Lemma step_example4' :
   tapp idBB (tapp notB ttrue) ==>* tfalse.
 Proof. normalize.  Qed.
 
-(** **** Exercise: 2 stars (step_example5)  *)
+(** **** 练习：2 星 (step_example5)  *)
 (** Try to do this one both with and without [normalize]. *)
 
 Lemma step_example5 :
@@ -731,7 +731,7 @@ Proof with auto using update_eq.
   apply T_Var...
 Qed.
 
-(** **** Exercise: 2 stars, optional (typing_example_2_full)  *)
+(** **** 练习：2 星, optional (typing_example_2_full)  *)
 (** Prove the same result without using [auto], [eauto], or
     [eapply] (or [...]). *)
 
@@ -745,7 +745,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (typing_example_3)  *)
+(** **** 练习：2 星 (typing_example_3)  *)
 (** Formally prove the following typing derivation holds: *)
 (** 
        empty |- \x:Bool->B. \y:Bool->Bool. \z:Bool.
@@ -791,7 +791,7 @@ Proof.
   inversion H5. subst. clear H5.
   inversion H1.  Qed.
 
-(** **** Exercise: 3 stars, optional (typing_nonexample_3)  *)
+(** **** 练习：3 星, optional (typing_nonexample_3)  *)
 (** Another nonexample:
 
     ~ (exists S, exists T,

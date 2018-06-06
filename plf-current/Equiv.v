@@ -118,7 +118,7 @@ Proof.
     assumption.
 Qed.
 
-(** **** Exercise: 2 stars (skip_right)  *)
+(** **** 练习：2 星 (skip_right)  *)
 (** Prove that adding a [SKIP] after a command results in an
     equivalent program *)
 
@@ -207,7 +207,7 @@ Proof.
     unfold bequiv in Hb. simpl in Hb.
     rewrite Hb. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars, recommended (IFB_false)  *)
+(** **** 练习：2 星, recommended (IFB_false)  *)
 Theorem IFB_false: forall b c1 c2,
   bequiv b BFalse  ->
   cequiv
@@ -217,7 +217,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (swap_if_branches)  *)
+(** **** 练习：3 星 (swap_if_branches)  *)
 (** Show that we can swap the branches of an IF if we also negate its
     guard. *)
 
@@ -254,7 +254,7 @@ Proof.
     rewrite Hb.
     reflexivity.  Qed.
 
-(** **** Exercise: 2 stars, advanced, optional (WHILE_false_informal)  *)
+(** **** 练习：2 星, advanced, optional (WHILE_false_informal)  *)
 (** Write an informal proof of [WHILE_false].
 
 (* 请在此处解答 *)
@@ -305,14 +305,14 @@ Proof.
   - (* E_WhileTrue *) (* immediate from the IH *)
     apply IHceval2. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars, optional (WHILE_true_nonterm_informal)  *)
+(** **** 练习：2 星, optional (WHILE_true_nonterm_informal)  *)
 (** Explain what the lemma [WHILE_true_nonterm] means in English.
 
 (* 请在此处解答 *)
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, recommended (WHILE_true)  *)
+(** **** 练习：2 星, recommended (WHILE_true)  *)
 (** Prove the following theorem. _Hint_: You'll want to use
     [WHILE_true_nonterm] here. *)
 
@@ -353,7 +353,7 @@ Proof.
     + (* loop doesn't run *)
       inversion H5; subst. apply E_WhileFalse. assumption.  Qed.
 
-(** **** Exercise: 2 stars, optional (seq_assoc)  *)
+(** **** 练习：2 星, optional (seq_assoc)  *)
 Theorem seq_assoc : forall c1 c2 c3,
   cequiv ((c1;;c2);;c3) (c1;;(c2;;c3)).
 Proof.
@@ -382,7 +382,7 @@ Proof.
          rewrite t_update_same. reflexivity.
 Qed.
 
-(** **** Exercise: 2 stars, recommended (assign_aequiv)  *)
+(** **** 练习：2 星, recommended (assign_aequiv)  *)
 Theorem assign_aequiv : forall (X:string) e,
   aequiv X e ->
   cequiv SKIP (X ::= e).
@@ -390,7 +390,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (equiv_classes)  *)
+(** **** 练习：2 星 (equiv_classes)  *)
 
 (** Given the following programs, group together those that are
     equivalent in Imp. Your answer should be given as a list of lists,
@@ -453,7 +453,7 @@ Definition prog_i : com :=
 
 Definition equiv_classes : list (list com)
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_equiv_classes : option (prod nat string) := None.
 (** [] *)
 
@@ -646,7 +646,7 @@ Proof.
       * (* subsequent loop execution *)
         apply IHHce2. reflexivity.  Qed.
 
-(** **** Exercise: 3 stars, optional (CSeq_congruence)  *)
+(** **** 练习：3 星, optional (CSeq_congruence)  *)
 Theorem CSeq_congruence : forall c1 c1' c2 c2',
   cequiv c1 c1' -> cequiv c2 c2' ->
   cequiv (c1;;c2) (c1';;c2').
@@ -654,7 +654,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (CIf_congruence)  *)
+(** **** 练习：3 星 (CIf_congruence)  *)
 Theorem CIf_congruence : forall b b' c1 c1' c2 c2',
   bequiv b b' -> cequiv c1 c1' -> cequiv c2 c2' ->
   cequiv (IFB b THEN c1 ELSE c2 FI)
@@ -694,7 +694,7 @@ Proof.
       apply refl_cequiv.
 Qed.
 
-(** **** Exercise: 3 stars, advanced, optional (not_congr)  *)
+(** **** 练习：3 星, advanced, optional (not_congr)  *)
 (** We've shown that the [cequiv] relation is both an equivalence and
     a congruence on commands.  Can you think of a relation on commands
     that is an equivalence but _not_ a congruence? *)
@@ -906,7 +906,7 @@ Proof.
          destruct (fold_constants_aexp a2);
          rewrite IHa1; rewrite IHa2; reflexivity). Qed.
 
-(** **** Exercise: 3 stars, optional (fold_bexp_Eq_informal)  *)
+(** **** 练习：3 星, optional (fold_bexp_Eq_informal)  *)
 (** Here is an informal proof of the [BEq] case of the soundness
     argument for boolean expression constant folding.  Read it
     carefully and compare it to the formal proof that follows.  Then
@@ -1042,7 +1042,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (fold_constants_com_sound)  *)
+(** **** 练习：3 星 (fold_constants_com_sound)  *)
 (** Complete the [WHILE] case of the following proof. *)
 
 Theorem fold_constants_com_sound :
@@ -1075,7 +1075,7 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** Soundness of (0 + n) Elimination, Redux *)
 
-(** **** Exercise: 4 stars, advanced, optional (optimize_0plus)  *)
+(** **** 练习：4 星, advanced, optional (optimize_0plus)  *)
 (** Recall the definition [optimize_0plus] from the [Imp] chapter of _Logical 
     Foundations_: 
 
@@ -1252,7 +1252,7 @@ Proof.
     by (rewrite Hcontra; reflexivity).
   subst. inversion Hcontra'.  Qed.
 
-(** **** Exercise: 4 stars, optional (better_subst_equiv)  *)
+(** **** 练习：4 星, optional (better_subst_equiv)  *)
 (** The equivalence we had in mind above was not complete nonsense --
     it was actually almost right.  To make it correct, we just need to
     exclude the case where the variable [X] occurs in the
@@ -1286,7 +1286,7 @@ Proof.
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 3 stars (inequiv_exercise)  *)
+(** **** 练习：3 星 (inequiv_exercise)  *)
 (** Prove that an infinite loop is not equivalent to [SKIP] *)
 
 Theorem inequiv_exercise:
@@ -1365,7 +1365,7 @@ Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
   (CIf e1 e2 e3) (at level 80, right associativity).
 Notation "'HAVOC' l" := (CHavoc l) (at level 60).
 
-(** **** Exercise: 2 stars (himp_ceval)  *)
+(** **** 练习：2 星 (himp_ceval)  *)
 (** Now, we must extend the operational semantics. We have provided
    a template for the [ceval] relation below, specifying the big-step
    semantics. What rule(s) must be added to the definition of [ceval]
@@ -1414,7 +1414,7 @@ Example havoc_example2 :
   (SKIP;; HAVOC Z) / { --> 0 } \\ { Z --> 42 }.
 Proof.
 (* 请在此处解答 *) Admitted.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_Check_rule_for_HAVOC : option (prod nat string) := None.
 (** [] *)
 
@@ -1426,7 +1426,7 @@ Definition cequiv (c1 c2 : com) : Prop := forall st st' : state,
 (** Let's apply this definition to prove some nondeterministic
     programs equivalent / inequivalent. *)
 
-(** **** Exercise: 3 stars (havoc_swap)  *)
+(** **** 练习：3 星 (havoc_swap)  *)
 (** Are the following two programs equivalent? *)
 
 Definition pXY :=
@@ -1444,7 +1444,7 @@ Theorem pXY_cequiv_pYX :
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, optional (havoc_copy)  *)
+(** **** 练习：4 星, optional (havoc_copy)  *)
 (** Are the following two programs equivalent? *)
 
 Definition ptwice :=
@@ -1473,7 +1473,7 @@ Proof. (* 请在此处解答 *) Admitted.
     phenomenon.
 *)
 
-(** **** Exercise: 4 stars, advanced (p1_p2_term)  *)
+(** **** 练习：4 星, advanced (p1_p2_term)  *)
 (** Consider the following commands: *)
 
 Definition p1 : com :=
@@ -1502,7 +1502,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (p1_p2_equiv)  *)
+(** **** 练习：4 星, advanced (p1_p2_equiv)  *)
 (** Use these two lemmas to prove that [p1] and [p2] are actually
     equivalent. *)
 
@@ -1510,7 +1510,7 @@ Theorem p1_p2_equiv : cequiv p1 p2.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (p3_p4_inequiv)  *)
+(** **** 练习：4 星, advanced (p3_p4_inequiv)  *)
 (** Prove that the following programs are _not_ equivalent.  (Hint:
     What should the value of [Z] be when [p3] terminates?  What about
     [p4]?) *)
@@ -1531,7 +1531,7 @@ Theorem p3_p4_inequiv : ~ cequiv p3 p4.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 5 stars, advanced, optional (p5_p6_equiv)  *)
+(** **** 练习：5 星, advanced, optional (p5_p6_equiv)  *)
 (** Prove that the following commands are equivalent.  (Hint: As
     mentioned above, our definition of [cequiv] for Himp only takes
     into account the sets of possible terminating configurations: two
@@ -1558,7 +1558,7 @@ End Himp.
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 4 stars, optional (for_while_equiv)  *)
+(** **** 练习：4 星, optional (for_while_equiv)  *)
 (** This exercise extends the optional [add_for_loop] exercise from
     the [Imp] chapter, where you were asked to extend the language
     of commands with C-style [for] loops.  Prove that the command:
@@ -1578,7 +1578,7 @@ End Himp.
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (swap_noninterfering_assignments)  *)
+(** **** 练习：3 星, optional (swap_noninterfering_assignments)  *)
 (** (Hint: You'll need [functional_extensionality] for this one.) *)
 
 Theorem swap_noninterfering_assignments: forall l1 l2 a1 a2,
@@ -1592,7 +1592,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (capprox)  *)
+(** **** 练习：4 星, advanced, optional (capprox)  *)
 (** In this exercise we define an asymmetric variant of program
     equivalence we call _program approximation_. We say that a
     program [c1] _approximates_ a program [c2] when, for each of

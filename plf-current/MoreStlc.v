@@ -647,7 +647,7 @@ Require Import Stlc.
     definitions in Coq, there is nothing to prevent functions defined
     using [fix] from diverging. *)
 
-(** **** Exercise: 1 star, optional (halve_fix)  *)
+(** **** 练习：1 星, optional (halve_fix)  *)
 (** Translate this informal recursive definition into one using [fix]:
 
       halve =
@@ -660,7 +660,7 @@ Require Import Stlc.
 *)
 (** [] *)
 
-(** **** Exercise: 1 star, optional (fact_steps)  *)
+(** **** 练习：1 星, optional (fact_steps)  *)
 (** Write down the sequence of steps that the term [fact 1] goes
     through to reduce to a normal form (assuming the usual reduction
     rules for arithmetic operations).
@@ -907,7 +907,7 @@ Require Import Stlc.
 (* ################################################################# *)
 (** * Exercise: Formalizing the Extensions *)
 
-(** **** Exercise: 5 stars (STLC_extensions)  *)
+(** **** 练习：5 星 (STLC_extensions)  *)
 (** In this exercise, you will formalize some of the extensions
     described in this chapter.  We've provided the necessary additions
     to the syntax of terms and types, and we've included a few
@@ -2155,7 +2155,7 @@ Proof with eauto.
 Qed.
 
 End STLCExtended.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_STLC_extensions : option (prod nat string) := None.
 (** [] *)
 

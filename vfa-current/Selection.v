@@ -115,7 +115,7 @@ Definition selection_sort_correct : Prop :=
 
 (** We'll start by working on part 1, permutations. *)
 
-(** **** Exercise: 3 stars (select_perm)  *)
+(** **** 练习：3 星 (select_perm)  *)
 Lemma select_perm: forall x l,
   let (y,r) := select x l in
    Permutation (x::l) (y::r).
@@ -130,7 +130,7 @@ induction l; intros; simpl in *.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (selection_sort_perm)  *)
+(** **** 练习：3 星 (selection_sort_perm)  *)
 Lemma selsort_perm:
   forall n,
   forall l, length l = n -> Permutation l (selsort l n).
@@ -147,7 +147,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (select_smallest)  *)
+(** **** 练习：3 星 (select_smallest)  *)
 Lemma select_smallest_aux:
   forall x al y bl,
     Forall (fun z => y <= z) bl ->
@@ -170,7 +170,7 @@ destruct (select x al) eqn:?H.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (selection_sort_sorted)  *)
+(** **** 练习：3 星 (selection_sort_sorted)  *)
 Lemma selection_sort_sorted_aux:
   forall  y bl,
    sorted (selsort bl (length bl)) ->
@@ -230,7 +230,7 @@ simpl in *; omega.
 Defined.  (* Use [Defined] instead of [Qed], otherwise you
   can't compute with the function in Coq. *)
 
-(** **** Exercise: 3 stars (selsort'_perm)  *)
+(** **** 练习：3 星 (selsort'_perm)  *)
 Lemma selsort'_perm:
   forall n,
   forall l, length l = n -> Permutation l (selsort' l).

@@ -103,7 +103,7 @@ Print sample_proof.
 (* ################################################################# *)
 (** * Properties *)
 
-(** **** Exercise: 2 stars (hoare_proof_sound)  *)
+(** **** 练习：2 星 (hoare_proof_sound)  *)
 (** Prove that such proof objects represent true claims. *)
 
 Theorem hoare_proof_sound : forall P c Q,
@@ -213,14 +213,14 @@ Qed.
 Definition wp (c:com) (Q:Assertion) : Assertion :=
   fun s => forall s', c / s \\ s' -> Q s'.
 
-(** **** Exercise: 1 star (wp_is_precondition)  *)
+(** **** 练习：1 星 (wp_is_precondition)  *)
 
 Lemma wp_is_precondition: forall c Q,
   {{wp c Q}} c {{Q}}.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (wp_is_weakest)  *)
+(** **** 练习：1 星 (wp_is_weakest)  *)
 
 Lemma wp_is_weakest: forall c Q P',
    {{P'}} c {{Q}} -> forall st, P' st -> wp c Q st.
@@ -236,7 +236,7 @@ Proof.
 Qed.
 (** [] *)
 
-(** **** Exercise: 5 stars (hoare_proof_complete)  *)
+(** **** 练习：5 星 (hoare_proof_complete)  *)
 (** Complete the proof of the theorem. *)
 
 Theorem hoare_proof_complete: forall P c Q,

@@ -179,7 +179,7 @@ Definition stuck (t:tm) : Prop :=
 
 Hint Unfold stuck.
 
-(** **** Exercise: 2 stars (some_term_is_stuck)  *)
+(** **** 练习：2 星 (some_term_is_stuck)  *)
 Example some_term_is_stuck :
   exists t, stuck t.
 Proof.
@@ -191,7 +191,7 @@ Proof.
     forms.  This is important because it shows we did not accidentally
     define things so that some value could still take a step. *)
 
-(** **** Exercise: 3 stars (value_is_nf)  *)
+(** **** 练习：3 星 (value_is_nf)  *)
 Lemma value_is_nf : forall t,
   value t -> step_normal_form t.
 Proof.
@@ -206,7 +206,7 @@ Proof.
     exercise, try to complete the proof both ways.) *)
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (step_deterministic)  *)
+(** **** 练习：3 星, optional (step_deterministic)  *)
 (** Use [value_is_nf] to show that the [step] relation is also
     deterministic. *)
 
@@ -315,7 +315,7 @@ Example has_type_not :
 Proof.
   intros Contra. solve_by_inverts 2.  Qed.
 
-(** **** Exercise: 1 star, optional (succ_hastype_nat__hastype_nat)  *)
+(** **** 练习：1 星, optional (succ_hastype_nat__hastype_nat)  *)
 Example succ_hastype_nat__hastype_nat : forall t,
   |- tsucc t \in TNat ->
   |- t \in TNat.
@@ -355,7 +355,7 @@ Qed.
     term is well typed, then either it is a value or it can take at
     least one step.  We call this _progress_. *)
 
-(** **** Exercise: 3 stars (finish_progress)  *)
+(** **** 练习：3 星 (finish_progress)  *)
 Theorem progress : forall t T,
   |- t \in T ->
   value t \/ exists t', t ==> t'.
@@ -382,7 +382,7 @@ Proof with auto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (finish_progress_informal)  *)
+(** **** 练习：3 星, advanced (finish_progress_informal)  *)
 (** Complete the corresponding informal proof: *)
 
 (** _Theorem_: If [|- t \in T], then either [t] is a value or else
@@ -408,7 +408,7 @@ Proof with auto.
 
       - (* 请在此处解答 *)
  *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_finish_progress_informal : option (prod nat string) := None.
 (** [] *)
 
@@ -423,7 +423,7 @@ Definition manual_grade_for_finish_progress_informal : option (prod nat string) 
 (** The second critical property of typing is that, when a well-typed
     term takes a step, the result is also a well-typed term. *)
 
-(** **** Exercise: 2 stars (finish_preservation)  *)
+(** **** 练习：2 星 (finish_preservation)  *)
 Theorem preservation : forall t t' T,
   |- t \in T ->
   t ==> t' ->
@@ -450,7 +450,7 @@ Proof with auto.
     (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (finish_preservation_informal)  *)
+(** **** 练习：3 星, advanced (finish_preservation_informal)  *)
 (** Complete the following informal proof: *)
 
 (** _Theorem_: If [|- t \in T] and [t ==> t'], then [|- t' \in T]. *)
@@ -479,11 +479,11 @@ Proof with auto.
 
       - (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_finish_preservation_informal : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 3 stars (preservation_alternate_proof)  *)
+(** **** 练习：3 星 (preservation_alternate_proof)  *)
 (** Now prove the same property again by induction on the
     _evaluation_ derivation instead of on the typing derivation.
     Begin by carefully reading and thinking about the first few
@@ -608,7 +608,7 @@ Proof.
 Qed.
 
 
-(** **** Exercise: 1 star (normalize_ex)  *)
+(** **** 练习：1 星 (normalize_ex)  *)
 Theorem normalize_ex : exists e',
   (P (C 3) (P (C 2) (C 1)))
   ==>* e'.
@@ -616,7 +616,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (normalize_ex')  *)
+(** **** 练习：1 星, optional (normalize_ex')  *)
 (** For comparison, prove it using [apply] instead of [eapply]. *)
 
 Theorem normalize_ex' : exists e',
@@ -638,7 +638,7 @@ Tactic Notation "normalize" :=
 (* ================================================================= *)
 (** ** Additional Exercises *)
 
-(** **** Exercise: 2 stars, recommended (subject_expansion)  *)
+(** **** 练习：2 星, recommended (subject_expansion)  *)
 (** Having seen the subject reduction property, one might
     wonder whether the opposity property -- subject _expansion_ --
     also holds.  That is, is it always the case that, if [t ==> t']
@@ -648,11 +648,11 @@ Tactic Notation "normalize" :=
 
     (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_subject_expansion : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (variation1)  *)
+(** **** 练习：2 星 (variation1)  *)
 (** Suppose, that we add this new rule to the typing relation:
 
       | T_SuccBool : forall t,
@@ -670,11 +670,11 @@ Definition manual_grade_for_subject_expansion : option (prod nat string) := None
       - Preservation
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_variation1 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (variation2)  *)
+(** **** 练习：2 星 (variation2)  *)
 (** Suppose, instead, that we add this new rule to the [step] relation:
 
       | ST_Funny1 : forall t2 t3,
@@ -684,11 +684,11 @@ Definition manual_grade_for_variation1 : option (prod nat string) := None.
    this rule?  For each one that does, give a counter-example.
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_variation2 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (variation3)  *)
+(** **** 练习：2 星, optional (variation3)  *)
 (** Suppose instead that we add this rule:
 
       | ST_Funny2 : forall t1 t2 t2' t3,
@@ -701,7 +701,7 @@ Definition manual_grade_for_variation2 : option (prod nat string) := None.
 
     [] *)
 
-(** **** Exercise: 2 stars, optional (variation4)  *)
+(** **** 练习：2 星, optional (variation4)  *)
 (** Suppose instead that we add this rule:
 
       | ST_Funny3 :
@@ -713,7 +713,7 @@ Definition manual_grade_for_variation2 : option (prod nat string) := None.
 
     [] *)
 
-(** **** Exercise: 2 stars, optional (variation5)  *)
+(** **** 练习：2 星, optional (variation5)  *)
 (** Suppose instead that we add this rule:
 
       | T_Funny4 :
@@ -725,7 +725,7 @@ Definition manual_grade_for_variation2 : option (prod nat string) := None.
 
     [] *)
 
-(** **** Exercise: 2 stars, optional (variation6)  *)
+(** **** 练习：2 星, optional (variation6)  *)
 (** Suppose instead that we add this rule:
 
       | T_Funny5 :
@@ -737,7 +737,7 @@ Definition manual_grade_for_variation2 : option (prod nat string) := None.
 
     [] *)
 
-(** **** Exercise: 3 stars, optional (more_variations)  *)
+(** **** 练习：3 星, optional (more_variations)  *)
 (** Make up some exercises of your own along the same lines as
     the ones above.  Try to find ways of selectively breaking
     properties -- i.e., ways of changing the definitions that
@@ -745,7 +745,7 @@ Definition manual_grade_for_variation2 : option (prod nat string) := None.
 *)
 (** [] *)
 
-(** **** Exercise: 1 star (remove_predzero)  *)
+(** **** 练习：1 星 (remove_predzero)  *)
 (** The reduction rule [ST_PredZero] is a bit counter-intuitive: we
     might feel that it makes more sense for the predecessor of zero to
     be undefined, rather than being defined to be zero.  Can we
@@ -754,11 +754,11 @@ Definition manual_grade_for_variation2 : option (prod nat string) := None.
 
 (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_remove_predzero : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  *)
+(** **** 练习：4 星, advanced (prog_pres_bigstep)  *)
 (** Suppose our evaluation relation is defined in the big-step style.
     State appropriate analogs of the progress and preservation
     properties. (You do not need to prove them.)
@@ -770,7 +770,7 @@ Definition manual_grade_for_remove_predzero : option (prod nat string) := None.
 
 (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_prog_pres_bigstep : option (prod nat string) := None.
 (** [] *)
 

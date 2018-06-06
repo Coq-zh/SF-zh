@@ -44,7 +44,7 @@ Proof.
     相比于直接使用 [nat_ind] 这样的归纳原理，在实践中使用 [induction] 更加方便。
     但重要的是认识到除了这一点变量名的管理工作，我们在做的其实就是应用 [nat_ind]。 *)
 
-(** **** Exercise: 2 stars, optional (plus_one_r')  *)
+(** **** 练习：2 星, optional (plus_one_r')  *)
 (** 请不使用 [induction] 策略来完成这个证明。 *)
 
 Theorem plus_one_r' : forall n:nat,
@@ -79,7 +79,7 @@ Check yesno_ind.
                       P no  ->
                       forall y : yesno, P y *)
 
-(** **** Exercise: 1 star, optional (rgb)  *)
+(** **** 练习：1 星, optional (rgb)  *)
 (** 请写出对这个数据类型 Coq 将会生成的归纳原理。在纸上或注释中写下你的答案，
     然后同 Coq 打印的结果比较。 *)
 
@@ -105,7 +105,7 @@ Check natlist_ind.
             P l -> P (ncons n l)) ->
          forall n : natlist, P n *)
 
-(** **** Exercise: 1 star, optional (natlist1)  *)
+(** **** 练习：1 星, optional (natlist1)  *)
 (** 假设我们写下的定义和上面的有一些区别： *)
 
 Inductive natlist1 : Type :=
@@ -127,7 +127,7 @@ Inductive natlist1 : Type :=
           成立」。
 *)
 
-(** **** Exercise: 1 star, optional (byntree_ind)  *)
+(** **** 练习：1 星, optional (byntree_ind)  *)
 (** 请写出对这个数据类型 Coq 将会生成的归纳原理。（与之前一样，在纸上或注释中写下你的答案，
     然后同 Coq 打印的结果比较。） *)
 
@@ -137,7 +137,7 @@ Inductive byntree : Type :=
  | nbranch : yesno -> byntree -> byntree -> byntree.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (ex_set)  *)
+(** **** 练习：1 星, optional (ex_set)  *)
 (** 这是对一个归纳定义的集合的归纳原理。
 
       ExSet_ind :
@@ -178,7 +178,7 @@ Inductive ExSet : Type :=
     请注意_'全部的'_归纳原理都被 [X] 所参数化。也即，[list_ind] 可认为是一个
     多态函数，当被应用类型 [X] 时，返回特化在类型 [list X] 上的归纳原理。 *)
 
-(** **** Exercise: 1 star, optional (tree)  *)
+(** **** 练习：1 星, optional (tree)  *)
 (** 请写出对这个数据类型 Coq 将会生成的归纳原理。同 Coq 打印的结果比较你的答案。*)
 
 Inductive tree (X:Type) : Type :=
@@ -187,7 +187,7 @@ Inductive tree (X:Type) : Type :=
 Check tree_ind.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (mytype)  *)
+(** **** 练习：1 星, optional (mytype)  *)
 (** 请找到对应于以下归纳原理的归纳定义：
 
       mytype_ind :
@@ -200,7 +200,7 @@ Check tree_ind.
 *) 
 (** [] *)
 
-(** **** Exercise: 1 star, optional (foo)  *)
+(** **** 练习：1 星, optional (foo)  *)
 (** 请找到对应于以下归纳原理的归纳定义：
 
       foo_ind :
@@ -213,7 +213,7 @@ Check tree_ind.
 *) 
 (** [] *)
 
-(** **** Exercise: 1 star, optional (foo')  *)
+(** **** 练习：1 星, optional (foo')  *)
 (** 请考虑以下归纳定义： *)
 
 Inductive foo' (X:Type) : Type :=
@@ -343,7 +343,7 @@ Proof.
   - (* m = S m' *) simpl. rewrite <- IHm'.
     rewrite <- plus_n_Sm. reflexivity.  Qed.
 
-(** **** Exercise: 1 star, optional (plus_explicit_prop)  *)
+(** **** 练习：1 星, optional (plus_explicit_prop)  *)
 (** 以上面 [mult_0_r''] 的方式来重写 [plus_assoc']，[plus_comm'] 和它们的证明——
     也即，对于每个定理，给出一个明确的命题的 [Definition]，陈述定理并用归纳法证明这个
     定义的命题。 *)

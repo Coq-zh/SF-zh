@@ -143,7 +143,7 @@ Print ev_4''.
 Print ev_4'''.
 (* ===> ev_4''' =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
 
-(** **** Exercise: 2 stars (eight_is_even)  *)
+(** **** 练习：2 星 (eight_is_even)  *)
 (** 写出对应 [ev 8] 的策略证明和证明对象。 *) 
 
 Theorem ev_8 : ev 8.
@@ -324,7 +324,7 @@ Definition and_comm'_aux P Q (H : P /\ Q) :=
 Definition and_comm' P Q : P /\ Q <-> Q /\ P :=
   conj (and_comm'_aux P Q) (and_comm'_aux Q P).
 
-(** **** Exercise: 2 stars, optional (conj_fact)  *)
+(** **** 练习：2 星, optional (conj_fact)  *)
 (** 构造一个证明对象来证明下列命题。 *)
 
 Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R 
@@ -350,7 +350,7 @@ End Or.
 
     又一次地，我们可以不使用策略，直接写出涉及[or]的定义的证明对象。 *)
 
-(** **** Exercise: 2 stars, optional (or_commut'')  *)
+(** **** 练习：2 星, optional (or_commut'')  *)
 (** 尝试写下[or_commut]的显式证明对象。（不要使用[Print]来偷看我们已经
     定义的版本！） *)
 
@@ -385,7 +385,7 @@ Check ex (fun n => ev n).
 Definition some_nat_is_even : exists n, ev n :=
   ex_intro ev 4 (ev_SS 2 (ev_SS 0 ev_0)).
 
-(** **** Exercise: 2 stars, optional (ex_ev_Sn)  *)
+(** **** 练习：2 星, optional (ex_ev_Sn)  *)
 (** 完成下列证明对象的定义： *)
 
 Definition ex_ev_Sn : ex (fun n => ev (S n)) 
@@ -465,7 +465,7 @@ Definition singleton : forall (X:Type) (x:X), []++[x] = x::[]  :=
 End MyEquality.
 
 
-(** **** Exercise: 2 stars (equality__leibniz_equality)  *)
+(** **** 练习：2 星 (equality__leibniz_equality)  *)
 (** 相等性的归纳定义隐含了_'Leibniz相等性(Leibniz equality)'_：当我们
     说“[x]和[y]相等的时候”，我们意味着所有[x]满足的性质[P]，对于[y]
     来说也满足。 *)
@@ -476,7 +476,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 5 stars, optional (leibniz_equality__equality)  *)
+(** **** 练习：5 星, optional (leibniz_equality__equality)  *)
 (** 请说明，事实上，相等性的归纳定义和Leibniz相等性是
     _'等价的(equivalent)'_。 *)
 

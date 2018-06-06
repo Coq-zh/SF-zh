@@ -445,7 +445,7 @@ Print Permutation.
     should use this specification to prove some properties that we
     think permutations ought to have. *)
 
-(** **** Exercise: 2 stars (Permutation_properties)  *)
+(** **** 练习：2 星 (Permutation_properties)  *)
 (** Think of some properties of the [Permutation] relation and write
     them down informally in English, or a mix of Coq and English.
     Here are four to get you started:
@@ -466,7 +466,7 @@ Search Permutation.  (* Browse through the results of this query! *)
     here:
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_Permutation_properties : option (prod nat string) := None.
 (** [] *)
 
@@ -517,7 +517,7 @@ Qed.
   [perm_skip] to cancel a single element, or [Permutation_app_head]
   to cancel an append-chunk. *)
 
-(** **** Exercise: 3 stars (permut_example)  *)
+(** **** 练习：3 星 (permut_example)  *)
 (** Use the permutation rules in the library (see the [Search],
     above) to prove the following theorem.  These [Check] commands
    are a hint about what lemmas you'll need. *)
@@ -534,7 +534,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (not_a_permutation)  *)
+(** **** 练习：1 星 (not_a_permutation)  *)
 (** Prove that [[1;1]] is not a permutation of [[1;2]].
     Hints are given as [Check] commands. *)
 
@@ -607,7 +607,7 @@ End Exploration1.
   [maybe_swap_correct] will be applied (at a larger scale) in
   the next few chapters. *)
 
-(** **** Exercise: 2 stars (Forall_perm)  *)
+(** **** 练习：2 星 (Forall_perm)  *)
 (** To close, a useful utility lemma.  Prove this by induction;
   but is it induction on [al], or on [bl], or on [Permutation al bl],
   or on [Forall f al]  ? *)

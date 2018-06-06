@@ -379,7 +379,7 @@ Definition tseq t1 t2 :=
       r2  // yields 1, not 2!
 *)
 
-(** **** Exercise: 1 star, optional (store_draw)  *)
+(** **** 练习：1 星, optional (store_draw)  *)
 (** Draw (on paper) the contents of the store at the point in
     execution where the first two [let]s have finished and the third
     one is about to begin. *)
@@ -432,7 +432,7 @@ Definition tseq t1 t2 :=
     useful, allowing us to define data structures such as mutable
     lists and trees. *)
 
-(** **** Exercise: 2 stars, recommended (compact_update)  *)
+(** **** 练习：2 星, recommended (compact_update)  *)
 (** If we defined [update] more compactly like this
 
       update = \a:NatArray. \m:Nat. \v:Nat.
@@ -441,7 +441,7 @@ Definition tseq t1 t2 :=
 would it behave the same? *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_compact_update : option (prod nat string) := None.
 (** [] *)
 
@@ -492,11 +492,11 @@ Definition manual_grade_for_compact_update : option (prod nat string) := None.
     names for the same storage cell -- one with type [Ref Nat] and the
     other with type [Ref Bool]. *)
 
-(** **** Exercise: 2 stars (type_safety_violation)  *)
+(** **** 练习：2 星 (type_safety_violation)  *)
 (** Show how this can lead to a violation of type safety. *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_type_safety_violation : option (prod nat string) := None.
 (** [] *)
 
@@ -932,10 +932,10 @@ Definition context := partial_map ty.
    [\x:Nat. (!(loc 1)) x, \x:Nat. (!(loc 0)) x]
 *)
 
-(** **** Exercise: 2 stars (cyclic_store)  *)
+(** **** 练习：2 星 (cyclic_store)  *)
 (** Can you find a term whose reduction will create this particular
     cyclic store? *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_cyclic_store : option (prod nat string) := None.
 (** [] *)
 
@@ -1142,13 +1142,13 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     typing to the typing relation.  This allows us to type circular
     stores like the one we saw above. *)
 
-(** **** Exercise: 2 stars (store_not_unique)  *)
+(** **** 练习：2 星 (store_not_unique)  *)
 (** Can you find a store [st], and two
     different store typings [ST1] and [ST2] such that both
     [ST1 |- st] and [ST2 |- st]? *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_store_not_unique : option (prod nat string) := None.
 (** [] *)
 
@@ -1615,14 +1615,14 @@ Proof with eauto using store_weakening, extends_refl.
     exists ST'...
 Qed.
 
-(** **** Exercise: 3 stars (preservation_informal)  *)
+(** **** 练习：3 星 (preservation_informal)  *)
 (** Write a careful informal proof of the preservation theorem,
     concentrating on the [T_App], [T_Deref], [T_Assign], and [T_Ref]
     cases.
 
 (* 请在此处解答 *)
  *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_preservation_informal : option (prod nat string) := None.
 (** [] *)
 
@@ -1858,7 +1858,7 @@ Proof with eauto.
   eapply sc_one. compute. apply ST_AppAbs...
 Qed.
 
-(** **** Exercise: 4 stars (factorial_ref)  *)
+(** **** 练习：4 星 (factorial_ref)  *)
 (** Use the above ideas to implement a factorial function in STLC with
     references.  (There is no need to prove formally that it really
     behaves like the factorial.  Just uncomment the example below to make
@@ -1888,7 +1888,7 @@ Qed.
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 5 stars, optional (garabage_collector)  *)
+(** **** 练习：5 星, optional (garabage_collector)  *)
 (** Challenge problem: modify our formalization to include an account
     of garbage collection, and prove that it satisfies whatever nice
     properties you can think to prove about it. *)

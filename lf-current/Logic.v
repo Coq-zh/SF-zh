@@ -133,7 +133,7 @@ Proof.
   - (* 2 + 2 = 4 *) reflexivity.
 Qed.
 
-(** **** Exercise: 2 stars (and_exercise)  *)
+(** **** 练习：2 星 (and_exercise)  *)
 Example and_exercise :
   forall n m : nat, n + m = 0 -> n = 0 /\ m = 0.
 Proof.
@@ -203,7 +203,7 @@ Proof.
   intros P Q [HP HQ].
   apply HP.  Qed.
 
-(** **** Exercise: 1 star, optional (proj2)  *)
+(** **** 练习：1 星, optional (proj2)  *)
 Lemma proj2 : forall P Q : Prop,
   P /\ Q -> Q.
 Proof.
@@ -221,7 +221,7 @@ Proof.
     - (* left *) apply HQ.
     - (* right *) apply HP.  Qed.
 
-(** **** Exercise: 2 stars (and_assoc)  *)
+(** **** 练习：2 星 (and_assoc)  *)
 (** （在以下结合律的证明中，注意_'嵌套'_的 [intros] 模式是如何将
     [H : P /\ (Q /\ R)] 拆分为 [HP : P]、[HQ : Q] 和 [HR : R] 的。
     请从那里开始完成证明。） *)
@@ -285,14 +285,14 @@ Proof.
   - right. reflexivity.
 Qed.
 
-(** **** Exercise: 1 star (mult_eq_0)  *)
+(** **** 练习：1 星 (mult_eq_0)  *)
 Lemma mult_eq_0 :
   forall n m, n * m = 0 -> n = 0 \/ m = 0.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (or_commut)  *)
+(** **** 练习：1 星 (or_commut)  *)
 Theorem or_commut : forall P Q : Prop,
   P \/ Q  -> Q \/ P.
 Proof.
@@ -337,7 +337,7 @@ Proof.
 (** 拉丁文 _'ex falso quodlibet'_ 的字面意思是「从谬误出发，
     你能够证明任何你想要的」，这也是爆炸原理的另一个广为人知的名字。 *)
 
-(** **** Exercise: 2 stars, optional (not_implies_our_not)  *)
+(** **** 练习：2 星, optional (not_implies_our_not)  *)
 (** 证明 Coq 对否定的定义蕴含前面提到的直觉上的定义： *)
 
 Fact not_implies_our_not : forall (P:Prop),
@@ -385,36 +385,36 @@ Proof.
   (* 课上已完成 *)
   intros P H. unfold not. intros G. apply G. apply H.  Qed.
 
-(** **** Exercise: 2 stars, advanced, recommended (double_neg_inf)  *)
+(** **** 练习：2 星, advanced, recommended (double_neg_inf)  *)
 (** 请写出 [double_neg] 的非形式化证明：
 
    _'定理'_：对于任何命题 [P] 而言，[P] 蕴含 [~~P]。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_double_neg_inf : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars, recommended (contrapositive)  *)
+(** **** 练习：2 星, recommended (contrapositive)  *)
 Theorem contrapositive : forall (P Q : Prop),
   (P -> Q) -> (~Q -> ~P).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (not_both_true_and_false)  *)
+(** **** 练习：1 星 (not_both_true_and_false)  *)
 Theorem not_both_true_and_false : forall P : Prop,
   ~ (P /\ ~P).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, advanced (informal_not_PNP)  *)
+(** **** 练习：1 星, advanced (informal_not_PNP)  *)
 Definition informal_not_PNP_TODO := 0.
 (** 请写出 [forall P : Prop, ~(P /\ ~P)] 的非形式化证明。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_informal_not_PNP : option (prod nat string) := None.
 (** [] *)
 
@@ -499,7 +499,7 @@ Proof.
     intros H. rewrite H. intros H'. inversion H'.
 Qed.
 
-(** **** Exercise: 1 star, optional (iff_properties)  *)
+(** **** 练习：1 星, optional (iff_properties)  *)
 (** 参照上面对 [<->] 对称性（[iff_sym]）的证明，
     请证明它同时也有自反性和传递性。 *)
 
@@ -514,7 +514,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (or_distributes_over_and)  *)
+(** **** 练习：3 星 (or_distributes_over_and)  *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
 Proof.
@@ -602,7 +602,7 @@ Proof.
   exists (2 + m).
   apply Hm.  Qed.
 
-(** **** Exercise: 1 star, recommended (dist_not_exists)  *)
+(** **** 练习：1 星, recommended (dist_not_exists)  *)
 (** 请证明「[P] 对所有 [x] 成立」蕴含「不存在 [x] 使 [P] 不成立。」
     （提示：[destruct H as [x E]] 可以用于存在假设！） *)
 
@@ -612,7 +612,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (dist_exists_or)  *)
+(** **** 练习：2 星 (dist_exists_or)  *)
 (** 请证明存在量化对析取满足分配律。 *)
 
 Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
@@ -686,7 +686,7 @@ Qed.
     「明显会终止」的。在下一章中，我们会了解如何_'归纳地'_定义命题，
     这是一种与之不同的技巧，有着其独特的优势和限制。 *)
 
-(** **** Exercise: 2 stars (In_map_iff)  *)
+(** **** 练习：2 星 (In_map_iff)  *)
 Lemma In_map_iff :
   forall (A B : Type) (f : A -> B) (l : list A) (y : B),
     In y (map f l) <->
@@ -695,14 +695,14 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (In_app_iff)  *)
+(** **** 练习：2 星 (In_app_iff)  *)
 Lemma In_app_iff : forall A l l' (a:A),
   In a (l++l') <-> In a l \/ In a l'.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, recommended (All)  *)
+(** **** 练习：3 星, recommended (All)  *)
 (** 回忆一下，返回命题的函数可以视作对其参数_'性质'_的定义。例如，若
     [P] 的类型为 [nat -> Prop]，那么 [P n] 就陈述了性质 [P] 对 [n] 成立。
 
@@ -721,7 +721,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (combine_odd_even)  *)
+(** **** 练习：3 星 (combine_odd_even)  *)
 (** 完成以下 [combine_odd_even] 函数的定义。它接受两个对数字成立的性质
     [Podd] 与 [Peven]，返回性质 [P] 使得当 [n] 为奇数时 [P n] 等价于 [Podd n]，
     否则等价于 [Peven n]。*)
@@ -921,7 +921,7 @@ Print Assumptions function_equality_ex2.
          forall (X Y : Type) (f g : X -> Y),
                 (forall x : X, f x = g x) -> f = g *)
 
-(** **** Exercise: 4 stars (tr_rev_correct)  *)
+(** **** 练习：4 星 (tr_rev_correct)  *)
 (** 列表反转函数 [rev] 的定义有一个问题，它会在每一步都执行一次 [app]
     调用，而运行 [app] 所需时间与列表的大小线性渐近，也就是说 [rev]
     的时间复杂度与列表长度成平方关系。我们可以用以下定义来改进它： *)
@@ -965,7 +965,7 @@ Proof.
   - simpl. apply IHk'.
 Qed.
 
-(** **** Exercise: 3 stars (evenb_double_conv)  *)
+(** **** 练习：3 星 (evenb_double_conv)  *)
 Theorem evenb_double_conv : forall n,
   exists k, n = if evenb n then double k
                 else S (double k).
@@ -1058,7 +1058,7 @@ Proof. apply even_bool_prop. reflexivity. Qed.
     我们不会详细地介绍互映技巧，然而对于展示布尔计算与一般命题的互补优势而言，
     它是个很好的例子。 *)
 
-(** **** Exercise: 2 stars (logical_connectives)  *)
+(** **** 练习：2 星 (logical_connectives)  *)
 (** 以下引理将本章中讨论的命题联结词与对应的布尔操作关联了起来。 *)
 
 Lemma andb_true_iff : forall b1 b2:bool,
@@ -1072,7 +1072,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (beq_nat_false_iff)  *)
+(** **** 练习：1 星 (beq_nat_false_iff)  *)
 (** 以下定理为等价式 [beq_nat_true_iff] 的「否定」版本，
     在某些场景中使用它会更方便些（后面的章节中会讲到这方面的例子）。 *)
 
@@ -1082,7 +1082,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (beq_list)  *)
+(** **** 练习：3 星 (beq_list)  *)
 (** 给定一个用于测试类型为 [A] 的元素相等性的布尔操作符 [beq]，
     我们可以定义函数 [beq_list] 来测试元素类型为 [A] 的列表的相等性。
     请完成以下 [beq_list] 函数的定义。要确定你的定义是否正确，请证明引理
@@ -1100,7 +1100,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, recommended (All_forallb)  *)
+(** **** 练习：2 星, recommended (All_forallb)  *)
 (** 回忆一下[Tactics]一章中练习 [forall_exists_challenge] 的函数
     [forallb]： *)
 
@@ -1201,7 +1201,7 @@ Qed.
     允许自己从任意陈述中去掉双重否定等价于引入排中律。因此，只要我们不引入排中律，
     就无法在 Coq 中编码此推理。 *)
 
-(** **** Exercise: 3 stars (excluded_middle_irrefutable)  *)
+(** **** 练习：3 星 (excluded_middle_irrefutable)  *)
 (** 证明通用排中律公理与 Coq 的一致性需要复杂的推理，而且并不能在 Coq
     自身中进行。然而，以下定理蕴含了假设可判定性公理（即排中律的一个特例）
     成立对于任何_'具体的'_命题 [P] 而言总是安全的。之所以如此，
@@ -1215,7 +1215,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (not_exists_dist)  *)
+(** **** 练习：3 星, advanced (not_exists_dist)  *)
 (** 在经典逻辑中有这样一条定理，它断言以下两条命题是等价的：
 
     ~ (exists x, ~ P x)
@@ -1232,7 +1232,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 5 stars, optional (classical_axioms)  *)
+(** **** 练习：5 星, optional (classical_axioms)  *)
 (** 对于喜欢挑战的读者，以下练习来自于 Bertot 与 Casteran 所著的
     Coq'Art 一书中第 123 页。以下四条陈述的每一条，加上 [excluded_middle]
     可以认为刻画了经典逻辑。我们无法在 Coq 中证明其中的任意一条，

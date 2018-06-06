@@ -373,7 +373,7 @@ Qed.
     和其它策略的工作就是指导 Coq 去构造证明；如果构造过程发散（即不终止），
     那就意味着我们构造证明失败，而非构造出了错误的证明。 *)
 
-(** **** Exercise: 3 stars (optimize_0plus_b_sound)  *)
+(** **** 练习：3 星 (optimize_0plus_b_sound)  *)
 (** 由于 [optimize_0plus] 变换不会改变 [aexp] 的值，
     因此我们可以将它应用到所有出现在 [bexp] 中的 [aexp] 上而不改变
     [bexp] 的值。请编写一个对 [bexp] 执行此变换的函数，并证明它的可靠性。
@@ -388,7 +388,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, optional (optimizer)  *)
+(** **** 练习：4 星, optional (optimizer)  *)
 (** _'设计练习'_：[optimize_0plus] 函数只是众多算术和布尔表达式优化的方法之一。
     请编写一个更加聪明的优化器并证明它的正确性。（最容易的方法就是从小处着手：
     一开始只添加单个简单的优化并证明它的正确性，然后逐渐增加其它更有趣的优化。） *)
@@ -643,7 +643,7 @@ Proof.
        try apply IHa1; try apply IHa2; reflexivity.
 Qed.
 
-(** **** Exercise: 3 stars (bevalR)  *)
+(** **** 练习：3 星 (bevalR)  *)
 (** 用和 [aevalR] 同样的方式写出关系 [bevalR]，并证明它等价于 [beval]。 *)
 
 Inductive bevalR: bexp -> bool -> Prop :=
@@ -1155,7 +1155,7 @@ Proof.
       reflexivity.
       apply E_Ass. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (ceval_example2)  *)
+(** **** 练习：2 星 (ceval_example2)  *)
 Example ceval_example2:
   (X ::= 0;; Y ::= 1;; Z ::= 2) / { --> 0 } \\
   { X --> 0 ; Y --> 1 ; Z --> 2 }.
@@ -1163,7 +1163,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (pup_to_n)  *)
+(** **** 练习：3 星, optional (pup_to_n)  *)
 (** 写一个 Imp 程序对从 [1] 到 [X] 进行求值（包括：将 [1 + 2 + ... + X]) 赋予变量 [Y]。
    证明此程序对于 [X] = [2] 会按预期执行（这可能比你预想的还要棘手）。 *)
 
@@ -1244,15 +1244,15 @@ Proof.
   inversion Heval. subst. clear Heval. simpl.
   apply t_update_eq.  Qed.
 
-(** **** Exercise: 3 stars, recommended (XtimesYinZ_spec)  *)
+(** **** 练习：3 星, recommended (XtimesYinZ_spec)  *)
 (** 叙述并证明 [XtimesYinZ] 的规范（Specification）。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_XtimesYinZ_spec : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 3 stars, recommended (loop_never_stops)  *)
+(** **** 练习：3 星, recommended (loop_never_stops)  *)
 Theorem loop_never_stops : forall st st',
   ~(loop / st \\ st').
 Proof.
@@ -1266,7 +1266,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (no_whiles_eqv)  *)
+(** **** 练习：3 星 (no_whiles_eqv)  *)
 (** 考虑以下函数： *)
 
 Fixpoint no_whiles (c : com) : bool :=
@@ -1297,20 +1297,20 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars (no_whiles_terminating)  *)
+(** **** 练习：4 星 (no_whiles_terminating)  *)
 (** 不涉及 [WHILE] 循环的 Imp 程序一定会终止。请陈述并证明定理
     [no_whiles_terminating] 来说明这一点。 *)
 (** 按照你的偏好使用 [no_whiles] 或 [no_whilesR]。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_no_whiles_terminating : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
 (** * 附加练习 *)
 
-(** **** Exercise: 3 stars (stack_compiler)  *)
+(** **** 练习：3 星 (stack_compiler)  *)
 (** 旧式惠普计算器的编程语言类似于 Forth 和 Postscript，而其抽象机器类似于
     Java 虚拟机，即所有对算术表达式的求值都使用_'栈'_来进行。例如，表达式
 
@@ -1387,7 +1387,7 @@ Example s_compile1 :
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (stack_compiler_correct)  *)
+(** **** 练习：4 星, advanced (stack_compiler_correct)  *)
 (** 现在我们将证明在之前练习中实现的编译器的正确性。记住当栈中的元素少于两个时，
     规范并未指定 [SPlus]、[SMinus] 或 [SMult] 指令的行为。
     （为了让正确性证明更加容易，你可能需要返回去修改你的实现！）
@@ -1401,7 +1401,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (short_circuit)  *)
+(** **** 练习：3 星, optional (short_circuit)  *)
 (** 大部分现代编程语言对布尔 [and] 运算提供了「短路求值」的方法：要对
     [BAnd b1 b2] 进行求值，首先对 [b1] 求值。如果结果为 [false]，那么整个
     [BAnd] 表达式的求值就是 [false]，而无需对 [b2] 求值。否则，[b2]
@@ -1416,7 +1416,7 @@ Proof.
 (** [] *)
 
 Module BreakImp.
-(** **** Exercise: 4 stars, advanced (break_imp)  *)
+(** **** 练习：4 星, advanced (break_imp)  *)
 (** 像 C 和 Java 这样的指令式语言通常会包含 [break] 或类似地语句来中断循环的执行。
     在本练习中，我们考虑如何为 Imp 加上 [break]。首先，我们需要丰富语言的命令。 *)
 
@@ -1529,7 +1529,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced, optional (while_break_true)  *)
+(** **** 练习：3 星, advanced, optional (while_break_true)  *)
 Theorem while_break_true : forall b c st st',
   (WHILE b DO c END) / st \\ SContinue / st' ->
   beval st' b = true ->
@@ -1538,7 +1538,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (ceval_deterministic)  *)
+(** **** 练习：4 星, advanced, optional (ceval_deterministic)  *)
 Theorem ceval_deterministic: forall (c:com) st st1 st2 s1 s2,
      c / st \\ s1 / st1  ->
      c / st \\ s2 / st2 ->
@@ -1549,7 +1549,7 @@ Proof.
 (** [] *)
 End BreakImp.
 
-(** **** Exercise: 4 stars, optional (add_for_loop)  *)
+(** **** 练习：4 星, optional (add_for_loop)  *)
 (** 为该语言添加 C 风格的 [for] 循环命令，更新 [ceval] 的定义来定义
     [for] 循环，按需添加 [for] 循环的情况使得本文件中的所有证明都被
     Coq 所接受。

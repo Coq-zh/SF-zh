@@ -243,15 +243,15 @@ End STLCChecker.
 (* ################################################################# *)
 (** * Exercises *)
 
-(** **** Exercise: 5 stars (typechecker_extensions)  *)
+(** **** 练习：5 星 (typechecker_extensions)  *)
 (** In this exercise we'll extend the typechecker to deal with the
     extended features discussed in chapter [MoreStlc].  Your job
     is to fill in the omitted cases in the following. *)
 
 Module TypecheckerExtensions.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_type_checking_sound : option (prod nat string) := None.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_type_checking_complete : option (prod nat string) := None.
 Import MoreStlc.
 Import STLCExtended.
@@ -445,7 +445,7 @@ Qed. (* ... and uncomment this one *)
 End TypecheckerExtensions.
 (** [] *)
 
-(** **** Exercise: 5 stars, optional (stlc_step_function)  *)
+(** **** 练习：5 星, optional (stlc_step_function)  *)
 (** Above, we showed how to write a typechecking function and prove it
     sound and complete for the typing relation.  Do the same for the
     operational semantics -- i.e., write a function [stepf] of type
@@ -459,7 +459,7 @@ Import TypecheckerExtensions.
 End StepFunction.
 (** [] *)
 
-(** **** Exercise: 5 stars, optional (stlc_impl)  *)
+(** **** 练习：5 星, optional (stlc_impl)  *)
 (** Using the Imp parser described in the [ImpParser] chapter
     of _Logical Foundations_ as a guide, build a parser for extended
     Stlc programs.  Combine it with the typechecking and stepping

@@ -130,7 +130,7 @@ Proof with eauto.
       inversion H as [t1' Hstp]. exists (tif t1' t2 t3)...
 Qed.
 
-(** **** Exercise: 3 stars, advanced (progress_from_term_ind)  *)
+(** **** 练习：3 星, advanced (progress_from_term_ind)  *)
 (** Show that progress can also be proved by induction on terms
     instead of induction on typing derivations. *)
 
@@ -234,7 +234,7 @@ Definition closed (t:tm) :=
     term is an open term; the closed terms are a subset of the open ones.
     "Open" really means "possibly containing free variables.") *)
 
-(** **** Exercise: 1 star (afi)  *)
+(** **** 练习：1 星 (afi)  *)
 (** In the space below, write out the rules of the [appears_free_in]
     relation in informal inference-rule notation.  (Use whatever
     notational conventions you like -- the point of the exercise is
@@ -244,7 +244,7 @@ Definition closed (t:tm) :=
     properties, which are really the crux of the lambda-calculus. *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_afi : option (prod nat string) := None.
 (** [] *)
 
@@ -306,7 +306,7 @@ Qed.
 (** Next, we'll need the fact that any term [t] that is well typed in
     the empty context is closed (it has no free variables). *)
 
-(** **** Exercise: 2 stars, optional (typable_empty__closed)  *)
+(** **** 练习：2 星, optional (typable_empty__closed)  *)
 Corollary typable_empty__closed : forall t T,
     empty |- t \in T  ->
     closed t.
@@ -571,7 +571,7 @@ Proof with eauto.
       inversion HT1...
 Qed.
 
-(** **** Exercise: 2 stars, recommended (subject_expansion_stlc)  *)
+(** **** 练习：2 星, recommended (subject_expansion_stlc)  *)
 (** An exercise in the [Types] chapter asked about the _subject
     expansion_ property for the simple language of arithmetic and
     boolean expressions.  Does this property hold for STLC?  That is,
@@ -584,14 +584,14 @@ Qed.
 
 (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_subject_expansion_stlc : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
 (** * Type Soundness *)
 
-(** **** Exercise: 2 stars, optional (type_soundness)  *)
+(** **** 练习：2 星, optional (type_soundness)  *)
 (** Put progress and preservation together and show that a well-typed
     term can _never_ reach a stuck state.  *)
 
@@ -612,31 +612,31 @@ Proof.
 (* ################################################################# *)
 (** * Uniqueness of Types *)
 
-(** **** Exercise: 3 stars (types_unique)  *)
+(** **** 练习：3 星 (types_unique)  *)
 (** Another nice property of the STLC is that types are unique: a
     given term (in a given context) has at most one type. *)
 (** Formalize this statement as a theorem called
       [unique_types], and prove your theorem. *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_types_unique : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 1 star (progress_preservation_statement)  *)
+(** **** 练习：1 星 (progress_preservation_statement)  *)
 (** Without peeking at their statements above, write down the progress
     and preservation theorems for the simply typed lambda-calculus (as
     Coq theorems).
     You can write [Admitted] for the proofs. *)
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_progress_preservation_statement : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (stlc_variation1)  *)
+(** **** 练习：2 星 (stlc_variation1)  *)
 (** Suppose we add a new term [zap] with the following reduction rule
 
                          ---------                  (ST_Zap)
@@ -659,11 +659,11 @@ and the following typing rule:
       - Preservation
 (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_stlc_variation1 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (stlc_variation2)  *)
+(** **** 练习：2 星 (stlc_variation2)  *)
 (** Suppose instead that we add a new term [foo] with the following
     reduction rules:
 
@@ -685,11 +685,11 @@ Definition manual_grade_for_stlc_variation1 : option (prod nat string) := None.
       - Preservation
 (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_stlc_variation2 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (stlc_variation3)  *)
+(** **** 练习：2 星 (stlc_variation3)  *)
 (** Suppose instead that we remove the rule [ST_App1] from the [step]
     relation. Which of the following properties of the STLC remain
     true in the presence of this rule?  For each one, write either
@@ -703,11 +703,11 @@ Definition manual_grade_for_stlc_variation2 : option (prod nat string) := None.
       - Preservation
 (* 请在此处解答 *)
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_stlc_variation3 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (stlc_variation4)  *)
+(** **** 练习：2 星, optional (stlc_variation4)  *)
 (** Suppose instead that we add the following new rule to the
     reduction relation:
 
@@ -728,7 +728,7 @@ Definition manual_grade_for_stlc_variation3 : option (prod nat string) := None.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (stlc_variation5)  *)
+(** **** 练习：2 星, optional (stlc_variation5)  *)
 (** Suppose instead that we add the following new rule to the typing
     relation:
 
@@ -751,7 +751,7 @@ Definition manual_grade_for_stlc_variation3 : option (prod nat string) := None.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (stlc_variation6)  *)
+(** **** 练习：2 星, optional (stlc_variation6)  *)
 (** Suppose instead that we add the following new rule to the typing
     relation:
 
@@ -774,7 +774,7 @@ Definition manual_grade_for_stlc_variation3 : option (prod nat string) := None.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (stlc_variation7)  *)
+(** **** 练习：2 星, optional (stlc_variation7)  *)
 (** Suppose we add the following new rule to the typing relation
     of the STLC:
 
@@ -828,7 +828,7 @@ Inductive tm : Type :=
   | tmult : tm -> tm -> tm
   | tif0  : tm -> tm -> tm -> tm.
 
-(** **** Exercise: 4 stars (stlc_arith)  *)
+(** **** 练习：4 星 (stlc_arith)  *)
 (** Finish formalizing the definition and properties of the STLC
     extended with arithmetic. This is a longer exercise. Specifically:
 
@@ -865,7 +865,7 @@ Inductive tm : Type :=
         accepts the whole file. *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_stlc_arith : option (prod nat string) := None.
 (** [] *)
 

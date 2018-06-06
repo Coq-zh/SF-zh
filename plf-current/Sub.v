@@ -327,7 +327,7 @@ Require Import Smallstep.
       inheritance" of interfaces (i.e., permutation is allowed for
       interfaces). *)
 
-(** **** Exercise: 2 stars, recommended (arrow_sub_wrong)  *)
+(** **** 练习：2 星, recommended (arrow_sub_wrong)  *)
 (** Suppose we had incorrectly defined subtyping as covariant on both
     the right and the left of arrow types:
 
@@ -346,7 +346,7 @@ Require Import Smallstep.
     the application gets stuck.)
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_arrow_sub_wrong : option (prod nat string) := None.
 (** [] *)
 
@@ -417,7 +417,7 @@ Definition manual_grade_for_arrow_sub_wrong : option (prod nat string) := None.
 (* ================================================================= *)
 (** ** Exercises *)
 
-(** **** Exercise: 1 star, optional (subtype_instances_tf_1)  *)
+(** **** 练习：1 星, optional (subtype_instances_tf_1)  *)
 (** Suppose we have types [S], [T], [U], and [V] with [S <: T]
     and [U <: V].  Which of the following subtyping assertions
     are then true?  Write _true_ or _false_ after each one.
@@ -440,7 +440,7 @@ Definition manual_grade_for_arrow_sub_wrong : option (prod nat string) := None.
 
     [] *)
 
-(** **** Exercise: 2 stars (subtype_order)  *)
+(** **** 练习：2 星 (subtype_order)  *)
 (** The following types happen to form a linear order with respect to subtyping:
     - [Top]
     - [Top -> Student]
@@ -455,11 +455,11 @@ That is, state how [Top -> (Top -> Student)] compares with each
 of the five types above. It may be unrelated to some of them.
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_subtype_order : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 1 star (subtype_instances_tf_2)  *)
+(** **** 练习：1 星 (subtype_instances_tf_2)  *)
 (** Which of the following statements are true?  Write _true_ or
     _false_ after each one.
 
@@ -488,11 +488,11 @@ Definition manual_grade_for_subtype_order : option (prod nat string) := None.
            exists S1 S2,
               S = S1*S2  /\  S1 <: T1  /\  S2 <: T2  
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_subtype_instances_tf_2 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 1 star (subtype_concepts_tf)  *)
+(** **** 练习：1 星 (subtype_concepts_tf)  *)
 (** Which of the following statements are true, and which are false?
     - There exists a type that is a supertype of every other type.
 
@@ -521,11 +521,11 @@ Definition manual_grade_for_subtype_instances_tf_2 : option (prod nat string) :=
       each [S(i+1)] is a supertype of [Si].
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_subtype_concepts_tf : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (proper_subtypes)  *)
+(** **** 练习：2 星 (proper_subtypes)  *)
 (** Is the following statement true or false?  Briefly explain your
     answer.  (Here [TBase n] stands for a base type, where [n] is
     a string standing for the name of the base type.  See the
@@ -536,12 +536,12 @@ Definition manual_grade_for_subtype_concepts_tf : option (prod nat string) := No
          exists S,
             S <: T  /\  S <> T
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_proper_subtypes : option (prod nat string) := None.
 (** [] *)
 
 
-(** **** Exercise: 2 stars (small_large_1)  *)
+(** **** 练习：2 星 (small_large_1)  *)
 (**
    - What is the _smallest_ type [T] ("smallest" in the subtype
      relation) that makes the following assertion true?  (Assume we
@@ -554,11 +554,11 @@ Definition manual_grade_for_proper_subtypes : option (prod nat string) := None.
    - What is the _largest_ type [T] that makes the same assertion true?
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_small_large_1 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (small_large_2)  *)
+(** **** 练习：2 星 (small_large_2)  *)
 (**
    - What is the _smallest_ type [T] that makes the following
      assertion true?
@@ -569,11 +569,11 @@ Definition manual_grade_for_small_large_1 : option (prod nat string) := None.
    - What is the _largest_ type [T] that makes the same assertion true?
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_small_large_2 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (small_large_3)  *)
+(** **** 练习：2 星, optional (small_large_3)  *)
 (**
    - What is the _smallest_ type [T] that makes the following
      assertion true?
@@ -586,7 +586,7 @@ Definition manual_grade_for_small_large_2 : option (prod nat string) := None.
 
     [] *)
 
-(** **** Exercise: 2 stars (small_large_4)  *)
+(** **** 练习：2 星 (small_large_4)  *)
 (**
    - What is the _smallest_ type [T] that makes the following
      assertion true?
@@ -599,32 +599,32 @@ Definition manual_grade_for_small_large_2 : option (prod nat string) := None.
      assertion true?
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_small_large_4 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (smallest_1)  *)
+(** **** 练习：2 星 (smallest_1)  *)
 (** What is the _smallest_ type [T] that makes the following
     assertion true?
 
       exists S, exists t,
         empty |- (\x:T. x x) t : S
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_smallest_1 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (smallest_2)  *)
+(** **** 练习：2 星 (smallest_2)  *)
 (** What is the _smallest_ type [T] that makes the following
     assertion true?
 
       empty |- (\x:Top. x) ((\z:A.z) , (\z:B.z)) : T
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_smallest_2 : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (count_supertypes)  *)
+(** **** 练习：3 星, optional (count_supertypes)  *)
 (** How many supertypes does the record type [{x:A, y:C->C}] have?  That is,
     how many different types [T] are there such that [{x:A, y:C->C} <:
     T]?  (We consider two types to be different if they are written
@@ -634,7 +634,7 @@ Definition manual_grade_for_smallest_2 : option (prod nat string) := None.
 
     [] *)
 
-(** **** Exercise: 2 stars (pair_permutation)  *)
+(** **** 练习：2 星 (pair_permutation)  *)
 (** The subtyping rule for product types
 
                             S1 <: T1    S2 <: T2
@@ -650,7 +650,7 @@ Definition manual_grade_for_smallest_2 : option (prod nat string) := None.
     for products.  Is this a good idea? Briefly explain why or why not.
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_pair_permutation : option (prod nat string) := None.
 (** [] *)
 
@@ -818,7 +818,7 @@ Example subtyping_example_0 :
   (* C->Bool <: C->Top *)
 Proof. auto. Qed.
 
-(** **** Exercise: 2 stars, optional (subtyping_judgements)  *)
+(** **** 练习：2 星, optional (subtyping_judgements)  *)
 (** (Wait to do this exercise until after you have added product types to
     the language -- see exercise [products] -- at least up to this point
     in the file).
@@ -858,7 +858,7 @@ Proof.
     full benefit from the exercises, make sure you also
     understand how to prove them on paper! *)
 
-(** **** Exercise: 1 star, optional (subtyping_example_1)  *)
+(** **** 练习：1 星, optional (subtyping_example_1)  *)
 Example subtyping_example_1 :
   (TArrow TTop Student) <: (TArrow (TArrow C C) Person).
   (* Top->Student <: (C->C)->Person *)
@@ -866,7 +866,7 @@ Proof with eauto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (subtyping_example_2)  *)
+(** **** 练习：1 星, optional (subtyping_example_2)  *)
 Example subtyping_example_2 :
   (TArrow TTop Person) <: (TArrow Person TTop).
   (* Top->Person <: Person->Top *)
@@ -933,19 +933,19 @@ Import Examples.
     the language.  For each informal typing judgement, write it as a
     formal statement in Coq and prove it. *)
 
-(** **** Exercise: 1 star, optional (typing_example_0)  *)
+(** **** 练习：1 星, optional (typing_example_0)  *)
 (* empty |- ((\z:A.z), (\z:B.z))
           : (A->A * B->B) *)
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (typing_example_1)  *)
+(** **** 练习：2 星, optional (typing_example_1)  *)
 (* empty |- (\x:(Top * B->B). x.snd) ((\z:A.z), (\z:B.z))
           : B->B *)
 (* 请在此处解答 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (typing_example_2)  *)
+(** **** 练习：2 星, optional (typing_example_2)  *)
 (* empty |- (\z:(C->C)->(Top * B->B). (z (\x:C.x)).snd)
               (\z:C->C. ((\z:A.z), (\z:B.z)))
           : B->B *)
@@ -981,7 +981,7 @@ End Examples2.
     look like to tell us something further about the shapes of [S] and
     [T] and the existence of subtype relations between their parts. *)
 
-(** **** Exercise: 2 stars, optional (sub_inversion_Bool)  *)
+(** **** 练习：2 星, optional (sub_inversion_Bool)  *)
 Lemma sub_inversion_Bool : forall U,
      U <: TBool ->
      U = TBool.
@@ -991,7 +991,7 @@ Proof with auto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (sub_inversion_arrow)  *)
+(** **** 练习：3 星 (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
      U <: TArrow V1 V2 ->
      exists U1, exists U2,
@@ -1030,7 +1030,7 @@ Proof with eauto.
     tells us the possible "canonical forms" (i.e., values) of function
     type. *)
 
-(** **** Exercise: 3 stars, optional (canonical_forms_of_arrow_types)  *)
+(** **** 练习：3 星, optional (canonical_forms_of_arrow_types)  *)
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
   Gamma |- s \in TArrow T1 T2 ->
   value s ->
@@ -1534,7 +1534,7 @@ Qed.
 (* ================================================================= *)
 (** ** Exercises *)
 
-(** **** Exercise: 2 stars (variations)  *)
+(** **** 练习：2 星 (variations)  *)
 (** Each part of this problem suggests a different way of changing the
     definition of the STLC with Unit and subtyping.  (These changes
     are not cumulative: each part starts from the original language.)
@@ -1591,14 +1591,14 @@ Qed.
 
 
 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_variations : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
 (** * Exercise: Adding Products *)
 
-(** **** Exercise: 4 stars (products)  *)
+(** **** 练习：4 星 (products)  *)
 (** Adding pairs, projections, and product types to the system we have
     defined is a relatively straightforward matter.  Carry out this
     extension:
@@ -1652,7 +1652,7 @@ Inductive tm : Type :=
 (** Copy and extend and/or fill in required definitions and lemmas
     here. *)
 
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_progress : option (prod nat string) := None.
 Theorem progress : forall t T,
      empty |- t \in T ->
@@ -1660,7 +1660,7 @@ Theorem progress : forall t T,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_preservation : option (prod nat string) := None.
 Theorem preservation : forall t t' T,
      empty |- t \in T  ->

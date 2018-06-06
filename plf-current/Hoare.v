@@ -85,7 +85,7 @@ Require Import Maps.
 
 Definition Assertion := state -> Prop.
 
-(** **** Exercise: 1 star, optional (assertions)  *)
+(** **** 练习：1 星, optional (assertions)  *)
 (** 用中文重新表述下列断言（或者用你最喜欢的语言）。 *)
 
 Module ExAssertions.
@@ -178,7 +178,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
   (hoare_triple P c Q) (at level 90, c at next level)
   : hoare_spec_scope.
 
-(** **** Exercise: 1 star, optional (triples)  *)
+(** **** 练习：1 星, optional (triples)  *)
 (** 用中文重新表述下列霍尔三元组。
 
    1) {{True}} c {{X = 5}}
@@ -200,7 +200,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
 
 (** [] *)
 
-(** **** Exercise: 1 star, optional (valid_triples)  *)
+(** **** 练习：1 星, optional (valid_triples)  *)
 (** 下列的霍尔三元组是否 _'有效'_，亦即，表述的 [P]、[c]、[Q] 之间的
     关系是否为真？
 
@@ -407,7 +407,7 @@ Proof.
 
     我们会在下一节中了解怎么做。*)		  
 
-(** **** Exercise: 2 stars (hoare_asgn_examples)  *)
+(** **** 练习：2 星 (hoare_asgn_examples)  *)
 (** 将下列非正式的霍尔三元组……
 
     1) {{ (X <= 10) [X |-> 2 * X] }}
@@ -422,11 +422,11 @@ Proof.
    并且用 [hoare_asgn] 来证明它们。*)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoare_asgn_examples : option (prod nat string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars, recommended (hoare_asgn_wrong)  *)
+(** **** 练习：2 星, recommended (hoare_asgn_wrong)  *)
 (** 几乎所有人在看赋值规则第一眼就会觉得它是反向的。如果你还感觉很
     迷惑，思考一些“正向”的规则可能有帮助。这里是一个看起来挺自然的
     霍尔三元组：
@@ -439,13 +439,13 @@ Definition manual_grade_for_hoare_asgn_examples : option (prod nat string) := No
     反例应该包含一个使这个规则不能正确工作的 [a]。）*)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoare_asgn_wrong : option (prod nat string) := None.
 (** [] *)
 
 Local Close Scope aexp_scope.
 
-(** **** Exercise: 3 stars, advanced (hoare_asgn_fwd)  *)
+(** **** 练习：3 星, advanced (hoare_asgn_fwd)  *)
 (** 然而，通过引入一个 _'参数'_ [m]（一个 Coq 整数）来记录 [X] 原
     来的值，我们可以定义一个赋值的证明规则，它可以，直觉性地，“正向地
     工作”。
@@ -470,7 +470,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced, optional (hoare_asgn_fwd_exists)  *)
+(** **** 练习：2 星, advanced, optional (hoare_asgn_fwd_exists)  *)
 (** 另外一种定义正向赋值规则的方式是，对变量在赋值之前的值做存在量化。
     证明这是正确的。
 
@@ -712,7 +712,7 @@ Proof.
   intros P Q HP HQ. destruct HP as [y HP']. eapply HQ. eassumption.
 Qed.
 
-(** **** Exercise: 2 stars (hoare_asgn_examples_2)  *)
+(** **** 练习：2 星 (hoare_asgn_examples_2)  *)
 (** 将下述的非形式化霍尔三元组
 
        {{ X + 1 <= 5 }}  X ::= X + 1  {{ X <= 5 }}
@@ -722,7 +722,7 @@ Qed.
    并且使用 [hoare_asgn] 和 [hoare_consequence_pre] 证明它们。 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoare_asgn_examples_2 : option (prod nat string) := None.
 (** [] *)
 
@@ -799,7 +799,7 @@ Qed.
 (** 我们一般会将 [hoare_seq] 和
     [hoare_consequence_pre] 以及 [eapply] 策略一起使用，如上所示。*)
 
-(** **** Exercise: 2 stars, recommended (hoare_asgn_example4)  *)
+(** **** 练习：2 星, recommended (hoare_asgn_example4)  *)
 (** 将这个“标注程序”翻译成正式证明：
 
                    {{ True }} ->>
@@ -819,7 +819,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (swap_exercise)  *)
+(** **** 练习：3 星 (swap_exercise)  *)
 (** 写一个 Imp 程序 [c]，用来交换变量 [X] 和 [Y] 并且说明
     它符合如下规范：
 
@@ -838,7 +838,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (hoarestate1)  *)
+(** **** 练习：3 星 (hoarestate1)  *)
 (** 解释为何下列命题无法被证明：
 
       forall (a : aexp) (n : nat),
@@ -848,7 +848,7 @@ Proof.
 *)
 
 (* 请在此处解答 *)
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoarestate1 : option (prod nat string) := None.
 (** [] *)
 
@@ -960,7 +960,7 @@ Proof.
     simpl; intros st _. omega.
 Qed.
 
-(** **** Exercise: 2 stars (if_minus_plus)  *)
+(** **** 练习：2 星 (if_minus_plus)  *)
 (** 用 [hoare_if] 证明下面的三元组。不要使用 [unfold hoare_triple]。*)
 
 Theorem if_minus_plus :
@@ -977,7 +977,7 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** 练习：单侧条件 *)
 
-(** **** Exercise: 4 stars (if1_hoare)  *)
+(** **** 练习：4 星 (if1_hoare)  *)
 (** 在这个练习中我们考虑对 Imp 加入形如  [IF1 b THEN c FI] 的 “单边条件”。
     这里 [b] 是个布尔表达式而 [c] 是一个命令。如果 [b] 化简为 [true]， [c]
     就被执行，而如果 [b] 化简为 [false]， [IF1 b THEN c FI] 就啥也不做。
@@ -1078,7 +1078,7 @@ Lemma hoare_if1_good :
 Proof. (* 请在此处解答 *) Admitted.
 
 End If1.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_if1_hoare : option (prod nat string) := None.
 (** [] *)
 
@@ -1219,7 +1219,7 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** 练习：[REPEAT] *)
 
-(** **** Exercise: 4 stars, advanced (hoare_repeat)  *)
+(** **** 练习：4 星, advanced (hoare_repeat)  *)
 (** 在这个练习中，我们会往 Imp 里面加一种新的命令：[REPEAT] c [UNTIL] a [END]。
     请你写出 [repeat] 的求值规则，并且写一个关于它的霍尔逻辑证明规则。
     （回想在 [Auto] 中给出的规则，试着自己把这个写出来，别偷看。）*)
@@ -1328,7 +1328,7 @@ Proof.
 *)
 
 End RepeatExercise.
-(* Do not modify the following line: *)
+(* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoare_repeat : option (prod nat string) := None.
 (** [] *)
 
@@ -1370,7 +1370,7 @@ Definition manual_grade_for_hoare_repeat : option (prod nat string) := None.
 (** * 附加练习 *)
 
 
-(** **** Exercise: 3 stars (hoare_havoc)  *)
+(** **** 练习：3 星 (hoare_havoc)  *)
 (** 在这个练习中我们将会为一种 [HAVOC] 命令实现证明规则，这个命令类似于
     [Imp] 中的 [any] 表达式。
 
