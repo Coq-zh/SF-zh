@@ -34,8 +34,8 @@ Require Coq.omega.Omega.
                               ev (S (S n))
 *)
 
-(** 
-    若将前文所述的规则重新排版成推断规则，我们可以这样阅读它，如果线上方的 
+(**
+    若将前文所述的规则重新排版成推断规则，我们可以这样阅读它，如果线上方的
     _'前提（Premises）'_ 成立，那么线下方的 _'结论（Conclusion）'_ 成立。
     比如，规则 [ev_SS] 是如果 [n] 满足 [ev]，那么 [S (S n)] 也满足。
     如果一条规则在线上方没有前提，则结论直接成立。
@@ -52,7 +52,7 @@ Require Coq.omega.Omega.
 *)
 
 (**
-    为什么我们把这样的证明称之为「树」（而非其他，比如「栈」）？
+    为什么我们把这样的证明称之为“树”（而非其他，比如“栈”）？
     因为一般来说推断规则可以有多个前提。我们会在后面看到一些例子。 *)
 
 (** 基于上述，可将偶数性质的定义翻译为Coq中使用 [Inductive] 声明的定义，
@@ -81,13 +81,13 @@ Fail Inductive wrong_ev (n : nat) : Prop :=
         allowed to be used as a bound variable in the type
         of its constructor. *)
 
-(** (「Parameter」 是 Coq 中的一个术语来表示 [Inductive] 定义中冒号左侧的参数；
-    「index」 则指冒号右侧的参数。) *)
+(** (“Parameter” 是 Coq 中的一个术语来表示 [Inductive] 定义中冒号左侧的参数；
+    “index” 则指冒号右侧的参数。) *)
 
 (** 在 Coq 中，我们可以认为 [ev] 定义了一个性质 [ev : nat -> Prop]，其包括原始定理
     [ev_0 : ev 0] 和 [ev_SS : forall n, ev n -> ev (S (S n))]。  *)
 
-(** 这些 「定理构造子」 等同于被证明过的定理。
+(** 这些 “定理构造子” 等同于被证明过的定理。
     特别的，我们可以使用 Coq 中的 [apply] 策略和规则名称来证明某个
     数字的 [ev] 性质…… *)
 
@@ -120,12 +120,12 @@ Proof.
 (** * 在证明中使用证据 *)
 
 (** 除了 _'构造'_ 证据（evidence）来表示某个数字是偶数，我们还可以对这些证据进行 _'推理'_。
-    
-    使用 [Inductive] 声明来引入 [ev] 不仅仅表示在 Coq 中 [ev_0] 和 [ev_SS] 
-    这样的构造子是合法的方式来构造偶数证明的证据，他们也是 _'仅有的'_ 方式 
+
+    使用 [Inductive] 声明来引入 [ev] 不仅仅表示在 Coq 中 [ev_0] 和 [ev_SS]
+    这样的构造子是合法的方式来构造偶数证明的证据，他们也是 _'仅有的'_ 方式
     （对 [ev] 而言）。 *)
 
-(** 换句话说，如果某人展示了对于 [ev n] 的证据 [E]，那么我们知道 [E] 
+(** 换句话说，如果某人展示了对于 [ev n] 的证据 [E]，那么我们知道 [E]
     必是二者其一：
 
       - [E] 是 [ev_0] （且 [n] is [O]）, 或
@@ -220,7 +220,7 @@ Proof.
   apply E'.
 Qed.
 
-(** 通过 [inversion]，我们可以对「显然矛盾的」归纳性质假设应用爆炸原理（principle of explosion）。
+(** 通过 [inversion]，我们可以对“显然矛盾的”归纳性质假设应用爆炸原理（principle of explosion）。
     比如： *)
 
 Theorem one_not_even : ~ ev 1.
@@ -245,11 +245,11 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 初看我们使用 [inversion] 的方式似乎有点难以理解。 
+(** 初看我们使用 [inversion] 的方式似乎有点难以理解。
     目前为止，我们只对相等性命题使用 [inversion]，以此来利用构造子的单射性
     或区分不同的构造子（TODO：injectivity翻译） 。
     但我们将要看到 [inversion] 也可以用于分析归纳定义命题的证据。
-    
+
     一般来说 [inversion] 以这样的方式工作。设想在当前上下文中名称 [I] 指向
     假设 [P]，而[P] 由一个 [Inductive] 声明所定义。
     接下来，使用 [inversion I] 会对 [P] 中的每一个构造子生成子目标，
@@ -290,7 +290,7 @@ Proof.
 
         exists k', n' = double k',
 
-    
+
     这同原始的命题是一致的，只是 [n'] 被替换为 n。确实，通过这个中间结果完成证明
     并不困难。  *)
 
@@ -394,7 +394,7 @@ Proof.
 
 Module Playground.
 
-(** 一个很有用的例子是数字的「小于等于」关系。*)
+(** 一个很有用的例子是数字的“小于等于”关系。*)
 
 (**　下面的定义应当是比较直观的。它提供了两种方法来描述一个数字小于等于另一个数字的证据：
     要么可观察到两个数字相等，或提供证据显示第一个数字小于等于第二个数字的前继。　*)
@@ -411,7 +411,7 @@ Notation "m <= n" := (le m n).
     假设里抽取信息（比如证明 [(2<=1) -> 2+2=5]）。 *)
 
 (** 这里提供一些完备性检查。（请注意，尽管这同我们在开始课程时编写的
-    函数「单元测试」类似，但我们在这里必须明确地写下他们的证明—— [simpl] 和
+    函数“单元测试”类似，但我们在这里必须明确地写下他们的证明—— [simpl] 和
     [reflexivity] 并不会有效果，因为这些证明不仅仅是对表达式进行简化。）  *)
 
 Theorem test_le1 :
@@ -432,7 +432,7 @@ Proof.
   (* 课上已完成 *)
   intros H. inversion H. inversion H2.  Qed.
 
-(** 现在「严格小于」关系 [n < m] 可以使用 [le] 来定义。 *)
+(** 现在“严格小于”关系 [n < m] 可以使用 [le] 来定义。 *)
 
 End Playground.
 
@@ -668,7 +668,7 @@ Inductive reg_exp {T : Type} : Type :=
       - 最后，如果我们写下某个字符串 [s] 作为一个字符串序列的连接
         [s = s_1 ++ ... ++ s_k]，且表达式 [re] 匹配其中每一个字符串 [s_i]，
         那么 [Star re] 匹配 [s]。
-        
+
         作为特殊情况，此字符串序列可能为空，因此无论 [re] 是什么 [Star re] 总是匹配空字符串 [[]]。*)
 
 (** 我们可以把非形式化的定义翻译为使用 [Inductive] 的定义：*)
@@ -728,8 +728,8 @@ Notation "s =~ re" := (exp_match s re) (at level 80).
 (** 请注意这些规则不_'完全'_等同于之前给出的非形式化定义。
     首先，我们并不需要一个规则来直接表述无字符串匹配 [EmptySet]；
     我们做的仅仅是不囊括任何可能导致有字符串被 [EmptySet] 所匹配的规则。
-    （的确，归纳定义的语法并不_'允许'_我们表达类似的「否定规则」（negative rule））。
-    
+    （的确，归纳定义的语法并不_'允许'_我们表达类似的“否定规则”（negative rule））。
+
     其次，非形式化定义中的 [Union] 和 [Star] 各自对应了两个构造子：
     [MUnionL] / [MUnionR]，和 [MStar0] / [MStarApp]。这在逻辑上等价于
     原始的定义，但在 Coq 中这样更加方便，因为递归出现的 [exp_match] 是作为构造子的
@@ -752,7 +752,7 @@ Proof.
 Qed.
 
 (** （请注意，后一个例子对字符串 [[1]] 和 [[2]] 直接应用了 [MApp]。
-    由于目标的形式是 [[1; 2]] 而非 [[1] ++ [2]]，Coq 并不知道如何分解这个字符串。） 
+    由于目标的形式是 [[1; 2]] 而非 [[1] ++ [2]]，Coq 并不知道如何分解这个字符串。）
 
     使用 [inversion]，我们还可以证明某些字符串_'不'_匹配一个正则表达式： *)
 
@@ -940,7 +940,7 @@ Proof.
 
 (** 但是现在，尽管我们得到了七个分类（正由我们从 [exp_match] 的定义中期待的那样），
      [H1] 还是丢失了一个非常重要的信息： [s1] 匹配了某种形式的 [Star re] 的事实。
-    这意味着对于_'全部'_的七个构造子分类我们都需要给出证明，尽管其中两个（[MStar0] 
+    这意味着对于_'全部'_的七个构造子分类我们都需要给出证明，尽管其中两个（[MStar0]
     和 [MStarApp]）是自相矛盾的。
     我们仍然可以在一些构造子上继续证明，比如 [MEmpty] …… *)
 
@@ -1041,8 +1041,8 @@ Proof.
     则可以被抽取（pumped）——将 [s] 的某个中间部分重复任意次产生的新字符串
     仍然匹配 [re]。
 
-    我们首先定义什么是「足够长」。由于使用的是构造性逻辑，我们事实上需要计算
-    对于任何一个正则表达式 [re] 其最小的「可被抽取（pumpability）」长度。*)
+    我们首先定义什么是“足够长”。由于使用的是构造性逻辑，我们事实上需要计算
+    对于任何一个正则表达式 [re] 其最小的“可被抽取（pumpability）”长度。*)
 
 Module Pumping.
 
@@ -1111,7 +1111,7 @@ End Pumping.
 (* ################################################################# *)
 (** * 案例学习：改进互映 *)
 
-(** 在 [Logic] 一章中，我们经常需要关联起对布尔值的计算和 [Prop] 
+(** 在 [Logic] 一章中，我们经常需要关联起对布尔值的计算和 [Prop]
     中的陈述。然而进行这样的关联往往会导致冗长的证明。请考虑以下定理的证明：*)
 
 Theorem filter_not_empty_In : forall n l,
@@ -1130,12 +1130,12 @@ Proof.
       intros H'. right. apply IHl'. apply H'.
 Qed.
 
-(** 在 [destruct] 后的第一个分支中，我们解构 [beq_nat n m] 
+(** 在 [destruct] 后的第一个分支中，我们解构 [beq_nat n m]
     后生成的等式显式地使用了 [beq_nat_true_iff] 引理，以此将假设
     [beq_nat n m] 转换为假设 [n = m]；接着使用 [rewrite] 和这个假设
     来完成此分支的证明。*)
 
-(** 为了简化这样的证明，我们可定义一个归纳命题，其对 [beq_nat n m] 
+(** 为了简化这样的证明，我们可定义一个归纳命题，其对 [beq_nat n m]
     可产生更好的分类讨论原理。
     它不会生成类似 [beq_nat n m = true] 这样的等式，因为一般来说这并不直接有用，
     其生成的分类讨论原理正是我们所需要的假设: [n = m]。*)
@@ -1148,10 +1148,10 @@ Inductive reflect (P : Prop) : bool -> Prop :=
     直观地讲，它陈述了性质 [P] 在布尔值 [b] 中所_'映现'_（也即，等价）：
     换句话说，[P] 成立当且进当 [b = true]。为了理解这一点，请注意，根据定义，
     我们能够产生 [reflect P true] 的证据的唯一方式是证明 [P] 为真且使用
-    [ReflectT] 构造子。如果我们反转这个陈述，意味着从 [reflect P true] 
+    [ReflectT] 构造子。如果我们反转这个陈述，意味着从 [reflect P true]
     的证明中抽取出 [P] 的证据也是可能的。相反地，显示 [reflect P false]
     的唯一方式是合并 [~ P] 的证据和 [ReflectF] 构造子。
-    
+
     形式化这种直觉并证明两个表述确实等价是十分容易的：*)
 
 Theorem iff_reflect : forall P b, (P <-> b = true) -> reflect P b.
@@ -1168,8 +1168,8 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 使用 [reflect] 而非「当且仅当」连词的好处是，通过解构一个具有
-    [reflect P b] 形式的假设或引理，我们可以对 [b] 
+(** 使用 [reflect] 而非“当且仅当”连词的好处是，通过解构一个具有
+    [reflect P b] 形式的假设或引理，我们可以对 [b]
     进行分类讨论，同时为两个分支生成适当的假设（第一个子目标中的 [P] 和
     第二个中的 [~ P]）。 *)
 
@@ -1182,7 +1182,7 @@ Qed.
 (** [filter_not_empty_In] 的新证明如下所示。请注意对 [destruct] 和 [apply]
     的使用是如何合并成一个 [destruct] 的使用。 *)
 
-(** （为了更清晰地看到这点，使用 Coq 查看 [filter_not_empty_In] 
+(** （为了更清晰地看到这点，使用 Coq 查看 [filter_not_empty_In]
     的两个证明，并观察在 [destruct] 的第一个分类开始时证明状态的区别。） *)
 
 Theorem filter_not_empty_In' : forall n l,
@@ -1218,7 +1218,7 @@ Proof.
 (** 在这个小例子中，这种技术仅仅在证明时提升了一点方便；然而，当证明变得庞大时，
     使用 [reflect] 往往更容易写出清晰和简短的证明脚本。我们将会在后面的章节
     和_'编程语言基础'_一卷中看到更多的例子。
-    
+
     对 [reflect] 性质的使用是随着 _'SSReflect'_ 而流行开来的，这是一个
     Coq 程序库，用于形式化一些数学上的重要结果，包括四色定理和法伊特－汤普森定理。
     SSReflect 的名字代表着 _'small-scale reflection'_，也即，普遍性地使用
@@ -1230,7 +1230,7 @@ Proof.
 (** **** 练习：3 星, recommended (nostutter_defn)  *)
 (** 写出一个性质的归纳定义是本课程中你需要的重要技能。请尝试去独立解决
     以下的练习。
-    
+
     如果一个列表连续地重复一个元素，那么我们说这个列表是百叶窗式的（stutters）。
     （这和上面练习中的 [NoDup] 性质是不同的：列表 [1;4;1] 虽然有重复但并不是
     百叶窗式的。） [nostutter mylist] 表示 [mylist] 不是百叶窗式的。
@@ -1280,8 +1280,8 @@ Definition manual_grade_for_nostutter : option (prod nat string) := None.
 (** **** 练习：4 星, advanced (filter_challenge)  *)
 (** 让我们证明在 [Poly] 一章中 [filter] 的定义匹配某个抽象的规范。
     可以这样非形式化地描述这个规范：
-    
-    列表 [l] 是一个 [l1] 和 [l2] 的「顺序合并」（in-order merge），如果它以 
+
+    列表 [l] 是一个 [l1] 和 [l2] 的“顺序合并”（in-order merge），如果它以
     [l1] 和 [l2] 中元素的顺序包含 [l1] 和 [l2] 中的所有元素，尽管可能是交替的。比如：
 
     [1;4;6;2;3]
@@ -1295,8 +1295,8 @@ Definition manual_grade_for_nostutter : option (prod nat string) := None.
     [4;3].
 
     的顺序合并。
-    
-    现在，假设我们有集合 [X]，函数 [test: X->bool]，和一个类型为 [list X] 的列表 
+
+    现在，假设我们有集合 [X]，函数 [test: X->bool]，和一个类型为 [list X] 的列表
     [l]。接着接设如果 [l] 是 [l1] 和 [l2] 的顺序合并，且 [l1] 中的每个元素满足 [test]，
     而 [l2] 中没有元素满足 [test]，那么 [filter test l = l1]。
 
@@ -1319,7 +1319,7 @@ Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
 (** 回文是倒序排列与正序排列相同的序列。
 
     - 在 [listX] 上定义一个归纳命题 [pal] 来表达回文的含义。
-      （提示：你需要三个分类。定义应当基于列表的结构；仅仅使用一个构造子，例如 
+      （提示：你需要三个分类。定义应当基于列表的结构；仅仅使用一个构造子，例如
 
         c : forall l, l = rev l -> pal l
 
@@ -1363,8 +1363,8 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) :
 (* 请在此处解答 *)
 
 (** 接下来，使用 [In]　定义归纳命题 [NoDup X l]，其可被证明仅当列表 [l]
-    （元素类型为 [X]）的每个元素都不相同。比如，[NoDup nat [1;2;3;4]] 
-    和 [NoDup bool []] 是可被证明的，然而 [NoDup nat [1;2;1]] 
+    （元素类型为 [X]）的每个元素都不相同。比如，[NoDup nat [1;2;3;4]]
+    和 [NoDup bool []] 是可被证明的，然而 [NoDup nat [1;2;1]]
     和 [NoDup bool [true;true]] 是不行的。*)
 
 (* 请在此处解答 *)
@@ -1425,7 +1425,7 @@ Proof.
 (** 我们现在已经定义了正则表达式的匹配关系和多态列表。我们可以使用定义手工证明
     给定的正则表达式匹配某个给定的字符串，但这并不是一个我们可以运行的程序来自动地
     判断是否匹配。
-    
+
     有理由期待，用于构造匹配关系证据的归纳规则可以被翻译为一个递归函数，
     其在正则表达式上的递归对应于这种关系。然而，定义这样的函数并没有那么直接，
     由于给定的正则表达式会被 Coq 识别为递归变量，作为结果，Coq 并不会接受这个函数，
@@ -1443,7 +1443,7 @@ Definition string := list ascii.
 
 (** Coq 标准库中包含了一个不同的 ASCII 字符串的归纳定义。然而，为了应用
     之前定义的匹配关系，我们在此使用刚刚给出的 ASCII 字符列表作为定义。
-    
+
     我们也可以定义工作在多态列表上的正则表达式匹配器，而非特定于 ASCII 字符列表。
     我们将要实现的匹配算法需要知道如何对列表中的元素判断相等，因此需要给定一个
     相等性测试函数。一般化我们给出的定义、定理和证明有一点枯燥，但是可行的。 *)
@@ -1474,7 +1474,7 @@ Qed.
 (** [EmptySet] 不匹配字符串。 *)
 Lemma null_matches_none : forall (s : string), (s =~ EmptySet) <-> False.
 Proof.
-  intros. 
+  intros.
   apply not_equiv_false.
   unfold not. intros. inversion H.
 Qed.
@@ -1506,7 +1506,7 @@ Proof.
   apply H.
   inversion H0.
   reflexivity.
-Qed. 
+Qed.
 
 (** 如果 [Char a] 匹配一个非空字符串，那么这个字符串的尾（tail）为空。 *)
 Lemma char_eps_suffix : forall (a : ascii) s, a :: s =~ Char a <-> s = [ ].
@@ -1532,7 +1532,7 @@ Proof.
 Qed.
 
 (** **** 练习：3 星, optional (app_ne)  *)
-(** [App re0 re1] 匹配 [a::s] 当且仅当 [re0] 匹配空字符串 
+(** [App re0 re1] 匹配 [a::s] 当且仅当 [re0] 匹配空字符串
     且 [a::s] 匹配 [re1] 或 [s=s0++s1]，其中 [a::s0] 匹配 [re0]
     且 [s1] 匹配 [re1]。
 
@@ -1556,7 +1556,7 @@ Proof.
     + right. apply H2.
   - intros [ H | H ].
     + apply MUnionL. apply H.
-    + apply MUnionR. apply H. 
+    + apply MUnionR. apply H.
 Qed.
 
 (** **** 练习：3 星, optional (star_ne)  *)
@@ -1578,7 +1578,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 我们的正则表达式匹配器定义包括两个不动点函数。第一个函数对给定的正则表达式 [re] 
+(** 我们的正则表达式匹配器定义包括两个不动点函数。第一个函数对给定的正则表达式 [re]
     进行求值，结果映射了 [re] 是否匹配空字符串。这个函数满足以下性质： *)
 Definition refl_matches_eps m :=
   forall re : @reg_exp ascii, reflect ([ ] =~ re) (m re).
@@ -1597,13 +1597,13 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 我们将会定义其他函数也使用到 [match_eps]。然而，这些函数的证明中你唯一会用到的 
+(** 我们将会定义其他函数也使用到 [match_eps]。然而，这些函数的证明中你唯一会用到的
     [match_eps] 的性质是 [match_eps_refl]。*)
 
 
 (** 我们匹配器所进行的关键操作是迭代地构造一个正则表达式生成式的序列。
     对于字符 [a] 和正则表达式 [re]，[re] 在 [a] 上的生成式是一个正则表达式，
-    其匹配所有匹配 [re] 且以 [a] 开始的字符串的后缀。也即，[re'] 
+    其匹配所有匹配 [re] 且以 [a] 开始的字符串的后缀。也即，[re']
     是 [re] 在 [a] 上的一个生成式如果他们满足以下关系：*)
 
 Definition is_der re (a : ascii) re' :=
@@ -1614,7 +1614,7 @@ Definition is_der re (a : ascii) re' :=
 Definition derives d := forall a re, is_der re a (d a re).
 
 (** **** 练习：3 星, optional (derive)  *)
-(** 请定义 [derive] 使其生成字符串。一个自然的实现是在某些分类使用 
+(** 请定义 [derive] 使其生成字符串。一个自然的实现是在某些分类使用
     [match_eps] 来判断正则表达式是否匹配空字符串。 *)
 Fixpoint derive (a : ascii) (re : @reg_exp ascii) : @reg_exp ascii
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1705,11 +1705,11 @@ Fixpoint regex_match (s : string) (re : @reg_exp ascii) : bool
 
 (** **** 练习：3 星, optional (regex_refl)  *)
 (** 最后，证明 [regex_match] 确实可以匹配正则表达式。
-    
+
     提示：如果你定义的 [regex_match] 对正则表达式 [re] 使用了 [match_eps]，
     那么可对 [re] 应用 [match_eps_refl]，接着对结果解构并生成
     分类，其中你可以假设 [re] 匹配或不匹配空字符串。
-    
+
     提示：如果你定义的 [regex_match] 对字符 [x] 和正则表达式 [re] 使用了 [derive]，
     那么可对 [x] 和 [re] 应用 [derive_corr]，以此证明 [x :: s =~ re] 当给定
     [s =~ derive x re] 时，反之亦然。 *)

@@ -3,7 +3,7 @@
 (** 本章额外介绍了一些证明策略和手段，
     它们能用来证明更多关于函数式程序的有趣性质。我们会看到：
 
-    - 如何在「向前证明」和「向后证明」两种风格中使用辅助引理；
+    - 如何在“向前证明”和“向后证明”两种风格中使用辅助引理；
     - 如何对数据构造子进行论证（特别是，如何利用它们单射且不交的事实）；
     - 如何增强归纳假设（以及何时需要增强）；
     - 还有通过分类讨论进行论证的更多细节。 *)
@@ -24,7 +24,7 @@ Proof.
   intros n m o p eq1 eq2.
   rewrite <- eq1.
 
-(** 我们可以像之前那样用「[rewrite -> eq2.  reflexivity.]」来完成。
+(** 我们可以像之前那样用“[rewrite -> eq2.  reflexivity.]”来完成。
     不过如果我们使用 [apply] 策略，只需一步就能达到同样的效果： *)
 
   apply eq2.  Qed.
@@ -318,9 +318,9 @@ Proof.
     （它将匹配 [L2] 的目标改写为子目标 [L1]），[apply L in H] 会针对
     [L1] 匹配 [H]，如果成功，就将其替换为 [L2]。
 
-    换言之，[apply L in H] 给了我们一种「正向推理」的方式：根据 [L1 -> L2]
+    换言之，[apply L in H] 给了我们一种“正向推理”的方式：根据 [L1 -> L2]
     和一个匹配 [L1] 的前提，它会产生一个匹配 [L2] 的前提。作为对比，[apply L]
-    是一种「反向推理」：它表示如果我们知道 [L1 -> L2] 并且试图证明 [L2]，
+    是一种“反向推理”：它表示如果我们知道 [L1 -> L2] 并且试图证明 [L2]，
     那么证明 [L1] 就足够了。
 
     下面是前面证明的一种变体，它始终使用正向推理而非反向推理。 *)
@@ -342,7 +342,7 @@ Proof.
     但在某些情况下，正向推理更易于思考。 *)
 
 (** **** 练习：3 星, recommended (plus_n_n_injective)  *)
-(** 请在此证明中练习使用「in」形式的变体。（提示：使用 [plus_n_Sm]。） *)
+(** 请在此证明中练习使用“in”形式的变体。（提示：使用 [plus_n_Sm]。） *)
 
 Theorem plus_n_n_injective : forall n m,
      n + n = m + m ->
@@ -393,7 +393,7 @@ Proof.
 (** 哪里出了问题？ *)
 
 (** 问题在于，我们在调用归纳假设的地方已经将 [m] 引入了上下文中 --
-    直观上，我们已经告诉了 Coq「我们来考虑具体的 [n] 和 [m]...」，
+    直观上，我们已经告诉了 Coq“我们来考虑具体的 [n] 和 [m]...”，
     而现在必须为这些_'具体的'_ [n] 和 [m] 证明 [double n = double m]，
     然后才有 [n = m]。
 
@@ -406,33 +406,33 @@ Proof.
 
       - [P O]
 
-        （即，若「[double O = double m] 则 [O = m]」）和
+        （即，若“[double O = double m] 则 [O = m]”）和
 
       - [P n -> P (S n)]
 
-        （即，若「[double n = double m] 则 [n = m]」蕴含「若
-        [double (S n) = double m] 则 [S n = m]」）来得出。
+        （即，若“[double n = double m] 则 [n = m]”蕴含“若
+        [double (S n) = double m] 则 [S n = m]”）来得出。
 
     如果我们仔细观察第二个语句，就会发现它说了奇怪的事情：即，对于一个_'具体的'_
     [m]，如果我们知道
 
-      - 「若 [double n = double m] 则 [n = m]」
+      - “若 [double n = double m] 则 [n = m]”
 
     那么我们就能证明
 
-       - 「若 [double (S n) = double m] 则 [S n = m]」。
+       - “若 [double (S n) = double m] 则 [S n = m]”。
 
     要理解为什么它很奇怪，我们来考虑一个具体的 [m] --
     比如说，[5]。该语句就会这样说：如果我们知道
 
-      - [Q] = 「若 [double n = 10] 则 [n = 5]「
+      - [Q] = “若 [double n = 10] 则 [n = 5]”
 
     那么我们就能证明
 
-      - [R] = 「若 [double (S n) = 10] 则 [S n = 5]」。
+      - [R] = “若 [double (S n) = 10] 则 [S n = 5]”。
 
     但是知道 [Q] 对于证明 [R] 来说并没有任何帮助！（如果我们试着根据 [Q]
-    证明 [R] from [Q]，就会以「假设 [double (S n) = 10]..」这样的句子开始，
+    证明 [R] from [Q]，就会以“假设 [double (S n) = 10]..”这样的句子开始，
     不过之后我们就会卡住：知道 [double (S n)] 为 [10] 并不能告诉我们
     [double n] 是否为 [10]，因此 [Q] 是没有用的。） *)
 
@@ -460,7 +460,7 @@ Proof.
     intros m eq.
 
 (** 现在我们选择了一个具体的 [m] 并引入了假设 [double n = double m]。
-    由于我们对 [n] 做了情况分析，因此还要对 [m] 做情况分析来保持两边「同步」。 *)
+    由于我们对 [n] 做了情况分析，因此还要对 [m] 做情况分析来保持两边“同步”。 *)
 
     destruct m as [| m'].
     + (* m = O *) simpl.
@@ -856,7 +856,7 @@ Proof.
 
       - [inversion]：根据构造子的单射性和不同性进行推理
 
-      - [assert (H: e)]（或 [assert (e) as H]）：引入「局部引理」[e]
+      - [assert (H: e)]（或 [assert (e) as H]）：引入“局部引理”[e]
         并称之为 [H]
 
       - [generalize dependent x]：将变量 [x]（以及任何依赖它的东西）
@@ -901,7 +901,7 @@ Proof.
     [split] [combine l1 l2 = (l1,l2)] 成立？） *)
 
 Definition split_combine_statement : Prop
-  (* （「[: Prop]」 表示我们在这里给出了一个逻辑命题。） *)
+  (* （“[: Prop]” 表示我们在这里给出了一个逻辑命题。） *)
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Theorem split_combine : split_combine_statement.

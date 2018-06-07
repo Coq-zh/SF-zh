@@ -37,10 +37,10 @@ Extraction "imp1.ml" ceval_step.
 Extract Inductive bool => "bool" [ "true" "false" ].
 
 (** 对于非枚举类型（即构造器接受参数的类型），我们需要给出一个 OCaml
-    表达式来作为该类型元素上的「递归器」。（想想丘奇数。）
+    表达式来作为该类型元素上的“递归器”。（想想丘奇数。）
 
     （译注：在这一部分，读者可以在为 [nat] 指定对应的类型后使用
-    [Extraction plus] 来得到自然数加法的提取结果，以此加深对「递归器」的理解。）*)
+    [Extraction plus] 来得到自然数加法的提取结果，以此加深对“递归器”的理解。）*)
 
 Extract Inductive nat => "int"
   [ "0" "(fun x -> x + 1)" ]
