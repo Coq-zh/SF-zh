@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Hoare: Hoare Logic, Part I</title>
+<title>Hoare: 霍尔逻辑（第一部分）</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
 
-<h1 class="libtitle">Hoare<span class="subtitle">Hoare Logic, Part I</span></h1>
+<h1 class="libtitle">Hoare<span class="subtitle">霍尔逻辑（第一部分）</span></h1>
 
 
 <div class="code code-tight">
@@ -44,15 +44,15 @@
 </div>
 
 <div class="doc">
-在 <b>逻辑基础</b> (<b>软件基础</b> 的第一章) 中，
+在<b>逻辑基础</b>（<b>软件基础</b> 的第一章) 中，
     我们用课程前面的部分中学习的数学工具研究了一个小型编程语言 Imp 。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 我们给 Imp 定义了 <b>抽象语法树 (abstract syntax trees)</b>；
-      还有 <b>求值关系 (evaluation relation)</b> (一个在状态上的偏函数)，
-      它给出了程序的 <b>操作语义 (operational semantics)</b>。
+<li> 我们给 Imp 定义了<b>抽象语法树（abstract syntax trees）</b>；
+      还有<b>求值关系（evaluation relation）</b>（一个在状态上的偏函数），
+      它给出了程序的<b>操作语义（operational semantics）</b>。
 
 <div class="paragraph"> </div>
 
@@ -63,7 +63,7 @@
 
 
 </li>
-<li> 我们证明了许多 <b>元理论性质 (metatheoretic properties)</b>，也就是
+<li> 我们证明了许多<b>元理论性质（metatheoretic properties）</b>，也就是
       从高层次角度来说，这些性质是关于这整个语言的，而不是关于任何一段
       单独的程序。这包括了：
 
@@ -89,7 +89,7 @@
 
 
 </li>
-<li> 保证许多有用的程序变换是正确的（也就是它们不改变程序的含义）
+<li> 数个实用的程序变换之正确性（从语义等价的角度来讲）
 
 <div class="paragraph"> </div>
 
@@ -105,8 +105,8 @@
 <div class="paragraph"> </div>
 
  如果在这里打住，我们已经有了一些实用的东西了：一套用来定义并讨论
-    程序语言和它们的功能的工具。这些工具针对了程序语言的一些关键性质，
-    是（从数学角度来讲）严谨的，灵活的，并且是易于使用的。
+    程序语言和它们的功能的工具。这些工具应用于程序语言的一些关键性质，
+    （从数学角度来讲）是严谨和灵活的，并且是易于使用的。
     所有这些性质都是程序语言的设计者，编译器作者，以及用户所最关心的。 
     当然，这些性质中的很多是极为基础的，以至于在我们对编程语言的认知
     中甚至不会把它们自然地当做“定理”来对待。不过那些看起来十分显然的
@@ -114,31 +114,29 @@
 
 <div class="paragraph"> </div>
 
-    在这一卷稍后，我们将会在讨论 <b>类型 (types)</b> 和 <b>类型可靠性
-    (type soundness)</b> 时，回归到整个语言的元理论性质研究。不过现在
+    在这一卷稍后，我们将会在讨论<b>类型（types）</b>和<b>类型可靠性
+    （type soundness）</b>时，回归到整个语言的元理论性质研究。不过现在
     我们要着眼于另外一些问题。
 
 <div class="paragraph"> </div>
 
-    我们的目标是给出一些 <b>软件形式化验证 (program verification)</b>
+    我们的目标是给出一些<b>软件形式化验证（program verification）</b>
     的例子，也就是说，用 Imp 的精确定义来形式地证明某段程序符合某
-    个规范。我们会建立一个叫做 <b>弗洛伊德-豪尔逻辑 (Floyd-Hoare Logic)</b>
-    的系统（一般简称 <b>豪尔逻辑 (Hoare Logic)</b>），它是 Imp 的语法构造
+    个规范。我们会建立一个叫做<b>弗洛伊德-霍尔逻辑（Floyd-Hoare Logic）</b>
+    的系统（一般简称 <b>霍尔逻辑（Hoare Logic）</b>），它是 Imp 的语法构造
     加上了一个通用的“验证规则”的组合，可以用来说明包含这段结构的程序
     之正确性。
 
 <div class="paragraph"> </div>
 
-    豪尔逻辑发源于1960年代，至今为止依然是活跃的研究主题。它处于大量
-    用来规范并验证在真实世界中工作的，学术与工业程序的软件系统的核心
-    地位。
+    霍尔逻辑发源于1960年代，至今为止依然是活跃的研究主题。
+    它用于规范和验证许多学术界与工业界广泛使用的软件系统，并处于核心地位。
 
 <div class="paragraph"> </div>
 
-    豪尔逻辑组合了两个美好的想法：一种自然的，写下程序 <b>规范 (specifications)</b>
-    的方式；还有一种用来证明程序在这种规范下是正确的， <b>复合证明技巧
-    (compositional proof technique)</b> —— 其中“复合”的意思是，这些证
-    明的结构直接反映了相应程序的结构。
+    霍尔逻辑组合了两个绝妙的想法：用自然的方式来编写程序的<b>规范（specifications）</b>
+    ；和一种用来证明程序正确地实现了规范的<b>复合证明技巧（compositional proof technique）</b>
+    ——其中“复合”的意思是，这些证明的结构直接反映了相应程序的结构。
 <div class="paragraph"> </div>
 
  在这一章里：
@@ -146,7 +144,7 @@
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 一个在 Imp 中系统得讨论程序的 <b>功能正确性 (functional correctness)</b> 的系统方法
+<li> 推理 Imp 程序<b>功能正确性（functional correctness）</b> 的系统方法
 
 </li>
 </ul>
@@ -158,10 +156,10 @@
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 一种自然表达 <b>程序规范 (program specifications)</b> 的记号
+<li> 一种自然表达<b>程序规范（program specifications）</b>的记号
 
 </li>
-<li> 一种关于程序正确性的 <b>复合的 (compositional)</b> 证明技巧
+<li> 一种关于程序正确性的<b>复合的（compositional）</b>证明技巧
 
 </li>
 </ul>
@@ -173,7 +171,7 @@
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 程序规范（断言或者霍尔三元组）
+<li> 程序规范（断言／霍尔三元组）
 
 </li>
 <li> 证明规则
@@ -182,7 +180,7 @@
 <li> 循环不变式
 
 </li>
-<li> decorated programs
+<li> 带标注的程序
 
 </li>
 <li> 例子 
@@ -197,7 +195,7 @@
 <div class="paragraph"> </div>
 
  要讨论程序的规范，我们需要的首先是一种在程序执行过程中某个时刻，
-    关于程序性质做出 <b>断言 (assertions)</b> 的方法。也就是说，我们要讨论执
+    关于程序性质做出<b>断言（assertions）</b>的方法。也就是说，我们要讨论执
     行到某处时，当时的内存状态。形式化地说，一项断言就是一系列关于 <span class="inlinecode"><span class="id" type="var">state</span></span>
     的命题。
 </div>
@@ -284,7 +282,7 @@
     一个我们将采用此记号的上下文。 
 <div class="paragraph"> </div>
 
- 我们也需要一个断言之间“当且仅当”蕴含关系的变体：
+ 我们也需要一个表达断言之间“当且仅当”的蕴含关系：
 </div>
 <div class="code code-tight">
 
@@ -314,8 +312,8 @@
 
 <div class="paragraph"> </div>
 
-    这样的描述叫做 <b>霍尔三元组 (Hoare Triple)</b>。断言 <span class="inlinecode"><span class="id" type="var">P</span></span> 叫做 <span class="inlinecode"><span class="id" type="var">c</span></span>
-    的 <b>前置条件 (precondition)</b>，而 <span class="inlinecode"><span class="id" type="var">Q</span></span> 叫做 <b>后置条件 (postcondition)</b>。
+    这样的描述叫做<b>霍尔三元组（Hoare Triple）</b>。断言 <span class="inlinecode"><span class="id" type="var">P</span></span> 叫做 <span class="inlinecode"><span class="id" type="var">c</span></span>
+    的<b>前置条件（precondition）</b>，而 <span class="inlinecode"><span class="id" type="var">Q</span></span> 叫做 <b>后置条件（postcondition）</b>。
 <div class="paragraph"> </div>
 
  形式化地： 
@@ -383,7 +381,7 @@
 <div class="paragraph"> </div>
 
 <a name="lab53"></a><h4 class="section">练习：1 星, optional (valid_triples)</h4>
- 下列的霍尔三元组是否 <b>有效</b>，亦即，表述的 <span class="inlinecode"><span class="id" type="var">P</span></span>、<span class="inlinecode"><span class="id" type="var">c</span></span>、<span class="inlinecode"><span class="id" type="var">Q</span></span> 之间的
+ 下列的霍尔三元组是否<b>有效</b>，亦即，表述的 <span class="inlinecode"><span class="id" type="var">P</span></span>、<span class="inlinecode"><span class="id" type="var">c</span></span>、<span class="inlinecode"><span class="id" type="var">Q</span></span> 之间的
     关系是否为真？
 
 <div class="paragraph"> </div>
@@ -451,13 +449,13 @@
 
 <div class="paragraph"> </div>
 
- 霍尔逻辑的目标是提供一种 _组合的_ 方法，
+ 霍尔逻辑的目标是提供一种_组合的_ 方法，
     用来证明特定三元组的正确性。
-    就是，我们希望一段程序的正确性证明的结构反映程序本身。
-    为了达成这个目的，在下面的小节中，我们会引入一个用来推论每一个不同的
-    Imp 命令的语法形式的规则：一个是关于赋值的，一个是关于顺序执行的，
-    一个是关于条件执行的，等等。还有一些“结构的”规则用来组合它们。
-    然后我们将能证明一段程序是正确的，用这些证明规则，甚至不用展开
+    也即，我们希望一段程序的正确性证明的结构反映程序本身。
+    为了达成这个目的，在下面的小节中，我们为不同语法形式的 Imp 
+    命令引入不同的推理规则：关于赋值的、关于顺序执行的、
+    关于条件执行的等等。还有一些“结构的”规则用来组合它们。
+    然后我们将能证明一段程序是正确的，使用这些证明规则，甚至不用展开
     <span class="inlinecode"><span class="id" type="var">hoare_triple</span></span> 的定义。 
 </div>
 
@@ -496,7 +494,7 @@
     里，同样的属性（等于 <span class="inlinecode">1</span>）被从赋值命令的右侧 <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">Z</span></span> 传递给了 <span class="inlinecode"><span class="id" type="var">X</span></span>。
 <div class="paragraph"> </div>
 
- 更加普遍地, 如果 <span class="inlinecode"><span class="id" type="var">a</span></span> 是 <b>任何一个</b> 算术表达式，那么
+ 更一般地, 如果 <span class="inlinecode"><span class="id" type="var">a</span></span> 是<b>任意</b>算术表达式，那么
 
 <div class="paragraph"> </div>
 
@@ -508,8 +506,8 @@
     是一个有效的霍尔三元组。 
 <div class="paragraph"> </div>
 
- 还要更加普遍地，为了得到 <span class="inlinecode"><span class="id" type="var">Q</span></span> 在 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> 后仍然成立，我们需要先有
-    <span class="inlinecode"><span class="id" type="var">Q</span></span> 在 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> 前成立，不过 <b>所有在其中出现的的</b> <span class="inlinecode"><span class="id" type="var">X</span></span> 在 <span class="inlinecode"><span class="id" type="var">Q</span></span> 中
+ 甚至更一般地，为了得到 <span class="inlinecode"><span class="id" type="var">Q</span></span> 在 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> 后仍然成立，我们需要先有
+    <span class="inlinecode"><span class="id" type="var">Q</span></span> 在 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> 前成立，不过<b>所有在 <span class="inlinecode"><span class="id" type="var">Q</span></span> 中出现的</b> <span class="inlinecode"><span class="id" type="var">X</span></span> 被
     替换为 <span class="inlinecode"><span class="id" type="var">a</span></span>。这给出了霍尔逻辑中赋值的规则
 
 <div class="paragraph"> </div>
@@ -548,13 +546,13 @@
 <div class="paragraph"> </div>
 
  为了形式化这个规则，我们必须先把“在一个断言中将 Imp 变量替换为一个
-    表达式” 的概念形式化，我们把这叫做“断言代换”，或者是 <span class="inlinecode"><span class="id" type="var">assn_sub</span></span>。
+    表达式” 的概念形式化，我们把这叫做“断言替换”，或者是 <span class="inlinecode"><span class="id" type="var">assn_sub</span></span>。
     也就是说，给出命题 <span class="inlinecode"><span class="id" type="var">P</span></span>、变量 <span class="inlinecode"><span class="id" type="var">X</span></span>、算术表达式 <span class="inlinecode"><span class="id" type="var">a</span></span>，我们想要生成一个
     新的命题 <span class="inlinecode"><span class="id" type="var">P'</span></span>，它和 <span class="inlinecode"><span class="id" type="var">P</span></span> 一样，不过 <span class="inlinecode"><span class="id" type="var">P'</span></span> 应该用 <span class="inlinecode"><span class="id" type="var">a</span></span> 来取代所有
     <span class="inlinecode"><span class="id" type="var">P</span></span> 提及 <span class="inlinecode"><span class="id" type="var">X</span></span> 之处。
 <div class="paragraph"> </div>
 
- 因为 <span class="inlinecode"><span class="id" type="var">P</span></span> 是一个未知的 Coq 断言，我们不能直接“编辑”它的文本部分。不
+ 因为 <span class="inlinecode"><span class="id" type="var">P</span></span> 是一个任意的 Coq 断言，我们不能直接“编辑”它的文本部分。不
     过，我们可以通过将 <span class="inlinecode"><span class="id" type="var">P</span></span> 在下述新的状态中计算来达到相同的效果：
 </div>
 <div class="code code-tight">
@@ -760,7 +758,7 @@
   <td class="infrule"><span style='letter-spacing:-.4em;'>{</span>{&nbsp;True&nbsp;<span style='letter-spacing:-.4em;'>}</span>}&nbsp;X&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;a&nbsp;<span style='letter-spacing:-.4em;'>{</span>{&nbsp;X&nbsp;=&nbsp;a&nbsp;<span style='letter-spacing:-.4em;'>}</span>}</td>
   <td></td>
 </td>
-</table></center>    请给出一个说明能说明这个规则是错误的反例，并非正式地说明它确实
+</table></center>    请给出一个能说明这个规则是错误的反例，并非形式化地说明它确实
     是个反例。（提示： 这个规则量化的是所有的算术表达式 <span class="inlinecode"><span class="id" type="var">a</span></span>，你的
     反例应该包含一个使这个规则不能正确工作的 <span class="inlinecode"><span class="id" type="var">a</span></span>。）
 </div>
@@ -779,8 +777,8 @@
 
 <div class="doc">
 <a name="lab58"></a><h4 class="section">练习：3 星, advanced (hoare_asgn_fwd)</h4>
- 然而，通过引入一个 <b>参数</b> <span class="inlinecode"><span class="id" type="var">m</span></span>（一个 Coq 整数）来记录 <span class="inlinecode"><span class="id" type="var">X</span></span> 原
-    来的值，我们可以定义一个赋值的证明规则，它可以，直觉性地，“正向地
+ 然而，通过引入一个<b>参数</b> <span class="inlinecode"><span class="id" type="var">m</span></span>（一个 Coq 整数）来记录 <span class="inlinecode"><span class="id" type="var">X</span></span> 原
+    来的值，我们可以定义一个赋值的证明规则，它可以，直觉上讲，“正向地
     工作”。
 <center><table class="infrule">
 <tr class="infruleassumption">
@@ -807,7 +805,7 @@
   <td class="infrule">(其中&nbsp;st'&nbsp;=&nbsp;st&nbsp;&&nbsp;{&nbsp;X&nbsp;<span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.2em;">-</span>></span>&nbsp;m&nbsp;})</td>
   <td></td>
 </td>
-</table></center>    可以注意到其中我们用 <span class="inlinecode"><span class="id" type="var">X</span></span> 原来的值在赋值发生之前重新构造了状态
+</table></center>    可以注意到，在赋值发生之前我们用 <span class="inlinecode"><span class="id" type="var">X</span></span> 原来的值重新构造了状态
     <span class="inlinecode"><span class="id" type="var">st'</span></span>。证明这个规则是正确的。（注意，这个规则比 <span class="inlinecode"><span class="id" type="var">hoare_asgn</span></span> 复杂些。)
 
 </div>
@@ -879,7 +877,7 @@
 
  有的时候我们从其它证明规则中得到的前置条件和后置条件可能并不
     是我们想使用的那个情形：它们可能在逻辑上符合需要，但是有着不同的
-    表达而无法和期望的情形匹配；或者我们所得到的这个三元组的前条件
+    形式而无法和期望的情形匹配；或者我们所得到的这个三元组的前条件
     太弱，抑或是后条件太强。
 
 <div class="paragraph"> </div>
@@ -904,7 +902,7 @@
 </div>
     却不行。这个三元组是有效的，不过它并不是 <span class="inlinecode"><span class="id" type="var">hoare_asgn</span></span> 的实例，因
     为 <span class="inlinecode"><span class="id" type="var">True</span></span> and <span class="inlinecode">(<span class="id" type="var">X</span></span> <span class="inlinecode">=</span> <span class="inlinecode">3)</span> <span class="inlinecode">[<span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>|-</span></span></span>&gt;</span></span> <span class="inlinecode">3]</span> 在语法上并不是相同的断言。然而，
-    它们在逻辑上 <b>等价</b>，所以前面那个三元组成立，后者也一定成立。
+    它们在逻辑上<b>等价</b>，所以前面那个三元组成立，后者也一定成立。
     我们把这种想法用下列规则写出来：
 <center><table class="infrule">
 <tr class="infruleassumption">
@@ -928,7 +926,7 @@
 
  仔细考虑一下这个想法，我们可以看到对一个有效的三元组加强前置条件
     或者减弱后置条件总是能得到一个有效的三元组。这种想法可以用两条
-    <b>缩放规则 (Rules of Consequence)</b> 来描述：
+    <b>缩放规则（Rules of Consequence）</b> 来描述：
 <center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule"><span style='letter-spacing:-.4em;'>{</span>{P'<span style='letter-spacing:-.4em;'>}</span>}&nbsp;c&nbsp;<span style='letter-spacing:-.4em;'>{</span>{Q<span style='letter-spacing:-.4em;'>}</span>}</td>
@@ -1110,7 +1108,7 @@
 <div class="paragraph"> </div>
 
     在 <span class="inlinecode"><span class="id" type="var">hoare_asgn_example1</span></span> 和 <span class="inlinecode"><span class="id" type="var">hoare_consequence</span></span> 中，我们必
-    须要显式地写出 "<span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode">(<span class="id" type="var">P'</span></span> <span class="inlinecode">:=</span> <span class="inlinecode">...)</span>" 来保证 <span class="inlinecode"><span class="id" type="var">hoare_consequence</span></span>
+    须要显式地写出 “<span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode">(<span class="id" type="var">P'</span></span> <span class="inlinecode">:=</span> <span class="inlinecode">...)</span>” 来保证 <span class="inlinecode"><span class="id" type="var">hoare_consequence</span></span>
     中假定的所有元变量都被设为了一个具体的值。（这是因为 <span class="inlinecode"><span class="id" type="var">P'</span></span>
     没有在 <span class="inlinecode"><span class="id" type="var">hoare_consequence_pre</span></span> 的结论中出现，将结论匹配于
     当前的目标并不能把 <span class="inlinecode"><span class="id" type="var">P'</span></span> 约束到一个具体的断言上。）
@@ -1118,9 +1116,9 @@
 <div class="paragraph"> </div>
 
     这很烦人，既因为这个断言有点长，而且，在 <span class="inlinecode"><span class="id" type="var">hoare_asgn_example1</span></span> 中，
-    我们紧接着的下一步——应用  <span class="inlinecode"><span class="id" type="var">hoare_asgn</span></span> 规则——将会直接给出
+    我们紧接着的下一步——应用 <span class="inlinecode"><span class="id" type="var">hoare_asgn</span></span> 规则——将会直接给出
     这个断言应该是什么！这时，我们可以用 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 代替 <span class="inlinecode"><span class="id" type="tactic">apply</span></span>
-    来告诉 Coq，基本上，“耐心点儿：空缺的那部分会在证明中过会儿
+    来告诉 Coq，大概是“耐心点儿：空缺的那部分会在证明中过会儿
     再填上。” 
 </div>
 <div class="code code-tight">
@@ -1136,11 +1134,11 @@
 </div>
 
 <div class="doc">
-广泛来说，<span class="inlinecode"><span class="id" type="tactic">eapply</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span> 策略和 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span> 的工作方式相同，不过
-    它在将当前目标和 <span class="inlinecode"><span class="id" type="var">H</span></span> 的结论匹配的过程中无法确定各个在 <span class="inlinecode"><span class="id" type="var">H</span></span>
-    的前提中出现的具体变量时不会失败。<span class="inlinecode"><span class="id" type="tactic">eapply</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span> 会把这些变量
-    替换为 <b>存在变量 (existential variables)</b> （写为 <span class="inlinecode">?<span class="id" type="var">nnn</span></span>）, 
-    它的功能是作为在证明过程中接下来会确定（通过进一步的匹配归一）
+一般来说，<span class="inlinecode"><span class="id" type="tactic">eapply</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span> 策略和 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span> 的工作方式相同，不过
+    当匹配目标和 <span class="inlinecode"><span class="id" type="var">H</span></span> 的结论时，若无法确定如何实例化 <span class="inlinecode"><span class="id" type="var">H</span></span> 的前提中出
+    现的变量，<span class="inlinecode"><span class="id" type="tactic">eapply</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span> 并不会失败，而是会把这些变量
+    替换为<b>存在变量（existential variables）</b>（写做 <span class="inlinecode">?<span class="id" type="var">nnn</span></span>）, 
+    它的功能是作为接下来证明中会确定（通过进一步的合一）
     的变量的占位符。
 <div class="paragraph"> </div>
 
@@ -1159,8 +1157,8 @@
 </div>
 
 <div class="doc">
-Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">HP</span></span> 之后提出了一个警告。（"All the remaining goals
-    are on the shelf," 意思是我们已经完成了所有的顶层的证明目标，
+Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">HP</span></span> 之后提出了一个警告。（“All the remaining goals
+    are on the shelf”，意思是我们已经完成了所有的顶层的证明目标，
     然而在这个过程中我们将一些放到一边打算待会做，我们还没有完成它们。）
     用 <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> 结束证明会产生一个错误。
 </div>
@@ -1169,9 +1167,8 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 </div>
 
 <div class="doc">
-一个附加的限制是，存在变量不能被一个包括在它被创建时还不存
-    在的变量的项填上。（原因当然是如果我们允许这样做逻辑系统就会
-    变得不再自洽。） 
+一个附加的限制是，若项中含有在创建存在变量时还不存在的普通变量，则存在变量无法被实例化。
+   （原因当然是如果我们允许这样做逻辑系统就会变得不再自洽。） 
 </div>
 <div class="code code-tight">
 
@@ -1289,7 +1286,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 </div>
 
 <div class="doc">
-<a name="lab64"></a><h2 class="section">组合</h2>
+<a name="lab64"></a><h2 class="section">顺序</h2>
 
 <div class="paragraph"> </div>
 
@@ -1421,7 +1418,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 <div class="paragraph"> </div>
 
 </div>
-     你的证明应该不用 <span class="inlinecode"><span class="id" type="tactic">unfold</span></span> <span class="inlinecode"><span class="id" type="var">hoare_triple</span></span>。 
+     你的证明不应该使用 <span class="inlinecode"><span class="id" type="tactic">unfold</span></span> <span class="inlinecode"><span class="id" type="var">hoare_triple</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -1576,7 +1573,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 </div>
 
 <div class="doc">
-现在我们就可以形式化对于条件命令的证明规则，并且可以证明它的正确性。
+现在我们就可以形式化条件命令的证明规则，并且证明它的正确性。
 </div>
 <div class="code code-tight">
 
@@ -1603,7 +1600,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 </div>
 
 <div class="doc">
-<a name="lab69"></a><h3 class="section">Example</h3>
+<a name="lab69"></a><h3 class="section">例子</h3>
 
 <div class="paragraph"> </div>
 
@@ -1662,7 +1659,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 <div class="paragraph"> </div>
 
 <a name="lab72"></a><h4 class="section">练习：4 星 (if1_hoare)</h4>
- 在这个练习中我们考虑对 Imp 加入形如  <span class="inlinecode"><span class="id" type="var">IF<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">THEN</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span class="id" type="var">FI</span></span> 的 “单边条件”。
+ 在这个练习中我们考虑对 Imp 加入形如 <span class="inlinecode"><span class="id" type="var">IF<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">THEN</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span class="id" type="var">FI</span></span> 的“单边条件”。
     这里 <span class="inlinecode"><span class="id" type="var">b</span></span> 是个布尔表达式而 <span class="inlinecode"><span class="id" type="var">c</span></span> 是一个命令。如果 <span class="inlinecode"><span class="id" type="var">b</span></span> 化简为 <span class="inlinecode"><span class="id" type="var">true</span></span>， <span class="inlinecode"><span class="id" type="var">c</span></span>
     就被执行，而如果 <span class="inlinecode"><span class="id" type="var">b</span></span> 化简为 <span class="inlinecode"><span class="id" type="var">false</span></span>， <span class="inlinecode"><span class="id" type="var">IF<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">THEN</span></span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span class="id" type="var">FI</span></span> 就啥也不做。
 
@@ -1898,7 +1895,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
   <td class="infrule"><span style='letter-spacing:-.4em;'>{</span>{P<span style='letter-spacing:-.4em;'>}</span>}&nbsp;WHILE&nbsp;b&nbsp;DO&nbsp;c&nbsp;END&nbsp;<span style='letter-spacing:-.4em;'>{</span>{P&nbsp;∧&nbsp;~b<span style='letter-spacing:-.4em;'>}</span>}</td>
   <td></td>
 </td>
-</table></center>    断言 <span class="inlinecode"><span class="id" type="var">P</span></span> 叫做 <b>循环不变式 (invariant of the loop)</b>。
+</table></center>    断言 <span class="inlinecode"><span class="id" type="var">P</span></span> 叫做<b>循环不变式（invariant of the loop）</b>。
 
 </div>
 <div class="code code-tight">
@@ -1910,7 +1907,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 <div class="proofscript" id="proof13" onclick="toggleDisplay('proof13');toggleDisplay('proofcontrol13')">
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span> <span class="id" type="var">Hhoare</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">He</span> <span class="id" type="var">HP</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;像我们之前见到过地，我们需要通过在&nbsp;<span class="inlinecode"><span class="id" type="var">He</span></span>&nbsp;上做归纳来推论。<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;像之前见到过的，我们需要对&nbsp;<span class="inlinecode"><span class="id" type="var">He</span></span>&nbsp;做归纳来推理。<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;因为，在“继续循环”的情形中，假设会是关于整个循环而不只是关于&nbsp;<span class="inlinecode"><span class="id" type="var">c</span></span>&nbsp;的。*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="var">remember</span> (<span class="id" type="notation">WHILE</span> <span class="id" type="var">b</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">wcom</span> <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqwcom</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">He</span>;<br/>
@@ -1927,14 +1924,14 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 
 <div class="doc">
 令人费解的事情是，我们把断言 <span class="inlinecode"><span class="id" type="var">P</span></span> 叫做“循环不变式” 并不代表它只是由
-    （上述问题中的）循环体所保证（也就是 <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>}</span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>}</span>，<span class="inlinecode"><span class="id" type="var">c</span></span> 是循环体），
-    而实际上 <span class="inlinecode"><span class="id" type="var">P</span></span> <b>加上循环条件为真的前提</b> 才是 <span class="inlinecode"><span class="id" type="var">c</span></span> 能够推出后置条件所
+    （上述问题中的）循环体所保证（也就是 <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>}</span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">P</span><span style='letter-spacing:-.4em;'>}</span>}</span>，其中 <span class="inlinecode"><span class="id" type="var">c</span></span> 是循环体），
+    而实际上 <span class="inlinecode"><span class="id" type="var">P</span></span> <b>加上循环条件为真</b>才是 <span class="inlinecode"><span class="id" type="var">c</span></span> 能够推出后置条件所
     需要的前置条件。
 
 <div class="paragraph"> </div>
 
-    这是一个（十分重要的）偏弱的前提。例如，如果 <span class="inlinecode"><span class="id" type="var">P</span></span> 是断言 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span>，那么 
-    <span class="inlinecode"><span class="id" type="var">P</span></span> <b>是</b> 下述循环的不变式：
+    这是略微弱化的（但十分重要）前提。例如，如果 <span class="inlinecode"><span class="id" type="var">P</span></span> 是断言 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span>，那么 
+    <span class="inlinecode"><span class="id" type="var">P</span></span> <b>是</b>下述循环的不变式：
 
 <div class="paragraph"> </div>
 
@@ -1943,7 +1940,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 <div class="paragraph"> </div>
 
 </div>
-    即使它很明显 <b>不是</b> 只由循环体所导出。
+    即使它很明显<b>不是</b>只由循环体所导出。
 </div>
 <div class="code code-tight">
 
@@ -1995,14 +1992,14 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 </div>
 
 <div class="doc">
-这很显然，因为我们知道 <span class="inlinecode"><span class="id" type="var">hoare_triple</span></span> 后条件成立，仅当
-    该命令停机。如果命令不停机，我们可以在后置条件中证明任何我们需要的
+这很显然，因为我们知道 <span class="inlinecode"><span class="id" type="var">hoare_triple</span></span> 的定义断言了仅当
+    该命令停机时其后条件才成立。如果命令不停机，我们可以在后置条件中证明任何我们需要的
     东西。
 <div class="paragraph"> </div>
 
- 我们一般把那些只讨论当命令最终停机（不证明它们确实停机）的
-    证明规则叫做“部分正确”的。我们也可以给出一系列“完全正确”（也就是
-    带有命令停机的假设）的证明规则。不过在这章里我们只介绍部分正确的。
+ 我们一般把那些只讨论当命令最终停机（而不证明它们确实停机）的
+    证明规则叫做描述“部分（partial）”正确性的逻辑。我们也可以给出描述“完全（total）”
+    正确性（也就是带有命令停机的假设）的证明规则。不过在这章里我们只介绍部分正确性。
 </div>
 
 <div class="doc">
@@ -2029,7 +2026,7 @@ Coq 在 <span class="inlinecode"><span class="id" type="tactic">apply</span></sp
 
 <div class="doc">
 <span class="inlinecode"><span class="id" type="var">REPEAT</span></span> 的行为类似于 <span class="inlinecode"><span class="id" type="var">WHILE</span></span>，除了它的循环条件是在循环体结束
-    <b>后</b> 检查的，并且只要循环条件是 <span class="inlinecode"><span class="id" type="var">false</span></span> 循环就会被执行。因为
+    <b>后</b>检查的，并且只要循环条件是 <span class="inlinecode"><span class="id" type="var">false</span></span> 循环就会被执行。因为
     这样，循环体至少会被执行一次。
 </div>
 <div class="code code-tight">
