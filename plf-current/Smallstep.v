@@ -1,4 +1,4 @@
-(** * Smallstep: Small-step Operational Semantics *)
+(** * Smallstep: 小步操作语义 *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
@@ -9,84 +9,54 @@ Import ListNotations.
 Require Import Maps.
 Require Import Imp. 
 
-(** The evaluators we have seen so far (for [aexp]s, [bexp]s,
-    commands, ...) have been formulated in a "big-step" style: they
-    specify how a given expression can be evaluated to its final
-    value (or a command plus a store to a final store) "all in one big
-    step."
+(** 我们目前见到的（对 [aexp]，[bexp] 和命令的）求值器是以“大步（big-step）”
+    风格构造的：它们以“单一大步（one big-step）”的方式描述了一个表达式如
+    何被求值到最终值上（或一个命令及存储被求值到最终存储上）。
 
-    This style is simple and natural for many purposes -- indeed,
-    Gilles Kahn, who popularized it, called it _natural semantics_.
-    But there are some things it does not do well.  In particular, it
-    does not give us a natural way of talking about _concurrent_
-    programming languages, where the semantics of a program -- i.e.,
-    the essence of how it behaves -- is not just which input states
-    get mapped to which output states, but also includes the
-    intermediate states that it passes through along the way, since
-    these states can also be observed by concurrently executing code.
+    对许多目的而言，这种风格非常简单和自然——确实，它的普及者 Gilles Kahn 也把它
+    叫做_'自然语义（natural semantics）'_。但仍然有一些它不擅长的事情。
+    特别是，它并没有提供一种自然的方式来描述_'并发（concurrent）'_程序语言，
+    其语义——即，程序如何运行的本质——不仅仅关于输入状态如何被映射到输出状态，
+    还包括经过的中间状态，因为当代码并发执行时这些中间状态同样可以被观察到。
 
-    Another shortcoming of the big-step style is more technical, but
-    critical in many situations.  Suppose we want to define a variant
-    of Imp where variables could hold _either_ numbers _or_ lists of
-    numbers.  In the syntax of this extended language, it will be
-    possible to write strange expressions like [2 + nil], and our
-    semantics for arithmetic expressions will then need to say
-    something about how such expressions behave.  One possibility is
-    to maintain the convention that every arithmetic expressions
-    evaluates to some number by choosing some way of viewing a list as
-    a number -- e.g., by specifying that a list should be interpreted
-    as [0] when it occurs in a context expecting a number.  But this
-    is really a bit of a hack.
+    大步语义风格的另一个缺点更加技术性，但在一些情况下却非常重要。假设我们定义了一个
+    Imp 的变种，语言的变量是数字_'或'_数字的列表。这个扩展语言的语法允许我们写下例如
+    [2 + nil] 这样的奇怪表达式，而算数表达式的语义则必须描述这样的表达式是如何执行的。
+    一种方式是把列表也视作数字，并延续每个表达式都被求值到数字上的约定——比如，当上下文
+    需要一个数字时，列表会被解释为 [0]。但这样做其实有一点敷衍了事。
 
-    A much more natural approach is simply to say that the behavior of
-    an expression like [2+nil] is _undefined_ -- i.e., it doesn't
-    evaluate to any result at all.  And we can easily do this: we just
-    have to formulate [aeval] and [beval] as [Inductive] propositions
-    rather than Fixpoints, so that we can make them partial functions
-    instead of total ones.
+    另一种更加自然的方式是说像 [2+nil] 这类表达式的行为是_'未定义的（undefined）'_
+    ——即，它根本不会被求值到任何结果。我们可以简单地达到这个目的：只需要把 [aeval]
+    和 [beval] 以 [Inductive] 命题而非 [Fixpoints] 的方式来编写，这样我们便可
+    以表达偏函数而非全函数。
 
-    Now, however, we encounter a serious deficiency.  In this
-    language, a command might fail to map a given starting state to
-    any ending state for _two quite different reasons_: either because
-    the execution gets into an infinite loop or because, at some
-    point, the program tries to do an operation that makes no sense,
-    such as adding a number to a list, so that none of the evaluation
-    rules can be applied.
+    然而，现在我们遇到了一个更严重地问题。在这个语言中，有_'两种非常不同的原因'_导致
+    一个命令无法把初始状态映射到任何地结束状态：执行进入了无限循环；或者在某个点，程序
+    尝试进行一个无意义的操作，比如对一个数字和列表求和，由此无法应用任何一个求值规则。
 
-    These two outcomes -- nontermination vs. getting stuck in an
-    erroneous configuration -- should not be confused.  In particular, we
-    want to _allow_ the first (permitting the possibility of infinite
-    loops is the price we pay for the convenience of programming with
-    general looping constructs like [while]) but _prevent_ the
-    second (which is just wrong), for example by adding some form of
-    _typechecking_ to the language.  Indeed, this will be a major
-    topic for the rest of the course.  As a first step, we need a way
-    of presenting the semantics that allows us to distinguish
-    nontermination from erroneous "stuck states."
+    这两种结果——非停机状态 vs. 在错误的结构上卡住（stuck）——不应当被混淆。特别地，我们想要
+    以添加某种形式的_'类型检查（typechecking）'_的方式来_'允许'_第一种情况（这是我们为
+    了方便地使用像 [while] 这类通用循环构造所付出的必要代价），但_'阻止'_第二种情况
+    （也即错误的程序）。在剩下的课程中，这会是我们主要讨论的话题。作为第一步，我们需要一种
+    语义来区分非停机状态和错误的“卡住状态（stuck states）”。
 
-    So, for lots of reasons, we'd often like to have a finer-grained
-    way of defining and reasoning about program behaviors.  This is
-    the topic of the present chapter.  Our goal is to replace the
-    "big-step" [eval] relation with a "small-step" relation that
-    specifies, for a given program, how the "atomic steps" of
-    computation are performed. *)
+    因此，出于这些原因，我们希望有一种更精细化的方式来定义和推理程序的行为。这便是本章的话题。
+    我们的目的是用“小步（small-step）”关系来代替“大步（big-step）”的 [eval] 关系，
+    前者对于给定的程序，描述了计算是如何以“不可分步骤（atomic steps）”执行的。 *)
 
 (* ################################################################# *)
-(** * A Toy Language *)
+(** * 一个玩具语言 *)
 
-(** To save space in the discussion, let's go back to an
-    incredibly simple language containing just constants and
-    addition.  (We use single letters -- [C] and [P] (for Constant and
-    Plus) -- as constructor names, for brevity.)  At the end of the
-    chapter, we'll see how to apply the same techniques to the full
-    Imp language.  *)
+(** 为了简化讨论，让我们回过头来考虑一个只含有常量和加法的简单语言。
+    （我们使用字母——[C] 和 [P]（代表常量（Constant）和加法（Plus）——
+    简洁地作为构造子的名字。）在本章的最后，我们回看到如何将这些技术应用到
+    Imp 语言上。*)
 
 Inductive tm : Type :=
-  | C : nat -> tm         (* Constant *)
-  | P : tm -> tm -> tm.   (* Plus *)
+  | C : nat -> tm         (* 常量 *)
+  | P : tm -> tm -> tm.   (* 加法 *)
 
-(** Here is a standard evaluator for this language, written in
-    the big-step style that we've been using up to this point. *)
+(** 这是我们之前学习的大步语义风格求值器。 *)
 
 Fixpoint evalF (t : tm) : nat :=
   match t with
@@ -94,9 +64,8 @@ Fixpoint evalF (t : tm) : nat :=
   | P a1 a2 => evalF a1 + evalF a2
   end.
 
-(** Here is the same evaluator, written in exactly the same
-    style, but formulated as an inductively defined relation.  Again,
-    we use the notation [t \\ n] for "[t] evaluates to [n]." *)
+(** 这是用同样风格描述的等价求值器，只是用归纳关系来定义。再一次提醒，
+    我们使用记号 [t \\ n] 来表达“[t] 求值到 [n]”。 *)
 (**
 
                                --------                                (E_Const)
@@ -122,7 +91,7 @@ Inductive eval : tm -> nat -> Prop :=
 
 Module SimpleArith1.
 
-(** Now, here is the corresponding _small-step_ evaluation relation. *)
+(** 现在，我们展示对应的_'小步'_求值关系。 *)
 (** 
                      -------------------------------        (ST_PlusConstConst)
                      P (C n1) (C n2) ==> C (n1 + n2)
@@ -150,23 +119,19 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(** Things to notice:
+(** 值得注意的几点：
 
-    - We are defining just a single reduction step, in which
-      one [P] node is replaced by its value.
+    - 我们定义的仅仅是单步关系，其中只有一个 [P] 节点被其值替换。
 
-    - Each step finds the _leftmost_ [P] node that is ready to
-      go (both of its operands are constants) and rewrites it in
-      place.  The first rule tells how to rewrite this [P] node
-      itself; the other two rules tell how to find it.
+    - 每步找到准备好的_'最左侧（leftmost）'_ [P] 节点（也即其操作数都是常量），
+      并在原地重写它。第一个规则是说如何重写 [P] 节点自己；剩下的两个是说如何
+      得到这样的 [P]。
 
-    - A term that is just a constant cannot take a step. *)
+    - 一个常量项无法继续被求值。 *)
 
-(** Let's pause and check a couple of examples of reasoning with
-    the [step] relation... *)
+(** 让我们暂停一下，并使用 [step] 关系来推理一些例子…… *)
 
-(** If [t1] can take a step to [t1'], then [P t1 t2] steps
-    to [P t1' t2]: *)
+(** 如果 [t1] 可向前一步到 [t1']，那么 [P t1 t2] 可向前一步到 [P t1' t2]: *)
 
 Example test_step_1 :
       P
@@ -180,10 +145,8 @@ Proof.
   apply ST_Plus1. apply ST_PlusConstConst.  Qed.
 
 (** **** 练习：1 星 (test_step_2)  *)
-(** Right-hand sides of sums can take a step only when the
-    left-hand side is finished: if [t2] can take a step to [t2'],
-    then [P (C n) t2] steps to [P (C n)
-    t2']: *)
+(** 当求和操作的左侧表达式已经完成求值，其右侧表达式可向前一步：
+    如果 [t2] 可向前一步到 [t2']，那么 [P (C n) t2] 可向前一步到 [P (C n) t2']： *)
 
 Example test_step_2 :
       P
@@ -204,57 +167,44 @@ Proof.
 End SimpleArith1.
 
 (* ################################################################# *)
-(** * Relations *)
+(** * 关系 *)
 
-(** We will be working with several different single-step relations,
-    so it is helpful to generalize a bit and state a few definitions
-    and theorems about relations in general.  (The optional chapter
-    [Rel.v] develops some of these ideas in a bit more detail; it may
-    be useful if the treatment here is too dense.) 
+(** 我们将会研究多个不同的单步关系，因此泛化一下这个概念，给出一些关系的一般定义和
+    定理是十分有帮助的。（可选章 [Rel.v] 以更细致的方式开发了这个想法；放在这里
+    可能会对读者有帮助，但内容过于密集。）
 
-    A _binary relation_ on a set [X] is a family of propositions
-    parameterized by two elements of [X] -- i.e., a proposition about
-    pairs of elements of [X].  *)
+    集合 [X] 上的_'二元关系（binary relation）'_是由 [X] 中的两个元素参数化的
+    命题——也即，一个 [X] 上序对的命题。 *)
 
 Definition relation (X: Type) := X -> X -> Prop.
 
-(** Our main examples of such relations in this chapter will be
-    the single-step reduction relation, [==>], and its multi-step
-    variant, [==>*] (defined below), but there are many other
-    examples -- e.g., the "equals," "less than," "less than or equal
-    to," and "is the square of" relations on numbers, and the "prefix
-    of" relation on lists and strings. *)
+(** 本章中，我们主要的例子将会是单步规约关系，[==>]，以及它的多步版本，
+    [==>*]（后面会定义），但是也有许多其他例子——比如，“等于”、“小于”、“小于等于”
+    和数字上“平方数”关系，还有字符串和列表的“前缀”关系。*)
 
-(** One simple property of the [==>] relation is that, like the
-    big-step evaluation relation for Imp, it is _deterministic_.
+(** 和 Imp 的大步求值关系一样，[==>] 关系的一个简单性质是_'确定性（deterministic）'_。
+    _'定理'_：对于每个 [t]，最多有一个 [t'] 且 [t] 向前一步到 [t']
+     ([t ==> t'] 是可证的)。这也就是说 [==>] 是确定性的。*)
 
-    _Theorem_: For each [t], there is at most one [t'] such that [t]
-    steps to [t'] ([t ==> t'] is provable).  This is the
-    same as saying that [==>] is deterministic. *)
+(** _'证明草稿'_：我们通过对 [step x y1] 的导出式（derivation）进行归
+    纳来证明如果 [x] 同时前进到 [y1] 和 [y2]，那么 [y1] 和 [y2] 是相等的。
+    取决于导出式中最后使用的规则和 [step x y2] 的导出式中最后的规则，我们有许多
+    情形需要考虑。
 
-(** _Proof sketch_: We show that if [x] steps to both [y1] and
-    [y2], then [y1] and [y2] are equal, by induction on a derivation
-    of [step x y1].  There are several cases to consider, depending on
-    the last rule used in this derivation and the last rule in the
-    given derivation of [step x y2].
+      - 如果二者皆为 [ST_PlusConstConst]，那么结果是显然的。
 
-      - If both are [ST_PlusConstConst], the result is immediate.
+      - 对于两个导出式都以 [ST_Plus1] 或 [ST_Plus2] 结束的情形，可直接从归纳假设中得证。
 
-      - The cases when both derivations end with [ST_Plus1] or
-        [ST_Plus2] follow by the induction hypothesis.
+      - 其中一个是 [ST_PlusConstConst] 同时另一个是 [ST_Plus1] 或 [ST_Plus2]
+        的情形是不可能发生的，因为这蕴含了 [x] 形如 [P t1 t2] 而 [t1] 和 [t2]
+        都是常量（根据 [ST_PlusConstConst]）_'且'_ [t1] 或 [t2] 中的一个形如
+        [P _]。
 
-      - It cannot happen that one is [ST_PlusConstConst] and the other
-        is [ST_Plus1] or [ST_Plus2], since this would imply that [x]
-        has the form [P t1 t2] where both [t1] and [t2] are
-        constants (by [ST_PlusConstConst]) _and_ one of [t1] or [t2]
-        has the form [P _].
+      - 类似地，一个是 [ST_Plus1] 同时另一个是 [ST_Plus2] 的情形也不可能发生，
+        因为这蕴含了 [x] 形如 [P t1 t2] 而 [t1] 同时是 [P t11 t12] 和 [C n]
+        两种形式。 []  *)
 
-      - Similarly, it cannot happen that one is [ST_Plus1] and the
-        other is [ST_Plus2], since this would imply that [x] has the
-        form [P t1 t2] where [t1] has both the form [P t11 t12] and the
-        form [C n]. [] *)
-
-(** Formally: *)
+(** 形式化地来说： *)
 
 Definition deterministic {X: Type} (R: relation X) :=
   forall x y1 y2 : X, R x y1 -> R x y2 -> y1 = y2.
@@ -291,15 +241,12 @@ Qed.
 
 End SimpleArith2.
 
-(** There is some annoying repetition in this proof.  Each use of
-    [inversion Hy2] results in three subcases, only one of which is
-    relevant (the one that matches the current case in the induction
-    on [Hy1]).  The other two subcases need to be dismissed by finding
-    the contradiction among the hypotheses and doing inversion on it.
+(** 可以看到在证明中有一些繁琐的重复。每次使用 [inversion Hy2] 会产生
+    三个子情形，但只有一个是相关的（匹配当前对 [Hy1] 归纳的那个情形）。
+    剩下的两个子情形需要通过从假设中找到矛盾并对其反演来消解掉。
 
-    The following custom tactic, called [solve_by_inverts], can be
-    helpful in such cases.  It will solve the goal if it can be solved
-    by inverting some hypothesis; otherwise, it fails. *)
+    下面自定义一个叫做 [solve_by_inverts] 的策略可以简化这些情形。
+    如果目标可以被通过反演某些假设来解决，它便会证明目标；否则，则会失败。 *)
 
 Ltac solve_by_inverts n :=
   match goal with | H : ?T |- _ => 
@@ -309,25 +256,19 @@ Ltac solve_by_inverts n :=
       match n with S (S (?n')) => subst; solve_by_inverts (S n') end ]
   end end.
 
-(** The details of how this works are not important for now, but it
-    illustrates the power of Coq's [Ltac] language for
-    programmatically defining special-purpose tactics.  It looks
-    through the current proof state for a hypothesis [H] (the first
-    [match]) of type [Prop] (the second [match]) such that performing
-    inversion on [H] (followed by a recursive invocation of the same
-    tactic, if its argument [n] is greater than one) completely solves
-    the current goal.  If no such hypothesis exists, it fails.
+(** 关于它是如何工作的细节目前不那么重要，但是它展示了 Coq 中 [Ltac] 
+    语言的能力以及如何编写特殊目标的策略。它会在当前证明状态中找到一个具有类型
+    [Prop] （第二个 [match]）的假设 [H]（第一个 [match]），然后对 [H] 
+    进行反演（如果参数 [n] 大于一，那么它会继续递归地调用这个策略）来完成当前目标。
+    如果这样的假设不存在，这个策略会失败。
 
-    We will usually want to call [solve_by_inverts] with argument
-    [1] (especially as larger arguments can lead to very slow proof
-    checking), so we define [solve_by_invert] as a shorthand for this
-    case. *)
+    我们通常会带上参数 [1] 来调用 [solve_by_inverts]（特别是很大的参数会导致
+    长时间的证明检查），因此我们对它定义一个缩写 [solve_by_invert]。 *)
 
 Ltac solve_by_invert :=
   solve_by_inverts 1.
 
-(** Let's see how a proof of the previous theorem can be simplified
-    using this tactic... *)
+(** 让我们看看这个策略如何简化之前定理的证明吧…… *)
 
 Module SimpleArith3.
 Import SimpleArith1.
@@ -348,44 +289,35 @@ Qed.
 End SimpleArith3.
 
 (* ================================================================= *)
-(** ** Values *)
+(** ** 值 *)
 
-(** Next, it will be useful to slightly reformulate the
-    definition of single-step reduction by stating it in terms of
-    "values." *)
+(** 下一步，我们会使用“值”的概念来稍微重新表述一下单步规约的定义。*)
 
-(** It is useful to think of the [==>] relation as defining an
-    _abstract machine_:
+(** 为了更好地理解 [==>] 关系，我们定义一个_'抽象机（abstract machine）'_:
 
-      - At any moment, the _state_ of the machine is a term.
+      - 在任意时刻，机器的_'状态（state）'_是一个项（term）。
 
-      - A _step_ of the machine is an atomic unit of computation --
-        here, a single "add" operation.
+      - 机器的一_'步（step）'_是一个原子单元的计算，在这里，是一个“加法”操作。
 
-      - The _halting states_ of the machine are ones where there is no
-        more computation to be done. *)
+      - 机器的_'停机状态（halting states）'_是指没有后继计算的状态。 *)
 
-(** We can then execute a term [t] as follows:
+(** 我们可以通过以下方式来执行项 [t]：
 
-      - Take [t] as the starting state of the machine.
+      - 以 [t] 作为机器的起始状态。
 
-      - Repeatedly use the [==>] relation to find a sequence of
-        machine states, starting with [t], where each state steps to
-        the next.
+      - 重复使用 [==>] 关系来找到一个以 [t] 开始的机器状态序列，序列中每个状态
+        会转移到下一个。
+      
+      - 当无法继续进行规约时，_'输出（read out）'_最终的机器状态作为执行的结果。  *)
 
-      - When no more reduction is possible, "read out" the final state
-        of the machine as the result of execution. *)
-
-(** Intuitively, it is clear that the final states of the
-    machine are always terms of the form [C n] for some [n].
-    We call such terms _values_. *)
+(** 直观地来说，可以看到机器的最终状态总是形如 [C n] 的项。
+    我们把这些项叫做_'值（values）'_。 *)
 
 Inductive value : tm -> Prop :=
   | v_const : forall n, value (C n).
 
-(** Having introduced the idea of values, we can use it in the
-    definition of the [==>] relation to write [ST_Plus2] rule in a
-    slightly more elegant way: *)
+(** 在引入了值的概念后，我们可以使用它来更简洁地定义 [==>] 
+    关系中的 [ST_Plus2] 规则： *)
 
 (** 
                      -------------------------------        (ST_PlusConstConst)
@@ -400,15 +332,12 @@ Inductive value : tm -> Prop :=
                          --------------------                        (ST_Plus2)
                          P v1 t2 ==> P v1 t2'
 *)
-(** Again, the variable names here carry important information:
-    by convention, [v1] ranges only over values, while [t1] and [t2]
-    range over arbitrary terms.  (Given this convention, the explicit
-    [value] hypothesis is arguably redundant.  We'll keep it for now,
-    to maintain a close correspondence between the informal and Coq
-    versions of the rules, but later on we'll drop it in informal
-    rules for brevity.) *)
+(** 再一次地，变量名在这里包含了重要的信息：按照惯例，[v1] 涉及到值，
+    而 [t1] 和 [t2] 涉及到任意的项。（在这种约定下，显式的 [value] 假设也
+    许是多余的。在这里仍然保留它，主要是为了在非形式化的和 Coq 的规则之间
+    建立起密切的对应关系，但为简单起见，后面的非形式化规则中我们便会省略掉它。） *)
 
-(**  Here are the formal rules: *)
+(**  这些是形式化的规则： *)
 
 Reserved Notation " t '==>' t' " (at level 40).
 
@@ -427,31 +356,26 @@ Inductive step : tm -> tm -> Prop :=
   where " t '==>' t' " := (step t t').
 
 (** **** 练习：3 星, recommended (redo_determinism)  *)
-(** As a sanity check on this change, let's re-verify determinism.
+(** 作为这一改变的完备性检查，让我们重新验证一下确定性。
 
-    _Proof sketch_: We must show that if [x] steps to both [y1] and
-    [y2], then [y1] and [y2] are equal.  Consider the final rules used
-    in the derivations of [step x y1] and [step x y2].
+    _'证明草稿'_：我们必须证明如果 [x] 向前一步可同时到 [y1] 和 [y2]，
+    那么 [y1] 和 [y2] 相等。考虑 [step x y1] 和 [step x y2] 生成式
+    中最后使用的规则。
 
-    - If both are [ST_PlusConstConst], the result is immediate.
+    - 如果二者皆为 [ST_PlusConstConst]，那么结果是显然的。
 
-    - It cannot happen that one is [ST_PlusConstConst] and the other
-      is [ST_Plus1] or [ST_Plus2], since this would imply that [x] has
-      the form [P t1 t2] where both [t1] and [t2] are constants (by
-      [ST_PlusConstConst]) _and_ one of [t1] or [t2] has the form [P _].
+    - 其中一个是 [ST_PlusConstConst] 同时另一个是 [ST_Plue1] 或 [ST_Plus2]
+      的情形是不可能发生的，因为这蕴含了 [x] 形如 [P t1 t2] 而 [t1] 和 [t2]
+      都是常量_'且'_ [t1] 或 [t2] 中的一个形如 [P _]。
 
-    - Similarly, it cannot happen that one is [ST_Plus1] and the other
-      is [ST_Plus2], since this would imply that [x] has the form [P
-      t1 t2] where [t1] both has the form [P t11 t12] and is a
-      value (hence has the form [C n]).
+    - 类似地，一个是 [ST_Plus1] 同时另一个是 [ST_Plus2] 的情形也不可能发生，
+      因为这蕴含了 [x] 形如 [P t1 t2] 而 [t1] 既形如 [P t11 t12] 又是值
+      （因此形如 [C n]）。
 
-    - The cases when both derivations end with [ST_Plus1] or
-      [ST_Plus2] follow by the induction hypothesis. [] *)
+    - 对于两个导出式都以 [ST_Plus1] 或 [ST_Plus2] 结束的情形，可直接从归纳假设中得证。[] *)
 
-(** Most of this proof is the same as the one above.  But to get
-    maximum benefit from the exercise you should try to write your
-    formal version from scratch and just use the earlier one if you
-    get stuck. *)
+(** 本证明中大部分与之前的相同。但为了最大化练习的收益，你应该从零写下形式化的版本，
+    只有当卡住时再去回顾之前的证明。 *)
 
 Theorem step_deterministic :
   deterministic step.
@@ -460,36 +384,30 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Strong Progress and Normal Forms *)
+(** ** 强可进性和正规式 *)
 
-(** The definition of single-step reduction for our toy language
-    is fairly simple, but for a larger language it would be easy to
-    forget one of the rules and accidentally create a situation where
-    some term cannot take a step even though it has not been
-    completely reduced to a value.  The following theorem shows that
-    we did not, in fact, make such a mistake here. *)
+(** 这个玩具语言的单步规约定义是十分简单的，但是对于大一点的语言，往往会出现
+    因为忘记某个规则而导致一些项虽然还不是值但已无法继续前进规约的情况。下面的定理
+    说明了我们没有犯这样的错误。 *)
 
-(** _Theorem_ (_Strong Progress_): If [t] is a term, then either [t]
-    is a value or else there exists a term [t'] such that [t ==> t']. *)
+(** _'定理'_ （_'强可进性'_（Strong Progress））：如果 [t] 是一个项，那么 [t]
+    要么是一个值，要么存在项 [t'] 使 [t ==> t']。*)
 
-(** _Proof_: By induction on [t].
+(** _'证明'_：对 [t] 进行归纳。
 
-    - Suppose [t = C n]. Then [t] is a value.
+    - 假设 [t = C n]。那么 [t] 是值。 
 
-    - Suppose [t = P t1 t2], where (by the IH) [t1] either is a value
-      or can step to some [t1'], and where [t2] is either a value or
-      can step to some [t2']. We must show [P t1 t2] is either a value
-      or steps to some [t'].
+    - 假设 Suppose [t = P t1 t2]，其中 [t1] 或是值，或可前进到某个 [t1']；
+      [t2] 或是值，或可前进到某个 [t2']（根据 [IH]）。我们需要证明 [P t1 t2] 要么是值，
+      要么可前进到某个 [t']
 
-      - If [t1] and [t2] are both values, then [t] can take a step, by
-        [ST_PlusConstConst].
+      - 如果 [t1] 和 [t2] 都是值，那么根据 [ST_PlusConstConst] 得 [t] 可前进一步。
 
-      - If [t1] is a value and [t2] can take a step, then so can [t],
-        by [ST_Plus2].
+      - 如果 [t1] 是值且 [t2] 可前进一步，那么根据 [ST_Plus2] 得 [t] 可前进一步。
 
-      - If [t1] can take a step, then so can [t], by [ST_Plus1].  [] 
+      - 如果 [t1] 可前进一步，那么根据 [ST_Plus1] 得 [t] 可前进一步。 [] 
 
-   Or, formally: *)
+   或者，形式化地说： *)
 
 Theorem strong_progress : forall t,
   value t \/ (exists t', t ==> t').
@@ -508,33 +426,24 @@ Proof.
           exists (P t' t2).
           apply ST_Plus1. apply H0.  Qed.
 
-(** This important property is called _strong progress_, because
-    every term either is a value or can "make progress" by stepping to
-    some other term.  (The qualifier "strong" distinguishes it from a
-    more refined version that we'll see in later chapters, called
-    just _progress_.) *)
+(** 这个重要的定理叫做_'强可进性（strong progress）'_，因为每个项
+    要么是值，要么可“前进”到某个其他的项。（修饰语“强”区分另一个不同的版本，
+    叫做_'可进性'_，我们在后面的章节中会学校到。） *)
 
-(** The idea of "making progress" can be extended to tell us something
-    interesting about values: in this language, values are exactly the
-    terms that _cannot_ make progress in this sense.
+(** 通过扩展“做出前进”这个概念，我们可以得到一些关于值有趣的事实：在本语言中，
+    从这个意义上讲，值是_'不能'_够继续前进的项。
 
-    To state this observation formally, let's begin by giving a name
-    to terms that cannot make progress.  We'll call them _normal
-    forms_.  *)
+    为了形式化地表述这个观察，让我们给不能前进的项起个名字。我们把它叫做
+    _'正规式（normal forms）'_。 *)
 
 Definition normal_form {X:Type} (R:relation X) (t:X) : Prop :=
   ~ exists t', R t t'.
 
-(** Note that this definition specifies what it is to be a normal form
-    for an _arbitrary_ relation [R] over an arbitrary set [X], not
-    just for the particular single-step reduction relation over terms
-    that we are interested in at the moment.  We'll re-use the same
-    terminology for talking about other relations later in the
-    course. *)
+(** 请注意这个定义规范了对任意集合 [X] 上的任意关系 [R] 的正规式，而不仅仅是我们
+    这里关心的某个单步规约关系的正规式。后面的课程讨论其他关系时我们会继续使用这个术语。 *)
 
-(** We can use this terminology to generalize the observation we made
-    in the strong progress theorem: in this language, normal forms and
-    values are actually the same thing. *)
+(** 我们可以使用这个术语来一般化对于强可进性定理的观察：在这个语言中，
+    正规式和值实际上是同一个东西。 *)
 
 Lemma value_is_nf : forall v,
   value v -> normal_form step v.
@@ -558,21 +467,17 @@ Corollary nf_same_as_value : forall t,
 Proof.
   split. apply nf_is_value. apply value_is_nf. Qed.
 
-(** Why is this interesting?
+(** 这个为什么值得注意呢？
 
-    Because [value] is a syntactic concept -- it is defined by looking
-    at the form of a term -- while [normal_form] is a semantic one --
-    it is defined by looking at how the term steps.  It is not obvious
-    that these concepts should coincide!  *)
+    因为 [value] 是一个语法概念——它是由项的形式定义的——然而 [normal_form] 是一个
+    语义概念——它是由项如何前进定义的。并不显然这两个概念应当一致！ *)
 
-(** Indeed, we could easily have written the definitions so that they
-    would _not_ coincide. *)
+(** 确实，容易写下使他们_'不'_一致的定义。 *)
 
 (** **** 练习：3 星, optional (value_not_same_as_normal_form1)  *)
-(** We might, for example, mistakenly define [value] so that it
-    includes some terms that are not finished reducing. *)
-(** (Even if you don't work this exercise and the following ones
-    in Coq, make sure you can think of an example of such a term.) *)
+(** 我们可能错误地定义了 [value] 使它包括了还没有完成归约的项。 *)
+(** （如果你不想亲自动手在 Coq 中完成这个和下一个练习，
+    也请思考一下，尝试找到一个这样的项。）*)
 
 Module Temp1.
 
@@ -605,8 +510,7 @@ End Temp1.
 (** [] *)
 
 (** **** 练习：2 星, optional (value_not_same_as_normal_form2)  *)
-(** Alternatively, we might mistakenly define [step] so that it
-    permits something designated as a value to reduce further. *)
+(** 或许，我们错误地定义了 [step] 使它允许继续归约一个值。 *)
 
 Module Temp2.
 
@@ -639,12 +543,9 @@ End Temp2.
 (** [] *)
 
 (** **** 练习：3 星, optional (value_not_same_as_normal_form3)  *)
-(** Finally, we might define [value] and [step] so that there is some
-    term that is not a value but that cannot take a step in the [step]
-    relation.  Such terms are said to be _stuck_. In this case this is
-    caused by a mistake in the semantics, but we will also see
-    situations where, even in a correct language definition, it makes
-    sense to allow some terms to be stuck. *)
+(** 最后，我们还可能通过 [value] 和 [step] 定义了某些不是值但已无法继续由 
+    [step] 关系进行归约的项。这些项被称作_'卡住了（stuck）'_。在这种情况是由语义
+    中的错误导致的，但我们也会看到一些情况，即使是正确的语言定义中也会允许一些项卡住。 *)
 
 Module Temp3.
 
@@ -662,7 +563,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(** (Note that [ST_Plus2] is missing.) *)
+(** （请注意 [ST_Plus2] 是未定义的。） *)
 
 Lemma value_not_same_as_normal_form :
   exists t, ~ value t /\ normal_form step t.
@@ -673,13 +574,12 @@ End Temp3.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Additional Exercises *)
+(** *** 额外练习 *)
 
 Module Temp4.
 
-(** Here is another very simple language whose terms, instead of being
-    just addition expressions and numbers, are just the booleans true
-    and false and a conditional expression... *)
+(** 这是另一个非常简单的语言，其项并不是数字和加法表达式，而是布尔值真和假，
+    以及条件表达式…… *)
 
 Inductive tm : Type :=
   | ttrue : tm
@@ -704,9 +604,8 @@ Inductive step : tm -> tm -> Prop :=
   where " t '==>' t' " := (step t t').
 
 (** **** 练习：1 星 (smallstep_bools)  *)
-(** Which of the following propositions are provable?  (This is just a
-    thought exercise, but for an extra challenge feel free to prove
-    your answers in Coq.) *)
+(** 下列哪些命题是可被证明的？（这只是一个思考练习，但如果你想挑战一下自己，
+    可以尝试在 Coq 中证明你的答案。） *)
 
 Definition bool_step_prop1 :=
   tfalse ==> tfalse.
@@ -740,8 +639,7 @@ Definition manual_grade_for_smallstep_bools : option (prod nat string) := None.
 (** [] *)
 
 (** **** 练习：3 星, optional (progress_bool)  *)
-(** Just as we proved a progress theorem for plus expressions, we can
-    do so for boolean expressions, as well. *)
+(** 我们之前对加法表达式证明了其可进性，我们也可以证明布尔表达式的可进性。 *)
 
 Theorem strong_progress : forall t,
   value t \/ (exists t', t ==> t').
@@ -759,13 +657,10 @@ Proof.
 Module Temp5.
 
 (** **** 练习：2 星 (smallstep_bool_shortcut)  *)
-(** Suppose we want to add a "short circuit" to the step relation for
-    boolean expressions, so that it can recognize when the [then] and
-    [else] branches of a conditional are the same value (either
-    [ttrue] or [tfalse]) and reduce the whole conditional to this
-    value in a single step, even if the guard has not yet been reduced
-    to a value. For example, we would like this proposition to be
-    provable:
+(** 假设我们想要为布尔表达式的单步归约关系添加“短路（short circuit）”，
+    这样当条件语句的 [then] 和 [else] 分支有相同的值时（[ttrue] 或 [tfalse]），
+    便可以用一步化简整个条件表达式到值，尽管其条件还没有被归约到某个值。
+    比如，我们想要下面的命题可被证明：
 
          tif
             (tif ttrue ttrue ttrue)
@@ -775,8 +670,7 @@ Module Temp5.
          tfalse.
 *)
 
-(** Write an extra clause for the step relation that achieves this
-    effect and prove [bool_step_prop4]. *)
+(** 请为单步关系添加一个额外的语句来达到这个目的，并证明 [bool_step_prop4]。 *)
 
 Reserved Notation " t '==>' t' " (at level 40).
 
@@ -807,30 +701,24 @@ Proof.
 (** [] *)
 
 (** **** 练习：3 星, optional (properties_of_altered_step)  *)
-(** It can be shown that the determinism and strong progress theorems
-    for the step relation in the lecture notes also hold for the
-    definition of step given above.  After we add the clause
-    [ST_ShortCircuit]...
+(** 课程中证明的确定性和强可进性定理对于我们刚刚定义的单步关系也是成立的。
+    在我们添加了 [ST_ShortCircuit] 以后……
 
-    - Is the [step] relation still deterministic?  Write yes or no and
-      briefly (1 sentence) explain your answer.
+    - [step] 关系是否仍然是确定的？请回答是或否，并简要解释（一句话即可）你的答案。
 
-      Optional: prove your answer correct in Coq. *)
+      可选：在 Coq 中证明的答案。*)
 
 (* 请在此处解答 *)
 (**
-   - Does a strong progress theorem hold? Write yes or no and
-     briefly (1 sentence) explain your answer.
+   - 强可进性是否成立？请回答是或否，并简要解释（一句话即可）你的答案。
 
-     Optional: prove your answer correct in Coq.
+     可选：在 Coq 中证明的答案。
 *)
 
 (* 请在此处解答 *)
 (**
-   - In general, is there any way we could cause strong progress to
-     fail if we took away one or more constructors from the original
-     step relation? Write yes or no and briefly (1 sentence) explain
-     your answer.
+   - 一般来说，如果从原始的单步关系中拿掉一两个构造子，能否使强可进性不再成立？
+     请回答是或否，并简要解释（一句话即可）你的答案。
 
 (* 请在此处解答 *)
 *)
@@ -840,30 +728,23 @@ End Temp5.
 End Temp4.
 
 (* ################################################################# *)
-(** * Multi-Step Reduction *)
+(** * 多步规约 *)
 
-(** We've been working so far with the _single-step reduction_
-    relation [==>], which formalizes the individual steps of an
-    abstract machine for executing programs.
+(** 目前为止，我们学习的是_'单步归约（single-step reduction）'_关系 [==>]，
+    它形式化了抽象机执行程序的每一步。
 
-    We can use the same machine to reduce programs to completion -- to
-    find out what final result they yield.  This can be formalized as
-    follows:
+    我们可以使用同一个机器来归约程序直到结束——得到它最后的结果。我们这样形式化它：
 
-    - First, we define a _multi-step reduction relation_ [==>*], which
-      relates terms [t] and [t'] if [t] can reach [t'] by any number
-      (including zero) of single reduction steps.
+    - 首先，我们定义一个_'多步归约关系（multi-step reduction relation）'_
+      [==>*]，如果项 [t] 可在任意多的单步（包括零步）内到达 [t']，那么它关联起 
+      [t] 和 [t']。
 
-    - Then we define a "result" of a term [t] as a normal form that
-      [t] can reach by multi-step reduction. *)
+    - 接着我们定义 [t] 的“结果（result）”是一个 [t] 可用多步达到的正规式。*)
 
 
-(** Since we'll want to reuse the idea of multi-step reduction many
-    times, let's take a little extra trouble and define it
-    generically.
+(** 因为我们会反复使用多步归约这个概念，让我们花点功夫一般化地定义它。
 
-    Given a relation [R], we define a relation [multi R], called the
-    _multi-step closure of [R]_ as follows. *)
+    如下，给定关系 [R]，我们定义关系 [multi R] 是 [R] 的_'多步闭包（multi-step closure）'_。*)
 
 Inductive multi {X:Type} (R: relation X) : relation X :=
   | multi_refl  : forall (x : X), multi R x x
@@ -872,42 +753,35 @@ Inductive multi {X:Type} (R: relation X) : relation X :=
                     multi R y z ->
                     multi R x z.
 
-(** (In the [Rel] chapter of _Logical Foundations_ and
-    the Coq standard library, this relation is called
-    [clos_refl_trans_1n].  We give it a shorter name here for the sake
-    of readability.) *)
+(** （在_'逻辑基础'_的 [Rel] 一章和 Coq 标准库中，这个关系叫做
+    [clos_refl_trans_1n]。出于可读性的考虑，我们给出一个简短的名字。） *)
 
-(** The effect of this definition is that [multi R] relates two
-    elements [x] and [y] if 
+(** 这个定义的作用是 [multi R] 关联起两个元素 [x] 和 [y]，如果
 
-       - [x = y], or 
-       - [R x y], or 
-       - there is some nonempty sequence [z1], [z2], ..., [zn] such that 
+       - [x = y]，或
+       - [R x y]，或 
+       - 存在某个非空序列 [z1],[z2], ..., [zn] 使得
 
            R x z1 
            R z1 z2 
            ...  
            R zn y.
 
-    Thus, if [R] describes a single-step of computation, then [z1]...[zn] 
-    is the sequence of intermediate steps of computation between [x] and 
-    [y]. *)
+    因此，如果 [R] 刻画了单步计算，那么 [z1]...[zn] 则是 [x] 和 [y]
+    的中间计算步骤。 *)
 
-(** We write [==>*] for the [multi step] relation on terms. *)
+(** 我们为关系 [multi step] 使用记号 [==>*]。*)
 
 Notation " t '==>*' t' " := (multi step t t') (at level 40).
 
-(** The relation [multi R] has several crucial properties.
+(** 关系 [multi R] 具有多个重要的性质。
 
-    First, it is obviously _reflexive_ (that is, [forall x, multi R x
-    x]).  In the case of the [==>*] (i.e., [multi step]) relation, the
-    intuition is that a term can execute to itself by taking zero
-    steps of execution.
+    首先，显然它是_'自反的（reflexive）'_（即 [forall x, multi R x x]）。
+    就 [==>*] 关系（即 [multi step]）而言，可以直观地理解为一个项可以执行零步
+    到它自己。
 
-    Second, it contains [R] -- that is, single-step executions are a
-    particular case of multi-step executions.  (It is this fact that
-    justifies the word "closure" in the term "multi-step closure of
-    [R].") *)
+    第二，它包含了 [R]——也即，单步执行是多步执行的一个特殊情况。（这个事实解释了
+    “[R] 的多步闭包（multi-step closure）”中的“闭包（closure）”一词。） *)
 
 Theorem multi_R : forall (X:Type) (R:relation X) (x y : X),
        R x y -> (multi R) x y.
@@ -915,7 +789,7 @@ Proof.
   intros X R x y H.
   apply multi_step with y. apply H. apply multi_refl.   Qed.
 
-(** Third, [multi R] is _transitive_. *)
+(** 第三， [multi R] 是_'传递的（transitive）'_。 *)
 
 Theorem multi_trans :
   forall (X:Type) (R: relation X) (x y z : X),
@@ -930,13 +804,13 @@ Proof.
       apply multi_step with y. assumption.
       apply IHG. assumption.  Qed.
 
-(** In particular, for the [multi step] relation on terms, if
-    [t1==>*t2] and [t2==>*t3], then [t1==>*t3]. *)
+(** 特别地，对于项的 [multi step] 关系可得，如果 [t1==>*t2] 且 [t2==>*t3]，
+    那么 [t1==>*t3]。*)
 
 (* ================================================================= *)
-(** ** Examples *)
+(** ** 例子 *)
 
-(** Here's a specific instance of the [multi step] relation: *)
+(** 这里有一些 [multi step] 关系的例子： *)
 
 Lemma test_multistep_1:
       P
@@ -957,8 +831,7 @@ Proof.
   apply multi_R.
   apply ST_PlusConstConst. Qed.
 
-(** Here's an alternate proof of the same fact that uses [eapply] to
-    avoid explicitly constructing all the intermediate terms. *)
+(** 这是使用 [eapply] 的另一种证明方法，可以避免显式地构造所有的中间项。 *)
 
 Lemma test_multistep_1':
       P
@@ -1005,28 +878,25 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Normal Forms Again *)
+(** ** 再谈正规式 *)
 
-(** If [t] reduces to [t'] in zero or more steps and [t'] is a
-    normal form, we say that "[t'] is a normal form of [t]." *)
+(** 如果 [t] 可在零步或多步归约到 [t'] 且 [t'] 是一个正规式，那么我们说
+    “[t'] 是 [t] 的一个正规式”。 *)
 
 Definition step_normal_form := normal_form step.
 
 Definition normal_form_of (t t' : tm) :=
   (t ==>* t' /\ step_normal_form t').
 
-(** We have already seen that, for our language, single-step reduction is
-    deterministic -- i.e., a given term can take a single step in
-    at most one way.  It follows from this that, if [t] can reach
-    a normal form, then this normal form is unique.  In other words, we
-    can actually pronounce [normal_form t t'] as "[t'] is _the_
-    normal form of [t]." *)
+(** 我们已经看到，这这个语言中，单步归约是确定的——也即，给定的项最多只有一种方法
+    前进一步。从中可推论，如果 [t] 可以到到某个正规式，那么这个正规式唯一。换句话说，
+    我们实际上可以把 [normal_form t t'] 理解为“[t'] _'就是'_ [t] 的正规式”。*)
 
 (** **** 练习：3 星, optional (normal_forms_unique)  *)
 Theorem normal_forms_unique:
   deterministic normal_form_of.
 Proof.
-  (* We recommend using this initial setup as-is! *)
+  (* 我们推荐以这样的方式开始证明。 *)
   unfold deterministic. unfold normal_form_of.
   intros x y1 y2 P1 P2.
   inversion P1 as [P11 P12]; clear P1.
@@ -1035,23 +905,19 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Indeed, something stronger is true for this language (though not
-    for all languages): the reduction of _any_ term [t] will
-    eventually reach a normal form -- i.e., [normal_form_of] is a
-    _total_ function.  Formally, we say the [step] relation is
-    _normalizing_. *)
+(** 确实，这个语言中还具备更强的性质（尽管不是所有语言都具备）：
+    任意项 [t] 最终都会到达一个正规式——即，[normal_form_of] 是一个全函数。
+    形式化地讲，我们说 [step] 关系是_'正规化（normalizing）'_的。 *)
 
 Definition normalizing {X:Type} (R:relation X) :=
   forall t, exists t',
     (multi R) t t' /\ normal_form R t'.
 
-(** To prove that [step] is normalizing, we need a couple of lemmas.
+(** 为了证明 [step] 的正规性，我们需要几个引理。
 
-    First, we observe that, if [t] reduces to [t'] in many steps, then
-    the same sequence of reduction steps within [t] is also possible
-    when [t] appears as the left-hand child of a [P] node, and
-    similarly when [t] appears as the right-hand child of a [P]
-    node whose left-hand child is a value. *)
+    首先，我们观察到如果 [t] 以多步归约到 [t']，那么当 [t] 出现为 [P] 节点的左子节点时，
+    可以使用同一个 [t] 的归约序列。同理，当 [P] 的左子节点为值时，若 [t] 出现为 [P] 
+    的右子节点也适用。 *)
 
 Lemma multistep_congr_1 : forall t1 t1' t2,
      t1 ==>* t1' ->
@@ -1072,32 +938,24 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** With these lemmas in hand, the main proof is a straightforward
-    induction.
+(** 使用这些引理，证明的主体是直接进行归纳。
 
-    _Theorem_: The [step] function is normalizing -- i.e., for every
-    [t] there exists some [t'] such that [t] steps to [t'] and [t'] is
-    a normal form.
+    _'定理'_：[step] 函数是正规化的——即，对于每个 [t] 存在某个 [t'] 使
+    [t] 前进到 [t']，且 [t'] 是正规式。
 
-    _Proof sketch_: By induction on terms.  There are two cases to
-    consider:
+    _'证明草稿'_：对项进行归纳。有两个情形需要考虑：
 
-    - [t = C n] for some [n].  Here [t] doesn't take a step, and we
-      have [t' = t].  We can derive the left-hand side by reflexivity
-      and the right-hand side by observing (a) that values are normal
-      forms (by [nf_same_as_value]) and (b) that [t] is a value (by
-      [v_const]).
+    - [t = C n] 其中 [n] 为数字。这里 [t] 无法前进一步，我们有 [t' = t]。
+      我们可以通过自反性证明左手边的项；对于右手边的项，由 [nf_same_as_value]
+      可得值是正规式，且由 [v_const] 可得 [t] 是一个值。
 
-    - [t = P t1 t2] for some [t1] and [t2].  By the IH, [t1] and [t2]
-      have normal forms [t1'] and [t2'].  Recall that normal forms are
-      values (by [nf_same_as_value]); we know that [t1' = C n1] and
-      [t2' = C n2], for some [n1] and [n2].  We can combine the [==>*]
-      derivations for [t1] and [t2] using [multi_congr_1] and
-      [multi_congr_2] to prove that [P t1 t2] reduces in many steps to
-      [C (n1 + n2)].
+    - [t = P t1 t2] 其中 [t1] 和 [t2] 为项。由归纳假设，[t1] 和 [t2]
+      分别有正规式 [t1'] 和 [t2']。回忆一下正规式是值（由 [nf_same_sa_value]）；
+      我们知道 [t1' = C n1] 和 [t2' = C n2] 其中 [n1] 和 [n2] 为项。
+      我们可以使用 [multi_congr_1] 和 [multi_congr_2] 合并 [t1] 和 [t2]
+      的 [==>*] 导出式，以此证明 [P t1 t2] 在多步内归约到 [C (n1 + n2)]。
 
-      It is clear that our choice of [t' = C (n1 + n2)] is a value,
-      which is in turn a normal form. [] *)
+      显然，我们的选择 [t' = C (n1 + n2)] 是一个值，也是一个正规式。[] *)
 
 Theorem step_normalizing :
   normalizing step.
@@ -1109,8 +967,7 @@ Proof.
       split.
       + (* l *) apply multi_refl.
       + (* r *)
-        (* We can use [rewrite] with "iff" statements, not
-           just equalities: *)
+        (* 除了等式，对于当且进当的命题，我们也可以使用 [rewrite]。 *)
         rewrite nf_same_as_value. apply v_const.
     - (* P *)
       destruct IHt1 as [t1' [H11 H12]].
@@ -1132,19 +989,17 @@ Proof.
           rewrite nf_same_as_value. apply v_const.  Qed.
 
 (* ================================================================= *)
-(** ** Equivalence of Big-Step and Small-Step *)
+(** ** 大步语义和小步语义的等价性 *)
 
-(** Having defined the operational semantics of our tiny programming
-    language in two different ways (big-step and small-step), it makes
-    sense to ask whether these definitions actually define the same
-    thing!  They do, though it takes a little work to show it.  The
-    details are left as an exercise. *)
+(** 在使用两种不同的方式（大步和小步式）定义了这个小小语言的操作语义后，你可能会
+    好奇这两种定义是否是等价的！他们确实是，尽管需要一点工作来证明它。
+    具体细节留做了练习。*)
 
 (** **** 练习：3 星 (eval__multistep)  *)
 Theorem eval__multistep : forall t n,
   t \\ n -> t ==>* C n.
 
-(** The key ideas in the proof can be seen in the following picture:
+(** 证明的核心想法以下面的方式展现：
 
        P t1 t2 ==>            (by ST_Plus1)
        P t1' t2 ==>           (by ST_Plus1)
@@ -1157,29 +1012,26 @@ Theorem eval__multistep : forall t n,
        P (C n1) (C n2) ==>    (by ST_PlusConstConst)
        C (n1 + n2)
 
-    That is, the multistep reduction of a term of the form [P t1 t2]
-    proceeds in three phases:
-       - First, we use [ST_Plus1] some number of times to reduce [t1]
-         to a normal form, which must (by [nf_same_as_value]) be a
-         term of the form [C n1] for some [n1].
-       - Next, we use [ST_Plus2] some number of times to reduce [t2]
-         to a normal form, which must again be a term of the form [C
-         n2] for some [n2].
-       - Finally, we use [ST_PlusConstConst] one time to reduce [P (C
-         n1) (C n2)] to [C (n1 + n2)]. *)
+    也即，一个形如 [P t1 t2] 的项的多步归约关系以如下三步的方式进行：
+       - 首先，使用 [ST_Plus1] 数次来归约 [t1] 到正规式，也即必须是一个形如 [C n1] 
+         的项（由 [nf_same_as_value]），其中 [n1] 为某个数字。
+       
+       - 接着，使用 [ST_Plus2] 数次来归约 [t2] 到正规式，也即必须是一个形如 [C n2]
+         的项，其中 [n2] 为某个数字。
+      
+       - 最后，使用 [ST_PlusConstConst] 一次把 [P (C n1) (C n2)] 归约到
+         [C (n1 + n2)]。*)
 
-(** To formalize this intuition, you'll need to use the congruence
-    lemmas from above (you might want to review them now, so that
-    you'll be able to recognize when they are useful), plus some basic
-    properties of [==>*]: that it is reflexive, transitive, and
-    includes [==>]. *)
+(** 为了形式化这个直觉的理解，我们需要使用之前的合同（congruence）引理
+    （为了帮助后面的证明，你可能需要回顾一下他们），还有一些 [==>*] 的基础性质：
+    自反性，传递性，及其蕴含了 [==>]。 *)
 
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** 练习：3 星, advanced (eval__multistep_inf)  *)
-(** Write a detailed informal version of the proof of [eval__multistep].
+(** 请为 [eval__multi_step] 写出详细的非形式化证明。
 
 (* 请在此处解答 *)
 *)
@@ -1187,8 +1039,7 @@ Proof.
 Definition manual_grade_for_eval__multistep_inf : option (prod nat string) := None.
 (** [] *)
 
-(** For the other direction, we need one lemma, which establishes a
-    relation between single-step reduction and big-step evaluation. *)
+(** 对于另一个方向，我们需要一个引理来对单步归约和大步求值建立联系。*)
 
 (** **** 练习：3 星 (step__eval)  *)
 Lemma step__eval : forall t t' n,
@@ -1200,14 +1051,12 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** The fact that small-step reduction implies big-step evaluation is
-    now straightforward to prove, once it is stated correctly.
+(** 一旦正确地表述了小步归约蕴含了大步求值的事实，它会很容易被证明。
 
-    The proof proceeds by induction on the multi-step reduction
-    sequence that is buried in the hypothesis [normal_form_of t t']. *)
+    证明是对多步归约序列的归纳，这个序列被假设 [normal_form_of t t'] 
+    所隐藏了起来。*)
 
-(** Make sure you understand the statement before you start to
-    work on the proof.  *)
+(**请确保在开始证明前首先理解了命题。 *)
 
 (** **** 练习：3 星 (multistep__eval)  *)
 Theorem multistep__eval : forall t t',
@@ -1220,11 +1069,9 @@ Proof.
 (** ** Additional Exercises *)
 
 (** **** 练习：3 星, optional (interp_tm)  *)
-(** Remember that we also defined big-step evaluation of terms as a
-    function [evalF].  Prove that it is equivalent to the existing
-    semantics.  (Hint: we just proved that [eval] and [multistep] are
-    equivalent, so logically it doesn't matter which you choose.
-    One will be easier than the other, though!) *)
+(** 请回忆一下我们还通过函数 [evalF] 定义了对项的大步求值。请证明它等价于其他语义。
+    （提示：我刚刚证明了 [eval] 和 [multistep] 是等价的，因此逻辑上讲你可以任意
+    选择证明哪个。尽管有一个要比另一个简单！） *)
 
 Theorem evalF_eval : forall t n,
   evalF t = n <-> t \\ n.
@@ -1233,8 +1080,7 @@ Proof.
 (** [] *)
 
 (** **** 练习：4 星 (combined_properties)  *)
-(** We've considered arithmetic and conditional expressions
-    separately.  This exercise explores how the two interact. *)
+(** 我们分开考虑了算数和条件表达式，这个练习探索了他们之间如何交互。 *)
 
 Module Combined.
 
@@ -1272,16 +1118,14 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(** Earlier, we separately proved for both plus- and if-expressions...
+(** 之前，我们分开证明了加法和条件表达式的……
 
-    - that the step relation was deterministic, and
+    - 单步关系是确定的，以及
 
-    - a strong progress lemma, stating that every term is either a
-      value or can take a step.
+    - 一个强可进行引理，陈述了任意项要么是值，要么可以前进一步。
 
-    Formally prove or disprove these two properties for the combined
-    language.  (That is, state a theorem saying that the property
-    holds or does not hold, and prove your theorem.) *)
+    对于合并起来的语言，请形式化地证明或反驳这两个属性。
+    （也即，陈述定理表达性质成立或不成立，并证明它们。） *)
 
 (* 请在此处解答 *)
 
@@ -1291,24 +1135,18 @@ Definition manual_grade_for_combined_properties : option (prod nat string) := No
 (** [] *)
 
 (* ################################################################# *)
-(** * Small-Step Imp *)
+(** * Imp 的小步语义 *)
 
-(** Now for a more serious example: a small-step version of the Imp
-    operational semantics. *)
+(** 现在来看一个更严肃的例子：Imp 的小步操作语义。 *)
 
-(** The small-step reduction relations for arithmetic and
-    boolean expressions are straightforward extensions of the tiny
-    language we've been working up to now.  To make them easier to
-    read, we introduce the symbolic notations [==>a] and [==>b] for
-    the arithmetic and boolean step relations. *)
+(** 目前为止，给这个小语言添加算数和布尔表达式的小步归约关系是很直接的扩展。
+    处于可读性的考虑，我们为他们分别添加记号 [==>a] 和 [==>b]。 *)
 
 Inductive aval : aexp -> Prop :=
   | av_num : forall n, aval (ANum n).
 
-(** We are not actually going to bother to define boolean
-    values, since they aren't needed in the definition of [==>b]
-    below (why?), though they might be if our language were a bit
-    larger (why?). *)
+(** 我们在此不会赘述布尔值的定义，因为 [==>b] 的定义并不需要他们（为什么？），
+    尽管当语言规模更大一些时可能会需要到他们（为什么？）。*)
 
 Reserved Notation " t '/' st '==>a' t' "
                   (at level 40, st at level 39).
@@ -1392,27 +1230,20 @@ Inductive bstep : state -> bexp -> bexp -> Prop :=
 
 where " t '/' st '==>b' t' " := (bstep st t t').
 
-(** The semantics of commands is the interesting part.  We need two
-    small tricks to make it work:
+(** 命令的语义是真正有趣的部分。我们需要两个小技巧来让们工作：
 
-       - We use [SKIP] as a "command value" -- i.e., a command that
-         has reached a normal form.
+       - 我们把 [SKIP] 当作一个“命令值（command value）”——即，一个已经到达正规式的命令。
 
-            - An assignment command reduces to [SKIP] (and an updated
-              state).
+            - 赋值命令归约到 [SKIP] （和一个更新状态）。
 
-            - The sequencing command waits until its left-hand
-              subcommand has reduced to [SKIP], then throws it away so
-              that reduction can continue with the right-hand
-              subcommand.
+            - 顺序命令等待其左侧子命令归约到 [SKIP]，然后丢弃它，并继续
+              对右侧子命令归约。
 
-       - We reduce a [WHILE] command by transforming it into a
-         conditional followed by the same [WHILE]. *)
+       - 对 [WHILE] 命令的归约是把 [WHILE] 命令变换为条件语句，其后紧跟同一个
+         [WHILE] 命令。 *)
 
-(** (There are other ways of achieving the effect of the latter
-    trick, but they all share the feature that the original [WHILE]
-    command needs to be saved somewhere while a single copy of the loop
-    body is being reduced.) *)
+(** （也有一些其他的方式来达到后一个技巧同样的效果，但当对循环体进行归约时，
+    他们都需要将原始的 [WHILE] 命令保存在某处。）*)
 
 Reserved Notation " t '/' st '==>' t' '/' st' "
                   (at level 40, st at level 39, t' at level 39).
@@ -1443,14 +1274,11 @@ Inductive cstep : (com * state) -> (com * state) -> Prop :=
   where " t '/' st '==>' t' '/' st' " := (cstep (t,st) (t',st')).
 
 (* ################################################################# *)
-(** * Concurrent Imp *)
+(** * 并发 Imp *)
 
-(** Finally, to show the power of this definitional style, let's
-    enrich Imp with a new form of command that runs two subcommands in
-    parallel and terminates when both have terminated.  To reflect the
-    unpredictability of scheduling, the actions of the subcommands may
-    be interleaved in any order, but they share the same memory and
-    can communicate by reading and writing the same variables. *)
+(** 最后，为了展示这种定义方式的能力，让我们为 Imp 语言添加一个新的命令，
+    使其可以同时运行两个命令，并在两个都停机时停机。为了反映调度的不可预测性，
+    子命令可以以任意顺序交错运行，但他们共享了同一个内存，并以读写变量的方式通信。 *)
 
 Module CImp.
 
@@ -1516,9 +1344,7 @@ Notation " t '/' st '==>*' t' '/' st' " :=
    (multi cstep  (t,st) (t',st'))
    (at level 40, st at level 39, t' at level 39).
 
-(** Among the many interesting properties of this language is the fact
-    that the following program can terminate with the variable [X] set
-    to any value. *)
+(** 在这个语言的众多特性中，一个有趣的事实是下面的程序在停机时变量 [X] 可以是任何值。*)
 
 Definition par_loop : com :=
   PAR
@@ -1529,7 +1355,7 @@ Definition par_loop : com :=
     END
   END.
 
-(** In particular, it can terminate with [X] set to [0]: *)
+(** 比如说，它可以当 [X] 为 [0] 时停机。*)
 
 Example par_loop_example_0:
   exists st',
@@ -1550,7 +1376,7 @@ Proof.
   eapply multi_refl.
   reflexivity. Qed.
 
-(** It can also terminate with [X] set to [2]: *)
+(** 它也可以当 [X] 为 [2] 时停机。*)
 
 Example par_loop_example_2:
   exists st',
@@ -1597,7 +1423,7 @@ Proof.
   eapply multi_refl.
   reflexivity. Qed.
 
-(** More generally... *)
+(** 更一般地…… *)
 
 (** **** 练习：3 星, optional (par_body_n__Sn)  *)
 Lemma par_body_n__Sn : forall n st,
@@ -1616,8 +1442,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** ... the above loop can exit with [X] having any value
-    whatsoever. *)
+(** ……上面的循环可以在 [X] 为任何值时退出。 *)
 
 Theorem par_loop_any_X:
   forall n, exists st',
@@ -1648,10 +1473,9 @@ Qed.
 End CImp.
 
 (* ################################################################# *)
-(** * A Small-Step Stack Machine *)
+(** * 小步堆栈机 *)
 
-(** Our last example is a small-step semantics for the stack machine
-    example from the [Imp] chapter of _Logical Foundations_. *)
+(** 最后一个例子来自逻辑基础的 [Imp] 一章，我们给出堆栈机的小步语义。 *)
 
 Definition stack := list nat.
 Definition prog  := list sinstr.
@@ -1678,12 +1502,10 @@ Qed.
 Definition stack_multistep st := multi (stack_step st).
 
 (** **** 练习：3 星, advanced (compiler_is_correct)  *)
-(** Remember the definition of [compile] for [aexp] given in the
-    [Imp] chapter of _Logical Foundations_. We want now to
-    prove [compile] correct with respect to the stack machine.
+(** 请回忆一下逻辑基础 [Imp] 一章中对 [compile] 和 [aexp] 的定义。
+    我们现在想要证明堆栈机上 [compile] 函数的正确性。
 
-    State what it means for the compiler to be correct according to
-    the stack machine small step semantics and then prove it. *)
+    请根据堆栈机的小步语义陈述编译器正确性的定义，并证明它。 *)
 
 Definition compiler_is_correct_statement : Prop 
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.

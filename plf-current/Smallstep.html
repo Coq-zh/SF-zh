@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Smallstep: Small-step Operational Semantics</title>
+<title>Smallstep: 小步操作语义</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
 
-<h1 class="libtitle">Smallstep<span class="subtitle">Small-step Operational Semantics</span></h1>
+<h1 class="libtitle">Smallstep<span class="subtitle">小步操作语义</span></h1>
 
 
 <div class="code code-tight">
@@ -45,103 +45,73 @@
 </div>
 
 <div class="doc">
-The evaluators we have seen so far (for <span class="inlinecode"><span class="id" type="var">aexp</span></span>s, <span class="inlinecode"><span class="id" type="var">bexp</span></span>s,
-    commands, ...) have been formulated in a "big-step" style: they
-    specify how a given expression can be evaluated to its final
-    value (or a command plus a store to a final store) "all in one big
-    step."
+我们目前见到的（对 <span class="inlinecode"><span class="id" type="var">aexp</span></span>，<span class="inlinecode"><span class="id" type="var">bexp</span></span> 和命令的）求值器是以“大步（big-step）”
+    风格构造的：它们以“单一大步（one big-step）”的方式描述了一个表达式如
+    何被求值到最终值上（或一个命令及存储被求值到最终存储上）。
 
 <div class="paragraph"> </div>
 
-    This style is simple and natural for many purposes &mdash; indeed,
-    Gilles Kahn, who popularized it, called it _natural semantics_.
-    But there are some things it does not do well.  In particular, it
-    does not give us a natural way of talking about _concurrent_
-    programming languages, where the semantics of a program &mdash; i.e.,
-    the essence of how it behaves &mdash; is not just which input states
-    get mapped to which output states, but also includes the
-    intermediate states that it passes through along the way, since
-    these states can also be observed by concurrently executing code.
+    对许多目的而言，这种风格非常简单和自然——确实，它的普及者 Gilles Kahn 也把它
+    叫做<b>自然语义（natural semantics）</b>。但仍然有一些它不擅长的事情。
+    特别是，它并没有提供一种自然的方式来描述<b>并发（concurrent）</b>程序语言，
+    其语义——即，程序如何运行的本质——不仅仅关于输入状态如何被映射到输出状态，
+    还包括经过的中间状态，因为当代码并发执行时这些中间状态同样可以被观察到。
 
 <div class="paragraph"> </div>
 
-    Another shortcoming of the big-step style is more technical, but
-    critical in many situations.  Suppose we want to define a variant
-    of Imp where variables could hold _either_ numbers _or_ lists of
-    numbers.  In the syntax of this extended language, it will be
-    possible to write strange expressions like <span class="inlinecode">2</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">nil</span></span>, and our
-    semantics for arithmetic expressions will then need to say
-    something about how such expressions behave.  One possibility is
-    to maintain the convention that every arithmetic expressions
-    evaluates to some number by choosing some way of viewing a list as
-    a number &mdash; e.g., by specifying that a list should be interpreted
-    as <span class="inlinecode">0</span> when it occurs in a context expecting a number.  But this
-    is really a bit of a hack.
+    大步语义风格的另一个缺点更加技术性，但在一些情况下却非常重要。假设我们定义了一个
+    Imp 的变种，语言的变量是数字<b>或</b>数字的列表。这个扩展语言的语法允许我们写下例如
+    <span class="inlinecode">2</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">nil</span></span> 这样的奇怪表达式，而算数表达式的语义则必须描述这样的表达式是如何执行的。
+    一种方式是把列表也视作数字，并延续每个表达式都被求值到数字上的约定——比如，当上下文
+    需要一个数字时，列表会被解释为 <span class="inlinecode">0</span>。但这样做其实有一点敷衍了事。
 
 <div class="paragraph"> </div>
 
-    A much more natural approach is simply to say that the behavior of
-    an expression like <span class="inlinecode">2+<span class="id" type="var">nil</span></span> is _undefined_ &mdash; i.e., it doesn't
-    evaluate to any result at all.  And we can easily do this: we just
-    have to formulate <span class="inlinecode"><span class="id" type="var">aeval</span></span> and <span class="inlinecode"><span class="id" type="var">beval</span></span> as <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> propositions
-    rather than Fixpoints, so that we can make them partial functions
-    instead of total ones.
+    另一种更加自然的方式是说像 <span class="inlinecode">2+<span class="id" type="var">nil</span></span> 这类表达式的行为是<b>未定义的（undefined）</b>
+    ——即，它根本不会被求值到任何结果。我们可以简单地达到这个目的：只需要把 <span class="inlinecode"><span class="id" type="var">aeval</span></span>
+    和 <span class="inlinecode"><span class="id" type="var">beval</span></span> 以 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 命题而非 <span class="inlinecode"><span class="id" type="var">Fixpoints</span></span> 的方式来编写，这样我们便可
+    以表达偏函数而非全函数。
 
 <div class="paragraph"> </div>
 
-    Now, however, we encounter a serious deficiency.  In this
-    language, a command might fail to map a given starting state to
-    any ending state for _two quite different reasons_: either because
-    the execution gets into an infinite loop or because, at some
-    point, the program tries to do an operation that makes no sense,
-    such as adding a number to a list, so that none of the evaluation
-    rules can be applied.
+    然而，现在我们遇到了一个更严重地问题。在这个语言中，有<b>两种非常不同的原因</b>导致
+    一个命令无法把初始状态映射到任何地结束状态：执行进入了无限循环；或者在某个点，程序
+    尝试进行一个无意义的操作，比如对一个数字和列表求和，由此无法应用任何一个求值规则。
 
 <div class="paragraph"> </div>
 
-    These two outcomes &mdash; nontermination vs. getting stuck in an
-    erroneous configuration &mdash; should not be confused.  In particular, we
-    want to _allow_ the first (permitting the possibility of infinite
-    loops is the price we pay for the convenience of programming with
-    general looping constructs like <span class="inlinecode"><span class="id" type="var">while</span></span>) but _prevent_ the
-    second (which is just wrong), for example by adding some form of
-    _typechecking_ to the language.  Indeed, this will be a major
-    topic for the rest of the course.  As a first step, we need a way
-    of presenting the semantics that allows us to distinguish
-    nontermination from erroneous "stuck states."
+    这两种结果——非停机状态 vs. 在错误的结构上卡住（stuck）——不应当被混淆。特别地，我们想要
+    以添加某种形式的<b>类型检查（typechecking）</b>的方式来<b>允许</b>第一种情况（这是我们为
+    了方便地使用像 <span class="inlinecode"><span class="id" type="var">while</span></span> 这类通用循环构造所付出的必要代价），但<b>阻止</b>第二种情况
+    （也即错误的程序）。在剩下的课程中，这会是我们主要讨论的话题。作为第一步，我们需要一种
+    语义来区分非停机状态和错误的“卡住状态（stuck states）”。
 
 <div class="paragraph"> </div>
 
-    So, for lots of reasons, we'd often like to have a finer-grained
-    way of defining and reasoning about program behaviors.  This is
-    the topic of the present chapter.  Our goal is to replace the
-    "big-step" <span class="inlinecode"><span class="id" type="var">eval</span></span> relation with a "small-step" relation that
-    specifies, for a given program, how the "atomic steps" of
-    computation are performed. 
+    因此，出于这些原因，我们希望有一种更精细化的方式来定义和推理程序的行为。这便是本章的话题。
+    我们的目的是用“小步（small-step）”关系来代替“大步（big-step）”的 <span class="inlinecode"><span class="id" type="var">eval</span></span> 关系，
+    前者对于给定的程序，描述了计算是如何以“不可分步骤（atomic steps）”执行的。 
 </div>
 
 <div class="doc">
-<a name="lab133"></a><h1 class="section">A Toy Language</h1>
+<a name="lab133"></a><h1 class="section">一个玩具语言</h1>
 
 <div class="paragraph"> </div>
 
- To save space in the discussion, let's go back to an
-    incredibly simple language containing just constants and
-    addition.  (We use single letters &mdash; <span class="inlinecode"><span class="id" type="var">C</span></span> and <span class="inlinecode"><span class="id" type="var">P</span></span> (for Constant and
-    Plus) &mdash; as constructor names, for brevity.)  At the end of the
-    chapter, we'll see how to apply the same techniques to the full
-    Imp language.  
+ 为了简化讨论，让我们回过头来考虑一个只含有常量和加法的简单语言。
+    （我们使用字母——<span class="inlinecode"><span class="id" type="var">C</span></span> 和 <span class="inlinecode"><span class="id" type="var">P</span></span>（代表常量（Constant）和加法（Plus）——
+    简洁地作为构造子的名字。）在本章的最后，我们回看到如何将这些技术应用到
+    Imp 语言上。
 </div>
 <div class="code code-tight">
 
 <span class="id" type="keyword">Inductive</span> <a name="tm"><span class="id" type="inductive">tm</span></a> : <span class="id" type="keyword">Type</span> :=<br/>
-&nbsp;&nbsp;| <a name="C"><span class="id" type="constructor">C</span></a> : <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a> → <a class="idref" href="Smallstep.html#tm"><span class="id" type="inductive">tm</span></a>         <span class="comment">(*&nbsp;Constant&nbsp;*)</span><br/>
-&nbsp;&nbsp;| <a name="P"><span class="id" type="constructor">P</span></a> : <a class="idref" href="Smallstep.html#tm"><span class="id" type="inductive">tm</span></a> → <a class="idref" href="Smallstep.html#tm"><span class="id" type="inductive">tm</span></a> → <a class="idref" href="Smallstep.html#tm"><span class="id" type="inductive">tm</span></a>. <span class="comment">(*&nbsp;Plus&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <a name="C"><span class="id" type="constructor">C</span></a> : <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a> → <a class="idref" href="Smallstep.html#tm"><span class="id" type="inductive">tm</span></a>         <span class="comment">(*&nbsp;常量&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <a name="P"><span class="id" type="constructor">P</span></a> : <a class="idref" href="Smallstep.html#tm"><span class="id" type="inductive">tm</span></a> → <a class="idref" href="Smallstep.html#tm"><span class="id" type="inductive">tm</span></a> → <a class="idref" href="Smallstep.html#tm"><span class="id" type="inductive">tm</span></a>. <span class="comment">(*&nbsp;加法&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-Here is a standard evaluator for this language, written in
-    the big-step style that we've been using up to this point. 
+这是我们之前学习的大步语义风格求值器。 
 </div>
 <div class="code code-tight">
 
@@ -153,9 +123,8 @@ Here is a standard evaluator for this language, written in
 </div>
 
 <div class="doc">
-Here is the same evaluator, written in exactly the same
-    style, but formulated as an inductively defined relation.  Again,
-    we use the notation <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">\\</span> <span class="inlinecode"><span class="id" type="var">n</span></span> for "<span class="inlinecode"><span class="id" type="var">t</span></span> evaluates to <span class="inlinecode"><span class="id" type="var">n</span></span>." 
+这是用同样风格描述的等价求值器，只是用归纳关系来定义。再一次提醒，
+    我们使用记号 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">\\</span> <span class="inlinecode"><span class="id" type="var">n</span></span> 来表达“<span class="inlinecode"><span class="id" type="var">t</span></span> 求值到 <span class="inlinecode"><span class="id" type="var">n</span></span>”。 
 <div class="paragraph"> </div>
 
 <center><table class="infrule">
@@ -211,7 +180,7 @@ Here is the same evaluator, written in exactly the same
 </div>
 
 <div class="doc">
-Now, here is the corresponding _small-step_ evaluation relation.  <center><table class="infrule">
+现在，我们展示对应的<b>小步</b>求值关系。  <center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
@@ -269,39 +238,35 @@ Now, here is the corresponding _small-step_ evaluation relation.  <center><table
 </div>
 
 <div class="doc">
-Things to notice:
+值得注意的几点：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> We are defining just a single reduction step, in which
-      one <span class="inlinecode"><span class="id" type="var">P</span></span> node is replaced by its value.
+<li> 我们定义的仅仅是单步关系，其中只有一个 <span class="inlinecode"><span class="id" type="var">P</span></span> 节点被其值替换。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Each step finds the _leftmost_ <span class="inlinecode"><span class="id" type="var">P</span></span> node that is ready to
-      go (both of its operands are constants) and rewrites it in
-      place.  The first rule tells how to rewrite this <span class="inlinecode"><span class="id" type="var">P</span></span> node
-      itself; the other two rules tell how to find it.
+<li> 每步找到准备好的<b>最左侧（leftmost）</b> <span class="inlinecode"><span class="id" type="var">P</span></span> 节点（也即其操作数都是常量），
+      并在原地重写它。第一个规则是说如何重写 <span class="inlinecode"><span class="id" type="var">P</span></span> 节点自己；剩下的两个是说如何
+      得到这样的 <span class="inlinecode"><span class="id" type="var">P</span></span>。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> A term that is just a constant cannot take a step. 
+<li> 一个常量项无法继续被求值。 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- Let's pause and check a couple of examples of reasoning with
-    the <span class="inlinecode"><span class="id" type="var">step</span></span> relation... 
+ 让我们暂停一下，并使用 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系来推理一些例子…… 
 <div class="paragraph"> </div>
 
- If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> can take a step to <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>, then <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> steps
-    to <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>: 
+ 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 可向前一步到 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>，那么 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 可向前一步到 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>: 
 </div>
 <div class="code code-tight">
 
@@ -322,10 +287,8 @@ Things to notice:
 
 <div class="doc">
 <a name="lab134"></a><h4 class="section">练习：1 星 (test_step_2)</h4>
- Right-hand sides of sums can take a step only when the
-    left-hand side is finished: if <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> can take a step to <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>,
-    then <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">(<span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> steps to <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">(<span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)</span>
-    <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>: 
+ 当求和操作的左侧表达式已经完成求值，其右侧表达式可向前一步：
+    如果 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 可向前一步到 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>，那么 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">(<span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 可向前一步到 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">(<span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>： 
 </div>
 <div class="code code-tight">
 
@@ -352,21 +315,18 @@ Things to notice:
 </div>
 
 <div class="doc">
-<a name="lab135"></a><h1 class="section">Relations</h1>
+<a name="lab135"></a><h1 class="section">关系</h1>
 
 <div class="paragraph"> </div>
 
- We will be working with several different single-step relations,
-    so it is helpful to generalize a bit and state a few definitions
-    and theorems about relations in general.  (The optional chapter
-    <span class="inlinecode"><span class="id" type="var">Rel.v</span></span> develops some of these ideas in a bit more detail; it may
-    be useful if the treatment here is too dense.) 
+ 我们将会研究多个不同的单步关系，因此泛化一下这个概念，给出一些关系的一般定义和
+    定理是十分有帮助的。（可选章 <span class="inlinecode"><span class="id" type="var">Rel.v</span></span> 以更细致的方式开发了这个想法；放在这里
+    可能会对读者有帮助，但内容过于密集。）
 
 <div class="paragraph"> </div>
 
-    A _binary relation_ on a set <span class="inlinecode"><span class="id" type="var">X</span></span> is a family of propositions
-    parameterized by two elements of <span class="inlinecode"><span class="id" type="var">X</span></span> &mdash; i.e., a proposition about
-    pairs of elements of <span class="inlinecode"><span class="id" type="var">X</span></span>.  
+    集合 <span class="inlinecode"><span class="id" type="var">X</span></span> 上的<b>二元关系（binary relation）</b>是由 <span class="inlinecode"><span class="id" type="var">X</span></span> 中的两个元素参数化的
+    命题——也即，一个 <span class="inlinecode"><span class="id" type="var">X</span></span> 上序对的命题。 
 </div>
 <div class="code code-tight">
 
@@ -374,66 +334,54 @@ Things to notice:
 </div>
 
 <div class="doc">
-Our main examples of such relations in this chapter will be
-    the single-step reduction relation, <span class="inlinecode">==&gt;</span>, and its multi-step
-    variant, <span class="inlinecode">==&gt;*</span> (defined below), but there are many other
-    examples &mdash; e.g., the "equals," "less than," "less than or equal
-    to," and "is the square of" relations on numbers, and the "prefix
-    of" relation on lists and strings. 
+本章中，我们主要的例子将会是单步规约关系，<span class="inlinecode">==&gt;</span>，以及它的多步版本，
+    <span class="inlinecode">==&gt;*</span>（后面会定义），但是也有许多其他例子——比如，“等于”、“小于”、“小于等于”
+    和数字上“平方数”关系，还有字符串和列表的“前缀”关系。
 <div class="paragraph"> </div>
 
- One simple property of the <span class="inlinecode">==&gt;</span> relation is that, like the
-    big-step evaluation relation for Imp, it is _deterministic_.
-
+ 和 Imp 的大步求值关系一样，<span class="inlinecode">==&gt;</span> 关系的一个简单性质是<b>确定性（deterministic）</b>。
+    <b>定理</b>：对于每个 <span class="inlinecode"><span class="id" type="var">t</span></span>，最多有一个 <span class="inlinecode"><span class="id" type="var">t'</span></span> 且 <span class="inlinecode"><span class="id" type="var">t</span></span> 向前一步到 <span class="inlinecode"><span class="id" type="var">t'</span></span>
+     (<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 是可证的)。这也就是说 <span class="inlinecode">==&gt;</span> 是确定性的。
 <div class="paragraph"> </div>
 
-    _Theorem_: For each <span class="inlinecode"><span class="id" type="var">t</span></span>, there is at most one <span class="inlinecode"><span class="id" type="var">t'</span></span> such that <span class="inlinecode"><span class="id" type="var">t</span></span>
-    steps to <span class="inlinecode"><span class="id" type="var">t'</span></span> (<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> is provable).  This is the
-    same as saying that <span class="inlinecode">==&gt;</span> is deterministic. 
-<div class="paragraph"> </div>
-
- _Proof sketch_: We show that if <span class="inlinecode"><span class="id" type="var">x</span></span> steps to both <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> and
-    <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span>, then <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span> are equal, by induction on a derivation
-    of <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span>.  There are several cases to consider, depending on
-    the last rule used in this derivation and the last rule in the
-    given derivation of <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span>.
+ <b>证明草稿</b>：我们通过对 <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> 的导出式（derivation）进行归
+    纳来证明如果 <span class="inlinecode"><span class="id" type="var">x</span></span> 同时前进到 <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span>，那么 <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span> 是相等的。
+    取决于导出式中最后使用的规则和 <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span> 的导出式中最后的规则，我们有许多
+    情形需要考虑。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> If both are <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span>, the result is immediate.
+<li> 如果二者皆为 <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span>，那么结果是显然的。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> The cases when both derivations end with <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> or
-        <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> follow by the induction hypothesis.
+<li> 对于两个导出式都以 <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> 或 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> 结束的情形，可直接从归纳假设中得证。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> It cannot happen that one is <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span> and the other
-        is <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> or <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span>, since this would imply that <span class="inlinecode"><span class="id" type="var">x</span></span>
-        has the form <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> where both <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> are
-        constants (by <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span>) _and_ one of <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> or <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
-        has the form <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span>.
+<li> 其中一个是 <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span> 同时另一个是 <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> 或 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span>
+        的情形是不可能发生的，因为这蕴含了 <span class="inlinecode"><span class="id" type="var">x</span></span> 形如 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 而 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+        都是常量（根据 <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span>）<b>且</b> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 或 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 中的一个形如
+        <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span>。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Similarly, it cannot happen that one is <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> and the
-        other is <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span>, since this would imply that <span class="inlinecode"><span class="id" type="var">x</span></span> has the
-        form <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> where <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> has both the form <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> and the
-        form <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>. <span class="proofbox">&#9744;</span> 
+<li> 类似地，一个是 <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> 同时另一个是 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> 的情形也不可能发生，
+        因为这蕴含了 <span class="inlinecode"><span class="id" type="var">x</span></span> 形如 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 而 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 同时是 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>
+        两种形式。 <span class="proofbox">&#9744;</span>  
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- Formally: 
+ 形式化地来说： 
 </div>
 <div class="code code-tight">
 
@@ -476,17 +424,14 @@ Our main examples of such relations in this chapter will be
 </div>
 
 <div class="doc">
-There is some annoying repetition in this proof.  Each use of
-    <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> <span class="inlinecode"><span class="id" type="var">Hy<sub>2</sub></span></span> results in three subcases, only one of which is
-    relevant (the one that matches the current case in the induction
-    on <span class="inlinecode"><span class="id" type="var">Hy<sub>1</sub></span></span>).  The other two subcases need to be dismissed by finding
-    the contradiction among the hypotheses and doing inversion on it.
+可以看到在证明中有一些繁琐的重复。每次使用 <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> <span class="inlinecode"><span class="id" type="var">Hy<sub>2</sub></span></span> 会产生
+    三个子情形，但只有一个是相关的（匹配当前对 <span class="inlinecode"><span class="id" type="var">Hy<sub>1</sub></span></span> 归纳的那个情形）。
+    剩下的两个子情形需要通过从假设中找到矛盾并对其反演来消解掉。
 
 <div class="paragraph"> </div>
 
-    The following custom tactic, called <span class="inlinecode"><span class="id" type="var">solve_by_inverts</span></span>, can be
-    helpful in such cases.  It will solve the goal if it can be solved
-    by inverting some hypothesis; otherwise, it fails. 
+    下面自定义一个叫做 <span class="inlinecode"><span class="id" type="var">solve_by_inverts</span></span> 的策略可以简化这些情形。
+    如果目标可以被通过反演某些假设来解决，它便会证明目标；否则，则会失败。 
 </div>
 <div class="code code-tight">
 
@@ -500,21 +445,16 @@ There is some annoying repetition in this proof.  Each use of
 </div>
 
 <div class="doc">
-The details of how this works are not important for now, but it
-    illustrates the power of Coq's <span class="inlinecode"><span class="id" type="keyword">Ltac</span></span> language for
-    programmatically defining special-purpose tactics.  It looks
-    through the current proof state for a hypothesis <span class="inlinecode"><span class="id" type="var">H</span></span> (the first
-    <span class="inlinecode"><span class="id" type="keyword">match</span></span>) of type <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> (the second <span class="inlinecode"><span class="id" type="keyword">match</span></span>) such that performing
-    inversion on <span class="inlinecode"><span class="id" type="var">H</span></span> (followed by a recursive invocation of the same
-    tactic, if its argument <span class="inlinecode"><span class="id" type="var">n</span></span> is greater than one) completely solves
-    the current goal.  If no such hypothesis exists, it fails.
+关于它是如何工作的细节目前不那么重要，但是它展示了 Coq 中 <span class="inlinecode"><span class="id" type="keyword">Ltac</span></span> 
+    语言的能力以及如何编写特殊目标的策略。它会在当前证明状态中找到一个具有类型
+    <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> （第二个 <span class="inlinecode"><span class="id" type="keyword">match</span></span>）的假设 <span class="inlinecode"><span class="id" type="var">H</span></span>（第一个 <span class="inlinecode"><span class="id" type="keyword">match</span></span>），然后对 <span class="inlinecode"><span class="id" type="var">H</span></span> 
+    进行反演（如果参数 <span class="inlinecode"><span class="id" type="var">n</span></span> 大于一，那么它会继续递归地调用这个策略）来完成当前目标。
+    如果这样的假设不存在，这个策略会失败。
 
 <div class="paragraph"> </div>
 
-    We will usually want to call <span class="inlinecode"><span class="id" type="var">solve_by_inverts</span></span> with argument
-    <span class="inlinecode">1</span> (especially as larger arguments can lead to very slow proof
-    checking), so we define <span class="inlinecode"><span class="id" type="var">solve_by_invert</span></span> as a shorthand for this
-    case. 
+    我们通常会带上参数 <span class="inlinecode">1</span> 来调用 <span class="inlinecode"><span class="id" type="var">solve_by_inverts</span></span>（特别是很大的参数会导致
+    长时间的证明检查），因此我们对它定义一个缩写 <span class="inlinecode"><span class="id" type="var">solve_by_invert</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -523,8 +463,7 @@ The details of how this works are not important for now, but it
 </div>
 
 <div class="doc">
-Let's see how a proof of the previous theorem can be simplified
-    using this tactic... 
+让我们看看这个策略如何简化之前定理的证明吧…… 
 </div>
 <div class="code code-tight">
 
@@ -546,70 +485,62 @@ Let's see how a proof of the previous theorem can be simplified
 </div>
 
 <div class="doc">
-<a name="lab136"></a><h2 class="section">Values</h2>
+<a name="lab136"></a><h2 class="section">值</h2>
 
 <div class="paragraph"> </div>
 
- Next, it will be useful to slightly reformulate the
-    definition of single-step reduction by stating it in terms of
-    "values." 
+ 下一步，我们会使用“值”的概念来稍微重新表述一下单步规约的定义。
 <div class="paragraph"> </div>
 
- It is useful to think of the <span class="inlinecode">==&gt;</span> relation as defining an
-    _abstract machine_:
+ 为了更好地理解 <span class="inlinecode">==&gt;</span> 关系，我们定义一个<b>抽象机（abstract machine）</b>:
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> At any moment, the _state_ of the machine is a term.
+<li> 在任意时刻，机器的<b>状态（state）</b>是一个项（term）。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> A _step_ of the machine is an atomic unit of computation &mdash;
-        here, a single "add" operation.
+<li> 机器的一<b>步（step）</b>是一个原子单元的计算，在这里，是一个“加法”操作。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> The _halting states_ of the machine are ones where there is no
-        more computation to be done. 
+<li> 机器的<b>停机状态（halting states）</b>是指没有后继计算的状态。 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- We can then execute a term <span class="inlinecode"><span class="id" type="var">t</span></span> as follows:
+ 我们可以通过以下方式来执行项 <span class="inlinecode"><span class="id" type="var">t</span></span>：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> Take <span class="inlinecode"><span class="id" type="var">t</span></span> as the starting state of the machine.
+<li> 以 <span class="inlinecode"><span class="id" type="var">t</span></span> 作为机器的起始状态。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Repeatedly use the <span class="inlinecode">==&gt;</span> relation to find a sequence of
-        machine states, starting with <span class="inlinecode"><span class="id" type="var">t</span></span>, where each state steps to
-        the next.
+<li> 重复使用 <span class="inlinecode">==&gt;</span> 关系来找到一个以 <span class="inlinecode"><span class="id" type="var">t</span></span> 开始的机器状态序列，序列中每个状态
+        会转移到下一个。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> When no more reduction is possible, "read out" the final state
-        of the machine as the result of execution. 
+<li> 当无法继续进行规约时，<b>输出（read out）</b>最终的机器状态作为执行的结果。  
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- Intuitively, it is clear that the final states of the
-    machine are always terms of the form <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> for some <span class="inlinecode"><span class="id" type="var">n</span></span>.
-    We call such terms _values_. 
+ 直观地来说，可以看到机器的最终状态总是形如 <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 的项。
+    我们把这些项叫做<b>值（values）</b>。 
 </div>
 <div class="code code-tight">
 
@@ -618,9 +549,8 @@ Let's see how a proof of the previous theorem can be simplified
 </div>
 
 <div class="doc">
-Having introduced the idea of values, we can use it in the
-    definition of the <span class="inlinecode">==&gt;</span> relation to write <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> rule in a
-    slightly more elegant way: 
+在引入了值的概念后，我们可以使用它来更简洁地定义 <span class="inlinecode">==&gt;</span> 
+    关系中的 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> 规则： 
 <div class="paragraph"> </div>
 
  <center><table class="infrule">
@@ -666,16 +596,13 @@ Having introduced the idea of values, we can use it in the
   <td class="infrule">P&nbsp;v<sub>1</sub>&nbsp;t<sub>2</sub>&nbsp;==>&nbsp;P&nbsp;v<sub>1</sub>&nbsp;t<sub>2</sub>'</td>
   <td></td>
 </td>
-</table></center> Again, the variable names here carry important information:
-    by convention, <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> ranges only over values, while <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
-    range over arbitrary terms.  (Given this convention, the explicit
-    <span class="inlinecode"><span class="id" type="var">value</span></span> hypothesis is arguably redundant.  We'll keep it for now,
-    to maintain a close correspondence between the informal and Coq
-    versions of the rules, but later on we'll drop it in informal
-    rules for brevity.) 
+</table></center> 再一次地，变量名在这里包含了重要的信息：按照惯例，<span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> 涉及到值，
+    而 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 涉及到任意的项。（在这种约定下，显式的 <span class="inlinecode"><span class="id" type="var">value</span></span> 假设也
+    许是多余的。在这里仍然保留它，主要是为了在非形式化的和 Coq 的规则之间
+    建立起密切的对应关系，但为简单起见，后面的非形式化规则中我们便会省略掉它。） 
 <div class="paragraph"> </div>
 
-  Here are the formal rules: 
+  这些是形式化的规则： 
 </div>
 <div class="code code-tight">
 
@@ -697,52 +624,47 @@ Having introduced the idea of values, we can use it in the
 
 <div class="doc">
 <a name="lab137"></a><h4 class="section">练习：3 星, recommended (redo_determinism)</h4>
- As a sanity check on this change, let's re-verify determinism.
+ 作为这一改变的完备性检查，让我们重新验证一下确定性。
 
 <div class="paragraph"> </div>
 
-    _Proof sketch_: We must show that if <span class="inlinecode"><span class="id" type="var">x</span></span> steps to both <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> and
-    <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span>, then <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span> are equal.  Consider the final rules used
-    in the derivations of <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span>.
+    <b>证明草稿</b>：我们必须证明如果 <span class="inlinecode"><span class="id" type="var">x</span></span> 向前一步可同时到 <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span>，
+    那么 <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span> 相等。考虑 <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">step</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y<sub>2</sub></span></span> 生成式
+    中最后使用的规则。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> If both are <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span>, the result is immediate.
+<li> 如果二者皆为 <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span>，那么结果是显然的。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> It cannot happen that one is <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span> and the other
-      is <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> or <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span>, since this would imply that <span class="inlinecode"><span class="id" type="var">x</span></span> has
-      the form <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> where both <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> are constants (by
-      <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span>) _and_ one of <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> or <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> has the form <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span>.
+<li> 其中一个是 <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span> 同时另一个是 <span class="inlinecode"><span class="id" type="var">ST_Plue1</span></span> 或 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span>
+      的情形是不可能发生的，因为这蕴含了 <span class="inlinecode"><span class="id" type="var">x</span></span> 形如 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 而 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+      都是常量<b>且</b> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 或 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 中的一个形如 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span>。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Similarly, it cannot happen that one is <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> and the other
-      is <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span>, since this would imply that <span class="inlinecode"><span class="id" type="var">x</span></span> has the form <span class="inlinecode"><span class="id" type="var">P</span></span>
-      <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> where <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> both has the form <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> and is a
-      value (hence has the form <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>).
+<li> 类似地，一个是 <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> 同时另一个是 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> 的情形也不可能发生，
+      因为这蕴含了 <span class="inlinecode"><span class="id" type="var">x</span></span> 形如 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 而 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 既形如 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> 又是值
+      （因此形如 <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>）。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> The cases when both derivations end with <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> or
-      <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> follow by the induction hypothesis. <span class="proofbox">&#9744;</span> 
+<li> 对于两个导出式都以 <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> 或 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> 结束的情形，可直接从归纳假设中得证。<span class="proofbox">&#9744;</span> 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- Most of this proof is the same as the one above.  But to get
-    maximum benefit from the exercise you should try to write your
-    formal version from scratch and just use the earlier one if you
-    get stuck. 
+ 本证明中大部分与之前的相同。但为了最大化练习的收益，你应该从零写下形式化的版本，
+    只有当卡住时再去回顾之前的证明。 
 </div>
 <div class="code code-tight">
 
@@ -755,56 +677,50 @@ Having introduced the idea of values, we can use it in the
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab138"></a><h2 class="section">Strong Progress and Normal Forms</h2>
+<a name="lab138"></a><h2 class="section">强可进性和正规式</h2>
 
 <div class="paragraph"> </div>
 
- The definition of single-step reduction for our toy language
-    is fairly simple, but for a larger language it would be easy to
-    forget one of the rules and accidentally create a situation where
-    some term cannot take a step even though it has not been
-    completely reduced to a value.  The following theorem shows that
-    we did not, in fact, make such a mistake here. 
+ 这个玩具语言的单步规约定义是十分简单的，但是对于大一点的语言，往往会出现
+    因为忘记某个规则而导致一些项虽然还不是值但已无法继续前进规约的情况。下面的定理
+    说明了我们没有犯这样的错误。 
 <div class="paragraph"> </div>
 
- _Theorem_ (_Strong Progress_): If <span class="inlinecode"><span class="id" type="var">t</span></span> is a term, then either <span class="inlinecode"><span class="id" type="var">t</span></span>
-    is a value or else there exists a term <span class="inlinecode"><span class="id" type="var">t'</span></span> such that <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>. 
+ <b>定理</b> （<b>强可进性</b>（Strong Progress））：如果 <span class="inlinecode"><span class="id" type="var">t</span></span> 是一个项，那么 <span class="inlinecode"><span class="id" type="var">t</span></span>
+    要么是一个值，要么存在项 <span class="inlinecode"><span class="id" type="var">t'</span></span> 使 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>。
 <div class="paragraph"> </div>
 
- _Proof_: By induction on <span class="inlinecode"><span class="id" type="var">t</span></span>.
+ <b>证明</b>：对 <span class="inlinecode"><span class="id" type="var">t</span></span> 进行归纳。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> Suppose <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>. Then <span class="inlinecode"><span class="id" type="var">t</span></span> is a value.
+<li> 假设 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>。那么 <span class="inlinecode"><span class="id" type="var">t</span></span> 是值。 
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Suppose <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>, where (by the IH) <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> either is a value
-      or can step to some <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>, and where <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> is either a value or
-      can step to some <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>. We must show <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> is either a value
-      or steps to some <span class="inlinecode"><span class="id" type="var">t'</span></span>.
+<li> 假设 Suppose <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>，其中 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 或是值，或可前进到某个 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>；
+      <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 或是值，或可前进到某个 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>（根据 <span class="inlinecode"><span class="id" type="var">IH</span></span>）。我们需要证明 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 要么是值，
+      要么可前进到某个 <span class="inlinecode"><span class="id" type="var">t'</span></span>
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> are both values, then <span class="inlinecode"><span class="id" type="var">t</span></span> can take a step, by
-        <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span>.
+<li> 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 都是值，那么根据 <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span> 得 <span class="inlinecode"><span class="id" type="var">t</span></span> 可前进一步。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is a value and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> can take a step, then so can <span class="inlinecode"><span class="id" type="var">t</span></span>,
-        by <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span>.
+<li> 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是值且 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 可前进一步，那么根据 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> 得 <span class="inlinecode"><span class="id" type="var">t</span></span> 可前进一步。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> can take a step, then so can <span class="inlinecode"><span class="id" type="var">t</span></span>, by <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span>.  <span class="proofbox">&#9744;</span> 
+<li> 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 可前进一步，那么根据 <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> 得 <span class="inlinecode"><span class="id" type="var">t</span></span> 可前进一步。 <span class="proofbox">&#9744;</span> 
 
 </li>
 </ul>
@@ -814,7 +730,7 @@ Having introduced the idea of values, we can use it in the
 
 <div class="paragraph"> </div>
 
-   Or, formally: 
+   或者，形式化地说： 
 </div>
 <div class="code code-tight">
 
@@ -840,22 +756,18 @@ Having introduced the idea of values, we can use it in the
 </div>
 
 <div class="doc">
-This important property is called _strong progress_, because
-    every term either is a value or can "make progress" by stepping to
-    some other term.  (The qualifier "strong" distinguishes it from a
-    more refined version that we'll see in later chapters, called
-    just _progress_.) 
+这个重要的定理叫做<b>强可进性（strong progress）</b>，因为每个项
+    要么是值，要么可“前进”到某个其他的项。（修饰语“强”区分另一个不同的版本，
+    叫做<b>可进性</b>，我们在后面的章节中会学校到。） 
 <div class="paragraph"> </div>
 
- The idea of "making progress" can be extended to tell us something
-    interesting about values: in this language, values are exactly the
-    terms that _cannot_ make progress in this sense.
+ 通过扩展“做出前进”这个概念，我们可以得到一些关于值有趣的事实：在本语言中，
+    从这个意义上讲，值是<b>不能</b>够继续前进的项。
 
 <div class="paragraph"> </div>
 
-    To state this observation formally, let's begin by giving a name
-    to terms that cannot make progress.  We'll call them _normal
-    forms_.  
+    为了形式化地表述这个观察，让我们给不能前进的项起个名字。我们把它叫做
+    <b>正规式（normal forms）</b>。 
 </div>
 <div class="code code-tight">
 
@@ -864,17 +776,12 @@ This important property is called _strong progress_, because
 </div>
 
 <div class="doc">
-Note that this definition specifies what it is to be a normal form
-    for an _arbitrary_ relation <span class="inlinecode"><span class="id" type="var">R</span></span> over an arbitrary set <span class="inlinecode"><span class="id" type="var">X</span></span>, not
-    just for the particular single-step reduction relation over terms
-    that we are interested in at the moment.  We'll re-use the same
-    terminology for talking about other relations later in the
-    course. 
+请注意这个定义规范了对任意集合 <span class="inlinecode"><span class="id" type="var">X</span></span> 上的任意关系 <span class="inlinecode"><span class="id" type="var">R</span></span> 的正规式，而不仅仅是我们
+    这里关心的某个单步规约关系的正规式。后面的课程讨论其他关系时我们会继续使用这个术语。 
 <div class="paragraph"> </div>
 
- We can use this terminology to generalize the observation we made
-    in the strong progress theorem: in this language, normal forms and
-    values are actually the same thing. 
+ 我们可以使用这个术语来一般化对于强可进性定理的观察：在这个语言中，
+    正规式和值实际上是同一个东西。 
 </div>
 <div class="code code-tight">
 
@@ -913,24 +820,20 @@ Note that this definition specifies what it is to be a normal form
 </div>
 
 <div class="doc">
-Why is this interesting?
+这个为什么值得注意呢？
 
 <div class="paragraph"> </div>
 
-    Because <span class="inlinecode"><span class="id" type="var">value</span></span> is a syntactic concept &mdash; it is defined by looking
-    at the form of a term &mdash; while <span class="inlinecode"><span class="id" type="var">normal_form</span></span> is a semantic one &mdash;
-    it is defined by looking at how the term steps.  It is not obvious
-    that these concepts should coincide!  
+    因为 <span class="inlinecode"><span class="id" type="var">value</span></span> 是一个语法概念——它是由项的形式定义的——然而 <span class="inlinecode"><span class="id" type="var">normal_form</span></span> 是一个
+    语义概念——它是由项如何前进定义的。并不显然这两个概念应当一致！ 
 <div class="paragraph"> </div>
 
- Indeed, we could easily have written the definitions so that they
-    would _not_ coincide. 
+ 确实，容易写下使他们<b>不</b>一致的定义。 
 <div class="paragraph"> </div>
 
 <a name="lab139"></a><h4 class="section">练习：3 星, optional (value_not_same_as_normal_form1)</h4>
- We might, for example, mistakenly define <span class="inlinecode"><span class="id" type="var">value</span></span> so that it
-    includes some terms that are not finished reducing.  (Even if you don't work this exercise and the following ones
-    in Coq, make sure you can think of an example of such a term.) 
+ 我们可能错误地定义了 <span class="inlinecode"><span class="id" type="var">value</span></span> 使它包括了还没有完成归约的项。  （如果你不想亲自动手在 Coq 中完成这个和下一个练习，
+    也请思考一下，尝试找到一个这样的项。）
 </div>
 <div class="code code-tight">
 
@@ -963,8 +866,7 @@ Why is this interesting?
 
 <div class="doc">
 <a name="lab140"></a><h4 class="section">练习：2 星, optional (value_not_same_as_normal_form2)</h4>
- Alternatively, we might mistakenly define <span class="inlinecode"><span class="id" type="var">step</span></span> so that it
-    permits something designated as a value to reduce further. 
+ 或许，我们错误地定义了 <span class="inlinecode"><span class="id" type="var">step</span></span> 使它允许继续归约一个值。 
 </div>
 <div class="code code-tight">
 
@@ -1001,12 +903,9 @@ Why is this interesting?
 <div class="paragraph"> </div>
 
 <a name="lab141"></a><h4 class="section">练习：3 星, optional (value_not_same_as_normal_form3)</h4>
- Finally, we might define <span class="inlinecode"><span class="id" type="var">value</span></span> and <span class="inlinecode"><span class="id" type="var">step</span></span> so that there is some
-    term that is not a value but that cannot take a step in the <span class="inlinecode"><span class="id" type="var">step</span></span>
-    relation.  Such terms are said to be _stuck_. In this case this is
-    caused by a mistake in the semantics, but we will also see
-    situations where, even in a correct language definition, it makes
-    sense to allow some terms to be stuck. 
+ 最后，我们还可能通过 <span class="inlinecode"><span class="id" type="var">value</span></span> 和 <span class="inlinecode"><span class="id" type="var">step</span></span> 定义了某些不是值但已无法继续由 
+    <span class="inlinecode"><span class="id" type="var">step</span></span> 关系进行归约的项。这些项被称作<b>卡住了（stuck）</b>。在这种情况是由语义
+    中的错误导致的，但我们也会看到一些情况，即使是正确的语言定义中也会允许一些项卡住。 
 </div>
 <div class="code code-tight">
 
@@ -1025,7 +924,7 @@ Why is this interesting?
 </div>
 
 <div class="doc">
-(Note that <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> is missing.) 
+（请注意 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> 是未定义的。） 
 </div>
 <div class="code code-tight">
 
@@ -1039,7 +938,7 @@ Why is this interesting?
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab142"></a><h3 class="section">Additional Exercises</h3>
+<a name="lab142"></a><h3 class="section">额外练习</h3>
 
 </div>
 <div class="code code-space">
@@ -1049,9 +948,8 @@ Why is this interesting?
 </div>
 
 <div class="doc">
-Here is another very simple language whose terms, instead of being
-    just addition expressions and numbers, are just the booleans true
-    and false and a conditional expression... 
+这是另一个非常简单的语言，其项并不是数字和加法表达式，而是布尔值真和假，
+    以及条件表达式…… 
 </div>
 <div class="code code-tight">
 
@@ -1077,9 +975,8 @@ Here is another very simple language whose terms, instead of being
 
 <div class="doc">
 <a name="lab143"></a><h4 class="section">练习：1 星 (smallstep_bools)</h4>
- Which of the following propositions are provable?  (This is just a
-    thought exercise, but for an extra challenge feel free to prove
-    your answers in Coq.) 
+ 下列哪些命题是可被证明的？（这只是一个思考练习，但如果你想挑战一下自己，
+    可以尝试在 Coq 中证明你的答案。） 
 </div>
 <div class="code code-tight">
 
@@ -1114,8 +1011,7 @@ Here is another very simple language whose terms, instead of being
 <div class="paragraph"> </div>
 
 <a name="lab144"></a><h4 class="section">练习：3 星, optional (progress_bool)</h4>
- Just as we proved a progress theorem for plus expressions, we can
-    do so for boolean expressions, as well. 
+ 我们之前对加法表达式证明了其可进性，我们也可以证明布尔表达式的可进性。 
 </div>
 <div class="code code-tight">
 
@@ -1147,13 +1043,10 @@ Here is another very simple language whose terms, instead of being
 
 <div class="doc">
 <a name="lab146"></a><h4 class="section">练习：2 星 (smallstep_bool_shortcut)</h4>
- Suppose we want to add a "short circuit" to the step relation for
-    boolean expressions, so that it can recognize when the <span class="inlinecode"><span class="id" type="keyword">then</span></span> and
-    <span class="inlinecode"><span class="id" type="keyword">else</span></span> branches of a conditional are the same value (either
-    <span class="inlinecode"><span class="id" type="var">ttrue</span></span> or <span class="inlinecode"><span class="id" type="var">tfalse</span></span>) and reduce the whole conditional to this
-    value in a single step, even if the guard has not yet been reduced
-    to a value. For example, we would like this proposition to be
-    provable:
+ 假设我们想要为布尔表达式的单步归约关系添加“短路（short circuit）”，
+    这样当条件语句的 <span class="inlinecode"><span class="id" type="keyword">then</span></span> 和 <span class="inlinecode"><span class="id" type="keyword">else</span></span> 分支有相同的值时（<span class="inlinecode"><span class="id" type="var">ttrue</span></span> 或 <span class="inlinecode"><span class="id" type="var">tfalse</span></span>），
+    便可以用一步化简整个条件表达式到值，尽管其条件还没有被归约到某个值。
+    比如，我们想要下面的命题可被证明：
 
 <div class="paragraph"> </div>
 
@@ -1170,8 +1063,7 @@ Here is another very simple language whose terms, instead of being
 
 <div class="paragraph"> </div>
 
- Write an extra clause for the step relation that achieves this
-    effect and prove <span class="inlinecode"><span class="id" type="var">bool_step_prop4</span></span>. 
+ 请为单步关系添加一个额外的语句来达到这个目的，并证明 <span class="inlinecode"><span class="id" type="var">bool_step_prop4</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -1205,20 +1097,17 @@ Here is another very simple language whose terms, instead of being
 <div class="paragraph"> </div>
 
 <a name="lab147"></a><h4 class="section">练习：3 星, optional (properties_of_altered_step)</h4>
- It can be shown that the determinism and strong progress theorems
-    for the step relation in the lecture notes also hold for the
-    definition of step given above.  After we add the clause
-    <span class="inlinecode"><span class="id" type="var">ST_ShortCircuit</span></span>...
+ 课程中证明的确定性和强可进性定理对于我们刚刚定义的单步关系也是成立的。
+    在我们添加了 <span class="inlinecode"><span class="id" type="var">ST_ShortCircuit</span></span> 以后……
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> Is the <span class="inlinecode"><span class="id" type="var">step</span></span> relation still deterministic?  Write yes or no and
-      briefly (1 sentence) explain your answer.
+<li> <span class="inlinecode"><span class="id" type="var">step</span></span> 关系是否仍然是确定的？请回答是或否，并简要解释（一句话即可）你的答案。
 
 <div class="paragraph"> </div>
 
-      Optional: prove your answer correct in Coq. 
+      可选：在 Coq 中证明的答案。
 </li>
 </ul>
 
@@ -1233,12 +1122,11 @@ Here is another very simple language whose terms, instead of being
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> Does a strong progress theorem hold? Write yes or no and
-     briefly (1 sentence) explain your answer.
+<li> 强可进性是否成立？请回答是或否，并简要解释（一句话即可）你的答案。
 
 <div class="paragraph"> </div>
 
-     Optional: prove your answer correct in Coq.
+     可选：在 Coq 中证明的答案。
 
 </li>
 </ul>
@@ -1254,10 +1142,8 @@ Here is another very simple language whose terms, instead of being
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> In general, is there any way we could cause strong progress to
-     fail if we took away one or more constructors from the original
-     step relation? Write yes or no and briefly (1 sentence) explain
-     your answer.
+<li> 一般来说，如果从原始的单步关系中拿掉一两个构造子，能否使强可进性不再成立？
+     请回答是或否，并简要解释（一句话即可）你的答案。
 
 </li>
 </ul>
@@ -1274,47 +1160,40 @@ Here is another very simple language whose terms, instead of being
 </div>
 
 <div class="doc">
-<a name="lab148"></a><h1 class="section">Multi-Step Reduction</h1>
+<a name="lab148"></a><h1 class="section">多步规约</h1>
 
 <div class="paragraph"> </div>
 
- We've been working so far with the _single-step reduction_
-    relation <span class="inlinecode">==&gt;</span>, which formalizes the individual steps of an
-    abstract machine for executing programs.
+ 目前为止，我们学习的是<b>单步归约（single-step reduction）</b>关系 <span class="inlinecode">==&gt;</span>，
+    它形式化了抽象机执行程序的每一步。
 
 <div class="paragraph"> </div>
 
-    We can use the same machine to reduce programs to completion &mdash; to
-    find out what final result they yield.  This can be formalized as
-    follows:
+    我们可以使用同一个机器来归约程序直到结束——得到它最后的结果。我们这样形式化它：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> First, we define a _multi-step reduction relation_ <span class="inlinecode">==&gt;*</span>, which
-      relates terms <span class="inlinecode"><span class="id" type="var">t</span></span> and <span class="inlinecode"><span class="id" type="var">t'</span></span> if <span class="inlinecode"><span class="id" type="var">t</span></span> can reach <span class="inlinecode"><span class="id" type="var">t'</span></span> by any number
-      (including zero) of single reduction steps.
+<li> 首先，我们定义一个<b>多步归约关系（multi-step reduction relation）</b>
+      <span class="inlinecode">==&gt;*</span>，如果项 <span class="inlinecode"><span class="id" type="var">t</span></span> 可在任意多的单步（包括零步）内到达 <span class="inlinecode"><span class="id" type="var">t'</span></span>，那么它关联起 
+      <span class="inlinecode"><span class="id" type="var">t</span></span> 和 <span class="inlinecode"><span class="id" type="var">t'</span></span>。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Then we define a "result" of a term <span class="inlinecode"><span class="id" type="var">t</span></span> as a normal form that
-      <span class="inlinecode"><span class="id" type="var">t</span></span> can reach by multi-step reduction. 
+<li> 接着我们定义 <span class="inlinecode"><span class="id" type="var">t</span></span> 的“结果（result）”是一个 <span class="inlinecode"><span class="id" type="var">t</span></span> 可用多步达到的正规式。
 </li>
 </ul>
 
 </div>
 
 <div class="doc">
-Since we'll want to reuse the idea of multi-step reduction many
-    times, let's take a little extra trouble and define it
-    generically.
+因为我们会反复使用多步归约这个概念，让我们花点功夫一般化地定义它。
 
 <div class="paragraph"> </div>
 
-    Given a relation <span class="inlinecode"><span class="id" type="var">R</span></span>, we define a relation <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span>, called the
-    _multi-step closure of <span class="inlinecode"><span class="id" type="var">R</span></span>_ as follows. 
+    如下，给定关系 <span class="inlinecode"><span class="id" type="var">R</span></span>，我们定义关系 <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> 是 <span class="inlinecode"><span class="id" type="var">R</span></span> 的<b>多步闭包（multi-step closure）</b>。
 </div>
 <div class="code code-tight">
 
@@ -1327,25 +1206,22 @@ Since we'll want to reuse the idea of multi-step reduction many
 </div>
 
 <div class="doc">
-(In the <a href="https://www.cis.upenn.edu/~bcpierce/sf/lf-current/Rel.html"><span class="inlineref">Rel</span></a> chapter of _Logical Foundations_ and
-    the Coq standard library, this relation is called
-    <span class="inlinecode"><span class="id" type="var">clos_refl_trans_1n</span></span>.  We give it a shorter name here for the sake
-    of readability.) 
+（在<b>逻辑基础</b>的 <a href="https://www.cis.upenn.edu/~bcpierce/sf/lf-current/Rel.html"><span class="inlineref">Rel</span></a> 一章和 Coq 标准库中，这个关系叫做
+    <span class="inlinecode"><span class="id" type="var">clos_refl_trans_1n</span></span>。出于可读性的考虑，我们给出一个简短的名字。） 
 <div class="paragraph"> </div>
 
- The effect of this definition is that <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> relates two
-    elements <span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span> if 
+ 这个定义的作用是 <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> 关联起两个元素 <span class="inlinecode"><span class="id" type="var">x</span></span> 和 <span class="inlinecode"><span class="id" type="var">y</span></span>，如果
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>, or 
+<li> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>，或
 
 </li>
-<li> <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span>, or 
+<li> <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span>，或 
 
 </li>
-<li> there is some nonempty sequence <span class="inlinecode"><span class="id" type="var">z<sub>1</sub></span></span>, <span class="inlinecode"><span class="id" type="var">z<sub>2</sub></span></span>, ..., <span class="inlinecode"><span class="id" type="var">zn</span></span> such that 
+<li> 存在某个非空序列 <span class="inlinecode"><span class="id" type="var">z<sub>1</sub></span></span>,<span class="inlinecode"><span class="id" type="var">z<sub>2</sub></span></span>, ..., <span class="inlinecode"><span class="id" type="var">zn</span></span> 使得
 
 <div class="paragraph"> </div>
 
@@ -1360,12 +1236,11 @@ Since we'll want to reuse the idea of multi-step reduction many
 
 </li>
 </ul>
-    Thus, if <span class="inlinecode"><span class="id" type="var">R</span></span> describes a single-step of computation, then <span class="inlinecode"><span class="id" type="var">z<sub>1</sub></span></span>...<span class="inlinecode"><span class="id" type="var">zn</span></span> 
-    is the sequence of intermediate steps of computation between <span class="inlinecode"><span class="id" type="var">x</span></span> and 
-    <span class="inlinecode"><span class="id" type="var">y</span></span>. 
+    因此，如果 <span class="inlinecode"><span class="id" type="var">R</span></span> 刻画了单步计算，那么 <span class="inlinecode"><span class="id" type="var">z<sub>1</sub></span></span>...<span class="inlinecode"><span class="id" type="var">zn</span></span> 则是 <span class="inlinecode"><span class="id" type="var">x</span></span> 和 <span class="inlinecode"><span class="id" type="var">y</span></span>
+    的中间计算步骤。 
 <div class="paragraph"> </div>
 
- We write <span class="inlinecode">==&gt;*</span> for the <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">step</span></span> relation on terms. 
+ 我们为关系 <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">step</span></span> 使用记号 <span class="inlinecode">==&gt;*</span>。
 </div>
 <div class="code code-tight">
 
@@ -1373,21 +1248,18 @@ Since we'll want to reuse the idea of multi-step reduction many
 </div>
 
 <div class="doc">
-The relation <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> has several crucial properties.
+关系 <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> 具有多个重要的性质。
 
 <div class="paragraph"> </div>
 
-    First, it is obviously _reflexive_ (that is, <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>
-    <span class="inlinecode"><span class="id" type="var">x</span></span>).  In the case of the <span class="inlinecode">==&gt;*</span> (i.e., <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">step</span></span>) relation, the
-    intuition is that a term can execute to itself by taking zero
-    steps of execution.
+    首先，显然它是<b>自反的（reflexive）</b>（即 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>）。
+    就 <span class="inlinecode">==&gt;*</span> 关系（即 <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">step</span></span>）而言，可以直观地理解为一个项可以执行零步
+    到它自己。
 
 <div class="paragraph"> </div>
 
-    Second, it contains <span class="inlinecode"><span class="id" type="var">R</span></span> &mdash; that is, single-step executions are a
-    particular case of multi-step executions.  (It is this fact that
-    justifies the word "closure" in the term "multi-step closure of
-    <span class="inlinecode"><span class="id" type="var">R</span></span>.") 
+    第二，它包含了 <span class="inlinecode"><span class="id" type="var">R</span></span>——也即，单步执行是多步执行的一个特殊情况。（这个事实解释了
+    “<span class="inlinecode"><span class="id" type="var">R</span></span> 的多步闭包（multi-step closure）”中的“闭包（closure）”一词。） 
 </div>
 <div class="code code-tight">
 
@@ -1402,7 +1274,7 @@ The relation <span class="inlinecode"><span class="id" type="var">multi</span></
 </div>
 
 <div class="doc">
-Third, <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> is _transitive_. 
+第三， <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">R</span></span> 是<b>传递的（transitive）</b>。 
 </div>
 <div class="code code-tight">
 
@@ -1424,16 +1296,16 @@ Third, <span class="inlinecode"><span class="id" type="var">multi</span></span> 
 </div>
 
 <div class="doc">
-In particular, for the <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">step</span></span> relation on terms, if
-    <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span>==&gt;*<span class="id" type="var">t<sub>2</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span>==&gt;*<span class="id" type="var">t<sub>3</sub></span></span>, then <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span>==&gt;*<span class="id" type="var">t<sub>3</sub></span></span>. 
+特别地，对于项的 <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">step</span></span> 关系可得，如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span>==&gt;*<span class="id" type="var">t<sub>2</sub></span></span> 且 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span>==&gt;*<span class="id" type="var">t<sub>3</sub></span></span>，
+    那么 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span>==&gt;*<span class="id" type="var">t<sub>3</sub></span></span>。
 </div>
 
 <div class="doc">
-<a name="lab149"></a><h2 class="section">Examples</h2>
+<a name="lab149"></a><h2 class="section">例子</h2>
 
 <div class="paragraph"> </div>
 
- Here's a specific instance of the <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">step</span></span> relation: 
+ 这里有一些 <span class="inlinecode"><span class="id" type="var">multi</span></span> <span class="inlinecode"><span class="id" type="var">step</span></span> 关系的例子： 
 </div>
 <div class="code code-tight">
 
@@ -1461,8 +1333,7 @@ In particular, for the <span class="inlinecode"><span class="id" type="var">mult
 </div>
 
 <div class="doc">
-Here's an alternate proof of the same fact that uses <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> to
-    avoid explicitly constructing all the intermediate terms. 
+这是使用 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 的另一种证明方法，可以避免显式地构造所有的中间项。 
 </div>
 <div class="code code-tight">
 
@@ -1532,12 +1403,12 @@ Here's an alternate proof of the same fact that uses <span class="inlinecode"><s
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab153"></a><h2 class="section">Normal Forms Again</h2>
+<a name="lab153"></a><h2 class="section">再谈正规式</h2>
 
 <div class="paragraph"> </div>
 
- If <span class="inlinecode"><span class="id" type="var">t</span></span> reduces to <span class="inlinecode"><span class="id" type="var">t'</span></span> in zero or more steps and <span class="inlinecode"><span class="id" type="var">t'</span></span> is a
-    normal form, we say that "<span class="inlinecode"><span class="id" type="var">t'</span></span> is a normal form of <span class="inlinecode"><span class="id" type="var">t</span></span>." 
+ 如果 <span class="inlinecode"><span class="id" type="var">t</span></span> 可在零步或多步归约到 <span class="inlinecode"><span class="id" type="var">t'</span></span> 且 <span class="inlinecode"><span class="id" type="var">t'</span></span> 是一个正规式，那么我们说
+    “<span class="inlinecode"><span class="id" type="var">t'</span></span> 是 <span class="inlinecode"><span class="id" type="var">t</span></span> 的一个正规式”。 
 </div>
 <div class="code code-tight">
 
@@ -1547,12 +1418,9 @@ Here's an alternate proof of the same fact that uses <span class="inlinecode"><s
 </div>
 
 <div class="doc">
-We have already seen that, for our language, single-step reduction is
-    deterministic &mdash; i.e., a given term can take a single step in
-    at most one way.  It follows from this that, if <span class="inlinecode"><span class="id" type="var">t</span></span> can reach
-    a normal form, then this normal form is unique.  In other words, we
-    can actually pronounce <span class="inlinecode"><span class="id" type="var">normal_form</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> as "<span class="inlinecode"><span class="id" type="var">t'</span></span> is _the_
-    normal form of <span class="inlinecode"><span class="id" type="var">t</span></span>." 
+我们已经看到，这这个语言中，单步归约是确定的——也即，给定的项最多只有一种方法
+    前进一步。从中可推论，如果 <span class="inlinecode"><span class="id" type="var">t</span></span> 可以到到某个正规式，那么这个正规式唯一。换句话说，
+    我们实际上可以把 <span class="inlinecode"><span class="id" type="var">normal_form</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 理解为“<span class="inlinecode"><span class="id" type="var">t'</span></span> <b>就是</b> <span class="inlinecode"><span class="id" type="var">t</span></span> 的正规式”。
 <div class="paragraph"> </div>
 
 <a name="lab154"></a><h4 class="section">练习：3 星, optional (normal_forms_unique)</h4>
@@ -1562,7 +1430,7 @@ We have already seen that, for our language, single-step reduction is
 <span class="id" type="keyword">Theorem</span> <a name="normal_forms_unique"><span class="id" type="lemma">normal_forms_unique</span></a>:<br/>
 &nbsp;&nbsp;<a class="idref" href="Smallstep.html#deterministic"><span class="id" type="definition">deterministic</span></a> <a class="idref" href="Smallstep.html#normal_form_of"><span class="id" type="definition">normal_form_of</span></a>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;We&nbsp;recommend&nbsp;using&nbsp;this&nbsp;initial&nbsp;setup&nbsp;as-is!&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;我们推荐以这样的方式开始证明。&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <a class="idref" href="Smallstep.html#deterministic"><span class="id" type="definition">deterministic</span></a>. <span class="id" type="tactic">unfold</span> <a class="idref" href="Smallstep.html#normal_form_of"><span class="id" type="definition">normal_form_of</span></a>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y<sub>1</sub></span> <span class="id" type="var">y<sub>2</sub></span> <span class="id" type="var">P<sub>1</sub></span> <span class="id" type="var">P<sub>2</sub></span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">P<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">P<sub>11</sub></span> <span class="id" type="var">P<sub>12</sub></span>]; <span class="id" type="tactic">clear</span> <span class="id" type="var">P<sub>1</sub></span>.<br/>
@@ -1575,11 +1443,9 @@ We have already seen that, for our language, single-step reduction is
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- Indeed, something stronger is true for this language (though not
-    for all languages): the reduction of _any_ term <span class="inlinecode"><span class="id" type="var">t</span></span> will
-    eventually reach a normal form &mdash; i.e., <span class="inlinecode"><span class="id" type="var">normal_form_of</span></span> is a
-    _total_ function.  Formally, we say the <span class="inlinecode"><span class="id" type="var">step</span></span> relation is
-    _normalizing_. 
+ 确实，这个语言中还具备更强的性质（尽管不是所有语言都具备）：
+    任意项 <span class="inlinecode"><span class="id" type="var">t</span></span> 最终都会到达一个正规式——即，<span class="inlinecode"><span class="id" type="var">normal_form_of</span></span> 是一个全函数。
+    形式化地讲，我们说 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系是<b>正规化（normalizing）</b>的。 
 </div>
 <div class="code code-tight">
 
@@ -1589,15 +1455,13 @@ We have already seen that, for our language, single-step reduction is
 </div>
 
 <div class="doc">
-To prove that <span class="inlinecode"><span class="id" type="var">step</span></span> is normalizing, we need a couple of lemmas.
+为了证明 <span class="inlinecode"><span class="id" type="var">step</span></span> 的正规性，我们需要几个引理。
 
 <div class="paragraph"> </div>
 
-    First, we observe that, if <span class="inlinecode"><span class="id" type="var">t</span></span> reduces to <span class="inlinecode"><span class="id" type="var">t'</span></span> in many steps, then
-    the same sequence of reduction steps within <span class="inlinecode"><span class="id" type="var">t</span></span> is also possible
-    when <span class="inlinecode"><span class="id" type="var">t</span></span> appears as the left-hand child of a <span class="inlinecode"><span class="id" type="var">P</span></span> node, and
-    similarly when <span class="inlinecode"><span class="id" type="var">t</span></span> appears as the right-hand child of a <span class="inlinecode"><span class="id" type="var">P</span></span>
-    node whose left-hand child is a value. 
+    首先，我们观察到如果 <span class="inlinecode"><span class="id" type="var">t</span></span> 以多步归约到 <span class="inlinecode"><span class="id" type="var">t'</span></span>，那么当 <span class="inlinecode"><span class="id" type="var">t</span></span> 出现为 <span class="inlinecode"><span class="id" type="var">P</span></span> 节点的左子节点时，
+    可以使用同一个 <span class="inlinecode"><span class="id" type="var">t</span></span> 的归约序列。同理，当 <span class="inlinecode"><span class="id" type="var">P</span></span> 的左子节点为值时，若 <span class="inlinecode"><span class="id" type="var">t</span></span> 出现为 <span class="inlinecode"><span class="id" type="var">P</span></span> 
+    的右子节点也适用。 
 </div>
 <div class="code code-tight">
 
@@ -1632,45 +1496,37 @@ To prove that <span class="inlinecode"><span class="id" type="var">step</span></
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- With these lemmas in hand, the main proof is a straightforward
-    induction.
+ 使用这些引理，证明的主体是直接进行归纳。
 
 <div class="paragraph"> </div>
 
-    _Theorem_: The <span class="inlinecode"><span class="id" type="var">step</span></span> function is normalizing &mdash; i.e., for every
-    <span class="inlinecode"><span class="id" type="var">t</span></span> there exists some <span class="inlinecode"><span class="id" type="var">t'</span></span> such that <span class="inlinecode"><span class="id" type="var">t</span></span> steps to <span class="inlinecode"><span class="id" type="var">t'</span></span> and <span class="inlinecode"><span class="id" type="var">t'</span></span> is
-    a normal form.
+    <b>定理</b>：<span class="inlinecode"><span class="id" type="var">step</span></span> 函数是正规化的——即，对于每个 <span class="inlinecode"><span class="id" type="var">t</span></span> 存在某个 <span class="inlinecode"><span class="id" type="var">t'</span></span> 使
+    <span class="inlinecode"><span class="id" type="var">t</span></span> 前进到 <span class="inlinecode"><span class="id" type="var">t'</span></span>，且 <span class="inlinecode"><span class="id" type="var">t'</span></span> 是正规式。
 
 <div class="paragraph"> </div>
 
-    _Proof sketch_: By induction on terms.  There are two cases to
-    consider:
+    <b>证明草稿</b>：对项进行归纳。有两个情形需要考虑：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> for some <span class="inlinecode"><span class="id" type="var">n</span></span>.  Here <span class="inlinecode"><span class="id" type="var">t</span></span> doesn't take a step, and we
-      have <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t</span></span>.  We can derive the left-hand side by reflexivity
-      and the right-hand side by observing (a) that values are normal
-      forms (by <span class="inlinecode"><span class="id" type="var">nf_same_as_value</span></span>) and (b) that <span class="inlinecode"><span class="id" type="var">t</span></span> is a value (by
-      <span class="inlinecode"><span class="id" type="var">v_const</span></span>).
+<li> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 其中 <span class="inlinecode"><span class="id" type="var">n</span></span> 为数字。这里 <span class="inlinecode"><span class="id" type="var">t</span></span> 无法前进一步，我们有 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t</span></span>。
+      我们可以通过自反性证明左手边的项；对于右手边的项，由 <span class="inlinecode"><span class="id" type="var">nf_same_as_value</span></span>
+      可得值是正规式，且由 <span class="inlinecode"><span class="id" type="var">v_const</span></span> 可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 是一个值。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> for some <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>.  By the IH, <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
-      have normal forms <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>.  Recall that normal forms are
-      values (by <span class="inlinecode"><span class="id" type="var">nf_same_as_value</span></span>); we know that <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span> and
-      <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span>, for some <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span>.  We can combine the <span class="inlinecode">==&gt;*</span>
-      derivations for <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> using <span class="inlinecode"><span class="id" type="var">multi_congr_1</span></span> and
-      <span class="inlinecode"><span class="id" type="var">multi_congr_2</span></span> to prove that <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> reduces in many steps to
-      <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode">(<span class="id" type="var">n<sub>1</sub></span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>)</span>.
+<li> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 其中 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 为项。由归纳假设，<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+      分别有正规式 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>。回忆一下正规式是值（由 <span class="inlinecode"><span class="id" type="var">nf_same_sa_value</span></span>）；
+      我们知道 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span> 其中 <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span> 为项。
+      我们可以使用 <span class="inlinecode"><span class="id" type="var">multi_congr_1</span></span> 和 <span class="inlinecode"><span class="id" type="var">multi_congr_2</span></span> 合并 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+      的 <span class="inlinecode">==&gt;*</span> 导出式，以此证明 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 在多步内归约到 <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode">(<span class="id" type="var">n<sub>1</sub></span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>)</span>。
 
 <div class="paragraph"> </div>
 
-      It is clear that our choice of <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode">(<span class="id" type="var">n<sub>1</sub></span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>)</span> is a value,
-      which is in turn a normal form. <span class="proofbox">&#9744;</span> 
+      显然，我们的选择 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode">(<span class="id" type="var">n<sub>1</sub></span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>)</span> 是一个值，也是一个正规式。<span class="proofbox">&#9744;</span> 
 </li>
 </ul>
 
@@ -1689,8 +1545,7 @@ To prove that <span class="inlinecode"><span class="id" type="var">step</span></
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">split</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;l&nbsp;*)</span> <span class="id" type="tactic">apply</span> <a class="idref" href="Smallstep.html#multi_refl"><span class="id" type="constructor">multi_refl</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;r&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;We&nbsp;can&nbsp;use&nbsp;<span class="inlinecode"><span class="id" type="tactic">rewrite</span></span>&nbsp;with&nbsp;"iff"&nbsp;statements,&nbsp;not<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;just&nbsp;equalities:&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;除了等式，对于当且进当的命题，我们也可以使用&nbsp;<span class="inlinecode"><span class="id" type="tactic">rewrite</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <a class="idref" href="Smallstep.html#nf_same_as_value"><span class="id" type="lemma">nf_same_as_value</span></a>. <span class="id" type="tactic">apply</span> <a class="idref" href="Smallstep.html#v_const"><span class="id" type="constructor">v_const</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;P&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHt1</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t<sub>1</sub>'</span> [<span class="id" type="var">H<sub>11</sub></span> <span class="id" type="var">H<sub>12</sub></span>]].<br/>
@@ -1714,15 +1569,13 @@ To prove that <span class="inlinecode"><span class="id" type="var">step</span></
 </div>
 
 <div class="doc">
-<a name="lab156"></a><h2 class="section">Equivalence of Big-Step and Small-Step</h2>
+<a name="lab156"></a><h2 class="section">大步语义和小步语义的等价性</h2>
 
 <div class="paragraph"> </div>
 
- Having defined the operational semantics of our tiny programming
-    language in two different ways (big-step and small-step), it makes
-    sense to ask whether these definitions actually define the same
-    thing!  They do, though it takes a little work to show it.  The
-    details are left as an exercise. 
+ 在使用两种不同的方式（大步和小步式）定义了这个小小语言的操作语义后，你可能会
+    好奇这两种定义是否是等价的！他们确实是，尽管需要一点工作来证明它。
+    具体细节留做了练习。
 <div class="paragraph"> </div>
 
 <a name="lab157"></a><h4 class="section">练习：3 星 (eval__multistep)</h4>
@@ -1734,7 +1587,7 @@ To prove that <span class="inlinecode"><span class="id" type="var">step</span></
 </div>
 
 <div class="doc">
-The key ideas in the proof can be seen in the following picture:
+证明的核心想法以下面的方式展现：
 
 <div class="paragraph"> </div>
 
@@ -1752,34 +1605,35 @@ The key ideas in the proof can be seen in the following picture:
 <div class="paragraph"> </div>
 
 </div>
-    That is, the multistep reduction of a term of the form <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
-    proceeds in three phases:
+    也即，一个形如 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 的项的多步归约关系以如下三步的方式进行：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> First, we use <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> some number of times to reduce <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
-         to a normal form, which must (by <span class="inlinecode"><span class="id" type="var">nf_same_as_value</span></span>) be a
-         term of the form <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span> for some <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span>.
+<li> 首先，使用 <span class="inlinecode"><span class="id" type="var">ST_Plus1</span></span> 数次来归约 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 到正规式，也即必须是一个形如 <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span> 
+         的项（由 <span class="inlinecode"><span class="id" type="var">nf_same_as_value</span></span>），其中 <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span></span> 为某个数字。
+
+<div class="paragraph"> </div>
+
 
 </li>
-<li> Next, we use <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> some number of times to reduce <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
-         to a normal form, which must again be a term of the form <span class="inlinecode"><span class="id" type="var">C</span></span>
-         <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span> for some <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span>.
+<li> 接着，使用 <span class="inlinecode"><span class="id" type="var">ST_Plus2</span></span> 数次来归约 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 到正规式，也即必须是一个形如 <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span>
+         的项，其中 <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span></span> 为某个数字。
+
+<div class="paragraph"> </div>
+
 
 </li>
-<li> Finally, we use <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span> one time to reduce <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">(<span class="id" type="var">C</span></span>
-         <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span>)</span> <span class="inlinecode">(<span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>)</span> to <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode">(<span class="id" type="var">n<sub>1</sub></span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>)</span>. 
+<li> 最后，使用 <span class="inlinecode"><span class="id" type="var">ST_PlusConstConst</span></span> 一次把 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">(<span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>1</sub></span>)</span> <span class="inlinecode">(<span class="id" type="var">C</span></span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>)</span> 归约到
+         <span class="inlinecode"><span class="id" type="var">C</span></span> <span class="inlinecode">(<span class="id" type="var">n<sub>1</sub></span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n<sub>2</sub></span>)</span>。
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- To formalize this intuition, you'll need to use the congruence
-    lemmas from above (you might want to review them now, so that
-    you'll be able to recognize when they are useful), plus some basic
-    properties of <span class="inlinecode">==&gt;*</span>: that it is reflexive, transitive, and
-    includes <span class="inlinecode">==&gt;</span>. 
+ 为了形式化这个直觉的理解，我们需要使用之前的合同（congruence）引理
+    （为了帮助后面的证明，你可能需要回顾一下他们），还有一些 <span class="inlinecode">==&gt;*</span> 的基础性质：
+    自反性，传递性，及其蕴含了 <span class="inlinecode">==&gt;</span>。 
 </div>
 <div class="code code-tight">
 
@@ -1792,7 +1646,7 @@ The key ideas in the proof can be seen in the following picture:
 <div class="paragraph"> </div>
 
 <a name="lab158"></a><h4 class="section">练习：3 星, advanced (eval__multistep_inf)</h4>
- Write a detailed informal version of the proof of <span class="inlinecode"><span class="id" type="var">eval__multistep</span></span>.
+ 请为 <span class="inlinecode"><span class="id" type="var">eval__multi_step</span></span> 写出详细的非形式化证明。
 
 <div class="paragraph"> </div>
 
@@ -1808,8 +1662,7 @@ The key ideas in the proof can be seen in the following picture:
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- For the other direction, we need one lemma, which establishes a
-    relation between single-step reduction and big-step evaluation. 
+ 对于另一个方向，我们需要一个引理来对单步归约和大步求值建立联系。
 <div class="paragraph"> </div>
 
 <a name="lab159"></a><h4 class="section">练习：3 星 (step__eval)</h4>
@@ -1829,17 +1682,15 @@ The key ideas in the proof can be seen in the following picture:
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- The fact that small-step reduction implies big-step evaluation is
-    now straightforward to prove, once it is stated correctly.
+ 一旦正确地表述了小步归约蕴含了大步求值的事实，它会很容易被证明。
 
 <div class="paragraph"> </div>
 
-    The proof proceeds by induction on the multi-step reduction
-    sequence that is buried in the hypothesis <span class="inlinecode"><span class="id" type="var">normal_form_of</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>. 
+    证明是对多步归约序列的归纳，这个序列被假设 <span class="inlinecode"><span class="id" type="var">normal_form_of</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 
+    所隐藏了起来。
 <div class="paragraph"> </div>
 
- Make sure you understand the statement before you start to
-    work on the proof.  
+请确保在开始证明前首先理解了命题。 
 <div class="paragraph"> </div>
 
 <a name="lab160"></a><h4 class="section">练习：3 星 (multistep__eval)</h4>
@@ -1860,11 +1711,9 @@ The key ideas in the proof can be seen in the following picture:
 <div class="paragraph"> </div>
 
 <a name="lab162"></a><h4 class="section">练习：3 星, optional (interp_tm)</h4>
- Remember that we also defined big-step evaluation of terms as a
-    function <span class="inlinecode"><span class="id" type="var">evalF</span></span>.  Prove that it is equivalent to the existing
-    semantics.  (Hint: we just proved that <span class="inlinecode"><span class="id" type="var">eval</span></span> and <span class="inlinecode"><span class="id" type="var">multistep</span></span> are
-    equivalent, so logically it doesn't matter which you choose.
-    One will be easier than the other, though!) 
+ 请回忆一下我们还通过函数 <span class="inlinecode"><span class="id" type="var">evalF</span></span> 定义了对项的大步求值。请证明它等价于其他语义。
+    （提示：我刚刚证明了 <span class="inlinecode"><span class="id" type="var">eval</span></span> 和 <span class="inlinecode"><span class="id" type="var">multistep</span></span> 是等价的，因此逻辑上讲你可以任意
+    选择证明哪个。尽管有一个要比另一个简单！） 
 </div>
 <div class="code code-tight">
 
@@ -1879,8 +1728,7 @@ The key ideas in the proof can be seen in the following picture:
 <div class="paragraph"> </div>
 
 <a name="lab163"></a><h4 class="section">练习：4 星 (combined_properties)</h4>
- We've considered arithmetic and conditional expressions
-    separately.  This exercise explores how the two interact. 
+ 我们分开考虑了算数和条件表达式，这个练习探索了他们之间如何交互。 
 </div>
 <div class="code code-tight">
 
@@ -1918,25 +1766,23 @@ The key ideas in the proof can be seen in the following picture:
 </div>
 
 <div class="doc">
-Earlier, we separately proved for both plus- and if-expressions...
+之前，我们分开证明了加法和条件表达式的……
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> that the step relation was deterministic, and
+<li> 单步关系是确定的，以及
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> a strong progress lemma, stating that every term is either a
-      value or can take a step.
+<li> 一个强可进行引理，陈述了任意项要么是值，要么可以前进一步。
 
 </li>
 </ul>
-    Formally prove or disprove these two properties for the combined
-    language.  (That is, state a theorem saying that the property
-    holds or does not hold, and prove your theorem.) 
+    对于合并起来的语言，请形式化地证明或反驳这两个属性。
+    （也即，陈述定理表达性质成立或不成立，并证明它们。） 
 </div>
 <div class="code code-tight">
 
@@ -1949,19 +1795,15 @@ Earlier, we separately proved for both plus- and if-expressions...
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab164"></a><h1 class="section">Small-Step Imp</h1>
+<a name="lab164"></a><h1 class="section">Imp 的小步语义</h1>
 
 <div class="paragraph"> </div>
 
- Now for a more serious example: a small-step version of the Imp
-    operational semantics. 
+ 现在来看一个更严肃的例子：Imp 的小步操作语义。 
 <div class="paragraph"> </div>
 
- The small-step reduction relations for arithmetic and
-    boolean expressions are straightforward extensions of the tiny
-    language we've been working up to now.  To make them easier to
-    read, we introduce the symbolic notations <span class="inlinecode">==&gt;<span class="id" type="var">a</span></span> and <span class="inlinecode">==&gt;<span class="id" type="var">b</span></span> for
-    the arithmetic and boolean step relations. 
+ 目前为止，给这个小语言添加算数和布尔表达式的小步归约关系是很直接的扩展。
+    处于可读性的考虑，我们为他们分别添加记号 <span class="inlinecode">==&gt;<span class="id" type="var">a</span></span> 和 <span class="inlinecode">==&gt;<span class="id" type="var">b</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -1970,10 +1812,8 @@ Earlier, we separately proved for both plus- and if-expressions...
 </div>
 
 <div class="doc">
-We are not actually going to bother to define boolean
-    values, since they aren't needed in the definition of <span class="inlinecode">==&gt;<span class="id" type="var">b</span></span>
-    below (why?), though they might be if our language were a bit
-    larger (why?). 
+我们在此不会赘述布尔值的定义，因为 <span class="inlinecode">==&gt;<span class="id" type="var">b</span></span> 的定义并不需要他们（为什么？），
+    尽管当语言规模更大一些时可能会需要到他们（为什么？）。
 </div>
 <div class="code code-tight">
 
@@ -2058,29 +1898,24 @@ We are not actually going to bother to define boolean
 </div>
 
 <div class="doc">
-The semantics of commands is the interesting part.  We need two
-    small tricks to make it work:
+命令的语义是真正有趣的部分。我们需要两个小技巧来让们工作：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> We use <span class="inlinecode"><span class="id" type="var">SKIP</span></span> as a "command value" &mdash; i.e., a command that
-         has reached a normal form.
+<li> 我们把 <span class="inlinecode"><span class="id" type="var">SKIP</span></span> 当作一个“命令值（command value）”——即，一个已经到达正规式的命令。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> An assignment command reduces to <span class="inlinecode"><span class="id" type="var">SKIP</span></span> (and an updated
-              state).
+<li> 赋值命令归约到 <span class="inlinecode"><span class="id" type="var">SKIP</span></span> （和一个更新状态）。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> The sequencing command waits until its left-hand
-              subcommand has reduced to <span class="inlinecode"><span class="id" type="var">SKIP</span></span>, then throws it away so
-              that reduction can continue with the right-hand
-              subcommand.
+<li> 顺序命令等待其左侧子命令归约到 <span class="inlinecode"><span class="id" type="var">SKIP</span></span>，然后丢弃它，并继续
+              对右侧子命令归约。
 
 <div class="paragraph"> </div>
 
@@ -2089,17 +1924,15 @@ The semantics of commands is the interesting part.  We need two
 </ul>
 
 </li>
-<li> We reduce a <span class="inlinecode"><span class="id" type="var">WHILE</span></span> command by transforming it into a
-         conditional followed by the same <span class="inlinecode"><span class="id" type="var">WHILE</span></span>. 
+<li> 对 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 命令的归约是把 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 命令变换为条件语句，其后紧跟同一个
+         <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 命令。 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- (There are other ways of achieving the effect of the latter
-    trick, but they all share the feature that the original <span class="inlinecode"><span class="id" type="var">WHILE</span></span>
-    command needs to be saved somewhere while a single copy of the loop
-    body is being reduced.) 
+ （也有一些其他的方式来达到后一个技巧同样的效果，但当对循环体进行归约时，
+    他们都需要将原始的 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 命令保存在某处。）
 </div>
 <div class="code code-tight">
 
@@ -2132,16 +1965,13 @@ The semantics of commands is the interesting part.  We need two
 </div>
 
 <div class="doc">
-<a name="lab165"></a><h1 class="section">Concurrent Imp</h1>
+<a name="lab165"></a><h1 class="section">并发 Imp</h1>
 
 <div class="paragraph"> </div>
 
- Finally, to show the power of this definitional style, let's
-    enrich Imp with a new form of command that runs two subcommands in
-    parallel and terminates when both have terminated.  To reflect the
-    unpredictability of scheduling, the actions of the subcommands may
-    be interleaved in any order, but they share the same memory and
-    can communicate by reading and writing the same variables. 
+ 最后，为了展示这种定义方式的能力，让我们为 Imp 语言添加一个新的命令，
+    使其可以同时运行两个命令，并在两个都停机时停机。为了反映调度的不可预测性，
+    子命令可以以任意顺序交错运行，但他们共享了同一个内存，并以读写变量的方式通信。 
 </div>
 <div class="code code-tight">
 
@@ -2206,9 +2036,7 @@ The semantics of commands is the interesting part.  We need two
 </div>
 
 <div class="doc">
-Among the many interesting properties of this language is the fact
-    that the following program can terminate with the variable <span class="inlinecode"><span class="id" type="var">X</span></span> set
-    to any value. 
+在这个语言的众多特性中，一个有趣的事实是下面的程序在停机时变量 <span class="inlinecode"><span class="id" type="var">X</span></span> 可以是任何值。
 </div>
 <div class="code code-tight">
 
@@ -2223,7 +2051,7 @@ Among the many interesting properties of this language is the fact
 </div>
 
 <div class="doc">
-In particular, it can terminate with <span class="inlinecode"><span class="id" type="var">X</span></span> set to <span class="inlinecode">0</span>: 
+比如说，它可以当 <span class="inlinecode"><span class="id" type="var">X</span></span> 为 <span class="inlinecode">0</span> 时停机。
 </div>
 <div class="code code-tight">
 
@@ -2251,7 +2079,7 @@ In particular, it can terminate with <span class="inlinecode"><span class="id" t
 </div>
 
 <div class="doc">
-It can also terminate with <span class="inlinecode"><span class="id" type="var">X</span></span> set to <span class="inlinecode">2</span>: 
+它也可以当 <span class="inlinecode"><span class="id" type="var">X</span></span> 为 <span class="inlinecode">2</span> 时停机。
 </div>
 <div class="code code-tight">
 
@@ -2303,7 +2131,7 @@ It can also terminate with <span class="inlinecode"><span class="id" type="var">
 </div>
 
 <div class="doc">
-More generally... 
+更一般地…… 
 <div class="paragraph"> </div>
 
 <a name="lab166"></a><h4 class="section">练习：3 星, optional (par_body_n__Sn)</h4>
@@ -2337,8 +2165,7 @@ More generally...
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- ... the above loop can exit with <span class="inlinecode"><span class="id" type="var">X</span></span> having any value
-    whatsoever. 
+ ……上面的循环可以在 <span class="inlinecode"><span class="id" type="var">X</span></span> 为任何值时退出。 
 </div>
 <div class="code code-tight">
 
@@ -2374,12 +2201,11 @@ More generally...
 </div>
 
 <div class="doc">
-<a name="lab168"></a><h1 class="section">A Small-Step Stack Machine</h1>
+<a name="lab168"></a><h1 class="section">小步堆栈机</h1>
 
 <div class="paragraph"> </div>
 
- Our last example is a small-step semantics for the stack machine
-    example from the <a href="https://www.cis.upenn.edu/~bcpierce/sf/lf-current/Imp.html"><span class="inlineref">Imp</span></a> chapter of _Logical Foundations_. 
+ 最后一个例子来自逻辑基础的 <a href="https://www.cis.upenn.edu/~bcpierce/sf/lf-current/Imp.html"><span class="inlineref">Imp</span></a> 一章，我们给出堆栈机的小步语义。 
 </div>
 <div class="code code-tight">
 
@@ -2412,14 +2238,12 @@ More generally...
 
 <div class="doc">
 <a name="lab169"></a><h4 class="section">练习：3 星, advanced (compiler_is_correct)</h4>
- Remember the definition of <span class="inlinecode"><span class="id" type="var">compile</span></span> for <span class="inlinecode"><span class="id" type="var">aexp</span></span> given in the
-    <a href="https://www.cis.upenn.edu/~bcpierce/sf/lf-current/Imp.html"><span class="inlineref">Imp</span></a> chapter of _Logical Foundations_. We want now to
-    prove <span class="inlinecode"><span class="id" type="var">compile</span></span> correct with respect to the stack machine.
+ 请回忆一下逻辑基础 <a href="https://www.cis.upenn.edu/~bcpierce/sf/lf-current/Imp.html"><span class="inlineref">Imp</span></a> 一章中对 <span class="inlinecode"><span class="id" type="var">compile</span></span> 和 <span class="inlinecode"><span class="id" type="var">aexp</span></span> 的定义。
+    我们现在想要证明堆栈机上 <span class="inlinecode"><span class="id" type="var">compile</span></span> 函数的正确性。
 
 <div class="paragraph"> </div>
 
-    State what it means for the compiler to be correct according to
-    the stack machine small step semantics and then prove it. 
+    请根据堆栈机的小步语义陈述编译器正确性的定义，并证明它。 
 </div>
 <div class="code code-tight">
 
