@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Types: Type Systems</title>
+<title>Types: 类型系统</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,22 +29,18 @@
 
 <div id="main">
 
-<h1 class="libtitle">Types<span class="subtitle">Type Systems</span></h1>
+<h1 class="libtitle">Types<span class="subtitle">类型系统</span></h1>
 
 
 <div class="doc">
 
 <div class="paragraph"> </div>
 
- Our next major topic is _type systems_ &mdash; static program
-    analyses that classify expressions according to the "shapes" of
-    their results.  We'll begin with a typed version of the simplest
-    imaginable language, to introduce the basic ideas of types and
-    typing rules and the fundamental theorems about type systems:
-    _type preservation_ and _progress_.  In chapter <a href="Stlc.html"><span class="inlineref">Stlc</span></a> we'll move
-    on to the _simply typed lambda-calculus_, which lives at the core
-    of every modern functional programming language (including
-    Coq!). 
+ 我们接下来主要的话题是<b>类型系统</b>——一种根据表达式结果的“形状（shapes）”
+    来给表达式分类的静态程序分析技术。我们将会以一个最简单的有类型语言为起点，介绍
+    类型和定型规则的概念，以及类型系统最基础的几个定理：<b>维型性（type preservation）</b>
+    和<b>可进性（progress）</b>。在 <a href="Stlc.html"><span class="inlineref">Stlc</span></a> 一章中，我们会继续考察
+    <b>简单类型λ-演算</b>，它是几乎每个现代函数式语言的核心（也包括 Coq！）。 
 </div>
 <div class="code code-tight">
 
@@ -57,30 +53,26 @@
 </div>
 
 <div class="doc">
-<a name="lab170"></a><h1 class="section">Typed Arithmetic Expressions</h1>
+<a name="lab170"></a><h1 class="section">有类型算数表达式</h1>
 
 <div class="paragraph"> </div>
 
- To motivate the discussion of type systems, let's begin as
-    usual with a tiny toy language.  We want it to have the potential
-    for programs to go wrong because of runtime type errors, so we
-    need something a tiny bit more complex than the language of
-    constants and addition that we used in chapter <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a>: a
-    single kind of data (e.g., numbers) is too simple, but just two
-    kinds (numbers and booleans) gives us enough material to tell an
-    interesting story.
+ 作为对类型系统讨论的动机，让我们像过去一样以一个小型玩具语言开始。
+    我们想要让程序有机会产生运行时类型错误，因此除了 <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a> 
+    一章中用到的常量和加法，还需要一点更复杂的语言构造：只有一种数据类型（比如说数字）
+    太过于简单，但是两种（数字和布尔值）便足够产生有趣的故事了。
 
 <div class="paragraph"> </div>
 
-    The language definition is completely routine. 
+    语言的定义部分没有什么特别值得注意的。 
 </div>
 
 <div class="doc">
-<a name="lab171"></a><h2 class="section">Syntax</h2>
+<a name="lab171"></a><h2 class="section">语法</h2>
 
 <div class="paragraph"> </div>
 
- Here is the syntax, informally:
+ 这是非形式化的语法表述：
 
 <div class="paragraph"> </div>
 
@@ -95,7 +87,7 @@
 <div class="paragraph"> </div>
 
 </div>
-    And here it is formally: 
+    以及形式化的： 
 </div>
 <div class="code code-tight">
 
@@ -110,7 +102,7 @@
 </div>
 
 <div class="doc">
-<b>Values_ are <span class="inlinecode"><span class="id" type="var">true</span></span>, <span class="inlinecode"><span class="id" type="var">false</span></span>, and numeric values... 
+对<b>值（values）</b>的定义包括 <span class="inlinecode"><span class="id" type="var">true</span></span>，<span class="inlinecode"><span class="id" type="var">false</span></span> 以及数值…… 
 </div>
 <div class="code code-tight">
 
@@ -127,11 +119,11 @@
 </div>
 
 <div class="doc">
-<a name="lab172"></a><h2 class="section">Operational Semantics</h2>
+<a name="lab172"></a><h2 class="section">操作语义</h2>
 
 <div class="paragraph"> </div>
 
- Here is the single-step relation, first informally... 
+ 首先我们非形式化地描述单步关系…… 
 <div class="paragraph"> </div>
 
 <center><table class="infrule">
@@ -267,7 +259,7 @@
 </table></center>
 <div class="paragraph"> </div>
 
- ... and then formally: 
+ 接着形式化地： 
 </div>
 <div class="code code-tight">
 
@@ -305,12 +297,9 @@
 </div>
 
 <div class="doc">
-Notice that the <span class="inlinecode"><span class="id" type="var">step</span></span> relation doesn't care about whether
-    expressions make global sense &mdash; it just checks that the operation
-    in the _next_ reduction step is being applied to the right kinds
-    of operands.  For example, the term <span class="inlinecode"><span class="id" type="var">succ</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> (i.e.,
-    <span class="inlinecode"><span class="id" type="var">tsucc</span></span> <span class="inlinecode"><span class="id" type="var">ttrue</span></span> in the formal syntax) cannot take a step, but the
-    almost as obviously nonsensical term
+请注意 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系并不在意表达式是否有全局意义——它只是检查<b>下一步</b>
+    的归约操作是否在正确的操作对象上。比如，项 <span class="inlinecode"><span class="id" type="var">succ</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span>（用形式语法来说是 
+    <span class="inlinecode"><span class="id" type="var">tsucc</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span>）无法前进一步，但这个几乎显然无意义的项
 
 <div class="paragraph"> </div>
 
@@ -319,20 +308,17 @@ Notice that the <span class="inlinecode"><span class="id" type="var">step</span>
 <div class="paragraph"> </div>
 
 </div>
-    can take a step (once, before becoming stuck). 
+    却可以前进一步（注意是在卡住之前）。 
 </div>
 
 <div class="doc">
-<a name="lab173"></a><h2 class="section">Normal Forms and Values</h2>
+<a name="lab173"></a><h2 class="section">正规式和值</h2>
 
 <div class="paragraph"> </div>
 
- The first interesting thing to notice about this <span class="inlinecode"><span class="id" type="var">step</span></span> relation
-    is that the strong progress theorem from the <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a> chapter
-    fails here.  That is, there are terms that are normal forms (they
-    can't take a step) but not values (because we have not included
-    them in our definition of possible "results of reduction").  Such
-    terms are _stuck_. 
+ 首先值得注意的是 <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a> 一章中的强可进性定理对这里的 <span class="inlinecode"><span class="id" type="var">step</span></span>
+    归约并不成立。也即，有一些项是正规式（他们无法再前进一步），但却不是值（因为
+    我们还没有把他们包括进潜在“归约结果”的定义中）。这样的项<b>卡住了</b>。 
 </div>
 <div class="code code-tight">
 
@@ -357,10 +343,8 @@ Notice that the <span class="inlinecode"><span class="id" type="var">step</span>
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- However, although values and normal forms are _not_ the same in this
-    language, the set of values is included in the set of normal
-    forms.  This is important because it shows we did not accidentally
-    define things so that some value could still take a step. 
+ 然而，值和正规式在这个语言中并<b>不</b>相同，值的集合被包括在正规式的集合中。
+    这一点很重要，因为这说明我们没有不小心定义了一些仍然能前进一步的值。
 <div class="paragraph"> </div>
 
 <a name="lab175"></a><h4 class="section">练习：3 星 (value_is_nf)</h4>
@@ -377,18 +361,13 @@ Notice that the <span class="inlinecode"><span class="id" type="var">step</span>
 </div>
 
 <div class="doc">
-(Hint: You will reach a point in this proof where you need to
-    use an induction to reason about a term that is known to be a
-    numeric value.  This induction can be performed either over the
-    term itself or over the evidence that it is a numeric value.  The
-    proof goes through in either case, but you will find that one way
-    is quite a bit shorter than the other.  For the sake of the
-    exercise, try to complete the proof both ways.)  <span class="proofbox">&#9744;</span> 
+（提示：在证明中的某个地方，你需要使用归纳来推理某个项，这个项已知是数值。
+    归纳可以对项本身进行，也可以对它是数值这个证据进行。两种方法均可完成证明，
+    但你发现一种要比另一种稍微简短一点。作为练习，请尝试使用这两种方法完成证明。） <span class="proofbox">&#9744;</span> 
 <div class="paragraph"> </div>
 
 <a name="lab176"></a><h4 class="section">练习：3 星, optional (step_deterministic)</h4>
- Use <span class="inlinecode"><span class="id" type="var">value_is_nf</span></span> to show that the <span class="inlinecode"><span class="id" type="var">step</span></span> relation is also
-    deterministic. 
+ 使用 <span class="inlinecode"><span class="id" type="var">value_is_nf</span></span> 来证明 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系是确定的。
 </div>
 <div class="code code-tight">
 
@@ -401,16 +380,14 @@ Notice that the <span class="inlinecode"><span class="id" type="var">step</span>
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab177"></a><h2 class="section">Typing</h2>
+<a name="lab177"></a><h2 class="section">定型</h2>
 
 <div class="paragraph"> </div>
 
- The next critical observation is that, although this
-    language has stuck terms, they are always nonsensical, mixing
-    booleans and numbers in a way that we don't even _want_ to have a
-    meaning.  We can easily exclude such ill-typed terms by defining a
-    _typing relation_ that relates terms to the types (either numeric
-    or boolean) of their final results.  
+ 下一个重要的观察是，尽管这个语言中有卡住的项，他们总是以混合了
+    布尔值和数字的方式变得完全没有意义，我们也<b>不想</b>为他们赋予意义。
+    通过定义<b>类型关系（typing relation）</b>关联起项和他们最终结果的
+    类型（数字或布尔值），我们可以容易地排除这些劣型（ill-typed）项。
 </div>
 <div class="code code-tight">
 
@@ -420,12 +397,9 @@ Notice that the <span class="inlinecode"><span class="id" type="var">step</span>
 </div>
 
 <div class="doc">
-In informal notation, the typing relation is often written
-    <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and pronounced "<span class="inlinecode"><span class="id" type="var">t</span></span> has type <span class="inlinecode"><span class="id" type="var">T</span></span>."  The <span class="inlinecode">|-</span> symbol
-    is called a "turnstile."  Below, we're going to see richer typing
-    relations where one or more additional "context" arguments are
-    written to the left of the turnstile.  For the moment, the context
-    is always empty.  <center><table class="infrule">
+在非形式化的记号中，类型关系经常写做 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，并读做“<span class="inlinecode"><span class="id" type="var">t</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">T</span></span>”。
+    <span class="inlinecode">|-</span> 符号叫做“十字转门（turnstile）”。下面，我们会看到更加丰富的类型关系，其中
+    我们会在 <span class="inlinecode">|-</span> 左侧添加一个或多个“上下文（context）”。目前暂时来说，上下文总是空的。  <center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
@@ -557,15 +531,13 @@ In informal notation, the typing relation is often written
 </div>
 
 <div class="doc">
-(Since we've included all the constructors of the typing relation
-    in the hint database, the <span class="inlinecode"><span class="id" type="tactic">auto</span></span> tactic can actually find this
-    proof automatically.) 
+（因为我们在提示数据库（hint database）中包括了类型关系的所有构造子，
+    因此 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 策略可以自动完成这个证明。）
 <div class="paragraph"> </div>
 
- It's important to realize that the typing relation is a
-    _conservative_ (or _static_) approximation: it does not consider
-    what happens when the term is reduced &mdash; in particular, it does
-    not calculate the type of its normal form. 
+ 重要的一点是认识到类型关系是一个<b>保守的（conservative）</b>
+    （或<b>静态的（static）</b>）近似：它不考虑项被归约时会发生什么——特别地，
+    它并不计算项的正规式的类型。 
 </div>
 <div class="code code-tight">
 
@@ -593,13 +565,11 @@ In informal notation, the typing relation is often written
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab179"></a><h3 class="section">Canonical forms</h3>
+<a name="lab179"></a><h3 class="section">典范形式</h3>
 
 <div class="paragraph"> </div>
 
- The following two lemmas capture the fundamental property that the
-    definitions of boolean and numeric values agree with the typing
-    relation. 
+ 下面的两个引理作为基础性质表达了布尔值和数值的定义同类型关系相一致。
 </div>
 <div class="code code-tight">
 
@@ -629,14 +599,13 @@ In informal notation, the typing relation is often written
 </div>
 
 <div class="doc">
-<a name="lab180"></a><h2 class="section">Progress</h2>
+<a name="lab180"></a><h2 class="section">可进性</h2>
 
 <div class="paragraph"> </div>
 
- The typing relation enjoys two critical properties.  The first is
-    that well-typed normal forms are not stuck &mdash; or conversely, if a
-    term is well typed, then either it is a value or it can take at
-    least one step.  We call this _progress_. 
+ 类型关系具有两个十分重要的性质。第一个是良型（well-typed）的正规式不会卡住——或者，反过来说，
+    如果一个项是良型的，那么它要么是一个值，要么可以至少前进一步。我们把这个性质叫做
+    <b>可进性（progress）</b>。 
 <div class="paragraph"> </div>
 
 <a name="lab181"></a><h4 class="section">练习：3 星 (finish_progress)</h4>
@@ -649,10 +618,8 @@ In informal notation, the typing relation is often written
 </div>
 
 <div class="doc">
-Complete the formal proof of the <span class="inlinecode"><span class="id" type="tactic">progress</span></span> property.  (Make sure
-    you understand the parts we've given of the informal proof in the
-    following exercise before starting &mdash; this will save you a lot of
-    time.) 
+请完成 <span class="inlinecode"><span class="id" type="tactic">progress</span></span> 性质的形式化证明。（在开始前请确保你理解了下一个练习中的非
+    形式化证明——这会节省很多你的时间。）
 </div>
 <div class="code code-tight">
 <div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
@@ -660,16 +627,15 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 <span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">auto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">HT</span>...<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;cases&nbsp;that&nbsp;were&nbsp;obviously&nbsp;values,&nbsp;like&nbsp;T_True&nbsp;and<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T_False,&nbsp;were&nbsp;eliminated&nbsp;immediately&nbsp;by&nbsp;auto&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;对于显然是值的情形，比如&nbsp;T_True&nbsp;和&nbsp;T_False，我们直接使用&nbsp;auto&nbsp;完成。*)</span><br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_If&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">IHHT1</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">IHHT1</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;是值&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<a class="idref" href="Types.html#bool_canonical"><span class="id" type="lemma">bool_canonical</span></a> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">HT<sub>1</sub></span>) <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t<sub>2</sub></span>...<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t<sub>3</sub></span>...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;can&nbsp;take&nbsp;a&nbsp;step&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;可前进一步&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">H<sub>1</sub></span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> (<a class="idref" href="Types.html#tif"><span class="id" type="constructor">tif</span></a> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>)...<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
@@ -681,40 +647,36 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 <div class="paragraph"> </div>
 
 <a name="lab182"></a><h4 class="section">练习：3 星, advanced (finish_progress_informal)</h4>
- Complete the corresponding informal proof: 
+ 请完成非形式化的证明： 
 <div class="paragraph"> </div>
 
- _Theorem_: If <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, then either <span class="inlinecode"><span class="id" type="var">t</span></span> is a value or else
-    <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> for some <span class="inlinecode"><span class="id" type="var">t'</span></span>. 
+ <b>定理</b>：如果 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> 要么是值，要么存在某个 <span class="inlinecode"><span class="id" type="var">t'</span></span> 使 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>。
 <div class="paragraph"> </div>
 
- _Proof_: By induction on a derivation of <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.
-
-<div class="paragraph"> </div>
-
-<ul class="doclist">
-<li> If the last rule in the derivation is <span class="inlinecode"><span class="id" type="var">T_If</span></span>, then <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
-        <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>, with <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>, <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>
-        <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.  By the IH, either <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is a value or else <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> can step
-        to some <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>.
+ <b>证明</b>：对 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 的生成式进行归纳。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is a value, then by the canonical forms lemmas
-              and the fact that <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span> we have that <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
-              is a <span class="inlinecode"><span class="id" type="var">bvalue</span></span> &mdash; i.e., it is either <span class="inlinecode"><span class="id" type="var">true</span></span> or <span class="inlinecode"><span class="id" type="var">false</span></span>.
-              If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span>, then <span class="inlinecode"><span class="id" type="var">t</span></span> steps to <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> by <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>,
-              while if <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">false</span></span>, then <span class="inlinecode"><span class="id" type="var">t</span></span> steps to <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> by
-              <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>.  Either way, <span class="inlinecode"><span class="id" type="var">t</span></span> can step, which is what
-              we wanted to show.
+<li> 如果生成式的最后一条规则是 <span class="inlinecode"><span class="id" type="var">T_If</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，
+        其中 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>，<span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 以及 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。
+        根据归纳假设，<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 要么是值，要么可前进一步到某个 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>。
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是值，那么根据典范形式（canonical forms）引理以及
+              <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span> 的事实，可得 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是一个 <span class="inlinecode"><span class="id" type="var">bvalue</span></span>——也即，
+              它要么是 <span class="inlinecode"><span class="id" type="var">true</span></span> 要么是 <span class="inlinecode"><span class="id" type="var">false</span></span>。如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span>，由 <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>
+              可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 前进到 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>；而当 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">false</span></span> 时，由 <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>
+              可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 前进到 <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>。不论哪种情况，<span class="inlinecode"><span class="id" type="var">t</span></span> 都可以前进一步，这是我们
+              想要证明的。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> If <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> itself can take a step, then, by <span class="inlinecode"><span class="id" type="var">ST_If</span></span>, so can
-              <span class="inlinecode"><span class="id" type="var">t</span></span>.
+<li> 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 自己可以前进一步，那么根据 <span class="inlinecode"><span class="id" type="var">ST_If</span></span> 可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 也可以。
 
 <div class="paragraph"> </div>
 
@@ -738,19 +700,16 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- This theorem is more interesting than the strong progress theorem
-    that we saw in the <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a> chapter, where _all_ normal forms
-    were values.  Here a term can be stuck, but only if it is ill
-    typed. 
+ 这个定理要比 <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a> 一章中的强可进性定理更有趣一些，在强可进性定理
+    中<b>全部</b>的正规式都是值。这里项可以卡住，但仅当它为劣型时。 
 </div>
 
 <div class="doc">
-<a name="lab183"></a><h2 class="section">Type Preservation</h2>
+<a name="lab183"></a><h2 class="section">维型性</h2>
 
 <div class="paragraph"> </div>
 
- The second critical property of typing is that, when a well-typed
-    term takes a step, the result is also a well-typed term. 
+ 关于类型的第二个重要性质是，当一个良型项可前进一步时，其结果也是一个良型项。
 <div class="paragraph"> </div>
 
 <a name="lab184"></a><h4 class="section">练习：2 星 (finish_preservation)</h4>
@@ -764,9 +723,8 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 </div>
 
 <div class="doc">
-Complete the formal proof of the <span class="inlinecode"><span class="id" type="var">preservation</span></span> property.  (Again,
-    make sure you understand the informal proof fragment in the
-    following exercise first.) 
+请完成 <span class="inlinecode"><span class="id" type="var">preservation</span></span> 性质的形式化证明。（和上次一样，在开始前请确保你理解了
+    下一个练习中的非形式化证明。） 
 </div>
 <div class="code code-tight">
 
@@ -776,10 +734,9 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span> <span class="id" type="var">HE</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">t'</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">HT</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;every&nbsp;case&nbsp;needs&nbsp;to&nbsp;introduce&nbsp;a&nbsp;couple&nbsp;of&nbsp;things&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;每个情形都需要引入一些东西&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t'</span> <span class="id" type="var">HE</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;and&nbsp;we&nbsp;can&nbsp;deal&nbsp;with&nbsp;several&nbsp;impossible<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cases&nbsp;all&nbsp;at&nbsp;once&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;我们还需要处理一些不可能发生的情形&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_If&nbsp;*)</span> <span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">HE</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_IFTrue&nbsp;*)</span> <span class="id" type="tactic">assumption</span>.<br/>
@@ -795,49 +752,47 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 <div class="paragraph"> </div>
 
 <a name="lab185"></a><h4 class="section">练习：3 星, advanced (finish_preservation_informal)</h4>
- Complete the following informal proof: 
+ 请完成非形式化的证明： 
 <div class="paragraph"> </div>
 
- _Theorem_: If <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>, then <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>. 
+ <b>定理</b>：如果 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 且 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>，那么 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。 
 <div class="paragraph"> </div>
 
- _Proof_: By induction on a derivation of <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.
-
-<div class="paragraph"> </div>
-
-<ul class="doclist">
-<li> If the last rule in the derivation is <span class="inlinecode"><span class="id" type="var">T_If</span></span>, then <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
-        <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>, with <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>, <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>
-        <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.
-
-<div class="paragraph"> </div>
-
-        Inspecting the rules for the small-step reduction relation and
-        remembering that <span class="inlinecode"><span class="id" type="var">t</span></span> has the form <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode">...</span>, we see that the
-        only ones that could have been used to prove <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> are
-        <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>, <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>, or <span class="inlinecode"><span class="id" type="var">ST_If</span></span>.
+ <b>证明</b>：对 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 的生成式进行归纳。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> If the last rule was <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>, then <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>.  But we
-             know that <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, so we are done.
+<li> 如果生成式的最后一条规则是 <span class="inlinecode"><span class="id" type="var">T_If</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
+        <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，其中 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>， <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 以及 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>
+        <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。
+
+<div class="paragraph"> </div>
+
+        请记着 <span class="inlinecode"><span class="id" type="var">t</span></span> 形如 <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode">...</span>，通过检查小步归约关系的规则，我们看到可以用来证明
+        <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 的规则仅有 <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>，<span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span> 或者 <span class="inlinecode"><span class="id" type="var">ST_If</span></span>。
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>。但是我们有
+             <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，所以证明完成。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> If the last rule was <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>, then <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>.  But we
-             know that <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, so we are done.
+<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>。但是我们有
+             <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，所以证明完成。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> If the last rule was <span class="inlinecode"><span class="id" type="var">ST_If</span></span>, then <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
-             <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>, where <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>.  We know <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span> so,
-             by the IH, <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>.  The <span class="inlinecode"><span class="id" type="var">T_If</span></span> rule then gives us
-             <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, as required.
+<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_If</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+             <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，其中 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>。我们知道 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>，
+             因此根据归纳假设可得 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>。正如需要的那样，规则
+             <span class="inlinecode"><span class="id" type="var">T_If</span></span> 为我们提供了 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。
 
 <div class="paragraph"> </div>
 
@@ -862,12 +817,9 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 <div class="paragraph"> </div>
 
 <a name="lab186"></a><h4 class="section">练习：3 星 (preservation_alternate_proof)</h4>
- Now prove the same property again by induction on the
-    _evaluation_ derivation instead of on the typing derivation.
-    Begin by carefully reading and thinking about the first few
-    lines of the above proofs to make sure you understand what
-    each one is doing.  The set-up for this proof is similar, but
-    not exactly the same. 
+ 现在请以归纳<b>求值</b>生成式（而非定型生成式）的方式再证明一遍维型性定理。
+    请仔细阅读和思考上面证明中最开始的几行，确保你理解了他们是在做什么。
+    本证明的开始部分类似，但并不完全一样。
 </div>
 <div class="code code-tight">
 
@@ -883,20 +835,17 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- The preservation theorem is often called _subject reduction_,
-    because it tells us what happens when the "subject" of the typing
-    relation is reduced.  This terminology comes from thinking of
-    typing statements as sentences, where the term is the subject and
-    the type is the predicate. 
+ 维型性定理也经常被称作<b>主语归约（subject reduction）</b>，因为它告诉了
+    我们当类型关系的主语被归约时会发生什么。这一属于来自于把类型陈述想象为一句话，
+    其中项是主语，类型是谓语。 
 </div>
 
 <div class="doc">
-<a name="lab187"></a><h2 class="section">Type Soundness</h2>
+<a name="lab187"></a><h2 class="section">类型可靠性</h2>
 
 <div class="paragraph"> </div>
 
- Putting progress and preservation together, we see that a
-    well-typed term can never reach a stuck state.  
+ 把可进行与维型性放在一起，我们可以看到一个良型的项永远不会有卡住状态。
 </div>
 <div class="code code-tight">
 
@@ -917,17 +866,16 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 </div>
 
 <div class="doc">
-<a name="lab188"></a><h1 class="section">Aside: the <span class="inlinecode"><span class="id" type="var">normalize</span></span> Tactic</h1>
+<a name="lab188"></a><h1 class="section">题外话：<span class="inlinecode"><span class="id" type="var">normalize</span></span> 策略</h1>
 
 <div class="paragraph"> </div>
 
- When experimenting with definitions of programming languages
-    in Coq, we often want to see what a particular concrete term steps
-    to &mdash; i.e., we want to find proofs for goals of the form <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;*</span>
-    <span class="inlinecode"><span class="id" type="var">t'</span></span>, where <span class="inlinecode"><span class="id" type="var">t</span></span> is a completely concrete term and <span class="inlinecode"><span class="id" type="var">t'</span></span> is unknown.
-    These proofs are quite tedious to do by hand.  Consider, for
-    example, reducing an arithmetic expression using the small-step
-    relation <span class="inlinecode"><span class="id" type="var">astep</span></span>. 
+
+<div class="paragraph"> </div>
+
+    在使用 Coq 对程序语言的定义进行一些实验时，我们经常想要看看某个具体的项会归约到什么——
+    也即，我们想要为形如 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;*</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 的目标找到证明，其中 <span class="inlinecode"><span class="id" type="var">t</span></span> 是一个具体的项，而
+    <span class="inlinecode"><span class="id" type="var">t'</span></span> 是未知的。比如说，使用小步关系 <span class="inlinecode"><span class="id" type="var">astep</span></span> 来归约一个算数表达式。
 </div>
 <div class="code code-tight">
 
@@ -948,10 +896,8 @@ Complete the formal proof of the <span class="inlinecode"><span class="id" type=
 </div>
 
 <div class="doc">
-The proof repeatedly applies <span class="inlinecode"><span class="id" type="var">multi_step</span></span> until the term reaches a
-    normal form.  Fortunately The sub-proofs for the intermediate
-    steps are simple enough that <span class="inlinecode"><span class="id" type="tactic">auto</span></span>, with appropriate hints, can
-    solve them. 
+证明重复地应用了 <span class="inlinecode"><span class="id" type="var">multi_step</span></span>，直到项被化简为一个正规式。幸运地是，如果有合适的
+    提示，中间证明步骤可以被 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 策略解决。
 </div>
 <div class="code code-tight">
 
@@ -967,9 +913,8 @@ The proof repeatedly applies <span class="inlinecode"><span class="id" type="var
 </div>
 
 <div class="doc">
-The following custom <span class="inlinecode"><span class="id" type="keyword">Tactic</span></span> <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> definition captures this
-    pattern.  In addition, before each step, we print out the current
-    goal, so that we can follow how the term is being reduced. 
+下面使用 <span class="inlinecode"><span class="id" type="keyword">Tactic</span></span> <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> 自定义的策略捕捉了这种模式。此外，在每次归约前，
+    我们打印出当前的目标，这样我们可以观察到项是如何被归约的。 
 </div>
 <div class="code code-tight">
 
@@ -984,8 +929,7 @@ The following custom <span class="inlinecode"><span class="id" type="keyword">Ta
 &nbsp;&nbsp;==&gt;* (<a class="idref" href="Smallstep.html#C"><span class="id" type="constructor">C</span></a> 10).<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="var">normalize</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;<span class="inlinecode"><span class="id" type="var">print_goal</span></span>&nbsp;in&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">normalize</span></span>&nbsp;tactic&nbsp;shows<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a&nbsp;trace&nbsp;of&nbsp;how&nbsp;the&nbsp;expression&nbsp;reduced...<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;<span class="inlinecode"><span class="id" type="var">normalize</span></span>&nbsp;策略中的&nbsp;<span class="inlinecode"><span class="id" type="var">print_goal</span></span>&nbsp;显示了项是如何一步步被归约的……<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;4))&nbsp;==&gt;*&nbsp;C&nbsp;10)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;7)&nbsp;==&gt;*&nbsp;C&nbsp;10)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C&nbsp;10&nbsp;==&gt;*&nbsp;C&nbsp;10)<br/>
@@ -994,9 +938,7 @@ The following custom <span class="inlinecode"><span class="id" type="keyword">Ta
 </div>
 
 <div class="doc">
-The <span class="inlinecode"><span class="id" type="var">normalize</span></span> tactic also provides a simple way to calculate the
-    normal form of a term, by starting with a goal with an existentially
-    bound variable. 
+<span class="inlinecode"><span class="id" type="var">normalize</span></span> 策略以一个目标和存在变量开始，提供了一种简单的方法计算出项的正规式。
 </div>
 <div class="code code-tight">
 
@@ -1009,7 +951,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;4))&nbsp;==&gt;*&nbsp;?e')<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;7)&nbsp;==&gt;*&nbsp;?e')<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C&nbsp;10&nbsp;==&gt;*&nbsp;?e')<br/>
-&nbsp;&nbsp;&nbsp;where&nbsp;?e'&nbsp;is&nbsp;the&nbsp;variable&nbsp;``guessed''&nbsp;by&nbsp;eapply.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;这列的&nbsp;?e'&nbsp;是由&nbsp;eapply&nbsp;“猜”出来的变量。&nbsp;*)</span><br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
@@ -1030,7 +972,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab190"></a><h4 class="section">练习：1 星, optional (normalize_ex')</h4>
- For comparison, prove it using <span class="inlinecode"><span class="id" type="tactic">apply</span></span> instead of <span class="inlinecode"><span class="id" type="tactic">eapply</span></span>. 
+ 作为比较，请使用 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> 而非 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 证明它。
 </div>
 <div class="code code-tight">
 
@@ -1054,17 +996,15 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 </div>
 
 <div class="doc">
-<a name="lab191"></a><h2 class="section">Additional Exercises</h2>
+<a name="lab191"></a><h2 class="section">额外练习</h2>
 
 <div class="paragraph"> </div>
 
 <a name="lab192"></a><h4 class="section">练习：2 星, recommended (subject_expansion)</h4>
- Having seen the subject reduction property, one might
-    wonder whether the opposity property &mdash; subject _expansion_ &mdash;
-    also holds.  That is, is it always the case that, if <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>
-    and <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, then <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>?  If so, prove it.  If
-    not, give a counter-example.  (You do not need to prove your
-    counter-example in Coq, but feel free to do so.)
+ 在学习了主语归约属性后，你可能会好奇其相反的属性——主语<b>扩张</b>（subject expasion）
+    ——是否也成立。也即，如果有 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 且 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，是否总是有
+    <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>？如果是的话，请证明它。如果不是的话，请给出一个反例。
+    （你并不需要在 Coq 中证明你的反例，不过也可以这样做。）
 
 <div class="paragraph"> </div>
 
@@ -1081,7 +1021,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab193"></a><h4 class="section">练习：2 星 (variation1)</h4>
- Suppose, that we add this new rule to the typing relation:
+ 假设，我们为类型关系添加新的规则：
 
 <div class="paragraph"> </div>
 
@@ -1092,27 +1032,25 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 </div>
-   Which of the following properties remain true in the presence of
-   this rule?  For each one, write either "remains true" or
-   else "becomes false." If a property becomes false, give a
-   counterexample.
+  下面的哪些性质仍然成立？对于每个性质，写下“仍然成立”或“不成立”。
+  如果性质不再成立，请给出一个反例。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> Determinism of <span class="inlinecode"><span class="id" type="var">step</span></span>
+<li> <span class="inlinecode"><span class="id" type="var">step</span></span> 的确定性
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Progress
+<li> 可进性
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Preservation
+<li> 维型性
 
 </li>
 </ul>
@@ -1131,7 +1069,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab194"></a><h4 class="section">练习：2 星 (variation2)</h4>
- Suppose, instead, that we add this new rule to the <span class="inlinecode"><span class="id" type="var">step</span></span> relation:
+ 假设，我们仅为 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系添加新的规则：
 
 <div class="paragraph"> </div>
 
@@ -1141,8 +1079,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 </div>
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 <div class="paragraph"> </div>
 
@@ -1158,7 +1095,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab195"></a><h4 class="section">练习：2 星, optional (variation3)</h4>
- Suppose instead that we add this rule:
+ 假设，我们仅添加新的规则：
 
 <div class="paragraph"> </div>
 
@@ -1169,8 +1106,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 </div>
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 <div class="paragraph"> </div>
 
@@ -1178,7 +1114,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab196"></a><h4 class="section">练习：2 星, optional (variation4)</h4>
- Suppose instead that we add this rule:
+ 假设，我们仅添加新的规则：
 
 <div class="paragraph"> </div>
 
@@ -1188,8 +1124,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 </div>
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 <div class="paragraph"> </div>
 
@@ -1197,7 +1132,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab197"></a><h4 class="section">练习：2 星, optional (variation5)</h4>
- Suppose instead that we add this rule:
+ 假设，我们仅添加新的规则：
 
 <div class="paragraph"> </div>
 
@@ -1207,8 +1142,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 </div>
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 <div class="paragraph"> </div>
 
@@ -1216,7 +1150,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab198"></a><h4 class="section">练习：2 星, optional (variation6)</h4>
- Suppose instead that we add this rule:
+ 假设，我们仅添加新的规则：
 
 <div class="paragraph"> </div>
 
@@ -1226,8 +1160,7 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 </div>
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 <div class="paragraph"> </div>
 
@@ -1235,19 +1168,15 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab199"></a><h4 class="section">练习：3 星, optional (more_variations)</h4>
- Make up some exercises of your own along the same lines as
-    the ones above.  Try to find ways of selectively breaking
-    properties &mdash; i.e., ways of changing the definitions that
-    break just one of the properties and leave the others alone.
+ 请使用上面的模式编写更多的练习。尝试有选择地使某些性质不再成立——
+    即，对定义的改变只会导致某一个性质不再成立，而其他仍然成立。
  <span class="proofbox">&#9744;</span> 
 <div class="paragraph"> </div>
 
 <a name="lab200"></a><h4 class="section">练习：1 星 (remove_predzero)</h4>
- The reduction rule <span class="inlinecode"><span class="id" type="var">ST_PredZero</span></span> is a bit counter-intuitive: we
-    might feel that it makes more sense for the predecessor of zero to
-    be undefined, rather than being defined to be zero.  Can we
-    achieve this simply by removing the rule from the definition of
-    <span class="inlinecode"><span class="id" type="var">step</span></span>?  Would doing so create any problems elsewhere?
+ 归约规则 <span class="inlinecode"><span class="id" type="var">ST_PredZero</span></span> 可能有一点反直觉：我们想要让零的前继变为未定义的，
+    而非定义为零。我们是否可以通过仅仅移除 <span class="inlinecode"><span class="id" type="var">step</span></span> 中的某条规则达到这一点？
+    这样做会导致别的问题出现吗？
 
 <div class="paragraph"> </div>
 
@@ -1264,16 +1193,13 @@ The <span class="inlinecode"><span class="id" type="var">normalize</span></span>
 <div class="paragraph"> </div>
 
 <a name="lab201"></a><h4 class="section">练习：4 星, advanced (prog_pres_bigstep)</h4>
- Suppose our evaluation relation is defined in the big-step style.
-    State appropriate analogs of the progress and preservation
-    properties. (You do not need to prove them.)
+ 假设我们的求值关系是以大步语义方式定义的。请陈述类似的可进性和维型性定理。
+    （你不需要证明他们。）
 
 <div class="paragraph"> </div>
 
-    Can you see any limitations of either of your properties?
-    Do they allow for nonterminating commands?
-    Why might we prefer the small-step semantics for stating
-    preservation and progress?
+    你可以发现这两个属性中存在的局限吗？他们是否允许非停机的命令？我们为什么倾向于
+    使用小步语义来陈述维型性和可进性？
 
 <div class="paragraph"> </div>
 

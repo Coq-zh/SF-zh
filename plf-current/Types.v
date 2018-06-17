@@ -1,14 +1,10 @@
-(** * Types: Type Systems *)
+(** * Types: 类型系统 *)
 
-(** Our next major topic is _type systems_ -- static program
-    analyses that classify expressions according to the "shapes" of
-    their results.  We'll begin with a typed version of the simplest
-    imaginable language, to introduce the basic ideas of types and
-    typing rules and the fundamental theorems about type systems:
-    _type preservation_ and _progress_.  In chapter [Stlc] we'll move
-    on to the _simply typed lambda-calculus_, which lives at the core
-    of every modern functional programming language (including
-    Coq!). *)
+(** 我们接下来主要的话题是_'类型系统'_——一种根据表达式结果的“形状（shapes）”
+    来给表达式分类的静态程序分析技术。我们将会以一个最简单的有类型语言为起点，介绍
+    类型和定型规则的概念，以及类型系统最基础的几个定理：_'维型性（type preservation）'_
+    和_'可进性（progress）'_。在 [Stlc] 一章中，我们会继续考察
+    _'简单类型λ-演算'_，它是几乎每个现代函数式语言的核心（也包括 Coq！）。 *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
@@ -19,23 +15,19 @@ Require Import Smallstep.
 Hint Constructors multi.
 
 (* ################################################################# *)
-(** * Typed Arithmetic Expressions *)
+(** * 有类型算数表达式 *)
 
-(** To motivate the discussion of type systems, let's begin as
-    usual with a tiny toy language.  We want it to have the potential
-    for programs to go wrong because of runtime type errors, so we
-    need something a tiny bit more complex than the language of
-    constants and addition that we used in chapter [Smallstep]: a
-    single kind of data (e.g., numbers) is too simple, but just two
-    kinds (numbers and booleans) gives us enough material to tell an
-    interesting story.
+(** 作为对类型系统讨论的动机，让我们像过去一样以一个小型玩具语言开始。
+    我们想要让程序有机会产生运行时类型错误，因此除了 [Smallstep] 
+    一章中用到的常量和加法，还需要一点更复杂的语言构造：只有一种数据类型（比如说数字）
+    太过于简单，但是两种（数字和布尔值）便足够产生有趣的故事了。
 
-    The language definition is completely routine. *)
+    语言的定义部分没有什么特别值得注意的。 *)
 
 (* ================================================================= *)
-(** ** Syntax *)
+(** ** 语法 *)
 
-(** Here is the syntax, informally:
+(** 这是非形式化的语法表述：
 
     t ::= true
         | false
@@ -45,7 +37,7 @@ Hint Constructors multi.
         | pred t
         | iszero t
 
-    And here it is formally: *)
+    以及形式化的： *)
 
 Inductive tm : Type :=
   | ttrue : tm
@@ -56,7 +48,7 @@ Inductive tm : Type :=
   | tpred : tm -> tm
   | tiszero : tm -> tm.
 
-(** _Values_ are [true], [false], and numeric values... *)
+(** 对_'值（values）'_的定义包括 [true]，[false] 以及数值…… *)
 
 Inductive bvalue : tm -> Prop :=
   | bv_true : bvalue ttrue
@@ -73,9 +65,9 @@ Hint Unfold value.
 Hint Unfold update.
 
 (* ================================================================= *)
-(** ** Operational Semantics *)
+(** ** 操作语义 *)
 
-(** Here is the single-step relation, first informally... *)
+(** 首先我们非形式化地描述单步关系…… *)
 (**
 
                     ------------------------------                  (ST_IfTrue)
@@ -115,7 +107,7 @@ Hint Unfold update.
                        iszero t1 ==> iszero t1'
 *)
 
-(** ... and then formally: *)
+(** 接着形式化地： *)
 
 Reserved Notation "t1 '==>' t2" (at level 40).
 
@@ -151,26 +143,20 @@ where "t1 '==>' t2" := (step t1 t2).
 
 Hint Constructors step.
 
-(** Notice that the [step] relation doesn't care about whether
-    expressions make global sense -- it just checks that the operation
-    in the _next_ reduction step is being applied to the right kinds
-    of operands.  For example, the term [succ true] (i.e.,
-    [tsucc ttrue] in the formal syntax) cannot take a step, but the
-    almost as obviously nonsensical term
+(** 请注意 [step] 关系并不在意表达式是否有全局意义——它只是检查_'下一步'_
+    的归约操作是否在正确的操作对象上。比如，项 [succ true]（用形式语法来说是 
+    [tsucc true]）无法前进一步，但这个几乎显然无意义的项
 
        succ (if true then true else true)
 
-    can take a step (once, before becoming stuck). *)
+    却可以前进一步（注意是在卡住之前）。 *)
 
 (* ================================================================= *)
-(** ** Normal Forms and Values *)
+(** ** 正规式和值 *)
 
-(** The first interesting thing to notice about this [step] relation
-    is that the strong progress theorem from the [Smallstep] chapter
-    fails here.  That is, there are terms that are normal forms (they
-    can't take a step) but not values (because we have not included
-    them in our definition of possible "results of reduction").  Such
-    terms are _stuck_. *)
+(** 首先值得注意的是 [Smallstep] 一章中的强可进性定理对这里的 [step]
+    归约并不成立。也即，有一些项是正规式（他们无法再前进一步），但却不是值（因为
+    我们还没有把他们包括进潜在“归约结果”的定义中）。这样的项_'卡住了'_。 *)
 
 Notation step_normal_form := (normal_form step).
 
@@ -186,10 +172,8 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** However, although values and normal forms are _not_ the same in this
-    language, the set of values is included in the set of normal
-    forms.  This is important because it shows we did not accidentally
-    define things so that some value could still take a step. *)
+(** 然而，值和正规式在这个语言中并_'不'_相同，值的集合被包括在正规式的集合中。
+    这一点很重要，因为这说明我们没有不小心定义了一些仍然能前进一步的值。*)
 
 (** **** 练习：3 星 (value_is_nf)  *)
 Lemma value_is_nf : forall t,
@@ -197,18 +181,13 @@ Lemma value_is_nf : forall t,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** (Hint: You will reach a point in this proof where you need to
-    use an induction to reason about a term that is known to be a
-    numeric value.  This induction can be performed either over the
-    term itself or over the evidence that it is a numeric value.  The
-    proof goes through in either case, but you will find that one way
-    is quite a bit shorter than the other.  For the sake of the
-    exercise, try to complete the proof both ways.) *)
+(** （提示：在证明中的某个地方，你需要使用归纳来推理某个项，这个项已知是数值。
+    归纳可以对项本身进行，也可以对它是数值这个证据进行。两种方法均可完成证明，
+    但你发现一种要比另一种稍微简短一点。作为练习，请尝试使用这两种方法完成证明。）*)
 (** [] *)
 
 (** **** 练习：3 星, optional (step_deterministic)  *)
-(** Use [value_is_nf] to show that the [step] relation is also
-    deterministic. *)
+(** 使用 [value_is_nf] 来证明 [step] 关系是确定的。*)
 
 Theorem step_deterministic:
   deterministic step.
@@ -217,25 +196,20 @@ Proof with eauto.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Typing *)
+(** ** 定型 *)
 
-(** The next critical observation is that, although this
-    language has stuck terms, they are always nonsensical, mixing
-    booleans and numbers in a way that we don't even _want_ to have a
-    meaning.  We can easily exclude such ill-typed terms by defining a
-    _typing relation_ that relates terms to the types (either numeric
-    or boolean) of their final results.  *)
+(** 下一个重要的观察是，尽管这个语言中有卡住的项，他们总是以混合了
+    布尔值和数字的方式变得完全没有意义，我们也_'不想'_为他们赋予意义。
+    通过定义_'类型关系（typing relation）'_关联起项和他们最终结果的
+    类型（数字或布尔值），我们可以容易地排除这些劣型（ill-typed）项。*)
 
 Inductive ty : Type :=
   | TBool : ty
   | TNat : ty.
 
-(** In informal notation, the typing relation is often written
-    [|- t \in T] and pronounced "[t] has type [T]."  The [|-] symbol
-    is called a "turnstile."  Below, we're going to see richer typing
-    relations where one or more additional "context" arguments are
-    written to the left of the turnstile.  For the moment, the context
-    is always empty. *)
+(** 在非形式化的记号中，类型关系经常写做 [|- t \in T]，并读做“[t] 有类型 [T]”。
+    [|-] 符号叫做“十字转门（turnstile）”。下面，我们会看到更加丰富的类型关系，其中
+    我们会在 [|-] 左侧添加一个或多个“上下文（context）”。目前暂时来说，上下文总是空的。 *)
 (** 
                            ----------------                            (T_True)
                            |- true \in Bool
@@ -301,14 +275,12 @@ Proof.
        + apply T_Zero.
 Qed.
 
-(** (Since we've included all the constructors of the typing relation
-    in the hint database, the [auto] tactic can actually find this
-    proof automatically.) *)
+(** （因为我们在提示数据库（hint database）中包括了类型关系的所有构造子，
+    因此 [auto] 策略可以自动完成这个证明。）*)
 
-(** It's important to realize that the typing relation is a
-    _conservative_ (or _static_) approximation: it does not consider
-    what happens when the term is reduced -- in particular, it does
-    not calculate the type of its normal form. *)
+(** 重要的一点是认识到类型关系是一个_'保守的（conservative）'_
+    （或_'静态的（static）'_）近似：它不考虑项被归约时会发生什么——特别地，
+    它并不计算项的正规式的类型。 *)
 
 Example has_type_not :
   ~ (|- tif tfalse tzero ttrue \in TBool).
@@ -324,11 +296,9 @@ Proof.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Canonical forms *)
+(** *** 典范形式 *)
 
-(** The following two lemmas capture the fundamental property that the
-    definitions of boolean and numeric values agree with the typing
-    relation. *)
+(** 下面的两个引理作为基础性质表达了布尔值和数值的定义同类型关系相一致。*)
 
 Lemma bool_canonical : forall t,
   |- t \in TBool -> value t -> bvalue t.
@@ -348,63 +318,55 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(** ** Progress *)
+(** ** 可进性 *)
 
-(** The typing relation enjoys two critical properties.  The first is
-    that well-typed normal forms are not stuck -- or conversely, if a
-    term is well typed, then either it is a value or it can take at
-    least one step.  We call this _progress_. *)
+(** 类型关系具有两个十分重要的性质。第一个是良型（well-typed）的正规式不会卡住——或者，反过来说，
+    如果一个项是良型的，那么它要么是一个值，要么可以至少前进一步。我们把这个性质叫做
+    _'可进性（progress）'_。 *)
 
 (** **** 练习：3 星 (finish_progress)  *)
 Theorem progress : forall t T,
   |- t \in T ->
   value t \/ exists t', t ==> t'.
 
-(** Complete the formal proof of the [progress] property.  (Make sure
-    you understand the parts we've given of the informal proof in the
-    following exercise before starting -- this will save you a lot of
-    time.) *)
+(** 请完成 [progress] 性质的形式化证明。（在开始前请确保你理解了下一个练习中的非
+    形式化证明——这会节省很多你的时间。）*)
 Proof with auto.
   intros t T HT.
   induction HT...
-  (* The cases that were obviously values, like T_True and
-     T_False, were eliminated immediately by auto *)
+  (* 对于显然是值的情形，比如 T_True 和 T_False，我们直接使用 auto 完成。*)
   - (* T_If *)
     right. inversion IHHT1; clear IHHT1.
-    + (* t1 is a value *)
+    + (* t1 是值 *)
     apply (bool_canonical t1 HT1) in H.
     inversion H; subst; clear H.
       exists t2...
       exists t3...
-    + (* t1 can take a step *)
+    + (* t1 可前进一步 *)
       inversion H as [t1' H1].
       exists (tif t1' t2 t3)...
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** 练习：3 星, advanced (finish_progress_informal)  *)
-(** Complete the corresponding informal proof: *)
+(** 请完成非形式化的证明： *)
 
-(** _Theorem_: If [|- t \in T], then either [t] is a value or else
-    [t ==> t'] for some [t']. *)
+(** _'定理'_：如果 [|- t \in T]，那么 [t] 要么是值，要么存在某个 [t'] 使 [t ==> t']。*)
 
-(** _Proof_: By induction on a derivation of [|- t \in T].
+(** _'证明'_：对 [|- t \in T] 的生成式进行归纳。
 
-      - If the last rule in the derivation is [T_If], then [t = if t1
-        then t2 else t3], with [|- t1 \in Bool], [|- t2 \in T] and [|- t3
-        \in T].  By the IH, either [t1] is a value or else [t1] can step
-        to some [t1'].
+      - 如果生成式的最后一条规则是 [T_If]，那么 [t = if t1 then t2 else t3]，
+        其中 [|- t1 \in Bool]，[|- t2 \in T] 以及 [|- t3 \in T]。
+        根据归纳假设，[t1] 要么是值，要么可前进一步到某个 [t1']。
 
-            - If [t1] is a value, then by the canonical forms lemmas
-              and the fact that [|- t1 \in Bool] we have that [t1]
-              is a [bvalue] -- i.e., it is either [true] or [false].
-              If [t1 = true], then [t] steps to [t2] by [ST_IfTrue],
-              while if [t1 = false], then [t] steps to [t3] by
-              [ST_IfFalse].  Either way, [t] can step, which is what
-              we wanted to show.
+            - 如果 [t1] 是值，那么根据典范形式（canonical forms）引理以及
+              [|- t1 \in Bool] 的事实，可得 [t1] 是一个 [bvalue]——也即，
+              它要么是 [true] 要么是 [false]。如果 [t1 = true]，由 [ST_IfTrue]
+              可得 [t] 前进到 [t2]；而当 [t1 = false] 时，由 [ST_IfFalse]
+              可得 [t] 前进到 [t3]。不论哪种情况，[t] 都可以前进一步，这是我们
+              想要证明的。
 
-            - If [t1] itself can take a step, then, by [ST_If], so can
-              [t].
+            - 如果 [t1] 自己可以前进一步，那么根据 [ST_If] 可得 [t] 也可以。
 
       - (* 请在此处解答 *)
  *)
@@ -412,16 +374,13 @@ Proof with auto.
 Definition manual_grade_for_finish_progress_informal : option (prod nat string) := None.
 (** [] *)
 
-(** This theorem is more interesting than the strong progress theorem
-    that we saw in the [Smallstep] chapter, where _all_ normal forms
-    were values.  Here a term can be stuck, but only if it is ill
-    typed. *)
+(** 这个定理要比 [Smallstep] 一章中的强可进性定理更有趣一些，在强可进性定理
+    中_'全部'_的正规式都是值。这里项可以卡住，但仅当它为劣型时。 *)
 
 (* ================================================================= *)
-(** ** Type Preservation *)
+(** ** 维型性 *)
 
-(** The second critical property of typing is that, when a well-typed
-    term takes a step, the result is also a well-typed term. *)
+(** 关于类型的第二个重要性质是，当一个良型项可前进一步时，其结果也是一个良型项。*)
 
 (** **** 练习：2 星 (finish_preservation)  *)
 Theorem preservation : forall t t' T,
@@ -429,18 +388,16 @@ Theorem preservation : forall t t' T,
   t ==> t' ->
   |- t' \in T.
 
-(** Complete the formal proof of the [preservation] property.  (Again,
-    make sure you understand the informal proof fragment in the
-    following exercise first.) *)
+(** 请完成 [preservation] 性质的形式化证明。（和上次一样，在开始前请确保你理解了
+    下一个练习中的非形式化证明。） *)
 
 Proof with auto.
   intros t t' T HT HE.
   generalize dependent t'.
   induction HT;
-         (* every case needs to introduce a couple of things *)
+         (* 每个情形都需要引入一些东西 *)
          intros t' HE;
-         (* and we can deal with several impossible
-            cases all at once *)
+         (* 我们还需要处理一些不可能发生的情形 *)
          try solve_by_invert.
     - (* T_If *) inversion HE; subst; clear HE.
       + (* ST_IFTrue *) assumption.
@@ -451,31 +408,29 @@ Proof with auto.
 (** [] *)
 
 (** **** 练习：3 星, advanced (finish_preservation_informal)  *)
-(** Complete the following informal proof: *)
+(** 请完成非形式化的证明： *)
 
-(** _Theorem_: If [|- t \in T] and [t ==> t'], then [|- t' \in T]. *)
+(** _'定理'_：如果 [|- t \in T] 且 [t ==> t']，那么 [|- t' \in T]。 *)
 
-(** _Proof_: By induction on a derivation of [|- t \in T].
+(** _'证明'_：对 [|- t \in T] 的生成式进行归纳。
 
-      - If the last rule in the derivation is [T_If], then [t = if t1
-        then t2 else t3], with [|- t1 \in Bool], [|- t2 \in T] and [|- t3
-        \in T].
+      - 如果生成式的最后一条规则是 [T_If]，那么 [t = if t1
+        then t2 else t3]，其中 [|- t1 \in Bool]， [|- t2 \in T] 以及 [|- t3
+        \in T]。
 
-        Inspecting the rules for the small-step reduction relation and
-        remembering that [t] has the form [if ...], we see that the
-        only ones that could have been used to prove [t ==> t'] are
-        [ST_IfTrue], [ST_IfFalse], or [ST_If].
+        请记着 [t] 形如 [if ...]，通过检查小步归约关系的规则，我们看到可以用来证明
+        [t ==> t'] 的规则仅有 [ST_IfTrue]，[ST_IfFalse] 或者 [ST_If]。
 
-           - If the last rule was [ST_IfTrue], then [t' = t2].  But we
-             know that [|- t2 \in T], so we are done.
+           - 如果最后的规则是 [ST_IfTrue]，那么 [t' = t2]。但是我们有
+             [|- t2 \in T]，所以证明完成。
 
-           - If the last rule was [ST_IfFalse], then [t' = t3].  But we
-             know that [|- t3 \in T], so we are done.
+           - 如果最后的规则是 [ST_IfFalse]，那么 [t' = t3]。但是我们有
+             [|- t3 \in T]，所以证明完成。
 
-           - If the last rule was [ST_If], then [t' = if t1' then t2
-             else t3], where [t1 ==> t1'].  We know [|- t1 \in Bool] so,
-             by the IH, [|- t1' \in Bool].  The [T_If] rule then gives us
-             [|- if t1' then t2 else t3 \in T], as required.
+           - 如果最后的规则是 [ST_If]，那么 [t' = if t1' then t2
+             else t3]，其中 [t1 ==> t1']。我们知道 [|- t1 \in Bool]，
+             因此根据归纳假设可得 [|- t1' \in Bool]。正如需要的那样，规则
+             [T_If] 为我们提供了 [|- if t1' then t2 else t3 \in T]。
 
       - (* 请在此处解答 *)
 *)
@@ -484,12 +439,9 @@ Definition manual_grade_for_finish_preservation_informal : option (prod nat stri
 (** [] *)
 
 (** **** 练习：3 星 (preservation_alternate_proof)  *)
-(** Now prove the same property again by induction on the
-    _evaluation_ derivation instead of on the typing derivation.
-    Begin by carefully reading and thinking about the first few
-    lines of the above proofs to make sure you understand what
-    each one is doing.  The set-up for this proof is similar, but
-    not exactly the same. *)
+(** 现在请以归纳_'求值'_生成式（而非定型生成式）的方式再证明一遍维型性定理。
+    请仔细阅读和思考上面证明中最开始的几行，确保你理解了他们是在做什么。
+    本证明的开始部分类似，但并不完全一样。*)
 
 Theorem preservation' : forall t t' T,
   |- t \in T ->
@@ -499,17 +451,14 @@ Proof with eauto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** The preservation theorem is often called _subject reduction_,
-    because it tells us what happens when the "subject" of the typing
-    relation is reduced.  This terminology comes from thinking of
-    typing statements as sentences, where the term is the subject and
-    the type is the predicate. *)
+(** 维型性定理也经常被称作_'主语归约（subject reduction）'_，因为它告诉了
+    我们当类型关系的主语被归约时会发生什么。这一属于来自于把类型陈述想象为一句话，
+    其中项是主语，类型是谓语。 *)
 
 (* ================================================================= *)
-(** ** Type Soundness *)
+(** ** 类型可靠性 *)
 
-(** Putting progress and preservation together, we see that a
-    well-typed term can never reach a stuck state.  *)
+(** 把可进行与维型性放在一起，我们可以看到一个良型的项永远不会有卡住状态。*)
 
 Definition multistep := (multi step).
 Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
@@ -525,15 +474,12 @@ Proof.
   unfold stuck. split; auto.   Qed.
 
 (* ################################################################# *)
-(** * Aside: the [normalize] Tactic *)
+(** * 题外话：[normalize] 策略 *)
 
-(** When experimenting with definitions of programming languages
-    in Coq, we often want to see what a particular concrete term steps
-    to -- i.e., we want to find proofs for goals of the form [t ==>*
-    t'], where [t] is a completely concrete term and [t'] is unknown.
-    These proofs are quite tedious to do by hand.  Consider, for
-    example, reducing an arithmetic expression using the small-step
-    relation [astep]. *)
+(** 
+    在使用 Coq 对程序语言的定义进行一些实验时，我们经常想要看看某个具体的项会归约到什么——
+    也即，我们想要为形如 [t ==>* t'] 的目标找到证明，其中 [t] 是一个具体的项，而
+    [t'] 是未知的。比如说，使用小步关系 [astep] 来归约一个算数表达式。*)
 
 Module NormalizePlayground.
 Import Smallstep.
@@ -551,10 +497,8 @@ Proof.
   apply multi_refl.
 Qed.
 
-(** The proof repeatedly applies [multi_step] until the term reaches a
-    normal form.  Fortunately The sub-proofs for the intermediate
-    steps are simple enough that [auto], with appropriate hints, can
-    solve them. *)
+(** 证明重复地应用了 [multi_step]，直到项被化简为一个正规式。幸运地是，如果有合适的
+    提示，中间证明步骤可以被 [auto] 策略解决。*)
 
 Hint Constructors step value.
 Example step_example1' :
@@ -566,9 +510,8 @@ Proof.
   apply multi_refl.
 Qed.
 
-(** The following custom [Tactic Notation] definition captures this
-    pattern.  In addition, before each step, we print out the current
-    goal, so that we can follow how the term is being reduced. *)
+(** 下面使用 [Tactic Notation] 自定义的策略捕捉了这种模式。此外，在每次归约前，
+    我们打印出当前的目标，这样我们可以观察到项是如何被归约的。 *)
 
 Tactic Notation "print_goal" :=
   match goal with |- ?x => idtac x end.
@@ -583,17 +526,14 @@ Example step_example1'' :
   ==>* (C 10).
 Proof.
   normalize.
-  (* The [print_goal] in the [normalize] tactic shows
-     a trace of how the expression reduced...
+  (* [normalize] 策略中的 [print_goal] 显示了项是如何一步步被归约的……
          (P (C 3) (P (C 3) (C 4)) ==>* C 10)
          (P (C 3) (C 7) ==>* C 10)
          (C 10 ==>* C 10)
   *)
 Qed.
 
-(** The [normalize] tactic also provides a simple way to calculate the
-    normal form of a term, by starting with a goal with an existentially
-    bound variable. *)
+(** [normalize] 策略以一个目标和存在变量开始，提供了一种简单的方法计算出项的正规式。*)
 
 Example step_example1''' : exists e',
   (P (C 3) (P (C 3) (C 4)))
@@ -604,7 +544,7 @@ Proof.
        (P (C 3) (P (C 3) (C 4)) ==>* ?e')
        (P (C 3) (C 7) ==>* ?e')
        (C 10 ==>* ?e')
-   where ?e' is the variable ``guessed'' by eapply. *)
+   这列的 ?e' 是由 eapply “猜”出来的变量。 *)
 Qed.
 
 
@@ -617,7 +557,7 @@ Proof.
 (** [] *)
 
 (** **** 练习：1 星, optional (normalize_ex')  *)
-(** For comparison, prove it using [apply] instead of [eapply]. *)
+(** 作为比较，请使用 [apply] 而非 [eapply] 证明它。*)
 
 Theorem normalize_ex' : exists e',
   (P (C 3) (P (C 2) (C 1)))
@@ -636,15 +576,13 @@ Tactic Notation "normalize" :=
   apply multi_refl.
 
 (* ================================================================= *)
-(** ** Additional Exercises *)
+(** ** 额外练习 *)
 
 (** **** 练习：2 星, recommended (subject_expansion)  *)
-(** Having seen the subject reduction property, one might
-    wonder whether the opposity property -- subject _expansion_ --
-    also holds.  That is, is it always the case that, if [t ==> t']
-    and [|- t' \in T], then [|- t \in T]?  If so, prove it.  If
-    not, give a counter-example.  (You do not need to prove your
-    counter-example in Coq, but feel free to do so.)
+(** 在学习了主语归约属性后，你可能会好奇其相反的属性——主语_'扩张'_（subject expasion）
+    ——是否也成立。也即，如果有 [t ==> t'] 且 [|- t' \in T]，是否总是有
+    [|- t \in T]？如果是的话，请证明它。如果不是的话，请给出一个反例。
+    （你并不需要在 Coq 中证明你的反例，不过也可以这样做。）
 
     (* 请在此处解答 *)
 *)
@@ -653,21 +591,19 @@ Definition manual_grade_for_subject_expansion : option (prod nat string) := None
 (** [] *)
 
 (** **** 练习：2 星 (variation1)  *)
-(** Suppose, that we add this new rule to the typing relation:
+(** 假设，我们为类型关系添加新的规则：
 
       | T_SuccBool : forall t,
            |- t \in TBool ->
            |- tsucc t \in TBool
 
-   Which of the following properties remain true in the presence of
-   this rule?  For each one, write either "remains true" or
-   else "becomes false." If a property becomes false, give a
-   counterexample.
-      - Determinism of [step]
+  下面的哪些性质仍然成立？对于每个性质，写下“仍然成立”或“不成立”。
+  如果性质不再成立，请给出一个反例。
+      - [step] 的确定性
 
-      - Progress
+      - 可进性
 
-      - Preservation
+      - 维型性
 
 *)
 (* 请勿修改下面这一行： *)
@@ -675,13 +611,12 @@ Definition manual_grade_for_variation1 : option (prod nat string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (variation2)  *)
-(** Suppose, instead, that we add this new rule to the [step] relation:
+(** 假设，我们仅为 [step] 关系添加新的规则：
 
       | ST_Funny1 : forall t2 t3,
            (tif ttrue t2 t3) ==> t3
 
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 *)
 (* 请勿修改下面这一行： *)
@@ -689,68 +624,60 @@ Definition manual_grade_for_variation2 : option (prod nat string) := None.
 (** [] *)
 
 (** **** 练习：2 星, optional (variation3)  *)
-(** Suppose instead that we add this rule:
+(** 假设，我们仅添加新的规则：
 
       | ST_Funny2 : forall t1 t2 t2' t3,
            t2 ==> t2' ->
            (tif t1 t2 t3) ==> (tif t1 t2' t3)
 
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 
     [] *)
 
 (** **** 练习：2 星, optional (variation4)  *)
-(** Suppose instead that we add this rule:
+(** 假设，我们仅添加新的规则：
 
       | ST_Funny3 :
           (tpred tfalse) ==> (tpred (tpred tfalse))
 
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 
     [] *)
 
 (** **** 练习：2 星, optional (variation5)  *)
-(** Suppose instead that we add this rule:
+(** 假设，我们仅添加新的规则：
 
       | T_Funny4 :
             |- tzero \in TBool
 
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 
     [] *)
 
 (** **** 练习：2 星, optional (variation6)  *)
-(** Suppose instead that we add this rule:
+(** 假设，我们仅添加新的规则：
 
       | T_Funny5 :
             |- tpred tzero \in TBool
 
-   Which of the above properties become false in the presence of
-   this rule?  For each one that does, give a counter-example.
+   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 
 
     [] *)
 
 (** **** 练习：3 星, optional (more_variations)  *)
-(** Make up some exercises of your own along the same lines as
-    the ones above.  Try to find ways of selectively breaking
-    properties -- i.e., ways of changing the definitions that
-    break just one of the properties and leave the others alone.
+(** 请使用上面的模式编写更多的练习。尝试有选择地使某些性质不再成立——
+    即，对定义的改变只会导致某一个性质不再成立，而其他仍然成立。
 *)
 (** [] *)
 
 (** **** 练习：1 星 (remove_predzero)  *)
-(** The reduction rule [ST_PredZero] is a bit counter-intuitive: we
-    might feel that it makes more sense for the predecessor of zero to
-    be undefined, rather than being defined to be zero.  Can we
-    achieve this simply by removing the rule from the definition of
-    [step]?  Would doing so create any problems elsewhere?
+(** 归约规则 [ST_PredZero] 可能有一点反直觉：我们想要让零的前继变为未定义的，
+    而非定义为零。我们是否可以通过仅仅移除 [step] 中的某条规则达到这一点？
+    这样做会导致别的问题出现吗？
 
 (* 请在此处解答 *)
 *)
@@ -759,14 +686,11 @@ Definition manual_grade_for_remove_predzero : option (prod nat string) := None.
 (** [] *)
 
 (** **** 练习：4 星, advanced (prog_pres_bigstep)  *)
-(** Suppose our evaluation relation is defined in the big-step style.
-    State appropriate analogs of the progress and preservation
-    properties. (You do not need to prove them.)
+(** 假设我们的求值关系是以大步语义方式定义的。请陈述类似的可进性和维型性定理。
+    （你不需要证明他们。）
 
-    Can you see any limitations of either of your properties?
-    Do they allow for nonterminating commands?
-    Why might we prefer the small-step semantics for stating
-    preservation and progress?
+    你可以发现这两个属性中存在的局限吗？他们是否允许非停机的命令？我们为什么倾向于
+    使用小步语义来陈述维型性和可进性？
 
 (* 请在此处解答 *)
 *)
