@@ -274,7 +274,7 @@ Proof.
     could determine validity of arbitrary triples could solve the
     Halting Problem.
 
-    Similarly, the triple [{{True} SKIP {{P}}] is valid if and only if
+    Similarly, the triple [{{True}} SKIP {{P}}] is valid if and only if
     [forall s, P s] is valid, where [P] is an arbitrary assertion of
     Coq's logic. But it is known that there can be no decision
     procedure for this logic. 
