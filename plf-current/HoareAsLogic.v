@@ -1,28 +1,21 @@
-(** * HoareAsLogic: Hoare Logic as a Logic *)
+(** * HoareAsLogic: 证明论霍尔逻辑  *)
 
-(** The presentation of Hoare logic in chapter [Hoare] could be
-    described as "model-theoretic": the proof rules for each of the
-    constructors were presented as _theorems_ about the evaluation
-    behavior of programs, and proofs of program correctness (validity
-    of Hoare triples) were constructed by combining these theorems
-    directly in Coq.
+(** 在[Hoare]一章中所介绍的霍尔逻辑可以被认为是“模型论”的：每一个构造子
+    的证明规则以关于求值行为的_'定理'_的形式呈现，并且程序正确性（霍尔三元组的有
+    效性）的证明由在Coq里面直接组合这些定理所构造。
 
-    Another way of presenting Hoare logic is to define a completely
-    separate proof system -- a set of axioms and inference rules that
-    talk about commands, Hoare triples, etc. -- and then say that a
-    proof of a Hoare triple is a valid derivation in _that_ logic.  We
-    can do this by giving an inductive definition of _valid
-    derivations_ in this new logic.
+    另外一种介绍霍尔逻辑的方式是定义一个完全分开的证明系统——关于命令，霍尔三元组
+    等等的一系列公理和推断规则——接着说明霍尔三元组的一个证明是在_'那个'_逻辑中的一
+    个合法导出式。这可以通过给出在这个新逻辑中的_'合法导出式'_的归纳定义来实现。
 
-    This chapter is optional.  Before reading it, you'll want to read
-    the [ProofObjects] chapter in _Logical
-    Foundations_ (_Software Foundations_, volume 1). *)
+    这一章是可选的。在阅读之前，你会想要阅读一下在_'逻辑基础'_（_'软件基础'_的
+    第一卷）中的 [ProofObjects] 章节。 *)
 
 Require Import Imp.
 Require Import Hoare.
 
 (* ################################################################# *)
-(** * Definitions *)
+(** * 定义 *)
 
 Inductive hoare_proof : Assertion -> com -> Assertion -> Type :=
   | H_Skip : forall P,
@@ -44,9 +37,8 @@ Inductive hoare_proof : Assertion -> com -> Assertion -> Type :=
     (forall st, Q' st -> Q st) ->
     hoare_proof P c Q.
 
-(** We don't need to include axioms corresponding to
-    [hoare_consequence_pre] or [hoare_consequence_post], because 
-    these can be proven easily from [H_Consequence]. *)
+(** 我们并不需要包含对应 [hoare_consequence_pre] 或 [hoare_consequence_post] 的公理，
+    因为它们可以简单地通过 [H_Consequence] 被证明。 *)
 
 Lemma H_Consequence_pre : forall (P Q P': Assertion) c,
     hoare_proof P' c Q ->
@@ -64,14 +56,13 @@ Proof.
   intros. eapply H_Consequence.
     apply X. intros. apply H0.  apply H. Qed.
 
-(** As an example, let's construct a proof object representing a
-    derivation for the hoare triple
+(** 作为一个例子，让我们构造一个证明对象，来表示这个霍尔三元组的一个导出式
 
       {{(X=3) [X |-> X + 2] [X |-> X + 1]}}
       X::=X+1 ;; X::=X+2 
       {{X=3}}.
 
-    We can use Coq's tactics to help us construct the proof object. *)
+    我们可以让 Coq 的策略来帮助我们构造这个证明对象。 *)
 
 Example sample_proof :
   hoare_proof
@@ -101,10 +92,10 @@ Print sample_proof.
 *)
 
 (* ################################################################# *)
-(** * Properties *)
+(** * 性质 *)
 
 (** **** 练习：2 星 (hoare_proof_sound)  *)
-(** Prove that such proof objects represent true claims. *)
+(** 证明这些证明对象是正确的断言。 *)
 
 Theorem hoare_proof_sound : forall P c Q,
   hoare_proof P c Q -> {{P}} c {{Q}}.
@@ -112,17 +103,13 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** We can also use Coq's reasoning facilities to prove metatheorems
-    about Hoare Logic.  For example, here are the analogs of two
-    theorems we saw in chapter [Hoare] -- this time expressed in terms
-    of the syntax of Hoare Logic derivations (provability) rather than
-    directly in terms of the semantics of Hoare triples.
+(** 我们也可以使用Coq的推理工具来证明关于霍尔逻辑的元定理。例如，下述是我们在
+    [Hoare] 章节中看到的两条定理的模拟——这一次，使用霍尔逻辑导出式（可证明
+    性），而不是直接使用霍尔三元组的语义，来表达这些定理。
 
-    The first one says that, for every [P] and [c], the assertion
-    [{{P}} c {{True}}] is _provable_ in Hoare Logic.  Note that the
-    proof is more complex than the semantic proof in [Hoare]: we
-    actually need to perform an induction over the structure of the
-    command [c]. *)
+    第一条定理表达，对于所有的 [P] 和 [c]，断言 [{{P}} c {{True}}] 在霍尔逻辑中是
+    _'可证明的'_。注意到这个证明比在[Hoare]中的语义证明更加复杂：实际上我们需要在命令
+    [c] 的结构上应用归纳法 。 *)
 
 Theorem H_Post_True_deriv:
   forall c P, hoare_proof P c (fun _ => True).
@@ -159,8 +146,7 @@ Proof.
     intros; apply I.
 Qed.
 
-(** Similarly, we can show that [{{False}} c {{Q}}] is provable for
-    any [c] and [Q]. *)
+(** 类似地，我们可以说明对于任意的 [c] 和 [Q]，[{{False}} c {{Q}}] 是可证明的。 *)
 
 Lemma False_and_P_imp: forall P Q,
   False /\ P -> Q.
@@ -194,21 +180,19 @@ Proof.
     intro. simpl. eapply False_and_P_imp.
 Qed.
 
-(** As a last step, we can show that the set of [hoare_proof] axioms
-    is sufficient to prove any true fact about (partial) correctness.
-    More precisely, any semantic Hoare triple that we can prove can
-    also be proved from these axioms.  Such a set of axioms is said to
-    be _relatively complete_.  Our proof is inspired by this one:
+(** 最后，我们可以说明 [hoare_proof] 公理集合足够用来证明关于任何（部分）正确性的
+    事实。更准确地说，任何我们能够证明的语义霍尔三元组，都能够通过这些公理证明。
+    这样的公理集合被称为_'相对完备的（relatively complete）'_。我们的证明的灵感来自
+    于：
 
       http://www.ps.uni-saarland.de/courses/sem-ws11/script/Hoare.html
 
-    To carry out the proof, we need to invent some intermediate
-    assertions using a technical device known as _weakest
-    preconditions_.  Given a command [c] and a desired postcondition
-    assertion [Q], the weakest precondition [wp c Q] is an assertion
-    [P] such that [{{P}} c {{Q}}] holds, and moreover, for any other
-    assertion [P'], if [{{P'}} c {{Q}}] holds then [P' -> P].  We can
-    more directly define this as follows: *)
+    为了完成这个证明，我们需要使用一种被称为
+    _'最弱前置条件（weakest preconditions）'_的技术装置来创造一些中间的断言。
+
+    给定一个命令[c]和一个想要的后置条件断言 [Q] ，最弱前置条件 [wp c Q] 是一个断言
+    [P]，使得 [{{P}} c {{Q}}] 成立，并且对于任意其他断言 [P']，如果 [{{P}} c {{Q}}] 成立，那么
+    [P' -> P]。我们可以更加直接地将其定义为： *)
 
 Definition wp (c:com) (Q:Assertion) : Assertion :=
   fun s => forall s', c / s \\ s' -> Q s'.
@@ -226,7 +210,7 @@ Lemma wp_is_weakest: forall c Q P',
    {{P'}} c {{Q}} -> forall st, P' st -> wp c Q st.
 (* 请在此处解答 *) Admitted.
 
-(** The following utility lemma will also be useful. *)
+(** 下面这个辅助引理也很有用。 *)
 
 Lemma bassn_eval_false : forall b st, ~ bassn b st -> beval st b = false.
 Proof.
@@ -237,7 +221,7 @@ Qed.
 (** [] *)
 
 (** **** 练习：5 星 (hoare_proof_complete)  *)
-(** Complete the proof of the theorem. *)
+(** 完成如下定理的证明。 *)
 
 Theorem hoare_proof_complete: forall P c Q,
   {{P}} c {{Q}} -> hoare_proof P c Q.
@@ -263,26 +247,18 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Finally, we might hope that our axiomatic Hoare logic is
-    _decidable_; that is, that there is an (terminating) algorithm (a
-    _decision procedure_) that can determine whether or not a given
-    Hoare triple is valid (derivable).  But such a decision procedure
-    cannot exist!
+(** 最后，我们可能希望我们的公理霍尔逻辑是_'可决定的（decidable）'_；也就是说，这里
+    有一个（会终止的）算法（一个_'决定性过程（decision procedure）'_）来决定一个给
+    定的霍尔三元组是否是合法的（可导出的）。但是这样的一个决定性过程并不存在！
 
-    Consider the triple [{{True}} c {{False}}]. This triple is valid
-    if and only if [c] is non-terminating.  So any algorithm that
-    could determine validity of arbitrary triples could solve the
-    Halting Problem.
+    考虑三元组 [{{True}} c {{False}}]。这个三元组是有效的当且仅当 [c] 不终止。这意味着，
+    任何一个能够决定任意三元组的合法性的算法能够解决停机问题（Halting Problem）。
 
-    Similarly, the triple [{{True}} SKIP {{P}}] is valid if and only if
-    [forall s, P s] is valid, where [P] is an arbitrary assertion of
-    Coq's logic. But it is known that there can be no decision
-    procedure for this logic. 
+    类似地，三元组 [{{True}} SKIP {{P}}] 是合法的当且仅当 [forall s, P s] 是合法的，其中 [P]
+    是Coq逻辑的任意一个断言。但是我们已知对于这个逻辑并没有任何的决定性过程。
 
-    Overall, this axiomatic style of presentation gives a clearer
-    picture of what it means to "give a proof in Hoare logic."
-    However, it is not entirely satisfactory from the point of view of
-    writing down such proofs in practice: it is quite verbose.  The
-    section of chapter [Hoare2] on formalizing decorated programs
-    shows how we can do even better. *)
+    总而言之，此公理化表述更清晰地诠释如何“出具霍尔逻辑下的证明”。
+    但是，从实际上我们需要写出这些证明的角度来看，这并不让人完全
+    满意：这太冗长了。在 [Hoare2] 一章中的关于形式化修饰程序的章节会向我们展
+    示如何做的更好。 *)
 
