@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Stlc: The Simply Typed Lambda-Calculus</title>
+<title>Stlc: 简单类型 Lambda-演算</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,26 +29,22 @@
 
 <div id="main">
 
-<h1 class="libtitle">Stlc<span class="subtitle">The Simply Typed Lambda-Calculus</span></h1>
+<h1 class="libtitle">Stlc<span class="subtitle">简单类型 Lambda-演算</span></h1>
 
 
 <div class="doc">
 
 <div class="paragraph"> </div>
 
- The simply typed lambda-calculus (STLC) is a tiny core
-    calculus embodying the key concept of _functional abstraction_,
-    which shows up in pretty much every real-world programming
-    language in some form (functions, procedures, methods, etc.).
+ 简单类型 lambda-演算（simply typed lambda-calculus，STLC）
+    作为一种小型演算系统体现了<b>函数抽象（functional abstraction）</b>这个重要概念，
+    函数抽象也以很多种形式（函数，过程，方法等）出现在真实世界的程序语言中。
 
 <div class="paragraph"> </div>
 
-    We will follow exactly the same pattern as in the previous chapter
-    when formalizing this calculus (syntax, small-step semantics,
-    typing rules) and its main properties (progress and preservation).
-    The new technical challenges arise from the mechanisms of
-    _variable binding_ and _substitution_.  It which will take some
-    work to deal with these. 
+    在形式化这个演算系统（语法，小步语义和定型规则）及其主要性质（可进性和维型性）时，
+    我们采用与上一章相同的流程。新的技术挑战来自于<b>变量绑定（variable binding）</b>
+    和<b>替换（substitution）</b>。我们将会费一些功夫来处理他们。
 </div>
 <div class="code code-tight">
 
@@ -59,44 +55,38 @@
 </div>
 
 <div class="doc">
-<a name="lab202"></a><h1 class="section">Overview</h1>
+<a name="lab202"></a><h1 class="section">简介</h1>
 
 <div class="paragraph"> </div>
 
- The STLC is built on some collection of _base types_:
-    booleans, numbers, strings, etc.  The exact choice of base types
-    doesn't matter much &mdash; the construction of the language and its
-    theoretical properties work out the same no matter what we
-    choose &mdash; so for the sake of brevity let's take just <span class="inlinecode"><span class="id" type="var">Bool</span></span> for
-    the moment.  At the end of the chapter we'll see how to add more
-    base types, and in later chapters we'll enrich the pure STLC with
-    other useful constructs like pairs, records, subtyping, and
-    mutable state.
+ STLC 构建于一些<b>基础类型（base types）</b>的集合之上：
+    布尔值，数字，字符串等。具体选择哪些基础类型并不重要——语言的构造和它的理论性质
+    不会受到影响——因此简单起见，让我们暂时只使用 <span class="inlinecode"><span class="id" type="var">Bool</span></span>。在本章的最后，我们会看到
+    如何添加更多的基础类型，后面的章节我们还会用一些实用的构造，例如序对、记录、子类型
+    和可变状态来扩展纯 STLC。
 
 <div class="paragraph"> </div>
 
-    Starting from boolean constants and conditionals, we add three
-    things:
+    我们以布尔值常量和条件语句开始，并添加三个构造：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> variables
+<li> 变量
 
 </li>
-<li> function abstractions
+<li> 函数抽象
 
 </li>
-<li> application
+<li> 应用
 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    This gives us the following collection of abstract syntax
-    constructors (written out first in informal BNF notation &mdash; we'll
-    formalize it below). 
+    这给了我们如下的抽象语法构造（先以非形式化的 BNF 记法写下——后面我们
+    会形式化它）。 
 <div class="paragraph"> </div>
 
 
@@ -115,15 +105,12 @@
 
 <div class="paragraph"> </div>
 
- The <span class="inlinecode">\</span> symbol in a function abstraction <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">T<sub>1</sub>.t2</span></span> is generally
-    written as a Greek letter "lambda" (hence the name of the
-    calculus).  The variable <span class="inlinecode"><span class="id" type="var">x</span></span> is called the _parameter_ to the
-    function; the term <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> is its _body_.  The annotation <span class="inlinecode">:<span class="id" type="var">T<sub>1</sub></span></span>
-    specifies the type of arguments that the function can be applied
-    to. 
+ 函数抽象 <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">T<sub>1</sub>.t2</span></span> 中的 <span class="inlinecode">\</span> 符号一般写作希腊字母“lambda”（本演算系统由此得名）。
+    变量 <span class="inlinecode"><span class="id" type="var">x</span></span> 叫做函数的<b>参数（parameter）</b>；项 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> 是<b>函数体（body）</b>。
+    记号 <span class="inlinecode">:<span class="id" type="var">T<sub>1</sub></span></span> 指明了函数可以被应用的参数类型。
 <div class="paragraph"> </div>
 
- Some examples:
+ 一些例子：
 
 <div class="paragraph"> </div>
 
@@ -132,7 +119,7 @@
 
 <div class="paragraph"> </div>
 
-        The identity function for booleans.
+        布尔值的恒等函数。
 
 <div class="paragraph"> </div>
 
@@ -142,7 +129,7 @@
 
 <div class="paragraph"> </div>
 
-        The identity function for booleans, applied to the boolean <span class="inlinecode"><span class="id" type="var">true</span></span>.
+        被应用于 <span class="inlinecode"><span class="id" type="var">true</span></span> 的布尔值恒等函数。
 
 <div class="paragraph"> </div>
 
@@ -152,7 +139,7 @@
 
 <div class="paragraph"> </div>
 
-        The boolean "not" function.
+        布尔值的“否定”函数。
 
 <div class="paragraph"> </div>
 
@@ -162,8 +149,7 @@
 
 <div class="paragraph"> </div>
 
-        The constant function that takes every (boolean) argument to
-        <span class="inlinecode"><span class="id" type="var">true</span></span>. 
+        总是接受（布尔值）参数并返回 <span class="inlinecode"><span class="id" type="var">true</span></span> 的常量函数。
 </li>
 </ul>
 
@@ -174,10 +160,8 @@
 
 <div class="paragraph"> </div>
 
-        A two-argument function that takes two booleans and returns
-        the first one.  (As in Coq, a two-argument function is really
-        a one-argument function whose body is also a one-argument
-        function.)
+        接受两个布尔值做参数，并返回第一个参数的函数。（在 Coq 中，二元函数
+        其实就是一个一元函数，只是其函数体也是一元函数。）
 
 <div class="paragraph"> </div>
 
@@ -187,13 +171,12 @@
 
 <div class="paragraph"> </div>
 
-        A two-argument function that takes two booleans and returns
-        the first one, applied to the booleans <span class="inlinecode"><span class="id" type="var">false</span></span> and <span class="inlinecode"><span class="id" type="var">true</span></span>.
+        一个接受两个布尔值做参数，并返回第一个参数的函数，接着它被应用于两个布尔值参数
+        <span class="inlinecode"><span class="id" type="var">false</span></span> 和 <span class="inlinecode"><span class="id" type="var">true</span></span>。
 
 <div class="paragraph"> </div>
 
-        As in Coq, application associates to the left &mdash; i.e., this
-        expression is parsed as <span class="inlinecode">((\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode"><span class="id" type="var">false</span>)</span> <span class="inlinecode"><span class="id" type="var">true</span></span>.
+        在 Coq 中，应用是左结合的——也即，这个表达式被解析为 <span class="inlinecode">((\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode"><span class="id" type="var">false</span>)</span> <span class="inlinecode"><span class="id" type="var">true</span></span>。
 
 <div class="paragraph"> </div>
 
@@ -203,9 +186,8 @@
 
 <div class="paragraph"> </div>
 
-        A higher-order function that takes a _function_ <span class="inlinecode"><span class="id" type="var">f</span></span> (from
-        booleans to booleans) as an argument, applies <span class="inlinecode"><span class="id" type="var">f</span></span> to <span class="inlinecode"><span class="id" type="var">true</span></span>,
-        and applies <span class="inlinecode"><span class="id" type="var">f</span></span> again to the result.
+        一个高阶函数其接受一个函数 <span class="inlinecode"><span class="id" type="var">f</span></span>（从布尔值到布尔值）作为参数，并应用
+        <span class="inlinecode"><span class="id" type="var">f</span></span> 于参数 <span class="inlinecode"><span class="id" type="var">true</span></span>；其结果又被应用于 <span class="inlinecode"><span class="id" type="var">f</span></span>。
 
 <div class="paragraph"> </div>
 
@@ -215,32 +197,26 @@
 
 <div class="paragraph"> </div>
 
-        The same higher-order function, applied to the constantly
-        <span class="inlinecode"><span class="id" type="var">false</span></span> function. 
+        同一个高阶函数，被应用于返回 <span class="inlinecode"><span class="id" type="var">false</span></span> 的常函数。 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- As the last several examples show, the STLC is a language of
-    _higher-order_ functions: we can write down functions that take
-    other functions as arguments and/or return other functions as
-    results.
+ 正如最后几个例子中展示的那样，STLC是一个支持<b>高阶（higher-order）</b>
+    函数的语言：我们可以写出接受其他函数作为参数，或返回其他函数作为结果的函数。
 
 <div class="paragraph"> </div>
 
-    The STLC doesn't provide any primitive syntax for defining _named_
-    functions &mdash; all functions are "anonymous."  We'll see in chapter
-    <span class="inlinecode"><span class="id" type="var">MoreStlc</span></span> that it is easy to add named functions to what we've
-    got &mdash; indeed, the fundamental naming and binding mechanisms are
-    exactly the same.
+    但是 STLC 并没提供任何原生语法来定义<b>有名函数（named functions）</b>——
+    所有的函数都是“匿名的（anonymous）”。我们会在 <span class="inlinecode"><span class="id" type="var">MoreStlc</span></span> 一章中看到添加有名
+    函数是十分简单的——确实，基本的命名和绑定机制其实是同一回事。
 
 <div class="paragraph"> </div>
 
-    The _types_ of the STLC include <span class="inlinecode"><span class="id" type="var">Bool</span></span>, which classifies the
-    boolean constants <span class="inlinecode"><span class="id" type="var">true</span></span> and <span class="inlinecode"><span class="id" type="var">false</span></span> as well as more complex
-    computations that yield booleans, plus _arrow types_ that classify
-    functions. 
+    STLC 的<b>类型（types）</b>包括 <span class="inlinecode"><span class="id" type="var">Bool</span></span>，其用于把 <span class="inlinecode"><span class="id" type="var">true</span></span> 和 <span class="inlinecode"><span class="id" type="var">false</span></span> 这些常量
+    和其他产生布尔值的复杂计算归为一类；还有<b>函数类型（arrow types）</b>，用于把函
+    数归为一类。
 <div class="paragraph"> </div>
 
 
@@ -252,54 +228,54 @@
 <div class="paragraph"> </div>
 
 </div>
-    For example:
+    比如说：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">false</span></span> has type <span class="inlinecode"><span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span></span>
+<li> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">false</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> has type <span class="inlinecode"><span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span></span>
+<li> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">(\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode"><span class="id" type="var">true</span></span> has type <span class="inlinecode"><span class="id" type="var">Bool</span></span>
+<li> <span class="inlinecode">(\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode"><span class="id" type="var">true</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">Bool</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> has type <span class="inlinecode"><span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span></span>
-                              (i.e., <span class="inlinecode"><span class="id" type="var">Bool</span></span> <span class="inlinecode">→</span> <span class="inlinecode">(<span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span>)</span>)
+<li> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span></span>
+                              （即 <span class="inlinecode"><span class="id" type="var">Bool</span></span> <span class="inlinecode">→</span> <span class="inlinecode">(<span class="id" type="var">Bool</span>→<span class="id" type="var">Bool�</span>��</span>）
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">(\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode"><span class="id" type="var">false</span></span> has type <span class="inlinecode"><span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span></span>
+<li> <span class="inlinecode">(\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode"><span class="id" type="var">false</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">Bool</span>→<span class="id" type="var">Bool</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">(\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode"><span class="id" type="var">false</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> has type <span class="inlinecode"><span class="id" type="var">Bool</span></span> 
+<li> <span class="inlinecode">(\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> <span class="inlinecode"><span class="id" type="var">false</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">Bool</span></span> 
 </li>
 </ul>
 
 </div>
 
 <div class="doc">
-<a name="lab203"></a><h1 class="section">Syntax</h1>
+<a name="lab203"></a><h1 class="section">语法</h1>
 
 <div class="paragraph"> </div>
 
- We next formalize the syntax of the STLC. 
+ 我们接下来形式化 STLC 的语法。 
 </div>
 <div class="code code-tight">
 
@@ -307,7 +283,7 @@
 </div>
 
 <div class="doc">
-<a name="lab204"></a><h2 class="section">Types</h2>
+<a name="lab204"></a><h2 class="section">类型</h2>
 
 </div>
 <div class="code code-space">
@@ -319,7 +295,7 @@
 </div>
 
 <div class="doc">
-<a name="lab205"></a><h2 class="section">Terms</h2>
+<a name="lab205"></a><h2 class="section">项</h2>
 
 </div>
 <div class="code code-space">
@@ -335,11 +311,9 @@
 </div>
 
 <div class="doc">
-Note that an abstraction <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">T.t</span></span> (formally, <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span>) is
-    always annotated with the type <span class="inlinecode"><span class="id" type="var">T</span></span> of its parameter, in contrast
-    to Coq (and other functional languages like ML, Haskell, etc.),
-    which use type inference to fill in missing annotations.  We're
-    not considering type inference here. 
+请注意一个形如 <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">T.t</span></span> 的抽象（形式化地讲是 <span class="inlinecode"><span class="id" type="var">tabs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span>）包含其参数
+    <span class="inlinecode"><span class="id" type="var">T</span></span> 的类型注释，相反在 Coq（以及其他函数式语言，比如 ML，Haskell等）中，
+    会使用类型推导来填补这些类型注释。我们在此不考虑类型推导。 
 </div>
 <div class="code code-tight">
 
@@ -347,7 +321,7 @@ Note that an abstraction <span class="inlinecode">\<span class="id" type="var">x
 </div>
 
 <div class="doc">
-Some examples... 
+一些例子…… 
 </div>
 <div class="code code-tight">
 
@@ -405,66 +379,56 @@ Some examples...
 </div>
 
 <div class="doc">
-(We write these as <span class="inlinecode"><span class="id" type="keyword">Notation</span></span>s rather than <span class="inlinecode"><span class="id" type="keyword">Definition</span></span>s to make
-    things easier for <span class="inlinecode"><span class="id" type="tactic">auto</span></span>.) 
+（我们使用 <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> 而非 <span class="inlinecode"><span class="id" type="keyword">Definition</span></span> 使 <span class="inlinecode"><span class="id" type="var">atuo</span></span> 更有效。）
 </div>
 
 <div class="doc">
-<a name="lab206"></a><h1 class="section">Operational Semantics</h1>
+<a name="lab206"></a><h1 class="section">操作语义</h1>
 
 <div class="paragraph"> </div>
 
- To define the small-step semantics of STLC terms, we begin,
-    as always, by defining the set of values.  Next, we define the
-    critical notions of _free variables_ and _substitution_, which are
-    used in the reduction rule for application expressions.  And
-    finally we give the small-step relation itself. 
+ 为了定义 STLC 项的小步语义，我们以值的集合的定义开始。接着，我们定义两个
+    重要的概念，<b>自由变量（free variables）</b>和<b>替换（substitution）</b>，
+    他们在函数应用的归约规则中会被用到。最后，我们给出小步归约关系。 
 </div>
 
 <div class="doc">
-<a name="lab207"></a><h2 class="section">Values</h2>
+<a name="lab207"></a><h2 class="section">值</h2>
 
 <div class="paragraph"> </div>
 
- To define the values of the STLC, we have a few cases to consider.
+ 在定义 STLC 的值时，我们有几个情形需要考虑。
 
 <div class="paragraph"> </div>
 
-    First, for the boolean part of the language, the situation is
-    clear: <span class="inlinecode"><span class="id" type="var">true</span></span> and <span class="inlinecode"><span class="id" type="var">false</span></span> are the only values.  An <span class="inlinecode"><span class="id" type="keyword">if</span></span>
-    expression is never a value. 
+    首先，对于布尔值而言是显然的：<span class="inlinecode"><span class="id" type="var">true</span></span> 和 <span class="inlinecode"><span class="id" type="var">false</span></span> 是仅有的值。
+    一个 <span class="inlinecode"><span class="id" type="keyword">if</span></span> 表达式不是值。
 <div class="paragraph"> </div>
 
- Second, an application is clearly not a value: It represents a
-    function being invoked on some argument, which clearly still has
-    work left to do. 
+ 其次，一个应用也不会是值：它表示一个函数正在某个参数上被调用，显然还可以继续归约。
 <div class="paragraph"> </div>
 
- Third, for abstractions, we have a choice:
+ 第三，对于抽象，我们有几个选择：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> We can say that <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">T</span>.</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is a value only when <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is a
-        value &mdash; i.e., only if the function's body has been
-        reduced (as much as it can be without knowing what argument it
-        is going to be applied to).
+<li> 我们可以说仅当 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是值时 <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">T</span>.</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是值——也即，仅当函数体已经被归约
+        （在不知道被应用的参数是什么的情况下尽可能地归约）。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> Or we can say that <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">T</span>.</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is always a value, no matter
-        whether <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> is one or not &mdash; in other words, we can say that
-        reduction stops at abstractions.
+<li> 或者，我们可以说不论 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是不是值，<span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">T</span>.</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 都是一个值——换句话说，
+        归约止于抽象。
 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    Our usual way of evaluating expressions in Coq makes the first
-    choice &mdash; for example,
+    在 Coq 中表达式通常是以第一种方式求值的——比如说，
 
 <div class="paragraph"> </div>
 
@@ -473,14 +437,12 @@ Some examples...
 <div class="paragraph"> </div>
 
 </div>
-    yields <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">bool</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode">7</span>.
+    会得到 <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">bool</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode">7</span>。
 
 <div class="paragraph"> </div>
 
-    Most real-world functional programming languages make the second
-    choice &mdash; reduction of a function's body only begins when the
-    function is actually applied to an argument.  We also make the
-    second choice here. 
+    多数现实世界中的程序语言选择了第二种方式——函数体的归约仅发生在函数实际被应用
+    于某个参数时。在这里我们也选择第二种方式。
 </div>
 <div class="code code-tight">
 
@@ -495,39 +457,32 @@ Some examples...
 </div>
 
 <div class="doc">
-Finally, we must consider what constitutes a _complete_ program.
+最后，我们必须考虑什么构成了一个<b>完整（complete）</b>的程序。
 
 <div class="paragraph"> </div>
 
-    Intuitively, a "complete program" must not refer to any undefined
-    variables.  We'll see shortly how to define the _free_ variables
-    in a STLC term.  A complete program is _closed_ &mdash; that is, it
-    contains no free variables.
+    直观地讲，一个“完整的程序”不能包含未定义的变量。我们很快会看到如何定义 STLC
+    项中的<b>自由（free）</b>变量。一个完整的程序是<b>闭合的（closed）</b>——也就是说，
+    它不含有自由变量。
 
 <div class="paragraph"> </div>
 
-    (Conversely, a term with free variables is often called an _open
-    term_.)
+    （相反，含有自由变量的项一般被叫做<b>开放项（open term）</b>。）
 
 <div class="paragraph"> </div>
 
-    Having made the choice not to reduce under abstractions, we don't
-    need to worry about whether variables are values, since we'll
-    always be reducing programs "from the outside in," and that means
-    the <span class="inlinecode"><span class="id" type="var">step</span></span> relation will always be working with closed terms.  
+    由于我们决定不对抽象内的表达式进行归约，因此也不必担心变量是否是值这个问题。
+    因为我们总是“从外向内”地归约程序，这意味着 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系仅会处理闭合项。 
 </div>
 
 <div class="doc">
-<a name="lab208"></a><h2 class="section">Substitution</h2>
+<a name="lab208"></a><h2 class="section">替换</h2>
 
 <div class="paragraph"> </div>
 
- Now we come to the heart of the STLC: the operation of
-    substituting one term for a variable in another term.  This
-    operation is used below to define the operational semantics of
-    function application, where we will need to substitute the
-    argument term for the function parameter in the function's body.
-    For example, we reduce
+ 现在我们来到了 STLC 的核心：用一个项替换另一个项中的变量。这个操作在下面用于
+    定义函数应用的操作语义，其中我们会需要用一个参数项替换函数体中出现的形式参数。
+    比如说，我们会归约
 
 <div class="paragraph"> </div>
 
@@ -536,7 +491,7 @@ Finally, we must consider what constitutes a _complete_ program.
 <div class="paragraph"> </div>
 
 </div>
-    to
+    到
 
 <div class="paragraph"> </div>
 
@@ -545,87 +500,83 @@ Finally, we must consider what constitutes a _complete_ program.
 <div class="paragraph"> </div>
 
 </div>
-    by substituting <span class="inlinecode"><span class="id" type="var">false</span></span> for the parameter <span class="inlinecode"><span class="id" type="var">x</span></span> in the body of the
-    function.
+    这步归约将函数体中出现的参数 <span class="inlinecode"><span class="id" type="var">x</span></span> 替换为 <span class="inlinecode"><span class="id" type="var">false</span></span>。
 
 <div class="paragraph"> </div>
 
-    In general, we need to be able to substitute some given term <span class="inlinecode"><span class="id" type="var">s</span></span>
-    for occurrences of some variable <span class="inlinecode"><span class="id" type="var">x</span></span> in another term <span class="inlinecode"><span class="id" type="var">t</span></span>.  In
-    informal discussions, this is usually written <span class="inlinecode"></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">s</span>]<span class="id" type="var">t</span></span> <span class="inlinecode"></span> and
-    pronounced "substitute <span class="inlinecode"><span class="id" type="var">x</span></span> with <span class="inlinecode"><span class="id" type="var">s</span></span> in <span class="inlinecode"><span class="id" type="var">t</span></span>." 
+    一般来说，我们可以用给定的项 <span class="inlinecode"><span class="id" type="var">s</span></span> 替换的某另一个项 <span class="inlinecode"><span class="id" type="var">t</span></span> 中出现个变量 <span class="inlinecode"><span class="id" type="var">x</span></span>。
+    在非形式化的讨论中，这通常被写做 <span class="inlinecode"></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">s</span>]<span class="id" type="var">t</span></span> <span class="inlinecode"></span>，并读做“替换 <span class="inlinecode"><span class="id" type="var">t</span></span> 中的 <span class="inlinecode"><span class="id" type="var">x</span></span> 
+    为 <span class="inlinecode"><span class="id" type="var">s</span></span>”。
 <div class="paragraph"> </div>
 
- Here are some examples:
+ 这里有一些例子：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
 <li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(<span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">false</span>)</span>
-           yields <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">false</span></span>
+           产生 <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">false</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode"><span class="id" type="var">x</span></span> yields <span class="inlinecode"><span class="id" type="var">true</span></span>
+<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode"><span class="id" type="var">x</span></span> 产生 <span class="inlinecode"><span class="id" type="var">true</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(<span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">y</span>)</span> yields <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span>
+<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(<span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">y</span>)</span> 产生 <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode"><span class="id" type="var">y</span></span> yields <span class="inlinecode"><span class="id" type="var">y</span></span>
+<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode"><span class="id" type="var">y</span></span> 产生 <span class="inlinecode"><span class="id" type="var">y</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode"><span class="id" type="var">false</span></span> yields <span class="inlinecode"><span class="id" type="var">false</span></span> (vacuous substitution)
+<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode"><span class="id" type="var">false</span></span> 产生 <span class="inlinecode"><span class="id" type="var">false</span></span> （无意义的替换）
 
 <div class="paragraph"> </div>
 
 
 </li>
 <li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">false</span>)</span>
-           yields <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">false</span></span>
+           产生 <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">false</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> yields <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">true</span></span>
+<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> 产生 <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">true</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">y</span>)</span> yields <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">y</span></span>
+<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">y</span>)</span> 产生 <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">y</span></span>
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> yields <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span>
+<li> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">true</span>]</span> <span class="inlinecode">(\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span> 产生 <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span>
 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    The last example is very important: substituting <span class="inlinecode"><span class="id" type="var">x</span></span> with <span class="inlinecode"><span class="id" type="var">true</span></span> in
-    <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> does _not_ yield <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">true</span></span>!  The reason for
-    this is that the <span class="inlinecode"><span class="id" type="var">x</span></span> in the body of <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> is _bound_ by the
-    abstraction: it is a new, local name that just happens to be
-    spelled the same as some global name <span class="inlinecode"><span class="id" type="var">x</span></span>. 
+    最后一个例子非常重要：替换 <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> 中的 <span class="inlinecode"><span class="id" type="var">x</span></span> 为 <span class="inlinecode"><span class="id" type="var">true</span></span> <b>不</b>会产生
+    <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">true</span></span>！因为 <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> 中的 <span class="inlinecode"><span class="id" type="var">x</span></span> 是被这个抽象所<b>绑定的（bound）</b>：
+    它是一个新的、局部的名字，只是恰巧写做了跟某个全局名字一样的 <span class="inlinecode"><span class="id" type="var">x</span></span>。
 <div class="paragraph"> </div>
 
- Here is the definition, informally...
+ 这是非形式化的定义……
 
 <div class="paragraph"> </div>
 
@@ -645,7 +596,7 @@ Finally, we must consider what constitutes a _complete_ program.
 
 <div class="paragraph"> </div>
 
- ... and formally: 
+ ……以及形式化的： 
 </div>
 <div class="code code-tight">
 
@@ -670,45 +621,33 @@ Finally, we must consider what constitutes a _complete_ program.
 </div>
 
 <div class="doc">
-<b>Technical note_: Substitution becomes trickier to define if we
-    consider the case where <span class="inlinecode"><span class="id" type="var">s</span></span>, the term being substituted for a
-    variable in some other term, may itself contain free variables.
-    Since we are only interested here in defining the <span class="inlinecode"><span class="id" type="var">step</span></span> relation
-    on _closed_ terms (i.e., terms like <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> that include
-    binders for all of the variables they mention), we can avoid this
-    extra complexity here, but it must be dealt with when formalizing
-    richer languages. 
+<b>'技术注解</b>：如果我们考虑用于替换掉某个变量的项 <span class="inlinecode"><span class="id" type="var">s</span></span> 其本身也含有自由变量，
+    那么定义替换将会变得困难一点。由于我们仅对定义在<b>闭合</b>项（也即像 <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">x</span></span> 
+    这种绑定了内部全部变量的项）上的 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系有兴趣，我们可以规避这个额外的复杂性，
+    但是当形式化构造更丰富的语言时，我们必须考虑这一点。
 <div class="paragraph"> </div>
 
- For example, using the definition of substitution above to
-    substitute the _open_ term <span class="inlinecode"><span class="id" type="var">s</span></span> <span class="inlinecode">=</span> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">r</span></span>, where <span class="inlinecode"><span class="id" type="var">r</span></span> is a _free_
-    reference to some global resource, for the variable <span class="inlinecode"><span class="id" type="var">z</span></span> in the
-    term <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode">\<span class="id" type="var">r</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">z</span></span>, where <span class="inlinecode"><span class="id" type="var">r</span></span> is a bound variable, we would get
-    <span class="inlinecode">\<span class="id" type="var">r</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">r</span></span>, where the free reference to <span class="inlinecode"><span class="id" type="var">r</span></span> in <span class="inlinecode"><span class="id" type="var">s</span></span> has
-    been "captured" by the binder at the beginning of <span class="inlinecode"><span class="id" type="var">t</span></span>.
+ 比如说，使用上面的替换定义将 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode">\<span class="id" type="var">r</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">z</span></span>（其中 <span class="inlinecode"><span class="id" type="var">r</span></span> 为绑定变量）中的
+    <span class="inlinecode"><span class="id" type="var">z</span></span> 替换为<b>开放</b>项 <span class="inlinecode"><span class="id" type="var">s</span></span> <span class="inlinecode">=</span> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">r</span></span>（其中 <span class="inlinecode"><span class="id" type="var">r</span></span> 是引用了某个全局资源的自由变量），
+    我们会得到 <span class="inlinecode">\<span class="id" type="var">r</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">r</span></span>。这时，<span class="inlinecode"><span class="id" type="var">s</span></span> 中的自由引用 <span class="inlinecode"><span class="id" type="var">r</span></span> 被 <span class="inlinecode"><span class="id" type="var">t</span></span> 所引入
+    的绑定所“捕获”。
 
 <div class="paragraph"> </div>
 
-    Why would this be bad?  Because it violates the principle that the
-    names of bound variables do not matter.  For example, if we rename
-    the bound variable in <span class="inlinecode"><span class="id" type="var">t</span></span>, e.g., let <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode">\<span class="id" type="var">w</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">z</span></span>, then
-    <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">s</span>]<span class="id" type="var">t'</span></span> is <span class="inlinecode">\<span class="id" type="var">w</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">r</span></span>, which does not behave the
-    same as <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">s</span>]<span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode">\<span class="id" type="var">r</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">r</span></span>.  That is, renaming a
-    bound variable changes how <span class="inlinecode"><span class="id" type="var">t</span></span> behaves under substitution. 
+    为什么这是件坏事呢？因为它违反了“绑定变量的名字不应当改变语义”这个原则。打个比方，
+    如果把 <span class="inlinecode"><span class="id" type="var">t</span></span> 的绑定变量重命名，比如说，<span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode">\<span class="id" type="var">w</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">z</span></span>，那么 <span class="inlinecode">[<span class="id" type="var">z</span>:=<span class="id" type="var">s</span>]<span class="id" type="var">t'</span></span>
+    会产生 <span class="inlinecode">\<span class="id" type="var">w</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">r</span></span>，其行为和 <span class="inlinecode">[<span class="id" type="var">z</span>:=<span class="id" type="var">s</span>]<span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode">\<span class="id" type="var">r</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode"><span class="id" type="var">r</span></span>
+    并不相同。这意味着，重命名绑定变量改变了 <span class="inlinecode"><span class="id" type="var">t</span></span> 在替换时的行为。 
 <div class="paragraph"> </div>
 
- See, for example, <a href="Bib.html#Aydemir 2008"><span class="inlineref">[Aydemir 2008]</span></a> for further discussion
-    of this issue. 
+ 对于这个问题，更详细的讨论可参考 <a href="Bib.html#Aydemir 2008"><span class="inlineref">[Aydemir 2008]</span></a>。
 <div class="paragraph"> </div>
 
 <a name="lab209"></a><h4 class="section">练习：3 星 (substi_correct)</h4>
- The definition that we gave above uses Coq's <span class="inlinecode"><span class="id" type="keyword">Fixpoint</span></span> facility
-    to define substitution as a _function_.  Suppose, instead, we
-    wanted to define substitution as an inductive _relation_ <span class="inlinecode"><span class="id" type="var">substi</span></span>.
-    We've begun the definition by providing the <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> header and
-    one of the constructors; your job is to fill in the rest of the
-    constructors and prove that the relation you've defined coincides
-    with the function given above. 
+ 上面我们使用了 Coq 的 <span class="inlinecode"><span class="id" type="keyword">Fixpoint</span></span> 功能将替换定义为一个<b>函数</b>。
+    假设，现在我们想要将替换定义为一个归纳的<b>关系</b> <span class="inlinecode"><span class="id" type="var">substi</span></span>。作为开始，我们给出了
+    <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 定义的头部和其中一个构造子；你的任务是完成剩下的构造子，并证明
+    你的定义同替换函数的定义相一致。 
 </div>
 <div class="code code-tight">
 
@@ -727,18 +666,14 @@ Finally, we must consider what constitutes a _complete_ program.
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab210"></a><h2 class="section">Reduction</h2>
+<a name="lab210"></a><h2 class="section">归约</h2>
 
 <div class="paragraph"> </div>
 
- The small-step reduction relation for STLC now follows the
-    same pattern as the ones we have seen before.  Intuitively, to
-    reduce a function application, we first reduce its left-hand
-    side (the function) until it becomes an abstraction; then we
-    reduce its right-hand side (the argument) until it is also a
-    value; and finally we substitute the argument for the bound
-    variable in the body of the abstraction.  This last rule, written
-    informally as
+ STLC 的小步语义与之前学过的小步语义遵循了同样的模式。直观地说，
+    对于函数应用我们首先归约其左手边的项（也即函数）直到其成为一个抽象；
+    接着归约其右手边的项（也即参数）直到其成为一个值；最后我们用参数替换函数
+    体内的绑定变量。最后一条规则可以非形式化地写做
 
 <div class="paragraph"> </div>
 
@@ -747,7 +682,7 @@ Finally, we must consider what constitutes a _complete_ program.
 <div class="paragraph"> </div>
 
 </div>
-    is traditionally called "beta-reduction". 
+    传统上这也被称作“beta-归约（beta-reduction）” 
 <div class="paragraph"> </div>
 
  <center><table class="infrule">
@@ -793,7 +728,7 @@ Finally, we must consider what constitutes a _complete_ program.
   <td class="infrule">v<sub>1</sub>&nbsp;t<sub>2</sub>&nbsp;==>&nbsp;v<sub>1</sub>&nbsp;t<sub>2</sub>'</td>
   <td></td>
 </td>
-</table></center> ... plus the usual rules for conditionals:
+</table></center> ……还有对条件语句的规则：
 <center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
@@ -836,7 +771,7 @@ Finally, we must consider what constitutes a _complete_ program.
 </table></center>
 <div class="paragraph"> </div>
 
- Formally: 
+ 形式化的： 
 </div>
 <div class="code code-tight">
 
@@ -867,11 +802,11 @@ Finally, we must consider what constitutes a _complete_ program.
 </div>
 
 <div class="doc">
-<a name="lab211"></a><h2 class="section">Examples</h2>
+<a name="lab211"></a><h2 class="section">例子</h2>
 
 <div class="paragraph"> </div>
 
- Example:
+ 例子：
 
 <div class="paragraph"> </div>
 
@@ -880,7 +815,7 @@ Finally, we must consider what constitutes a _complete_ program.
 <div class="paragraph"> </div>
 
 </div>
-    i.e.,
+    即
 
 <div class="paragraph"> </div>
 
@@ -904,7 +839,7 @@ Finally, we must consider what constitutes a _complete_ program.
 </div>
 
 <div class="doc">
-Example:
+例子：
 
 <div class="paragraph"> </div>
 
@@ -914,7 +849,7 @@ Example:
 <div class="paragraph"> </div>
 
 </div>
-    i.e.,
+    即
 
 <div class="paragraph"> </div>
 
@@ -939,7 +874,7 @@ Example:
 </div>
 
 <div class="doc">
-Example:
+例子：
 
 <div class="paragraph"> </div>
 
@@ -951,7 +886,7 @@ Example:
 <div class="paragraph"> </div>
 
 </div>
-    i.e.,
+    即
 
 <div class="paragraph"> </div>
 
@@ -976,7 +911,7 @@ Example:
 </div>
 
 <div class="doc">
-Example:
+例子：
 
 <div class="paragraph"> </div>
 
@@ -987,7 +922,7 @@ Example:
 <div class="paragraph"> </div>
 
 </div>
-    i.e.,
+    即
 
 <div class="paragraph"> </div>
 
@@ -996,8 +931,7 @@ Example:
 <div class="paragraph"> </div>
 
 </div>
-    (Note that this term doesn't actually typecheck; even so, we can
-    ask how it reduces.)
+    （请注意，虽然这个项并不会通过类型检查，我们还是可以看看它是如何归约的。）
 
 </div>
 <div class="code code-tight">
@@ -1017,8 +951,7 @@ Example:
 </div>
 
 <div class="doc">
-We can use the <span class="inlinecode"><span class="id" type="var">normalize</span></span> tactic defined in the <a href="Types.html"><span class="inlineref">Types</span></a> chapter
-    to simplify these proofs. 
+我们可以使用 <a href="Types.html"><span class="inlineref">Types</span></a> 一章中定义的 <span class="inlinecode"><span class="id" type="var">normalize</span></span> 策略来简化这些证明。 
 </div>
 <div class="code code-tight">
 
@@ -1038,7 +971,7 @@ We can use the <span class="inlinecode"><span class="id" type="var">normalize</s
 
 <div class="doc">
 <a name="lab212"></a><h4 class="section">练习：2 星 (step_example5)</h4>
- Try to do this one both with and without <span class="inlinecode"><span class="id" type="var">normalize</span></span>. 
+ 请分别使用和不使用 <span class="inlinecode"><span class="id" type="var">normalize</span></span> 证明以下命题。 
 </div>
 <div class="code code-tight">
 
@@ -1057,40 +990,37 @@ We can use the <span class="inlinecode"><span class="id" type="var">normalize</s
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab213"></a><h1 class="section">Typing</h1>
+<a name="lab213"></a><h1 class="section">定型</h1>
 
 <div class="paragraph"> </div>
 
- Next we consider the typing relation of the STLC. 
+ 接下来我们考虑 STLC 的类型关系。 
 </div>
 
 <div class="doc">
-<a name="lab214"></a><h2 class="section">Contexts</h2>
+<a name="lab214"></a><h2 class="section">上下文</h2>
 
 <div class="paragraph"> </div>
 
- _Question_: What is the type of the term "<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span>"?
+ <b>问</b>：项 "<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span>" 的类型是什么？
 
 <div class="paragraph"> </div>
 
-    _Answer_: It depends on the types of <span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span>!
+    <b>答</b>：这取决于 <span class="inlinecode"><span class="id" type="var">x</span></span> 和 <span class="inlinecode"><span class="id" type="var">y</span></span> 的类型是什么！
 
 <div class="paragraph"> </div>
 
-    I.e., in order to assign a type to a term, we need to know
-    what assumptions we should make about the types of its free
-    variables.
+    也就是说，为了给一个项指派类型，我们需要知道关于其中自由变量的类型的假设。
 
 <div class="paragraph"> </div>
 
-    This leads us to a three-place _typing judgment_, informally
-    written <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>, where <span class="inlinecode"><span class="id" type="var">Gamma</span></span> is a
-    "typing context" &mdash; a mapping from variables to their types. 
+    这把我们引向了一个三元<b>类型断言（type judgement）</b>，非形式化地写做 <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，
+    其中 <span class="inlinecode"><span class="id" type="var">Gamma</span></span> 是一个“类型上下文（typing context）”——一个变量到他们的
+    类型的映射。 
 <div class="paragraph"> </div>
 
- Following the usual notation for partial maps, we could write <span class="inlinecode"><span class="id" type="var">Gamma</span></span>
-    <span class="inlinecode">&amp;</span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">x</span>:<span class="id" type="var">T</span><span style='letter-spacing:-.4em;'>}</span>}</span> for "update the partial function <span class="inlinecode"><span class="id" type="var">Gamma</span></span> to also map
-    <span class="inlinecode"><span class="id" type="var">x</span></span> to <span class="inlinecode"><span class="id" type="var">T</span></span>." 
+ 使用通常偏映射的记号，我们可以用 <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&amp;</span> <span class="inlinecode"><span style='letter-spacing:-.4em;'>{</span>{<span class="id" type="var">x</span>:<span class="id" type="var">T</span><span style='letter-spacing:-.4em;'>}</span>}</span> 来表示“更新偏函数 <span class="inlinecode"><span class="id" type="var">Gamma</span></span>
+    使其也将 <span class="inlinecode"><span class="id" type="var">x</span></span> 映射到 <span class="inlinecode"><span class="id" type="var">T</span></span>”。
 </div>
 <div class="code code-tight">
 
@@ -1098,7 +1028,7 @@ We can use the <span class="inlinecode"><span class="id" type="var">normalize</s
 </div>
 
 <div class="doc">
-<a name="lab215"></a><h2 class="section">Typing Relation</h2>
+<a name="lab215"></a><h2 class="section">类型关系</h2>
 
 <div class="paragraph"> </div>
 
@@ -1187,8 +1117,8 @@ We can use the <span class="inlinecode"><span class="id" type="var">normalize</s
 </table></center>
 <div class="paragraph"> </div>
 
-    We can read the three-place relation <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> as:
-    "under the assumptions in Gamma, the term <span class="inlinecode"><span class="id" type="var">t</span></span> has the type <span class="inlinecode"><span class="id" type="var">T</span></span>." 
+    我们可以把形如 <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 的三元关系读做：
+    “在假设 Gamma 下，项 <span class="inlinecode"><span class="id" type="var">t</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">T</span></span>。” 
 </div>
 <div class="code code-tight">
 
@@ -1219,7 +1149,7 @@ We can use the <span class="inlinecode"><span class="id" type="var">normalize</s
 </div>
 
 <div class="doc">
-<a name="lab216"></a><h2 class="section">Examples</h2>
+<a name="lab216"></a><h2 class="section">例子</h2>
 
 </div>
 <div class="code code-space">
@@ -1232,8 +1162,8 @@ We can use the <span class="inlinecode"><span class="id" type="var">normalize</s
 </div>
 
 <div class="doc">
-Note that since we added the <span class="inlinecode"><span class="id" type="var">has_type</span></span> constructors to the hints
-    database, auto can actually solve this one immediately. 
+请注意，由于我们在提示数据库中添加了 <span class="inlinecode"><span class="id" type="var">has_type</span></span> 构造子，因此 <span class="inlinecode"><span class="id" type="tactic">auto</span></span>
+    将可以直接解决这个证明。
 </div>
 <div class="code code-tight">
 
@@ -1243,7 +1173,7 @@ Note that since we added the <span class="inlinecode"><span class="id" type="var
 </div>
 
 <div class="doc">
-Another example:
+另一个例子：
 
 <div class="paragraph"> </div>
 
@@ -1278,8 +1208,7 @@ Another example:
 
 <div class="doc">
 <a name="lab217"></a><h4 class="section">练习：2 星, optional (typing_example_2_full)</h4>
- Prove the same result without using <span class="inlinecode"><span class="id" type="tactic">auto</span></span>, <span class="inlinecode"><span class="id" type="tactic">eauto</span></span>, or
-    <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> (or <span class="inlinecode">...</span>). 
+ 请在不使用 <span class="inlinecode"><span class="id" type="tactic">auto</span></span>，<span class="inlinecode"><span class="id" type="tactic">eauto</span></span>，<span class="inlinecode"><span class="id" type="tactic">eapply</span></span>（或者 <span class="inlinecode">...</span>）的情况下证明同一个命题： 
 </div>
 <div class="code code-tight">
 
@@ -1298,7 +1227,7 @@ Another example:
 <div class="paragraph"> </div>
 
 <a name="lab218"></a><h4 class="section">练习：2 星 (typing_example_3)</h4>
- Formally prove the following typing derivation holds:  
+ 请形式化地证明以下类型导出式成立： 
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
@@ -1328,9 +1257,8 @@ Another example:
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- We can also show that terms are _not_ typable.  For example, let's
-    formally check that there is no typing derivation assigning a type
-    to the term <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>,</span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> &mdash; i.e.,
+ 我们也可以证明一个项<b>不</b>可定型。比如说，我们可以形式化地检查对于
+    <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">Bool</span>.</span> <span class="inlinecode">\<span class="id" type="var">y</span>:<span class="id" type="var">Bool</span>,</span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> 来说没有类型导出式为其定型——也即，
 
 <div class="paragraph"> </div>
 
@@ -1369,7 +1297,7 @@ Another example:
 
 <div class="doc">
 <a name="lab219"></a><h4 class="section">练习：3 星, optional (typing_nonexample_3)</h4>
- Another nonexample:
+ 另一个例子：
 
 <div class="paragraph"> </div>
 

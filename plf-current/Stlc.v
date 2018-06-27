@@ -1,16 +1,12 @@
-(** * Stlc: The Simply Typed Lambda-Calculus *)
+(** * Stlc: 简单类型 Lambda-演算 *)
 
-(** The simply typed lambda-calculus (STLC) is a tiny core
-    calculus embodying the key concept of _functional abstraction_,
-    which shows up in pretty much every real-world programming
-    language in some form (functions, procedures, methods, etc.).
+(** 简单类型 lambda-演算（simply typed lambda-calculus，STLC）
+    作为一种小型演算系统体现了_'函数抽象（functional abstraction）'_这个重要概念，
+    函数抽象也以很多种形式（函数，过程，方法等）出现在真实世界的程序语言中。
 
-    We will follow exactly the same pattern as in the previous chapter
-    when formalizing this calculus (syntax, small-step semantics,
-    typing rules) and its main properties (progress and preservation).
-    The new technical challenges arise from the mechanisms of
-    _variable binding_ and _substitution_.  It which will take some
-    work to deal with these. *)
+    在形式化这个演算系统（语法，小步语义和定型规则）及其主要性质（可进性和维型性）时，
+    我们采用与上一章相同的流程。新的技术挑战来自于_'变量绑定（variable binding）'_
+    和_'替换（substitution）'_。我们将会费一些功夫来处理他们。*)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Maps.
@@ -18,27 +14,21 @@ Require Import Smallstep.
 Require Import Types.
 
 (* ################################################################# *)
-(** * Overview *)
+(** * 简介 *)
 
-(** The STLC is built on some collection of _base types_:
-    booleans, numbers, strings, etc.  The exact choice of base types
-    doesn't matter much -- the construction of the language and its
-    theoretical properties work out the same no matter what we
-    choose -- so for the sake of brevity let's take just [Bool] for
-    the moment.  At the end of the chapter we'll see how to add more
-    base types, and in later chapters we'll enrich the pure STLC with
-    other useful constructs like pairs, records, subtyping, and
-    mutable state.
+(** STLC 构建于一些_'基础类型（base types）'_的集合之上：
+    布尔值，数字，字符串等。具体选择哪些基础类型并不重要——语言的构造和它的理论性质
+    不会受到影响——因此简单起见，让我们暂时只使用 [Bool]。在本章的最后，我们会看到
+    如何添加更多的基础类型，后面的章节我们还会用一些实用的构造，例如序对、记录、子类型
+    和可变状态来扩展纯 STLC。
 
-    Starting from boolean constants and conditionals, we add three
-    things:
-        - variables
-        - function abstractions
-        - application
-
-    This gives us the following collection of abstract syntax
-    constructors (written out first in informal BNF notation -- we'll
-    formalize it below). *)
+    我们以布尔值常量和条件语句开始，并添加三个构造：
+        - 变量
+        - 函数抽象
+        - 应用
+    
+    这给了我们如下的抽象语法构造（先以非形式化的 BNF 记法写下——后面我们
+    会形式化它）。 *)
 (**
 
        t ::= x                       variable
@@ -49,110 +39,96 @@ Require Import Types.
            | if t1 then t2 else t3   conditional
 *)
 
-(** The [\] symbol in a function abstraction [\x:T1.t2] is generally
-    written as a Greek letter "lambda" (hence the name of the
-    calculus).  The variable [x] is called the _parameter_ to the
-    function; the term [t2] is its _body_.  The annotation [:T1]
-    specifies the type of arguments that the function can be applied
-    to. *)
+(** 函数抽象 [\x:T1.t2] 中的 [\] 符号一般写作希腊字母“lambda”（本演算系统由此得名）。
+    变量 [x] 叫做函数的_'参数（parameter）'_；项 [t2] 是_'函数体（body）'_。
+    记号 [:T1] 指明了函数可以被应用的参数类型。*)
 
-(** Some examples:
+(** 一些例子：
 
       - [\x:Bool. x]
 
-        The identity function for booleans.
+        布尔值的恒等函数。
 
       - [(\x:Bool. x) true]
 
-        The identity function for booleans, applied to the boolean [true].
+        被应用于 [true] 的布尔值恒等函数。
 
       - [\x:Bool. if x then false else true]
 
-        The boolean "not" function.
+        布尔值的“否定”函数。
 
       - [\x:Bool. true]
 
-        The constant function that takes every (boolean) argument to
-        [true]. *)
+        总是接受（布尔值）参数并返回 [true] 的常量函数。*)
 (**
       - [\x:Bool. \y:Bool. x]
 
-        A two-argument function that takes two booleans and returns
-        the first one.  (As in Coq, a two-argument function is really
-        a one-argument function whose body is also a one-argument
-        function.)
+        接受两个布尔值做参数，并返回第一个参数的函数。（在 Coq 中，二元函数
+        其实就是一个一元函数，只是其函数体也是一元函数。）
 
       - [(\x:Bool. \y:Bool. x) false true]
 
-        A two-argument function that takes two booleans and returns
-        the first one, applied to the booleans [false] and [true].
+        一个接受两个布尔值做参数，并返回第一个参数的函数，接着它被应用于两个布尔值参数
+        [false] 和 [true]。
 
-        As in Coq, application associates to the left -- i.e., this
-        expression is parsed as [((\x:Bool. \y:Bool. x) false) true].
+        在 Coq 中，应用是左结合的——也即，这个表达式被解析为 [((\x:Bool. \y:Bool. x) false) true]。
 
       - [\f:Bool->Bool. f (f true)]
 
-        A higher-order function that takes a _function_ [f] (from
-        booleans to booleans) as an argument, applies [f] to [true],
-        and applies [f] again to the result.
+        一个高阶函数其接受一个函数 [f]（从布尔值到布尔值）作为参数，并应用
+        [f] 于参数 [true]；其结果又被应用于 [f]。
 
       - [(\f:Bool->Bool. f (f true)) (\x:Bool. false)]
 
-        The same higher-order function, applied to the constantly
-        [false] function. *)
+        同一个高阶函数，被应用于返回 [false] 的常函数。 *)
 
-(** As the last several examples show, the STLC is a language of
-    _higher-order_ functions: we can write down functions that take
-    other functions as arguments and/or return other functions as
-    results.
+(** 正如最后几个例子中展示的那样，STLC是一个支持_'高阶（higher-order）'_
+    函数的语言：我们可以写出接受其他函数作为参数，或返回其他函数作为结果的函数。
 
-    The STLC doesn't provide any primitive syntax for defining _named_
-    functions -- all functions are "anonymous."  We'll see in chapter
-    [MoreStlc] that it is easy to add named functions to what we've
-    got -- indeed, the fundamental naming and binding mechanisms are
-    exactly the same.
+    但是 STLC 并没提供任何原生语法来定义_'有名函数（named functions）'_——
+    所有的函数都是“匿名的（anonymous）”。我们会在 [MoreStlc] 一章中看到添加有名
+    函数是十分简单的——确实，基本的命名和绑定机制其实是同一回事。
 
-    The _types_ of the STLC include [Bool], which classifies the
-    boolean constants [true] and [false] as well as more complex
-    computations that yield booleans, plus _arrow types_ that classify
-    functions. *)
+    STLC 的_'类型（types）'_包括 [Bool]，其用于把 [true] 和 [false] 这些常量
+    和其他产生布尔值的复杂计算归为一类；还有_'函数类型（arrow types）'_，用于把函
+    数归为一类。*)
 (**
 
       T ::= Bool
           | T1 -> T2
 
-    For example:
+    比如说：
 
-      - [\x:Bool. false] has type [Bool->Bool]
+      - [\x:Bool. false] 有类型 [Bool->Bool]
 
-      - [\x:Bool. x] has type [Bool->Bool]
+      - [\x:Bool. x] 有类型 [Bool->Bool]
 
-      - [(\x:Bool. x) true] has type [Bool]
+      - [(\x:Bool. x) true] 有类型 [Bool]
 
-      - [\x:Bool. \y:Bool. x] has type [Bool->Bool->Bool]
-                              (i.e., [Bool -> (Bool->Bool)])
+      - [\x:Bool. \y:Bool. x] 有类型 [Bool->Bool->Bool]
+                              （即 [Bool -> (Bool->Bool）]）
 
-      - [(\x:Bool. \y:Bool. x) false] has type [Bool->Bool]
+      - [(\x:Bool. \y:Bool. x) false] 有类型 [Bool->Bool]
 
-      - [(\x:Bool. \y:Bool. x) false true] has type [Bool] *)
+      - [(\x:Bool. \y:Bool. x) false true] 有类型 [Bool] *)
 
 
 (* ################################################################# *)
-(** * Syntax *)
+(** * 语法 *)
 
-(** We next formalize the syntax of the STLC. *)
+(** 我们接下来形式化 STLC 的语法。 *)
 
 Module STLC.
 
 (* ================================================================= *)
-(** ** Types *)
+(** ** 类型 *)
 
 Inductive ty : Type :=
   | TBool  : ty
   | TArrow : ty -> ty -> ty.
 
 (* ================================================================= *)
-(** ** Terms *)
+(** ** 项 *)
 
 Inductive tm : Type :=
   | tvar : string -> tm
@@ -162,15 +138,13 @@ Inductive tm : Type :=
   | tfalse : tm
   | tif : tm -> tm -> tm -> tm.
 
-(** Note that an abstraction [\x:T.t] (formally, [tabs x T t]) is
-    always annotated with the type [T] of its parameter, in contrast
-    to Coq (and other functional languages like ML, Haskell, etc.),
-    which use type inference to fill in missing annotations.  We're
-    not considering type inference here. *)
+(** 请注意一个形如 [\x:T.t] 的抽象（形式化地讲是 [tabs x T t]）包含其参数
+    [T] 的类型注释，相反在 Coq（以及其他函数式语言，比如 ML，Haskell等）中，
+    会使用类型推导来填补这些类型注释。我们在此不考虑类型推导。 *)
 
 Open Scope string_scope.
 
-(** Some examples... *)
+(** 一些例子…… *)
 
 Definition x := "x".
 Definition y := "y".
@@ -205,53 +179,41 @@ Notation k := (tabs x TBool (tabs y TBool (tvar x))).
 
 Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 
-(** (We write these as [Notation]s rather than [Definition]s to make
-    things easier for [auto].) *)
+(** （我们使用 [Notation] 而非 [Definition] 使 [atuo] 更有效。）*)
 
 (* ################################################################# *)
-(** * Operational Semantics *)
+(** * 操作语义 *)
 
-(** To define the small-step semantics of STLC terms, we begin,
-    as always, by defining the set of values.  Next, we define the
-    critical notions of _free variables_ and _substitution_, which are
-    used in the reduction rule for application expressions.  And
-    finally we give the small-step relation itself. *)
+(** 为了定义 STLC 项的小步语义，我们以值的集合的定义开始。接着，我们定义两个
+    重要的概念，_'自由变量（free variables）'_和_'替换（substitution）'_，
+    他们在函数应用的归约规则中会被用到。最后，我们给出小步归约关系。 *)
 
 (* ================================================================= *)
-(** ** Values *)
+(** ** 值 *)
 
-(** To define the values of the STLC, we have a few cases to consider.
+(** 在定义 STLC 的值时，我们有几个情形需要考虑。
 
-    First, for the boolean part of the language, the situation is
-    clear: [true] and [false] are the only values.  An [if]
-    expression is never a value. *)
+    首先，对于布尔值而言是显然的：[true] 和 [false] 是仅有的值。
+    一个 [if] 表达式不是值。*)
 
-(** Second, an application is clearly not a value: It represents a
-    function being invoked on some argument, which clearly still has
-    work left to do. *)
+(** 其次，一个应用也不会是值：它表示一个函数正在某个参数上被调用，显然还可以继续归约。*)
 
-(** Third, for abstractions, we have a choice:
+(** 第三，对于抽象，我们有几个选择：
 
-      - We can say that [\x:T. t1] is a value only when [t1] is a
-        value -- i.e., only if the function's body has been
-        reduced (as much as it can be without knowing what argument it
-        is going to be applied to).
+      - 我们可以说仅当 [t1] 是值时 [\x:T. t1] 是值——也即，仅当函数体已经被归约
+        （在不知道被应用的参数是什么的情况下尽可能地归约）。
 
-      - Or we can say that [\x:T. t1] is always a value, no matter
-        whether [t1] is one or not -- in other words, we can say that
-        reduction stops at abstractions.
+      - 或者，我们可以说不论 [t1] 是不是值，[\x:T. t1] 都是一个值——换句话说，
+        归约止于抽象。
 
-    Our usual way of evaluating expressions in Coq makes the first
-    choice -- for example,
+    在 Coq 中表达式通常是以第一种方式求值的——比如说，
 
          Compute (fun x:bool => 3 + 4)
 
-    yields [fun x:bool => 7].
+    会得到 [fun x:bool => 7]。
 
-    Most real-world functional programming languages make the second
-    choice -- reduction of a function's body only begins when the
-    function is actually applied to an argument.  We also make the
-    second choice here. *)
+    多数现实世界中的程序语言选择了第二种方式——函数体的归约仅发生在函数实际被应用
+    于某个参数时。在这里我们也选择第二种方式。*)
 
 Inductive value : tm -> Prop :=
   | v_abs : forall x T t,
@@ -263,74 +225,63 @@ Inductive value : tm -> Prop :=
 
 Hint Constructors value.
 
-(** Finally, we must consider what constitutes a _complete_ program.
+(** 最后，我们必须考虑什么构成了一个_'完整（complete）'_的程序。
 
-    Intuitively, a "complete program" must not refer to any undefined
-    variables.  We'll see shortly how to define the _free_ variables
-    in a STLC term.  A complete program is _closed_ -- that is, it
-    contains no free variables.
+    直观地讲，一个“完整的程序”不能包含未定义的变量。我们很快会看到如何定义 STLC
+    项中的_'自由（free）'_变量。一个完整的程序是_'闭合的（closed）'_——也就是说，
+    它不含有自由变量。
 
-    (Conversely, a term with free variables is often called an _open
-    term_.)
+    （相反，含有自由变量的项一般被叫做_'开放项（open term）'_。）
 
-    Having made the choice not to reduce under abstractions, we don't
-    need to worry about whether variables are values, since we'll
-    always be reducing programs "from the outside in," and that means
-    the [step] relation will always be working with closed terms.  *)
+    由于我们决定不对抽象内的表达式进行归约，因此也不必担心变量是否是值这个问题。
+    因为我们总是“从外向内”地归约程序，这意味着 [step] 关系仅会处理闭合项。 *)
 
 (* ================================================================= *)
-(** ** Substitution *)
+(** ** 替换 *)
 
-(** Now we come to the heart of the STLC: the operation of
-    substituting one term for a variable in another term.  This
-    operation is used below to define the operational semantics of
-    function application, where we will need to substitute the
-    argument term for the function parameter in the function's body.
-    For example, we reduce
+(** 现在我们来到了 STLC 的核心：用一个项替换另一个项中的变量。这个操作在下面用于
+    定义函数应用的操作语义，其中我们会需要用一个参数项替换函数体中出现的形式参数。
+    比如说，我们会归约
 
        (\x:Bool. if x then true else x) false
 
-    to
+    到
 
        if false then true else false
 
-    by substituting [false] for the parameter [x] in the body of the
-    function.
+    这步归约将函数体中出现的参数 [x] 替换为 [false]。
 
-    In general, we need to be able to substitute some given term [s]
-    for occurrences of some variable [x] in another term [t].  In
-    informal discussions, this is usually written [ [x:=s]t ] and
-    pronounced "substitute [x] with [s] in [t]." *)
+    一般来说，我们可以用给定的项 [s] 替换的某另一个项 [t] 中出现个变量 [x]。
+    在非形式化的讨论中，这通常被写做 [ [x:=s]t ]，并读做“替换 [t] 中的 [x] 
+    为 [s]”。*)
 
-(** Here are some examples:
+(** 这里有一些例子：
 
       - [[x:=true] (if x then x else false)]
-           yields [if true then true else false]
+           产生 [if true then true else false]
 
-      - [[x:=true] x] yields [true]
+      - [[x:=true] x] 产生 [true]
 
-      - [[x:=true] (if x then x else y)] yields [if true then true else y]
+      - [[x:=true] (if x then x else y)] 产生 [if true then true else y]
 
-      - [[x:=true] y] yields [y]
+      - [[x:=true] y] 产生 [y]
 
-      - [[x:=true] false] yields [false] (vacuous substitution)
+      - [[x:=true] false] 产生 [false] （无意义的替换）
 
       - [[x:=true] (\y:Bool. if y then x else false)]
-           yields [\y:Bool. if y then true else false]
+           产生 [\y:Bool. if y then true else false]
 
-      - [[x:=true] (\y:Bool. x)] yields [\y:Bool. true]
+      - [[x:=true] (\y:Bool. x)] 产生 [\y:Bool. true]
 
-      - [[x:=true] (\y:Bool. y)] yields [\y:Bool. y]
+      - [[x:=true] (\y:Bool. y)] 产生 [\y:Bool. y]
 
-      - [[x:=true] (\x:Bool. x)] yields [\x:Bool. x]
+      - [[x:=true] (\x:Bool. x)] 产生 [\x:Bool. x]
 
-    The last example is very important: substituting [x] with [true] in
-    [\x:Bool. x] does _not_ yield [\x:Bool. true]!  The reason for
-    this is that the [x] in the body of [\x:Bool. x] is _bound_ by the
-    abstraction: it is a new, local name that just happens to be
-    spelled the same as some global name [x]. *)
+    最后一个例子非常重要：替换 [\x:Bool. x] 中的 [x] 为 [true] _'不'_会产生
+    [\x:Bool. true]！因为 [\x:Bool. x] 中的 [x] 是被这个抽象所_'绑定的（bound）'_：
+    它是一个新的、局部的名字，只是恰巧写做了跟某个全局名字一样的 [x]。*)
 
-(** Here is the definition, informally...
+(** 这是非形式化的定义……
 
        [x:=s]x               = s
        [x:=s]y               = y                      if x <> y
@@ -343,7 +294,7 @@ Hint Constructors value.
                        if [x:=s]t1 then [x:=s]t2 else [x:=s]t3
 *)
 
-(** ... and formally: *)
+(** ……以及形式化的： *)
 
 Reserved Notation "'[' x ':=' s ']' t" (at level 20).
 
@@ -365,40 +316,28 @@ Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
 
 where "'[' x ':=' s ']' t" := (subst x s t).
 
-(** _Technical note_: Substitution becomes trickier to define if we
-    consider the case where [s], the term being substituted for a
-    variable in some other term, may itself contain free variables.
-    Since we are only interested here in defining the [step] relation
-    on _closed_ terms (i.e., terms like [\x:Bool. x] that include
-    binders for all of the variables they mention), we can avoid this
-    extra complexity here, but it must be dealt with when formalizing
-    richer languages. *)
+(** _'技术注解'_：如果我们考虑用于替换掉某个变量的项 [s] 其本身也含有自由变量，
+    那么定义替换将会变得困难一点。由于我们仅对定义在_'闭合'_项（也即像 [\x:Bool. x] 
+    这种绑定了内部全部变量的项）上的 [step] 关系有兴趣，我们可以规避这个额外的复杂性，
+    但是当形式化构造更丰富的语言时，我们必须考虑这一点。*)
 
-(** For example, using the definition of substitution above to
-    substitute the _open_ term [s = \x:Bool. r], where [r] is a _free_
-    reference to some global resource, for the variable [z] in the
-    term [t = \r:Bool. z], where [r] is a bound variable, we would get
-    [\r:Bool. \x:Bool. r], where the free reference to [r] in [s] has
-    been "captured" by the binder at the beginning of [t].
+(** 比如说，使用上面的替换定义将 [t = \r:Bool. z]（其中 [r] 为绑定变量）中的
+    [z] 替换为_'开放'_项 [s = \x:Bool. r]（其中 [r] 是引用了某个全局资源的自由变量），
+    我们会得到 [\r:Bool. \x:Bool. r]。这时，[s] 中的自由引用 [r] 被 [t] 所引入
+    的绑定所“捕获”。
 
-    Why would this be bad?  Because it violates the principle that the
-    names of bound variables do not matter.  For example, if we rename
-    the bound variable in [t], e.g., let [t' = \w:Bool. z], then
-    [[x:=s]t'] is [\w:Bool. \x:Bool. r], which does not behave the
-    same as [[x:=s]t = \r:Bool. \x:Bool. r].  That is, renaming a
-    bound variable changes how [t] behaves under substitution. *)
+    为什么这是件坏事呢？因为它违反了“绑定变量的名字不应当改变语义”这个原则。打个比方，
+    如果把 [t] 的绑定变量重命名，比如说，[t' = \w:Bool. z]，那么 [[z:=s]t']
+    会产生 [\w:Bool. \x:Bool. r]，其行为和 [[z:=s]t = \r:Bool. \x:Bool. r]
+    并不相同。这意味着，重命名绑定变量改变了 [t] 在替换时的行为。 *)
 
-(** See, for example, [Aydemir 2008] (in Bib.v) for further discussion
-    of this issue. *)
+(** 对于这个问题，更详细的讨论可参考 [Aydemir 2008] (in Bib.v)。*)
 
 (** **** 练习：3 星 (substi_correct)  *)
-(** The definition that we gave above uses Coq's [Fixpoint] facility
-    to define substitution as a _function_.  Suppose, instead, we
-    wanted to define substitution as an inductive _relation_ [substi].
-    We've begun the definition by providing the [Inductive] header and
-    one of the constructors; your job is to fill in the rest of the
-    constructors and prove that the relation you've defined coincides
-    with the function given above. *)
+(** 上面我们使用了 Coq 的 [Fixpoint] 功能将替换定义为一个_'函数'_。
+    假设，现在我们想要将替换定义为一个归纳的_'关系'_ [substi]。作为开始，我们给出了
+    [Inductive] 定义的头部和其中一个构造子；你的任务是完成剩下的构造子，并证明
+    你的定义同替换函数的定义相一致。 *)
 
 Inductive substi (s:tm) (x:string) : tm -> tm -> Prop :=
   | s_var1 :
@@ -415,20 +354,16 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Reduction *)
+(** ** 归约 *)
 
-(** The small-step reduction relation for STLC now follows the
-    same pattern as the ones we have seen before.  Intuitively, to
-    reduce a function application, we first reduce its left-hand
-    side (the function) until it becomes an abstraction; then we
-    reduce its right-hand side (the argument) until it is also a
-    value; and finally we substitute the argument for the bound
-    variable in the body of the abstraction.  This last rule, written
-    informally as
+(** STLC 的小步语义与之前学过的小步语义遵循了同样的模式。直观地说，
+    对于函数应用我们首先归约其左手边的项（也即函数）直到其成为一个抽象；
+    接着归约其右手边的项（也即参数）直到其成为一个值；最后我们用参数替换函数
+    体内的绑定变量。最后一条规则可以非形式化地写做
 
       (\x:T.t12) v2 ==> [x:=v2]t12
 
-    is traditionally called "beta-reduction". *)
+    传统上这也被称作“beta-归约（beta-reduction）” *)
 
 (** 
                                value v2
@@ -444,7 +379,7 @@ Proof.
                            ----------------                           (ST_App2)
                            v1 t2 ==> v1 t2'
 *)
-(** ... plus the usual rules for conditionals:
+(** ……还有对条件语句的规则：
 
                     --------------------------------                (ST_IfTrue)
                     (if true then t1 else t2) ==> t1
@@ -457,7 +392,7 @@ Proof.
          (if t1 then t2 else t3) ==> (if t1' then t2 else t3)
 *)
 
-(** Formally: *)
+(** 形式化的： *)
 
 Reserved Notation "t1 '==>' t2" (at level 40).
 
@@ -488,13 +423,13 @@ Notation multistep := (multi step).
 Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 
 (* ================================================================= *)
-(** ** Examples *)
+(** ** 例子 *)
 
-(** Example:
+(** 例子：
 
       (\x:Bool->Bool. x) (\x:Bool. x) ==>* \x:Bool. x
 
-    i.e.,
+    即
 
       idBB idB ==>* idB
 *)
@@ -508,12 +443,12 @@ Proof.
   simpl.
   apply multi_refl.  Qed.
 
-(** Example:
+(** 例子：
 
       (\x:Bool->Bool. x) ((\x:Bool->Bool. x) (\x:Bool. x))
             ==>* \x:Bool. x
 
-    i.e.,
+    即
 
       (idBB (idBB idB)) ==>* idB.
 *)
@@ -528,14 +463,14 @@ Proof.
     apply ST_AppAbs. simpl. auto.
   simpl. apply multi_refl.  Qed.
 
-(** Example:
+(** 例子：
 
       (\x:Bool->Bool. x)
          (\x:Bool. if x then false else true)
          true
             ==>* false
 
-    i.e.,
+    即
 
        (idBB notB) ttrue ==>* tfalse.
 *)
@@ -550,18 +485,17 @@ Proof.
   eapply multi_step.
     apply ST_IfTrue. apply multi_refl.  Qed.
 
-(** Example:
+(** 例子：
 
       (\x:Bool -> Bool. x)
          ((\x:Bool. if x then false else true) true)
             ==>* false
 
-    i.e.,
+    即
 
       idBB (notB ttrue) ==>* tfalse.
 
-    (Note that this term doesn't actually typecheck; even so, we can
-    ask how it reduces.)
+    （请注意，虽然这个项并不会通过类型检查，我们还是可以看看它是如何归约的。）
 *)
 
 Lemma step_example4 :
@@ -577,8 +511,7 @@ Proof.
     apply ST_AppAbs. auto. simpl.
   apply multi_refl.  Qed.
 
-(** We can use the [normalize] tactic defined in the [Types] chapter
-    to simplify these proofs. *)
+(** 我们可以使用 [Types] 一章中定义的 [normalize] 策略来简化这些证明。 *)
 
 Lemma step_example1' :
   (tapp idBB idB) ==>* idB.
@@ -597,7 +530,7 @@ Lemma step_example4' :
 Proof. normalize.  Qed.
 
 (** **** 练习：2 星 (step_example5)  *)
-(** Try to do this one both with and without [normalize]. *)
+(** 请分别使用和不使用 [normalize] 证明以下命题。 *)
 
 Lemma step_example5 :
        tapp (tapp idBBBB idBB) idB
@@ -613,33 +546,30 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
-(** * Typing *)
+(** * 定型 *)
 
-(** Next we consider the typing relation of the STLC. *)
+(** 接下来我们考虑 STLC 的类型关系。 *)
 
 (* ================================================================= *)
-(** ** Contexts *)
+(** ** 上下文 *)
 
-(** _Question_: What is the type of the term "[x y]"?
+(** _'问'_：项 "[x y]" 的类型是什么？
 
-    _Answer_: It depends on the types of [x] and [y]!
+    _'答'_：这取决于 [x] 和 [y] 的类型是什么！
 
-    I.e., in order to assign a type to a term, we need to know
-    what assumptions we should make about the types of its free
-    variables.
+    也就是说，为了给一个项指派类型，我们需要知道关于其中自由变量的类型的假设。
 
-    This leads us to a three-place _typing judgment_, informally
-    written [Gamma |- t \in T], where [Gamma] is a
-    "typing context" -- a mapping from variables to their types. *)
+    这把我们引向了一个三元_'类型断言（type judgement）'_，非形式化地写做 [Gamma |- t \in T]，
+    其中 [Gamma] 是一个“类型上下文（typing context）”——一个变量到他们的
+    类型的映射。 *)
 
-(** Following the usual notation for partial maps, we could write [Gamma
-    & {{x:T}}] for "update the partial function [Gamma] to also map
-    [x] to [T]." *)
+(** 使用通常偏映射的记号，我们可以用 [Gamma & {{x:T}}] 来表示“更新偏函数 [Gamma]
+    使其也将 [x] 映射到 [T]”。*)
 
 Definition context := partial_map ty.
 
 (* ================================================================= *)
-(** ** Typing Relation *)
+(** ** 类型关系 *)
 
 (** 
                              Gamma x = T
@@ -666,8 +596,8 @@ Definition context := partial_map ty.
                   Gamma |- if t1 then t2 else t3 \in T
 
 
-    We can read the three-place relation [Gamma |- t \in T] as:
-    "under the assumptions in Gamma, the term [t] has the type [T]." *)
+    我们可以把形如 [Gamma |- t \in T] 的三元关系读做：
+    “在假设 Gamma 下，项 [t] 有类型 [T]。” *)
 
 Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
 
@@ -697,21 +627,21 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 Hint Constructors has_type.
 
 (* ================================================================= *)
-(** ** Examples *)
+(** ** 例子 *)
 
 Example typing_example_1 :
   empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
 Proof.
   apply T_Abs. apply T_Var. reflexivity.  Qed.
 
-(** Note that since we added the [has_type] constructors to the hints
-    database, auto can actually solve this one immediately. *)
+(** 请注意，由于我们在提示数据库中添加了 [has_type] 构造子，因此 [auto]
+    将可以直接解决这个证明。*)
 
 Example typing_example_1' :
   empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
 Proof. auto.  Qed.
 
-(** Another example:
+(** 另一个例子：
 
        empty |- \x:A. \y:A->A. y (y x)
              \in A -> (A->A) -> A.
@@ -732,8 +662,7 @@ Proof with auto using update_eq.
 Qed.
 
 (** **** 练习：2 星, optional (typing_example_2_full)  *)
-(** Prove the same result without using [auto], [eauto], or
-    [eapply] (or [...]). *)
+(** 请在不使用 [auto]，[eauto]，[eapply]（或者 [...]）的情况下证明同一个命题： *)
 
 Example typing_example_2_full :
   empty |-
@@ -746,7 +675,7 @@ Proof.
 (** [] *)
 
 (** **** 练习：2 星 (typing_example_3)  *)
-(** Formally prove the following typing derivation holds: *)
+(** 请形式化地证明以下类型导出式成立：*)
 (** 
        empty |- \x:Bool->B. \y:Bool->Bool. \z:Bool.
                    y (x z)
@@ -765,9 +694,8 @@ Proof with auto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** We can also show that terms are _not_ typable.  For example, let's
-    formally check that there is no typing derivation assigning a type
-    to the term [\x:Bool. \y:Bool, x y] -- i.e.,
+(** 我们也可以证明一个项_'不'_可定型。比如说，我们可以形式化地检查对于
+    [\x:Bool. \y:Bool, x y] 来说没有类型导出式为其定型——也即，
 
     ~ exists T,
         empty |- \x:Bool. \y:Bool, x y \in T.
@@ -792,7 +720,7 @@ Proof.
   inversion H1.  Qed.
 
 (** **** 练习：3 星, optional (typing_nonexample_3)  *)
-(** Another nonexample:
+(** 另一个例子：
 
     ~ (exists S, exists T,
           empty |- \x:S. x x \in T).
