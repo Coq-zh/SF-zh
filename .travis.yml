@@ -3,8 +3,8 @@ language: ocaml
 cache:
   apt: true
   directories:
-  - $HOME/.opam
-  - $HOME/Library/Caches/Homebrew
+  - "$HOME/.opam"
+  - "$HOME/Library/Caches/Homebrew"
 addons:
   apt:
     sources:
@@ -23,39 +23,29 @@ env:
 matrix:
   fast_finish: true
   allow_failures:
-    - os: osx
+  - os: osx
 os:
-    - linux
-    - osx
-
-before_install:
-    if [ $TRAVIS_OS_NAME = osx ]; then
-    brew update; brew install --ignore-dependencies ocaml opam; fi
-
+- linux
+- osx
+before_install: if [ $TRAVIS_OS_NAME = osx ]; then brew update; brew install --ignore-dependencies
+  ocaml opam; fi
 install:
-- "[ -e .opam ] || opam init"
+- "[ -e ~/.opam ] || opam init"
 - eval $(opam config env)
 - opam config var root
 - ocamlc -v
 - opam install $COQ
 - opam list
-
 script:
 - set -e
-- echo '编译《逻辑基础》';
-  echo -en 'travis_fold:start:lf';
-  make -C lf-current -j;
-  echo -en 'travis_fold:end:lf'
-- echo '编译《程序语言基础》';
-  echo -en 'travis_fold:start:plf';
-  make -C plf-current -j;
-  echo -en 'travis_fold:end:plf'
-- echo '编译《函数式算法验证》';
-  echo -en 'travis_fold:start:vfa';
-  make -C vfa-current -j;
-  echo -en 'travis_fold:end:vfa'
-- echo '检查压缩包';
-  echo -en 'travis_fold:start:tar';
-  for v in lf plf vfa; do
-  tar -xf $v-current/$v.tgz; make -C $v -j; done;
-  echo -en 'travis_fold:end:tar'
+- echo '编译《逻辑基础》'; echo -en 'travis_fold:start:lf'; make -C lf-current -j; echo -en
+  'travis_fold:end:lf'
+- echo '编译《程序语言基础》'; echo -en 'travis_fold:start:plf'; make -C plf-current -j; echo
+  -en 'travis_fold:end:plf'
+- echo '编译《函数式算法验证》'; echo -en 'travis_fold:start:vfa'; make -C vfa-current -j; echo
+  -en 'travis_fold:end:vfa'
+- echo '检查压缩包'; echo -en 'travis_fold:start:tar'; for v in lf plf vfa; do tar -xf
+  $v-current/$v.tgz; make -C $v -j; done; echo -en 'travis_fold:end:tar'
+notifications:
+  slack:
+    secure: qwnWa6Dyj5//Hc+O74qsAT/vtoMWDv8wLcljt+tUDw0m+YWNB1umrvmSI3++/Fe4f0EEQhz/E2pzaNGyEF8oddhsCn8JoH9DzpaDWk/dNwbcMUvRVIHbnq0V+d4+AHTBD05eZgMlmPC8DYPNOSv7wJLJXtAmbHtl0G1F961bbZY39WDLAQFqa71trnTEX8hxIG0nrF8W3hCrGg6LFH+Mk1rzG5zBQqxSwnlxsr3Uj6utuYXeidaTShrGb3hqcRlg5N/CyAqN0ZzGkl2W9ng59dStTNyTsDeuUANOBmuB0V95W5c7zSXRMuOk/N/apKXVRGu+DKXirSjCZNZyE/kCNDS40+0JnZn8la4em806rQa0cp+ck+0yfV8TvoCOulHnvq0XAaAZzWLVqgB6wjTuDhNDuI9FpULRGnmQ5fkWVo3ozFrFdNqud1EMJkqJlfUL/F3xuyuHRLR0Z5RHGuTYURIKA/En3Do1oPl3rHubTTL4KeGIiOlBJiKsom0/AV8q15trwCF57aK3o1q6n8Zcp1gYOrZjMDv5MXlhnkKvQzkSkeaYRoOiMEhVe0h0dRgfT/uf/ugIXiWkbMhlrFuSlk2vXM5g0PEimw+Zjl2mySQgu4okawGJI/zRuVQr1xBX30uEOMcevEv/FN8RqgjGlVl/DArUqx6pYWRgWfac6gE=
