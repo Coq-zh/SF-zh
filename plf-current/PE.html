@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>PE: Partial Evaluation</title>
+<title>PE: 部分求值</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,22 +29,19 @@
 
 <div id="main">
 
-<h1 class="libtitle">PE<span class="subtitle">Partial Evaluation</span></h1>
+<h1 class="libtitle">PE<span class="subtitle">部分求值</span></h1>
 
 
 <div class="code code-tight">
 
-<span class="comment">(*&nbsp;Chapter&nbsp;written&nbsp;and&nbsp;maintained&nbsp;by&nbsp;Chung-chieh&nbsp;Shan&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;本章由單中杰（Chung-chieh&nbsp;Shan）撰写和维护。*)</span><br/>
 </div>
 
 <div class="doc">
-The <a href="Equiv.html"><span class="inlineref">Equiv</span></a> chapter introduced constant folding as an example of a
-    program transformation and proved that it preserves the meaning of
-    programs.  Constant folding operates on manifest constants such as
-    <span class="inlinecode"><span class="id" type="var">ANum</span></span> expressions.  For example, it simplifies the command <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span>
-    <span class="inlinecode">3</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> to the command <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode">4</span>.  However,
-    it does not propagate known constants along data flow.  For
-    example, it does not simplify the sequence
+<a href="Equiv.html"><span class="inlineref">Equiv</span></a> 一章介绍了常量折叠作为程序变换的一个例子，并证明了此变换保持了程序的语义。
+    常量折叠变换适用于明显的常量上，例如 <span class="inlinecode"><span class="id" type="var">ANum</span></span> 表达式。比如说，它将命令 <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode">3</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span>
+    化简为 <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode">4</span>。然而它并不会顺着数据流传播已知的常量。例如，它无法化简如下的
+    语句序列
 
 <div class="paragraph"> </div>
 
@@ -53,7 +50,7 @@ The <a href="Equiv.html"><span class="inlineref">Equiv</span></a> chapter introd
 <div class="paragraph"> </div>
 
 </div>
-    to
+    为
 
 <div class="paragraph"> </div>
 
@@ -62,17 +59,14 @@ The <a href="Equiv.html"><span class="inlineref">Equiv</span></a> chapter introd
 <div class="paragraph"> </div>
 
 </div>
-    because it forgets that <span class="inlinecode"><span class="id" type="var">X</span></span> is <span class="inlinecode">3</span> by the time it gets to <span class="inlinecode"><span class="id" type="var">Y</span></span>.
+    因为当其运行到 <span class="inlinecode"><span class="id" type="var">Y</span></span> 的时候并不知道 <span class="inlinecode"><span class="id" type="var">X</span></span> 是 <span class="inlinecode">3</span>。  
 
 <div class="paragraph"> </div>
 
-    We might naturally want to enhance constant folding so that it
-    propagates known constants and uses them to simplify programs.
-    Doing so constitutes a rudimentary form of _partial evaluation_.
-    As we will see, partial evaluation is so called because it is like
-    running a program, except only part of the program can be
-    evaluated because only part of the input to the program is known.
-    For example, we can only simplify the program
+    我们自然想要改进常量折叠，使其可以传播已知的常量并使用他们化简程序。
+    这样做便得到了<b>部分求值（partial evaluation）</b>的初级形式。我们将会看到，
+    部分求值之所以被这样形容是因为看起来它像在运行程序，但只有部分程序会被求值，
+    因为程序只有一部分输入是已知的。比如，在不知道 <span class="inlinecode"><span class="id" type="var">Y</span></span> 的初始值的情况下，我们仅能把
 
 <div class="paragraph"> </div>
 
@@ -81,7 +75,7 @@ The <a href="Equiv.html"><span class="inlineref">Equiv</span></a> chapter introd
 <div class="paragraph"> </div>
 
 </div>
-    to
+    化简到
 
 <div class="paragraph"> </div>
 
@@ -90,7 +84,7 @@ The <a href="Equiv.html"><span class="inlineref">Equiv</span></a> chapter introd
 <div class="paragraph"> </div>
 
 </div>
-    without knowing the initial value of <span class="inlinecode"><span class="id" type="var">Y</span></span>. 
+
 </div>
 <div class="code code-tight">
 
@@ -107,29 +101,23 @@ The <a href="Equiv.html"><span class="inlineref">Equiv</span></a> chapter introd
 </div>
 
 <div class="doc">
-<a name="lab569"></a><h1 class="section">Generalizing Constant Folding</h1>
+<a name="lab569"></a><h1 class="section">一般化的常量折叠</h1>
 
 <div class="paragraph"> </div>
 
- The starting point of partial evaluation is to represent our
-    partial knowledge about the state.  For example, between the two
-    assignments above, the partial evaluator may know only that <span class="inlinecode"><span class="id" type="var">X</span></span> is
-    <span class="inlinecode">3</span> and nothing about any other variable. 
+ 作为开始，首先需要确定如何表达状态的部分事实。例如在上面的例子中，部分求值器会知道
+    在两个赋值语句中间时 <span class="inlinecode"><span class="id" type="var">X</span></span> 是 <span class="inlinecode">3</span>，但不知道关于其他变量的任何信息。 
 <div class="paragraph"> </div>
 
-<a name="lab570"></a><h2 class="section">Partial States</h2>
+<a name="lab570"></a><h2 class="section">部分状态</h2>
 
 <div class="paragraph"> </div>
 
- Conceptually speaking, we can think of such partial states as the
-    type <span class="inlinecode"><span class="id" type="var">string</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span> (as opposed to the type <span class="inlinecode"><span class="id" type="var">string</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> of
-    concrete, full states).  However, in addition to looking up and
-    updating the values of individual variables in a partial state, we
-    may also want to compare two partial states to see if and where
-    they differ, to handle conditional control flow.  It is not possible
-    to compare two arbitrary functions in this way, so we represent
-    partial states in a more concrete format: as a list of <span class="inlinecode"><span class="id" type="var">string</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">nat</span></span>
-    pairs. 
+ 从概念上讲，我们可以认为部分状态（partial state）的类型是 <span class="inlinecode"><span class="id" type="var">string</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">nat</span></span>
+    (相反全状态的类型是 <span class="inlinecode"><span class="id" type="var">string</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span>）。然而，除了对部分状态中的变量进行查询和更新以外，
+    我们还想要比较两个部分状态，得到其不同的之处，并处理条件控制流。
+    由于无法对两个任意的函数进行比较，因此我们更具体地把部分状态表示为由 
+    <span class="inlinecode"><span class="id" type="var">string</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> 序对构成的列表。
 </div>
 <div class="code code-tight">
 
@@ -137,12 +125,9 @@ The <a href="Equiv.html"><span class="inlineref">Equiv</span></a> chapter introd
 </div>
 
 <div class="doc">
-The idea is that a variable (of type <span class="inlinecode"><span class="id" type="var">string</span></span>) appears in the list if and only
-    if we know its current <span class="inlinecode"><span class="id" type="var">nat</span></span> value.  The <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span> function thus
-    interprets this concrete representation.  (If the same variable
-    appears multiple times in the list, the first occurrence
-    wins, but we will define our partial evaluator to never construct
-    such a <span class="inlinecode"><span class="id" type="var">pe_state</span></span>.) 
+一个（类型为 <span class="inlinecode"><span class="id" type="var">string</span></span> 的）变量出现在列表中当且仅当我们知道其当前的 <span class="inlinecode"><span class="id" type="var">nat</span></span> 值。
+    <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span> 函数实现了这个功能的具体表示。（如果变量名在列表中出现了多次，
+    那么我们仅使用第一个，但我们会定义部分求值器使其不会构造出这样的 <span class="inlinecode"><span class="id" type="var">pe_state</span></span>。）
 </div>
 <div class="code code-tight">
 
@@ -155,8 +140,7 @@ The idea is that a variable (of type <span class="inlinecode"><span class="id" t
 </div>
 
 <div class="doc">
-For example, <span class="inlinecode"><span class="id" type="var">empty_pe_state</span></span> represents complete ignorance about
-    every variable &mdash; the function that maps every identifier to <span class="inlinecode"><span class="id" type="var">None</span></span>. 
+比如，<span class="inlinecode"><span class="id" type="var">empty_pe_state</span></span> 表示空状态——一个将任何标识符都映射到 <span class="inlinecode"><span class="id" type="var">None</span></span> 的函数。 
 </div>
 <div class="code code-tight">
 
@@ -164,10 +148,9 @@ For example, <span class="inlinecode"><span class="id" type="var">empty_pe_state
 </div>
 
 <div class="doc">
-More generally, if the <span class="inlinecode"><span class="id" type="var">list</span></span> representing a <span class="inlinecode"><span class="id" type="var">pe_state</span></span> does not
-    contain some identifier, then that <span class="inlinecode"><span class="id" type="var">pe_state</span></span> must map that identifier to
-    <span class="inlinecode"><span class="id" type="var">None</span></span>.  Before we prove this fact, we first define a useful
-    tactic for reasoning with <span class="inlinecode"><span class="id" type="var">string</span></span> equality.  The tactic
+更一般地，如果这个 <span class="inlinecode"><span class="id" type="var">list</span></span> 表示的 <span class="inlinecode"><span class="id" type="var">pe_state</span></span> 不含有某个标识符，那么此 <span class="inlinecode"><span class="id" type="var">pe_state</span></span>
+    必将这个标识符映射到 <span class="inlinecode"><span class="id" type="var">None</span></span>。在证明这一点之前，我们首先定义一个策略来帮助我们对
+    字符串的等价性进行推理。策略
 
 <div class="paragraph"> </div>
 
@@ -176,9 +159,8 @@ More generally, if the <span class="inlinecode"><span class="id" type="var">list
 <div class="paragraph"> </div>
 
 </div>
-    means to reason by cases over <span class="inlinecode"><span class="id" type="var">beq_string</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode"><span class="id" type="var">V'</span></span>.
-    In the case where <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">V'</span></span>, the tactic
-    substitutes <span class="inlinecode"><span class="id" type="var">V</span></span> for <span class="inlinecode"><span class="id" type="var">V'</span></span> throughout. 
+    用于对 <span class="inlinecode"><span class="id" type="var">beq_string</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode"><span class="id" type="var">V'</span></span> 的分类情形进行推理。
+    当 <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">V'</span></span> 时，此策略将全部的 <span class="inlinecode"><span class="id" type="var">V</span></span> 替换为 <span class="inlinecode"><span class="id" type="var">V'</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -195,8 +177,7 @@ More generally, if the <span class="inlinecode"><span class="id" type="var">list
 </div>
 
 <div class="doc">
-In what follows, we will make heavy use of the <span class="inlinecode"><span class="id" type="var">In</span></span> property from
-    the standard library, also defined in <span class="inlinecode"><span class="id" type="var">Logic.v</span></span>: 
+接下来，我们会大量使用标准库和 <span class="inlinecode"><span class="id" type="var">Logic.v</span></span> 中定义的 <span class="inlinecode"><span class="id" type="var">In</span></span> 性质： 
 </div>
 <div class="code code-tight">
 
@@ -210,9 +191,7 @@ In what follows, we will make heavy use of the <span class="inlinecode"><span cl
 </div>
 
 <div class="doc">
-Besides the various lemmas about <span class="inlinecode"><span class="id" type="var">In</span></span> that we've already come
-    across, the following one (taken from the standard library) will
-    also be useful: 
+除了我们之前学习过的关于 <span class="inlinecode"><span class="id" type="var">In</span></span> 的众多引理，下面这个也会非常有用： 
 </div>
 <div class="code code-tight">
 
@@ -222,9 +201,8 @@ Besides the various lemmas about <span class="inlinecode"><span class="id" type=
 </div>
 
 <div class="doc">
-If a type <span class="inlinecode"><span class="id" type="var">A</span></span> has an operator <span class="inlinecode"><span class="id" type="var">beq</span></span> for testing equality of its
-    elements, we can compute a boolean <span class="inlinecode"><span class="id" type="var">inb</span></span> <span class="inlinecode"><span class="id" type="var">beq</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> for testing
-    whether <span class="inlinecode"><span class="id" type="var">In</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> holds or not. 
+如果类型 <span class="inlinecode"><span class="id" type="var">A</span></span> 有操作符 <span class="inlinecode"><span class="id" type="var">beq</span></span> 用于测试其元素的相等性，我们可以计算一个布尔值 <span class="inlinecode"><span class="id" type="var">inb</span></span> <span class="inlinecode"><span class="id" type="var">beq</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span>
+    用于测试 <span class="inlinecode"><span class="id" type="var">In</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> 是否成立。 
 </div>
 <div class="code code-tight">
 
@@ -236,7 +214,7 @@ If a type <span class="inlinecode"><span class="id" type="var">A</span></span> h
 </div>
 
 <div class="doc">
-It is easy to relate <span class="inlinecode"><span class="id" type="var">inb</span></span> to <span class="inlinecode"><span class="id" type="var">In</span></span> with the <span class="inlinecode"><span class="id" type="var">reflect</span></span> property: 
+容易使用 <span class="inlinecode"><span class="id" type="var">reflect</span></span> 性质关联起 <span class="inlinecode"><span class="id" type="var">inb</span></span> 和 <span class="inlinecode"><span class="id" type="var">In</span></span>： 
 </div>
 <div class="code code-tight">
 
@@ -256,21 +234,19 @@ It is easy to relate <span class="inlinecode"><span class="id" type="var">inb</s
 </div>
 
 <div class="doc">
-<a name="lab571"></a><h2 class="section">Arithmetic Expressions</h2>
+<a name="lab571"></a><h2 class="section">算术表达式</h2>
 
 <div class="paragraph"> </div>
 
- Partial evaluation of <span class="inlinecode"><span class="id" type="var">aexp</span></span> is straightforward &mdash; it is basically
-    the same as constant folding, <span class="inlinecode"><span class="id" type="var">fold_constants_aexp</span></span>, except that
-    sometimes the partial state tells us the current value of a
-    variable and we can replace it by a constant expression. 
+ 对 <span class="inlinecode"><span class="id" type="var">aexp</span></span> 的部分求值是简单的——它基本上和常量折叠 <span class="inlinecode"><span class="id" type="var">fold_constants_aexp</span></span> 相同，
+    除了有时候部分状态可以告诉我们变量对应的值，我们便可以用一个常量替换这个变量。
 </div>
 <div class="code code-tight">
 
 <span class="id" type="keyword">Fixpoint</span> <a name="pe_aexp"><span class="id" type="definition">pe_aexp</span></a> (<span class="id" type="var">pe_st</span> : <a class="idref" href="PE.html#pe_state"><span class="id" type="definition">pe_state</span></a>) (<span class="id" type="var">a</span> : <span class="id" type="inductive">aexp</span>) : <span class="id" type="inductive">aexp</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <a class="idref" href="PE.html#a"><span class="id" type="variable">a</span></a> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;| <span class="id" type="constructor">ANum</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="constructor">ANum</span> <span class="id" type="var">n</span><br/>
-&nbsp;&nbsp;| <span class="id" type="constructor">AId</span> <span class="id" type="var">i</span> ⇒ <span class="id" type="keyword">match</span> <a class="idref" href="PE.html#pe_lookup"><span class="id" type="definition">pe_lookup</span></a> <a class="idref" href="PE.html#pe_st"><span class="id" type="variable">pe_st</span></a> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span> <span class="comment">(*&nbsp;&lt;-----&nbsp;NEW&nbsp;*)</span><br/>
+&nbsp;&nbsp;| <span class="id" type="constructor">AId</span> <span class="id" type="var">i</span> ⇒ <span class="id" type="keyword">match</span> <a class="idref" href="PE.html#pe_lookup"><span class="id" type="definition">pe_lookup</span></a> <a class="idref" href="PE.html#pe_st"><span class="id" type="variable">pe_st</span></a> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span> <span class="comment">(*&nbsp;&lt;-----&nbsp;新添加的&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#Some"><span class="id" type="constructor">Some</span></a> <span class="id" type="var">n</span> ⇒ <span class="id" type="constructor">ANum</span> <span class="id" type="var">n</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#None"><span class="id" type="constructor">None</span></a> ⇒ <span class="id" type="constructor">AId</span> <span class="id" type="var">i</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
@@ -293,8 +269,7 @@ It is easy to relate <span class="inlinecode"><span class="id" type="var">inb</s
 </div>
 
 <div class="doc">
-This partial evaluator folds constants but does not apply the
-    associativity of addition. 
+部分求值器会折叠起常量，但并不会应用加法的结合律。 
 </div>
 <div class="code code-tight">
 
@@ -319,13 +294,10 @@ This partial evaluator folds constants but does not apply the
 </div>
 
 <div class="doc">
-Now, in what sense is <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> correct?  It is reasonable to
-    define the correctness of <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> as follows: whenever a full
-    state <span class="inlinecode"><span class="id" type="var">st</span>:<span class="id" type="var">state</span></span> is _consistent_ with a partial state
-    <span class="inlinecode"><span class="id" type="var">pe_st</span>:<span class="id" type="var">pe_state</span></span> (in other words, every variable to which <span class="inlinecode"><span class="id" type="var">pe_st</span></span>
-    assigns a value is assigned the same value by <span class="inlinecode"><span class="id" type="var">st</span></span>), evaluating
-    <span class="inlinecode"><span class="id" type="var">a</span></span> and evaluating <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> <span class="inlinecode"><span class="id" type="var">pe_st</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> in <span class="inlinecode"><span class="id" type="var">st</span></span> yields the same
-    result.  This statement is indeed true. 
+现在，<span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> 在什么意义上是正确的呢？可以合理地将 <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> 的正确性
+    定义为：若一个全状态 <span class="inlinecode"><span class="id" type="var">st</span>:<span class="id" type="var">state</span></span> 与部分状态 <span class="inlinecode"><span class="id" type="var">pe_st</span>:<span class="id" type="var">pe_state</span></span> 是相容的
+    （换句话说，<span class="inlinecode"><span class="id" type="var">pe_st</span></span> 中每个变量的值同 <span class="inlinecode"><span class="id" type="var">st</span></span> 中这个变量的值相同），那么在 <span class="inlinecode"><span class="id" type="var">st</span></span> 
+    状态中对 <span class="inlinecode"><span class="id" type="var">a</span></span> 求值和对 <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> <span class="inlinecode"><span class="id" type="var">pe_st</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> 求值会产生相同结果。这个陈述确实是真的。
 </div>
 <div class="code code-tight">
 
@@ -339,8 +311,7 @@ Now, in what sense is <span class="inlinecode"><span class="id" type="var">pe_ae
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">destruct</span> (<a class="idref" href="PE.html#pe_aexp"><span class="id" type="definition">pe_aexp</span></a> <span class="id" type="var">pe_st</span> <span class="id" type="var">a<sub>1</sub></span>);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<a class="idref" href="PE.html#pe_aexp"><span class="id" type="definition">pe_aexp</span></a> <span class="id" type="var">pe_st</span> <span class="id" type="var">a<sub>2</sub></span>);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHa1</span>; <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHa2</span>; <span class="id" type="tactic">reflexivity</span>).<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;Compared&nbsp;to&nbsp;fold_constants_aexp_sound,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;only&nbsp;interesting&nbsp;case&nbsp;is&nbsp;AId&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;同&nbsp;fold_constants_aexp_sound&nbsp;比较，唯一不同的分类是&nbsp;AId。&nbsp;*)</span><br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;AId&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<a class="idref" href="PE.html#pe_lookup"><span class="id" type="definition">pe_lookup</span></a> <span class="id" type="var">pe_st</span> <span class="id" type="var">s</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">l</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">l</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;Some&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">n</span>:=<span class="id" type="var">n</span>) <span class="id" type="tactic">by</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">Heql</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
@@ -349,8 +320,7 @@ Now, in what sense is <span class="inlinecode"><span class="id" type="var">pe_ae
 </div>
 
 <div class="doc">
-However, we will soon want our partial evaluator to remove
-    assignments.  For example, it will simplify
+然而，我们很快就会希望这个部分求值器可以移除掉赋值语句。比如说，它会将
 
 <div class="paragraph"> </div>
 
@@ -359,7 +329,7 @@ However, we will soon want our partial evaluator to remove
 <div class="paragraph"> </div>
 
 </div>
-    to just
+    简化为
 
 <div class="paragraph"> </div>
 
@@ -368,8 +338,7 @@ However, we will soon want our partial evaluator to remove
 <div class="paragraph"> </div>
 
 </div>
-    by delaying the assignment to <span class="inlinecode"><span class="id" type="var">X</span></span> until the end.  To accomplish
-    this simplification, we need the result of partial evaluating
+    它保留了最后对 <span class="inlinecode"><span class="id" type="var">X</span></span> 的赋值语句。为了完成这种简化，我们需要部分求值的结果
 
 <div class="paragraph"> </div>
 
@@ -378,9 +347,7 @@ However, we will soon want our partial evaluator to remove
 <div class="paragraph"> </div>
 
 </div>
-    to be equal to <span class="inlinecode">3</span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> and _not_ the original
-    expression <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span>.  After all, it would be
-    incorrect, not just inefficient, to transform
+    等于 <span class="inlinecode">3</span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> 而_非_原始的表达式 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-<span class="id" type="var">Y</span></span>。毕竟，若将
 
 <div class="paragraph"> </div>
 
@@ -389,7 +356,7 @@ However, we will soon want our partial evaluator to remove
 <div class="paragraph"> </div>
 
 </div>
-    to
+    变换为
 
 <div class="paragraph"> </div>
 
@@ -398,22 +365,17 @@ However, we will soon want our partial evaluator to remove
 <div class="paragraph"> </div>
 
 </div>
-    even though the output expressions <span class="inlinecode">3</span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> and
-    <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> both satisfy the correctness criterion
-    that we just proved.  Indeed, if we were to just define <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span>
-    <span class="inlinecode"><span class="id" type="var">pe_st</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">a</span></span> then the theorem <span class="inlinecode"><span class="id" type="var">pe_aexp_correct'</span></span> would already
-    trivially hold.
+    就不仅仅是低效的，而是不正确的结果了，尽管结果表达式 <span class="inlinecode">3</span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> 和 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span>
+    都满足我们上面证明的正确性条件。确实，如果我们只是定义 <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> <span class="inlinecode"><span class="id" type="var">pt_st</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">a</span></span>
+    那么定理 <span class="inlinecode"><span class="id" type="var">pe_aexp_correct_weak</span></span> 也会直接成立。
 
 <div class="paragraph"> </div>
 
-    Instead, we want to prove that the <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> is correct in a
-    stronger sense: evaluating the expression produced by partial
-    evaluation (<span class="inlinecode"><span class="id" type="var">aeval</span></span> <span class="inlinecode"><span class="id" type="var">st</span></span> <span class="inlinecode">(<span class="id" type="var">pe_aexp</span></span> <span class="inlinecode"><span class="id" type="var">pe_st</span></span> <span class="inlinecode"><span class="id" type="var">a</span>)</span>) must not depend on those
-    parts of the full state <span class="inlinecode"><span class="id" type="var">st</span></span> that are already specified in the
-    partial state <span class="inlinecode"><span class="id" type="var">pe_st</span></span>.  To be more precise, let us define a
-    function <span class="inlinecode"><span class="id" type="var">pe_override</span></span>, which updates <span class="inlinecode"><span class="id" type="var">st</span></span> with the contents of
-    <span class="inlinecode"><span class="id" type="var">pe_st</span></span>.  In other words, <span class="inlinecode"><span class="id" type="var">pe_override</span></span> carries out the
-    assignments listed in <span class="inlinecode"><span class="id" type="var">pe_st</span></span> on top of <span class="inlinecode"><span class="id" type="var">st</span></span>. 
+    但是，我们想要证明关于 <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> 更强的正确性：对部分求值产生的表达式进行求值
+    （<span class="inlinecode"><span class="id" type="var">aeval</span></span> <span class="inlinecode"><span class="id" type="var">st</span></span> <span class="inlinecode">(<span class="id" type="var">pe_aexp</span></span> <span class="inlinecode"><span class="id" type="var">pe_st</span></span> <span class="inlinecode"><span class="id" type="var">a</span>)</span>） 必须不依赖全状态 <span class="inlinecode"><span class="id" type="var">st</span></span> 中已经被部分状态 
+    <span class="inlinecode"><span class="id" type="var">pe_st</span></span> 所指明的部分。为了精确地表达，让我们定义一个函数 <span class="inlinecode"><span class="id" type="var">pe_override</span></span>，
+    它使用 <span class="inlinecode"><span class="id" type="var">pe_st</span></span> 中的内容更新 <span class="inlinecode"><span class="id" type="var">st</span></span>。换句话说，<span class="inlinecode"><span class="id" type="var">pe_override</span></span> 将 <span class="inlinecode"><span class="id" type="var">pe_st</span></span>
+    中的赋值语句置于 <span class="inlinecode"><span class="id" type="var">st</span></span> 之上。 
 </div>
 <div class="code code-tight">
 
@@ -432,9 +394,8 @@ However, we will soon want our partial evaluator to remove
 </div>
 
 <div class="doc">
-Although <span class="inlinecode"><span class="id" type="var">pe_update</span></span> operates on a concrete <span class="inlinecode"><span class="id" type="var">list</span></span> representing
-    a <span class="inlinecode"><span class="id" type="var">pe_state</span></span>, its behavior is defined entirely by the <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span>
-    interpretation of the <span class="inlinecode"><span class="id" type="var">pe_state</span></span>. 
+尽管 <span class="inlinecode"><span class="id" type="var">pe_update</span></span> 对一个具体的 <span class="inlinecode"><span class="id" type="var">list</span></span> 表示的 <span class="inlinecode"><span class="id" type="var">pe_state</span></span> 进行操作，它的行为完全
+    由 <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span> 对 <span class="inlinecode"><span class="id" type="var">pe_state</span></span> 的解释所定义。 
 </div>
 <div class="code code-tight">
 
@@ -450,11 +411,10 @@ Although <span class="inlinecode"><span class="id" type="var">pe_update</span></
 </div>
 
 <div class="doc">
-We can relate <span class="inlinecode"><span class="id" type="var">pe_consistent</span></span> to <span class="inlinecode"><span class="id" type="var">pe_update</span></span> in two ways.
-    First, overriding a state with a partial state always gives a
-    state that is consistent with the partial state.  Second, if a
-    state is already consistent with a partial state, then overriding
-    the state with the partial state gives the same state. 
+我们可以以两种方式关联起 <span class="inlinecode"><span class="id" type="var">pe_consistent</span></span> 和 <span class="inlinecode"><span class="id" type="var">pe_update</span></span>。
+    首先，用部分状态覆写一个状态总是会得到同这个部分状态相容的状态。
+    第二，如果一个状态本身同某个部分状态相容，那么用这个部分状态覆写
+    这个状态会得到相同的状态。
 </div>
 <div class="code code-tight">
 
@@ -469,21 +429,15 @@ We can relate <span class="inlinecode"><span class="id" type="var">pe_consistent
 </div>
 
 <div class="doc">
-Now we can state and prove that <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> is correct in the
-    stronger sense that will help us define the rest of the partial
-    evaluator.
+现在我们可以表述和证明 <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> 更强的正确性，这会帮助我们定义接下来的部分求值器。
 
 <div class="paragraph"> </div>
 
-    Intuitively, running a program using partial evaluation is a
-    two-stage process.  In the first, _static_ stage, we partially
-    evaluate the given program with respect to some partial state to
-    get a _residual_ program.  In the second, _dynamic_ stage, we
-    evaluate the residual program with respect to the rest of the
-    state.  This dynamic state provides values for those variables
-    that are unknown in the static (partial) state.  Thus, the
-    residual program should be equivalent to _prepending_ the
-    assignments listed in the partial state to the original program. 
+    直观地讲，使用部分求值来运行程序由两个阶段构成。第一个为<b>静态</b>阶段（static stage），
+    我们在部分状态下对程序进行部分求值，并得到一个<b>剩余</b>程序（residual program）。
+    第二个为<b>动态</b>阶段（dynamic stage），我们在动态状态中对剩余程序进行求值。
+    这个动态状态提供了在静态（部分）状态中未知的变量的值。因此，剩余程序应当等价于
+    对原始程序<b>预添加（prepending）</b>上部分状态中的赋值语句。 
 </div>
 <div class="code code-tight">
 
@@ -496,20 +450,18 @@ Now we can state and prove that <span class="inlinecode"><span class="id" type="
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> (<span class="id" type="tactic">destruct</span> (<a class="idref" href="PE.html#pe_aexp"><span class="id" type="definition">pe_aexp</span></a> <span class="id" type="var">pe_st</span> <span class="id" type="var">a<sub>1</sub></span>);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<a class="idref" href="PE.html#pe_aexp"><span class="id" type="definition">pe_aexp</span></a> <span class="id" type="var">pe_st</span> <span class="id" type="var">a<sub>2</sub></span>);<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHa1</span>; <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHa2</span>; <span class="id" type="tactic">reflexivity</span>).<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;Compared&nbsp;to&nbsp;fold_constants_aexp_sound,&nbsp;the&nbsp;only<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interesting&nbsp;case&nbsp;is&nbsp;AId.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;同&nbsp;fold_constants_aexp_sound&nbsp;比较，唯一不同的分类是&nbsp;AId。&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <a class="idref" href="PE.html#pe_update_correct"><span class="id" type="lemma">pe_update_correct</span></a>. <span class="id" type="tactic">destruct</span> (<a class="idref" href="PE.html#pe_lookup"><span class="id" type="definition">pe_lookup</span></a> <span class="id" type="var">pe_st</span> <span class="id" type="var">s</span>); <span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab572"></a><h2 class="section">Boolean Expressions</h2>
+<a name="lab572"></a><h2 class="section">布尔表达式</h2>
 
 <div class="paragraph"> </div>
 
- The partial evaluation of boolean expressions is similar.  In
-    fact, it is entirely analogous to the constant folding of boolean
-    expressions, because our language has no boolean variables. 
+ 对布尔表达式的部分求值是相似的。事实上，它完全类似于对布尔表达式常量折叠，
+    因为我们的语言中并没有布尔值的变量。 
 </div>
 <div class="code code-tight">
 
@@ -558,8 +510,7 @@ Now we can state and prove that <span class="inlinecode"><span class="id" type="
 </div>
 
 <div class="doc">
-The correctness of <span class="inlinecode"><span class="id" type="var">pe_bexp</span></span> is analogous to the correctness of
-    <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> above. 
+<span class="inlinecode"><span class="id" type="var">pe_bexp</span></span> 的正确性和上面 <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> 的正确性类似。 
 </div>
 <div class="code code-tight">
 
@@ -585,43 +536,30 @@ The correctness of <span class="inlinecode"><span class="id" type="var">pe_bexp<
 </div>
 
 <div class="doc">
-<a name="lab573"></a><h1 class="section">Partial Evaluation of Commands, Without Loops</h1>
+<a name="lab573"></a><h1 class="section">无循环命令的部分求值</h1>
 
 <div class="paragraph"> </div>
 
- What about the partial evaluation of commands?  The analogy
-    between partial evaluation and full evaluation continues: Just as
-    full evaluation of a command turns an initial state into a final
-    state, partial evaluation of a command turns an initial partial
-    state into a final partial state.  The difference is that, because
-    the state is partial, some parts of the command may not be
-    executable at the static stage.  Therefore, just as <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span>
-    returns a residual <span class="inlinecode"><span class="id" type="var">aexp</span></span> and <span class="inlinecode"><span class="id" type="var">pe_bexp</span></span> returns a residual <span class="inlinecode"><span class="id" type="var">bexp</span></span>
-    above, partially evaluating a command yields a residual command.
+ 接下来如何处理对命令的部分求值呢？部分求值和完全求值之间的类比仍然适用：
+    对命令的完全求值将初始状态转换为最终的状态，而对命令的部分求值将初始状态转换为
+    最终的部分状态。不过，由于状态是局部的，一些命令可能无法在静态阶段执行。
+    因此，正如同 <span class="inlinecode"><span class="id" type="var">pe_aexp</span></span> 返回一个 <span class="inlinecode"><span class="id" type="var">aexp</span></span> 的剩余表达式、<span class="inlinecode"><span class="id" type="var">pe_bexp</span></span> 返回一个
+    <span class="inlinecode"><span class="id" type="var">bexp</span></span> 的剩余表达式，对命令的部分求值也产生剩余命令。
 
 <div class="paragraph"> </div>
 
-    Another way in which our partial evaluator is similar to a full
-    evaluator is that it does not terminate on all commands.  It is
-    not hard to build a partial evaluator that terminates on all
-    commands; what is hard is building a partial evaluator that
-    terminates on all commands yet automatically performs desired
-    optimizations such as unrolling loops.  Often a partial evaluator
-    can be coaxed into terminating more often and performing more
-    optimizations by writing the source program differently so that
-    the separation between static and dynamic information becomes more
-    apparent.  Such coaxing is the art of _binding-time improvement_.
-    The binding time of a variable tells when its value is known &mdash;
-    either "static", or "dynamic."
+    另一个部分求值和完全求值相似的地方是它不会对所有命令都停机。构造出一个
+    部分求值器使其对所有的命令都停机并不是困难的；困难在于所构造的部分求值器
+    在停机的同时还能自动地执行想要的优化，例如循环展开。如果我们有意把
+    源程序以一种更容易区分出静态阶段和动态阶段的方式写出，那么部分求值器
+    常常可以停机并执行更多优化。这种方式被称作<b>绑定时间改进（binding-time
+    improvement）</b>。变量的绑定时间告诉我们何时可以知道它的值——“静态”或“动态”。
 
 <div class="paragraph"> </div>
 
-    Anyway, for now we will just live with the fact that our partial
-    evaluator is not a total function from the source command and the
-    initial partial state to the residual command and the final
-    partial state.  To model this non-termination, just as with the
-    full evaluation of commands, we use an inductively defined
-    relation.  We write
+    不管怎样，我们现在先接受这样的事实，即这个部分求值器不会是一个从源程序
+    和初始状态到剩余程序和最终部分状态的全函数。为了对这种非停机性建模，我们
+    采用和命令的完全求值相同的技术，即归纳地定义关系。我们写下
 
 <div class="paragraph"> </div>
 
@@ -630,9 +568,8 @@ The correctness of <span class="inlinecode"><span class="id" type="var">pe_bexp<
 <div class="paragraph"> </div>
 
 </div>
-    to mean that partially evaluating the source command <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> in the
-    initial partial state <span class="inlinecode"><span class="id" type="var">st</span></span> yields the residual command <span class="inlinecode"><span class="id" type="var">c<sub>1</sub>'</span></span> and
-    the final partial state <span class="inlinecode"><span class="id" type="var">st'</span></span>.  For example, we want something like
+    意思是对源程序 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> 在初始状态 <span class="inlinecode"><span class="id" type="var">st</span></span> 中部分求值产生剩余程序 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub>'</span></span>
+    和最终部分状态 <span class="inlinecode"><span class="id" type="var">st'</span></span>。举个例子，我们想要让
 
 <div class="paragraph"> </div>
 
@@ -642,29 +579,23 @@ The correctness of <span class="inlinecode"><span class="id" type="var">pe_bexp<
 <div class="paragraph"> </div>
 
 </div>
-    to hold.  The assignment to <span class="inlinecode"><span class="id" type="var">X</span></span> appears in the final partial state,
-    not the residual command. 
+    成立。对 <span class="inlinecode"><span class="id" type="var">X</span></span> 的赋值出现在最终部分状态中，而非剩余命令中。
 <div class="paragraph"> </div>
 
-<a name="lab574"></a><h2 class="section">Assignment</h2>
+<a name="lab574"></a><h2 class="section">赋值</h2>
 
 <div class="paragraph"> </div>
 
- Let's start by considering how to partially evaluate an
-    assignment.  The two assignments in the source program above needs
-    to be treated differently.  The first assignment <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode">3</span>,
-    is _static_: its right-hand-side is a constant (more generally,
-    simplifies to a constant), so we should update our partial state
-    at <span class="inlinecode"><span class="id" type="var">X</span></span> to <span class="inlinecode">3</span> and produce no residual code.  (Actually, we produce
-    a residual <span class="inlinecode"><span class="id" type="var">SKIP</span></span>.)  The second assignment <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode"><span class="id" type="var">Z</span></span> <span class="inlinecode">*</span> <span class="inlinecode">(<span class="id" type="var">X</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">X</span>)</span> 
-    is _dynamic_: its right-hand-side does
-    not simplify to a constant, so we should leave it in the residual
-    code and remove <span class="inlinecode"><span class="id" type="var">Y</span></span>, if present, from our partial state.  To
-    implement these two cases, we define the functions <span class="inlinecode"><span class="id" type="var">pe_add</span></span> and
-    <span class="inlinecode"><span class="id" type="var">pe_remove</span></span>.  Like <span class="inlinecode"><span class="id" type="var">pe_update</span></span> above, these functions operate on
-    a concrete <span class="inlinecode"><span class="id" type="var">list</span></span> representing a <span class="inlinecode"><span class="id" type="var">pe_state</span></span>, but the theorems
-    <span class="inlinecode"><span class="id" type="var">pe_add_correct</span></span> and <span class="inlinecode"><span class="id" type="var">pe_remove_correct</span></span> specify their behavior by
-    the <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span> interpretation of the <span class="inlinecode"><span class="id" type="var">pe_state</span></span>. 
+ 让我们首先考虑对赋值语句的部分求值。上面源程序中的两个赋值语句需要区别对待。
+    第一个赋值 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode">3</span> 是<b>静态的</b>：它的右值是一个常量（更一般地讲，可以
+    简化为常量），因此我们需要更新部分状态中的 <span class="inlinecode"><span class="id" type="var">X</span></span> 为 <span class="inlinecode">3</span>，而不产生剩余代码。
+    （实际上，我们产生了剩余程序 <span class="inlinecode"><span class="id" type="var">SKIP</span></span>。）第二个赋值 <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode"><span class="id" type="var">Z</span></span> <span class="inlinecode">*</span> <span class="inlinecode">(<span class="id" type="var">X</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">X</span>)</span>
+    是<b>动态的</b>：它的右值无法被简化为常量，因此我们应当将它保留在剩余程序
+    中，并且若 <span class="inlinecode"><span class="id" type="var">Y</span></span> 出现在部分状态中，则应当被移除。为了实现这两个情形，我们定
+    义函数 <span class="inlinecode"><span class="id" type="var">pe_add</span></span> 和 <span class="inlinecode"><span class="id" type="var">pe_remove</span></span>。与 <span class="inlinecode"><span class="id" type="var">pe_update</span></span> 类似，这些函数操作
+    某个具体的 <span class="inlinecode"><span class="id" type="var">list</span></span> 表示的 <span class="inlinecode"><span class="id" type="var">pe_state</span></span>，但定理 <span class="inlinecode"><span class="id" type="var">pe_add_correct</span></span> 和
+    <span class="inlinecode"><span class="id" type="var">pe_remove_correct</span></span> 通过 <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span> 对 <span class="inlinecode"><span class="id" type="var">pe_state</span></span> 的解释定义了
+    他们的行为。
 </div>
 <div class="code code-tight">
 
@@ -680,12 +611,12 @@ The correctness of <span class="inlinecode"><span class="id" type="var">pe_bexp<
 <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">pe_st</span> <span class="id" type="var">V</span> <span class="id" type="var">V<sub>0</sub></span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">pe_st</span> <span class="id" type="keyword">as</span> [| [<span class="id" type="var">V'</span> <span class="id" type="var">n'</span>] <span class="id" type="var">pe_st</span>].<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;<span class="inlinecode"></span>&nbsp;*)</span> <span class="id" type="tactic">destruct</span> (<span class="id" type="definition">beq_string</span> <span class="id" type="var">V</span> <span class="id" type="var">V<sub>0</sub></span>); <span class="id" type="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;::&nbsp;*)</span> <span class="id" type="tactic">simpl</span>. <span class="id" type="var">compare</span> <span class="id" type="var">V</span> <span class="id" type="var">V'</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHpe_st</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHpe_st</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="axiom">beq_stringP</span> <span class="id" type="var">V</span> <span class="id" type="var">V<sub>0</sub></span>). <span class="id" type="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">false_beq_string</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;not&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">simpl</span>. <span class="id" type="var">compare</span> <span class="id" type="var">V<sub>0</sub></span> <span class="id" type="var">V'</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">false_beq_string</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;not&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHpe_st</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;不相等&nbsp;*)</span> <span class="id" type="tactic">simpl</span>. <span class="id" type="var">compare</span> <span class="id" type="var">V<sub>0</sub></span> <span class="id" type="var">V'</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">false_beq_string</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;不相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="var">IHpe_st</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Definition</span> <a name="pe_add"><span class="id" type="definition">pe_add</span></a> (<span class="id" type="var">pe_st</span>:<a class="idref" href="PE.html#pe_state"><span class="id" type="definition">pe_state</span></a>) (<span class="id" type="var">V</span>:<a class="idref" href="http://coq.inria.fr/library/Coq.Strings.String.html#string"><span class="id" type="inductive">string</span></a>) (<span class="id" type="var">n</span>:<a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#nat"><span class="id" type="inductive">nat</span></a>) : <a class="idref" href="PE.html#pe_state"><span class="id" type="definition">pe_state</span></a> :=<br/>
 &nbsp;&nbsp;(<a class="idref" href="PE.html#V"><span class="id" type="variable">V</span></a>,<a class="idref" href="PE.html#n"><span class="id" type="variable">n</span></a>) :: <a class="idref" href="PE.html#pe_remove"><span class="id" type="definition">pe_remove</span></a> <a class="idref" href="PE.html#pe_st"><span class="id" type="variable">pe_st</span></a> <a class="idref" href="PE.html#V"><span class="id" type="variable">V</span></a>.<br/><hr class='doublespaceincode'/>
@@ -694,16 +625,14 @@ The correctness of <span class="inlinecode"><span class="id" type="var">pe_bexp<
 &nbsp;&nbsp;= <span class="id" type="keyword">if</span> <span class="id" type="definition">beq_string</span> <a class="idref" href="PE.html#V"><span class="id" type="variable">V</span></a> <a class="idref" href="PE.html#V<sub>0</sub>"><span class="id" type="variable">V<sub>0</sub></span></a> <span class="id" type="keyword">then</span> <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#Some"><span class="id" type="constructor">Some</span></a> <a class="idref" href="PE.html#n"><span class="id" type="variable">n</span></a> <span class="id" type="keyword">else</span> <a class="idref" href="PE.html#pe_lookup"><span class="id" type="definition">pe_lookup</span></a> <a class="idref" href="PE.html#pe_st"><span class="id" type="variable">pe_st</span></a> <a class="idref" href="PE.html#V<sub>0</sub>"><span class="id" type="variable">V<sub>0</sub></span></a>.<br/>
 <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">pe_st</span> <span class="id" type="var">V</span> <span class="id" type="var">n</span> <span class="id" type="var">V<sub>0</sub></span>. <span class="id" type="tactic">unfold</span> <a class="idref" href="PE.html#pe_add"><span class="id" type="definition">pe_add</span></a>. <span class="id" type="tactic">simpl</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="var">compare</span> <span class="id" type="var">V</span> <span class="id" type="var">V<sub>0</sub></span>.<br/>
-&nbsp;&nbsp;- <span class="comment">(*&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="lemma">beq_string_refl</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;- <span class="comment">(*&nbsp;not&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <a class="idref" href="PE.html#pe_remove_correct"><span class="id" type="lemma">pe_remove_correct</span></a>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="lemma">beq_string_refl</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;不相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <a class="idref" href="PE.html#pe_remove_correct"><span class="id" type="lemma">pe_remove_correct</span></a>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">false_beq_string</span>; <span class="id" type="tactic">auto</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-We will use the two theorems below to show that our partial
-    evaluator correctly deals with dynamic assignments and static
-    assignments, respectively. 
+我们将会用下面的两个定理证明部分求值器正确地处理了动态赋值和静态赋值。
 </div>
 <div class="code code-tight">
 
@@ -723,20 +652,18 @@ We will use the two theorems below to show that our partial
 </div>
 
 <div class="doc">
-<a name="lab575"></a><h2 class="section">Conditional</h2>
+<a name="lab575"></a><h2 class="section">条件</h2>
 
 <div class="paragraph"> </div>
 
- Trickier than assignments to partially evaluate is the
-    conditional, <span class="inlinecode"><span class="id" type="var">IFB</span></span> <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">THEN</span></span> <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">ELSE</span></span> <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="var">FI</span></span>.  If <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> simplifies to
-    <span class="inlinecode"><span class="id" type="var">BTrue</span></span> or <span class="inlinecode"><span class="id" type="var">BFalse</span></span> then it's easy: we know which branch will be
-    taken, so just take that branch.  If <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> does not simplify to a
-    constant, then we need to take both branches, and the final
-    partial state may differ between the two branches!
+ 比赋值语句的部分求值要麻烦一点的是条件语句 <span class="inlinecode"><span class="id" type="var">IFB</span></span> <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">THEN</span></span> <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">ELSE</span></span> <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="var">FI</span></span>。
+    如果 <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> 被简化为 <span class="inlinecode"><span class="id" type="var">BTrue</span></span> 或 <span class="inlinecode"><span class="id" type="var">BFalse</span></span>，那么会很容易：我们知道哪个分支
+    会被运行。如果 <span class="inlinecode"><span class="id" type="var">b<sub>1</sub></span></span> 不会被简化为常量，那么我们需要对两个分支部分地求值，
+    且最终的部分状态在两个分支上可能是不同的！
 
 <div class="paragraph"> </div>
 
-    The following program illustrates the difficulty:
+    下面的程序展示了这种困难：
 
 <div class="paragraph"> </div>
 
@@ -749,23 +676,18 @@ We will use the two theorems below to show that our partial
 <div class="paragraph"> </div>
 
 </div>
-    Suppose the initial partial state is empty.  We don't know
-    statically how <span class="inlinecode"><span class="id" type="var">Y</span></span> compares to <span class="inlinecode">4</span>, so we must partially evaluate
-    both branches of the (outer) conditional.  On the <span class="inlinecode"><span class="id" type="var">THEN</span></span> branch,
-    we know that <span class="inlinecode"><span class="id" type="var">Y</span></span> is set to <span class="inlinecode">4</span> and can even use that knowledge to
-    simplify the code somewhat.  On the <span class="inlinecode"><span class="id" type="var">ELSE</span></span> branch, we still don't
-    know the exact value of <span class="inlinecode"><span class="id" type="var">Y</span></span> at the end.  What should the final
-    partial state and residual program be?
+    假设初始的部分状态为空状态。静态来说，我们不知道 <span class="inlinecode"><span class="id" type="var">Y</span></span> 和 <span class="inlinecode">4</span> 比较的结果，
+    因此必须对（外层的）条件语句的两个分支都进行部分求值。在其 <span class="inlinecode"><span class="id" type="var">THEN</span></span> 
+    分支中，我们知道 <span class="inlinecode"><span class="id" type="var">Y</span></span> 被赋值为 <span class="inlinecode">4</span>，并且可以利用这一点来化简一部分代码。
+    在 <span class="inlinecode"><span class="id" type="var">ELSE</span></span> 分支中，到最后我们仍然不知道 <span class="inlinecode"><span class="id" type="var">Y</span></span> 的值会是什么。最终部分状态
+    和剩余程序应该是什么呢？
 
 <div class="paragraph"> </div>
 
-    One way to handle such a dynamic conditional is to take the
-    intersection of the final partial states of the two branches.  In
-    this example, we take the intersection of <span class="inlinecode">(<span class="id" type="var">Y</span>,4),(<span class="id" type="var">X</span>,3)</span> and
-    <span class="inlinecode">(<span class="id" type="var">X</span>,3)</span>, so the overall final partial state is <span class="inlinecode">(<span class="id" type="var">X</span>,3)</span>.  To
-    compensate for forgetting that <span class="inlinecode"><span class="id" type="var">Y</span></span> is <span class="inlinecode">4</span>, we need to add an
-    assignment <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode">4</span> to the end of the <span class="inlinecode"><span class="id" type="var">THEN</span></span> branch.  So,
-    the residual program will be something like
+    一种处理动态的条件语句的方法是取两个分支上最终部分状态的交。在上面的例子中，
+    我们取 <span class="inlinecode">(<span class="id" type="var">Y</span>,4),(<span class="id" type="var">X</span>,3)</span> 和 <span class="inlinecode">(<span class="id" type="var">X</span>,3)</span> 的交，因此最终的部分状态为 <span class="inlinecode">(<span class="id" type="var">X</span>,3)</span>。
+    为了抵消丢失掉的对 <span class="inlinecode"><span class="id" type="var">Y</span></span> 的赋值 <span class="inlinecode">4</span>，我们需要在 <span class="inlinecode"><span class="id" type="var">THEN</span></span> 分支的最后添加赋值语句
+    <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span> <span class="inlinecode">4</span>。因此，剩余程序为
 
 <div class="paragraph"> </div>
 
@@ -779,16 +701,14 @@ We will use the two theorems below to show that our partial
 <div class="paragraph"> </div>
 
 </div>
-    Programming this case in Coq calls for several auxiliary
-    functions: we need to compute the intersection of two <span class="inlinecode"><span class="id" type="var">pe_state</span></span>s
-    and turn their difference into sequences of assignments.
+    在 Coq 中编程处理这种情况需要几个辅助函数：我们需要计算两个 <span class="inlinecode"><span class="id" type="var">pe_state</span></span>
+    的交（intersection），并将他们的差（difference）转换为一系列的赋值语句。
 
 <div class="paragraph"> </div>
 
-    First, we show how to compute whether two <span class="inlinecode"><span class="id" type="var">pe_state</span></span>s to disagree
-    at a given variable.  In the theorem <span class="inlinecode"><span class="id" type="var">pe_disagree_domain</span></span>, we
-    prove that two <span class="inlinecode"><span class="id" type="var">pe_state</span></span>s can only disagree at variables that
-    appear in at least one of them. 
+    首先，我们展示如何计算两个 <span class="inlinecode"><span class="id" type="var">pe_state</span></span> 是否对某个变量有不同的值。定理
+    <span class="inlinecode"><span class="id" type="var">pe_disagree_domain</span></span> 证明了两个 <span class="inlinecode"><span class="id" type="var">pe_state</span></span> 若对某个变量有不同的值，
+    那么此变量必在至少一个状态中出现。 
 </div>
 <div class="code code-tight">
 
@@ -811,12 +731,10 @@ We will use the two theorems below to show that our partial
 </div>
 
 <div class="doc">
-We define the <span class="inlinecode"><span class="id" type="var">pe_compare</span></span> function to list the variables where
-    two given <span class="inlinecode"><span class="id" type="var">pe_state</span></span>s disagree.  This list is exact, according to
-    the theorem <span class="inlinecode"><span class="id" type="var">pe_compare_correct</span></span>: a variable appears on the list
-    if and only if the two given <span class="inlinecode"><span class="id" type="var">pe_state</span></span>s disagree at that
-    variable.  Furthermore, we use the <span class="inlinecode"><span class="id" type="var">pe_unique</span></span> function to
-    eliminate duplicates from the list. 
+给定两个 <span class="inlinecode"><span class="id" type="var">pe_state</span></span>，我们定义函数 <span class="inlinecode"><span class="id" type="var">pe_compare</span></span> 用于列出在他们中值不同的变量。
+    根据 <span class="inlinecode"><span class="id" type="var">pe_compare_correct</span></span>，列出的变量是精确的：一个变量在列表中当且仅当给定
+    的两个 <span class="inlinecode"><span class="id" type="var">pe_state</span></span> 对其有不同的值。进一步地，我们用 <span class="inlinecode"><span class="id" type="var">pe_unique</span></span> 函数来消除
+    列表中的重复。
 </div>
 <div class="code code-tight">
 
@@ -859,7 +777,7 @@ We define the <span class="inlinecode"><span class="id" type="var">pe_compare</s
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;&lt;-&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">Hagree</span>: <a class="idref" href="PE.html#pe_disagree_at"><span class="id" type="definition">pe_disagree_at</span></a> <span class="id" type="var">pe_st<sub>1</sub></span> <span class="id" type="var">pe_st<sub>2</sub></span> <span class="id" type="var">V</span> = <a class="idref" href="http://coq.inria.fr/library/Coq.Init.Datatypes.html#false"><span class="id" type="constructor">false</span></a>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="comment">(*&nbsp;Proof&nbsp;of&nbsp;assertion&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="comment">(*&nbsp;对断言的证明&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">remember</span> (<a class="idref" href="PE.html#pe_disagree_at"><span class="id" type="definition">pe_disagree_at</span></a> <span class="id" type="var">pe_st<sub>1</sub></span> <span class="id" type="var">pe_st<sub>2</sub></span> <span class="id" type="var">V</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">disagree</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">disagree</span>; [| <span class="id" type="tactic">reflexivity</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span>  <a class="idref" href="PE.html#pe_disagree_domain"><span class="id" type="lemma">pe_disagree_domain</span></a> <span class="id" type="keyword">in</span> <span class="id" type="var">Heqdisagree</span>.<br/>
@@ -873,21 +791,15 @@ We define the <span class="inlinecode"><span class="id" type="var">pe_compare</s
 </div>
 
 <div class="doc">
-The intersection of two partial states is the result of removing
-    from one of them all the variables where the two disagree.  We
-    define the function <span class="inlinecode"><span class="id" type="var">pe_removes</span></span>, in terms of <span class="inlinecode"><span class="id" type="var">pe_remove</span></span> above,
-    to perform such a removal of a whole list of variables at once.
+两个部分状态的交是从其中一个状态中移除所有值不同的变量。我们用上面的 
+    <span class="inlinecode"><span class="id" type="var">pe_remove</span></span> 来定义函数 <span class="inlinecode"><span class="id" type="var">pe_removes</span></span>，用于一次性地移除一个列表中的变量。
 
 <div class="paragraph"> </div>
 
-    The theorem <span class="inlinecode"><span class="id" type="var">pe_compare_removes</span></span> testifies that the <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span>
-    interpretation of the result of this intersection operation is the
-    same no matter which of the two partial states we remove the
-    variables from.  Because <span class="inlinecode"><span class="id" type="var">pe_update</span></span> only depends on the
-    <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span> interpretation of partial states, <span class="inlinecode"><span class="id" type="var">pe_update</span></span> also
-    does not care which of the two partial states we remove the
-    variables from; that theorem <span class="inlinecode"><span class="id" type="var">pe_compare_update</span></span> is used in the
-    correctness proof shortly. 
+    定理 <span class="inlinecode"><span class="id" type="var">pe_compare_removes</span></span> 证明了无论我们从哪个状态中移除变量，最终得到
+    的交在 <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span> 的解释下都是相同的。因为 <span class="inlinecode"><span class="id" type="var">pe_update</span></span> 仅依赖 <span class="inlinecode"><span class="id" type="var">pe_lookup</span></span>
+    对部分状态的解释，我们选择从哪个状态中移除变量也不会影响到 <span class="inlinecode"><span class="id" type="var">pe_update</span></span>；
+    后面的正确性证明中会用到 <span class="inlinecode"><span class="id" type="var">pe_compare_update</span></span> 定理。
 </div>
 <div class="code code-tight">
 
@@ -922,10 +834,8 @@ The intersection of two partial states is the result of removing
 </div>
 
 <div class="doc">
-Finally, we define an <span class="inlinecode"><span class="id" type="var">assign</span></span> function to turn the difference
-    between two partial states into a sequence of assignment commands.
-    More precisely, <span class="inlinecode"><span class="id" type="var">assign</span></span> <span class="inlinecode"><span class="id" type="var">pe_st</span></span> <span class="inlinecode"><span class="id" type="var">ids</span></span> generates an assignment command
-    for each variable listed in <span class="inlinecode"><span class="id" type="var">ids</span></span>. 
+最后，我们定义 <span class="inlinecode"><span class="id" type="var">assign</span></span> 函数将两个部分状态的差转换为一系列的赋值命令。
+    准确地说，<span class="inlinecode"><span class="id" type="var">assign</span></span> <span class="inlinecode"><span class="id" type="var">pe_st</span></span> <span class="inlinecode"><span class="id" type="var">ids</span></span> 对 <span class="inlinecode"><span class="id" type="var">ids</span></span> 中的每个变量生成一个赋值命令。
 </div>
 <div class="code code-tight">
 
@@ -940,12 +850,9 @@ Finally, we define an <span class="inlinecode"><span class="id" type="var">assig
 </div>
 
 <div class="doc">
-The command generated by <span class="inlinecode"><span class="id" type="var">assign</span></span> always terminates, because it is
-    just a sequence of assignments.  The (total) function <span class="inlinecode"><span class="id" type="var">assigned</span></span>
-    below computes the effect of the command on the (dynamic state).
-    The theorem <span class="inlinecode"><span class="id" type="var">assign_removes</span></span> then confirms that the generated
-    assignments perfectly compensate for removing the variables from
-    the partial state. 
+由 <span class="inlinecode"><span class="id" type="var">assign</span></span> 生成的命令总是会停机，因为他们仅仅是赋值命令而已。下面的（全）函数
+    <span class="inlinecode"><span class="id" type="var">assigned</span></span> 计算了命令在动态状态上的作用。定理 <span class="inlinecode"><span class="id" type="var">assign_removes</span></span> 进一步确认了
+    生成的赋值语句抵消了部分状态中所移除的变量。
 </div>
 <div class="code code-tight">
 
@@ -976,27 +883,25 @@ The command generated by <span class="inlinecode"><span class="id" type="var">as
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;Some&nbsp;*)</span> <span class="id" type="tactic">eapply</span> <span class="id" type="constructor">E_Seq</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">IHids</span>. <span class="id" type="tactic">unfold</span> <a class="idref" href="PE.html#assigned"><span class="id" type="definition">assigned</span></a>. <span class="id" type="tactic">simpl</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <a class="idref" href="PE.html#ceval_extensionality"><span class="id" type="lemma">ceval_extensionality</span></a>. <span class="id" type="tactic">apply</span> <span class="id" type="constructor">E_Ass</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">V<sub>0</sub></span>. <span class="id" type="tactic">unfold</span> <span class="id" type="definition">t_update</span>. <span class="id" type="var">compare</span> <span class="id" type="var">V</span> <span class="id" type="var">V<sub>0</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">Heqlookup</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="lemma">beq_string_refl</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;not&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">false_beq_string</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">Heqlookup</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="lemma">beq_string_refl</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;不相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">false_beq_string</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">congruence</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;None&nbsp;*)</span> <span class="id" type="tactic">eapply</span> <a class="idref" href="PE.html#ceval_extensionality"><span class="id" type="lemma">ceval_extensionality</span></a>. <span class="id" type="tactic">apply</span> <span class="id" type="var">IHids</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <a class="idref" href="PE.html#assigned"><span class="id" type="definition">assigned</span></a>. <span class="id" type="tactic">intros</span> <span class="id" type="var">V<sub>0</sub></span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="var">compare</span> <span class="id" type="var">V</span> <span class="id" type="var">V<sub>0</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">Heqlookup</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">Heqlookup</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="lemma">beq_string_refl</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<a class="idref" href="PE.html#inbP"><span class="id" type="lemma">inbP</span></a> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="axiom">beq_stringP</span> <span class="id" type="var">V</span> <span class="id" type="var">ids</span>); <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;not&nbsp;equal&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">false_beq_string</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;不相等&nbsp;*)</span> <span class="id" type="tactic">rewrite</span> <span class="id" type="lemma">false_beq_string</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">congruence</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab576"></a><h2 class="section">The Partial Evaluation Relation</h2>
+<a name="lab576"></a><h2 class="section">部分求值关系</h2>
 
 <div class="paragraph"> </div>
 
- At long last, we can define a partial evaluator for commands
-    without loops, as an inductive relation!  The inequality
-    conditions in <span class="inlinecode"><span class="id" type="var">PE_AssDynamic</span></span> and <span class="inlinecode"><span class="id" type="var">PE_If</span></span> are just to keep the
-    partial evaluator deterministic; they are not required for
-    correctness. 
+ 终于，我们可以将无循环命令的部分求值器定义为一个归纳关系了！
+    <span class="inlinecode"><span class="id" type="var">PE_AssDynamic</span></span> 和 <span class="inlinecode"><span class="id" type="var">PE_If</span></span> 中的不等式仅仅是为了使部分求值器
+    保持确定性；他们并不是正确性所需要的。
 </div>
 <div class="code code-tight">
 
@@ -1041,14 +946,13 @@ The command generated by <span class="inlinecode"><span class="id" type="var">as
 </div>
 
 <div class="doc">
-<a name="lab577"></a><h2 class="section">Examples</h2>
+<a name="lab577"></a><h2 class="section">例子</h2>
 
 <div class="paragraph"> </div>
 
- Below are some examples of using the partial evaluator.  To make
-    the <span class="inlinecode"><span class="id" type="var">pe_com</span></span> relation actually usable for automatic partial
-    evaluation, we would need to define more automation tactics in
-    Coq.  That is not hard to do, but it is not needed here. 
+ 下面给出一些使用部分求值器的例子。为了使 <span class="inlinecode"><span class="id" type="var">pe_com</span></span> 关系可以自动化地完成
+    部分求值，我们会需要在 Coq 中定义一些自动化的策略。这不会十分困难，
+    但这里并不是必须的。 
 </div>
 <div class="code code-tight">
 
@@ -1083,11 +987,11 @@ The command generated by <span class="inlinecode"><span class="id" type="var">as
 </div>
 
 <div class="doc">
-<a name="lab578"></a><h2 class="section">Correctness of Partial Evaluation</h2>
+<a name="lab578"></a><h2 class="section">部分求值的正确性</h2>
 
 <div class="paragraph"> </div>
 
- Finally let's prove that this partial evaluator is correct! 
+ 最后，让我们来证明这个部分求值器是正确的！ 
 </div>
 <div class="code code-tight">
 
@@ -1165,7 +1069,7 @@ The command generated by <span class="inlinecode"><span class="id" type="var">as
 </div>
 
 <div class="doc">
-The main theorem. Thanks to David Menendez for this formulation! 
+最终的主定理。感谢 David Menendez 所贡献的这个公式！ 
 </div>
 <div class="code code-tight">
 
@@ -1181,14 +1085,12 @@ The main theorem. Thanks to David Menendez for this formulation!
 </div>
 
 <div class="doc">
-<a name="lab579"></a><h1 class="section">Partial Evaluation of Loops</h1>
+<a name="lab579"></a><h1 class="section">循环的部分求值</h1>
 
 <div class="paragraph"> </div>
 
- It may seem straightforward at first glance to extend the partial
-    evaluation relation <span class="inlinecode"><span class="id" type="var">pe_com</span></span> above to loops.  Indeed, many loops
-    are easy to deal with.  Considered this repeated-squaring loop,
-    for example:
+ 初看上去，将部分求值关系 <span class="inlinecode"><span class="id" type="var">pe_com</span></span> 扩展到循环是简单直接的。确实，很多循环程序
+    是容易处理的。比如说，考虑下面重复计算平方的循环：
 
 <div class="paragraph"> </div>
 
@@ -1200,10 +1102,8 @@ The main theorem. Thanks to David Menendez for this formulation!
 <div class="paragraph"> </div>
 
 </div>
-    If we know neither <span class="inlinecode"><span class="id" type="var">X</span></span> nor <span class="inlinecode"><span class="id" type="var">Y</span></span> statically, then the entire loop is
-    dynamic and the residual command should be the same.  If we know
-    <span class="inlinecode"><span class="id" type="var">X</span></span> but not <span class="inlinecode"><span class="id" type="var">Y</span></span>, then the loop can be unrolled all the way and the
-    residual command should be, for example,
+    如果我们不知道 <span class="inlinecode"><span class="id" type="var">X</span></span> 或 <span class="inlinecode"><span class="id" type="var">Y</span></span> 的静态值，那么整个循环是动态的，其剩余程序与源程序相同。
+    如果我们知道 <span class="inlinecode"><span class="id" type="var">X</span></span> 但不知道 <span class="inlinecode"><span class="id" type="var">Y</span></span>，那么循环可以被展开，最后的剩余程序可能是
 
 <div class="paragraph"> </div>
 
@@ -1214,16 +1114,13 @@ The main theorem. Thanks to David Menendez for this formulation!
 <div class="paragraph"> </div>
 
 </div>
-    if <span class="inlinecode"><span class="id" type="var">X</span></span> is initially <span class="inlinecode">3</span> (and finally <span class="inlinecode">0</span>).  In general, a loop is
-    easy to partially evaluate if the final partial state of the loop
-    body is equal to the initial state, or if its guard condition is
-    static.
+    当 <span class="inlinecode"><span class="id" type="var">X</span></span> 初始为 <span class="inlinecode">3</span> 时（最终变为 <span class="inlinecode">0</span>）。一般来说，如果循环体的最终部分状态和初始状态
+    相同，或者其条件是静态的，那么对循环的部分求值很容易。
 
 <div class="paragraph"> </div>
 
-    But there are other loops for which it is hard to express the
-    residual program we want in Imp.  For example, take this program
-    for checking whether <span class="inlinecode"><span class="id" type="var">Y</span></span> is even or odd:
+    但是其他的循环程序则很难在 Imp 中表达出我们期待的剩余程序。举个例子，下面的程序检查
+    <span class="inlinecode"><span class="id" type="var">Y</span></span> 是奇数还是偶数：
 
 <div class="paragraph"> </div>
 
@@ -1236,9 +1133,8 @@ The main theorem. Thanks to David Menendez for this formulation!
 <div class="paragraph"> </div>
 
 </div>
-    The value of <span class="inlinecode"><span class="id" type="var">X</span></span> alternates between <span class="inlinecode">0</span> and <span class="inlinecode">1</span> during the loop.
-    Ideally, we would like to unroll this loop, not all the way but
-    _two-fold_, into something like
+    <span class="inlinecode"><span class="id" type="var">X</span></span> 的值在循环过程中交替地为 <span class="inlinecode">0</span> 或 <span class="inlinecode">1</span>。理想情况，我们想要展开循环两次，
+    而非不加限制地，并得到类似如下程序
 
 <div class="paragraph"> </div>
 
@@ -1255,17 +1151,13 @@ The main theorem. Thanks to David Menendez for this formulation!
 <div class="paragraph"> </div>
 
 </div>
-    Unfortunately, there is no <span class="inlinecode"><span class="id" type="var">EXIT</span></span> command in Imp.  Without
-    extending the range of control structures available in our
-    language, the best we can do is to repeat loop-guard tests or add
-    flag variables.  Neither option is terribly attractive.
+    不幸地是，Imp 中并没有 <span class="inlinecode"><span class="id" type="var">EXIT</span></span> 命令。在不对语言扩展控制结构的情况，我们能采取的
+    最好方法是是重复循环条件或添加标记变量。不论哪种都不是非常有吸引力。
 
 <div class="paragraph"> </div>
 
-    Still, as a digression, below is an attempt at performing partial
-    evaluation on Imp commands.  We add one more command argument
-    <span class="inlinecode"><span class="id" type="var">c''</span></span> to the <span class="inlinecode"><span class="id" type="var">pe_com</span></span> relation, which keeps track of a loop to
-    roll up. 
+    作为一个题外话，下面是一个对 Imp 命令进行部分求值的尝试。我们对 <span class="inlinecode"><span class="id" type="var">pe_com</span></span>
+    关系添加一个新的命令参数 <span class="inlinecode"><span class="id" type="var">c''</span></span>，用于记录循环的累积。
 </div>
 <div class="code code-tight">
 
@@ -1338,8 +1230,7 @@ The main theorem. Thanks to David Menendez for this formulation!
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="PE.html#pe_compare"><span class="id" type="definition">pe_compare</span></a> <a class="idref" href="PE.html#pe_st"><span class="id" type="variable">pe_st</span></a> <a class="idref" href="PE.html#pe_st''"><span class="id" type="variable">pe_st''</span></a> = [] →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="notation">WHILE</span> <a class="idref" href="PE.html#b<sub>1</sub>"><span class="id" type="variable">b<sub>1</sub></span></a> <span class="id" type="var">DO</span> <a class="idref" href="PE.html#c<sub>1</sub>"><span class="id" type="variable">c<sub>1</sub></span></a> <span class="id" type="var">END</span>) / <a class="idref" href="PE.html#pe_st"><span class="id" type="variable">pe_st</span></a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\ (<span class="id" type="notation">WHILE</span> <span class="id" type="constructor">BTrue</span> <span class="id" type="var">DO</span> <span class="id" type="notation">SKIP</span> <span class="id" type="var">END</span>) / <a class="idref" href="PE.html#pe_st"><span class="id" type="variable">pe_st</span></a> / <span class="id" type="notation">SKIP</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Because&nbsp;we&nbsp;have&nbsp;an&nbsp;infinite&nbsp;loop,&nbsp;we&nbsp;should&nbsp;actually<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;start&nbsp;to&nbsp;throw&nbsp;away&nbsp;the&nbsp;rest&nbsp;of&nbsp;the&nbsp;program:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;因为这里是一个无限循环，我们实际上应该开始抛弃剩下的程序：<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(WHILE&nbsp;b<sub>1</sub>&nbsp;DO&nbsp;c<sub>1</sub>&nbsp;END)&nbsp;/&nbsp;pe_st<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\\&nbsp;SKIP&nbsp;/&nbsp;pe_st&nbsp;/&nbsp;(WHILE&nbsp;BTrue&nbsp;DO&nbsp;SKIP&nbsp;END)&nbsp;*)</span><br/>
 &nbsp;&nbsp;| <a name="Loop.PE_WhileFixed"><span class="id" type="constructor">PE_WhileFixed</span></a> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">pe_st</span> <span class="id" type="var">pe_st'</span> <span class="id" type="var">pe_st''</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>1</sub>'</span> <span class="id" type="var">c<sub>2</sub>'</span>,<br/>
@@ -1357,7 +1248,7 @@ The main theorem. Thanks to David Menendez for this formulation!
 </div>
 
 <div class="doc">
-<a name="lab580"></a><h2 class="section">Examples</h2>
+<a name="lab580"></a><h2 class="section">例子</h2>
 
 </div>
 <div class="code code-space">
@@ -1438,15 +1329,12 @@ The main theorem. Thanks to David Menendez for this formulation!
 </div>
 
 <div class="doc">
-<a name="lab581"></a><h2 class="section">Correctness</h2>
+<a name="lab581"></a><h2 class="section">正确性</h2>
 
 <div class="paragraph"> </div>
 
- Because this partial evaluator can unroll a loop n-fold where n is
-    a (finite) integer greater than one, in order to show it correct
-    we need to perform induction not structurally on dynamic
-    evaluation but on the number of times dynamic evaluation enters a
-    loop body. 
+ 由于部分求值器可以展开一个循环 n 次，其中 n 是一个大于一的有限整数，为了证明其
+    正确性我们需要对循环体动态求值的次数进行归纳，而非结构地对动态求值归纳。
 </div>
 <div class="code code-tight">
 
@@ -1693,31 +1581,25 @@ The main theorem. Thanks to David Menendez for this formulation!
 </div>
 
 <div class="doc">
-<a name="lab582"></a><h1 class="section">Partial Evaluation of Flowchart Programs</h1>
+<a name="lab582"></a><h1 class="section">流程图程序的部分求值</h1>
 
 <div class="paragraph"> </div>
 
- Instead of partially evaluating <span class="inlinecode"><span class="id" type="var">WHILE</span></span> loops directly, the
-    standard approach to partially evaluating imperative programs is
-    to convert them into _flowcharts_.  In other words, it turns out
-    that adding labels and jumps to our language makes it much easier
-    to partially evaluate.  The result of partially evaluating a
-    flowchart is a residual flowchart.  If we are lucky, the jumps in
-    the residual flowchart can be converted back to <span class="inlinecode"><span class="id" type="var">WHILE</span></span> loops, but
-    that is not possible in general; we do not pursue it here. 
+ 除了直接对 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 的循环直接进行部分求值，一种对命令式程序进行部分求值
+    的标准方式是将他们转换为<b>流程图（Flowcharts）</b>。换句话说，为我们的语言
+    添加标签和跳转会使部分求值更容易。流程图程序的部分求值结果是一个剩余流程图。
+    幸运的话，剩余流程图程序中的跳转会被转换回 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 循环，但一般来说这可
+    能不会发生；在这里我们并不追求达成这一点。
 <div class="paragraph"> </div>
 
-<a name="lab583"></a><h2 class="section">Basic blocks</h2>
+<a name="lab583"></a><h2 class="section">基本块</h2>
 
 <div class="paragraph"> </div>
 
- A flowchart is made of _basic blocks_, which we represent with the
-    inductive type <span class="inlinecode"><span class="id" type="var">block</span></span>.  A basic block is a sequence of
-    assignments (the constructor <span class="inlinecode"><span class="id" type="var">Assign</span></span>), concluding with a
-    conditional jump (the constructor <span class="inlinecode"><span class="id" type="var">If</span></span>) or an unconditional jump
-    (the constructor <span class="inlinecode"><span class="id" type="var">Goto</span></span>).  The destinations of the jumps are
-    specified by _labels_, which can be of any type.  Therefore, we
-    parameterize the <span class="inlinecode"><span class="id" type="var">block</span></span> type by the type of labels. 
+ 一个流程图程序由<b>基本块（basic blocks）</b>构成，我们用归纳类型 <span class="inlinecode"><span class="id" type="var">block</span></span>
+    来表示它。一个基本块是一个赋值语句（<span class="inlinecode"><span class="id" type="var">Assign</span></span> 构造子）序列，并以条件跳转（<span class="inlinecode"><span class="id" type="var">If</span></span> 
+    构造子）或者无条件跳转（<span class="inlinecode"><span class="id" type="var">Goto</span></span> 构造子）结束。跳转的目标由<b>标签（labels）</b>所指明，
+    其可为任意类型。因此，我们用标签的类型来参数化 <span class="inlinecode"><span class="id" type="var">block</span></span> 类型。
 </div>
 <div class="code code-tight">
 
@@ -1731,9 +1613,8 @@ The main theorem. Thanks to David Menendez for this formulation!
 </div>
 
 <div class="doc">
-We use the "even or odd" program, expressed above in Imp, as our
-    running example.  Converting this program into a flowchart turns
-    out to require 4 labels, so we define the following type. 
+我们用上面 Imp 的“奇或偶”程序作为例子。将这个程序转换为流程图程序需要 4
+    个标签，因此我们定义如下类型。
 </div>
 <div class="code code-tight">
 
@@ -1745,8 +1626,7 @@ We use the "even or odd" program, expressed above in Imp, as our
 </div>
 
 <div class="doc">
-The following <span class="inlinecode"><span class="id" type="var">block</span></span> is the basic block found at the <span class="inlinecode"><span class="id" type="var">body</span></span> label
-    of the example program. 
+下面的 <span class="inlinecode"><span class="id" type="var">block</span></span> 是一个基本块，构成了例子程序的 <span class="inlinecode"><span class="id" type="var">body</span></span> 标签所代表的基本块。
 </div>
 <div class="code code-tight">
 
@@ -1757,11 +1637,9 @@ The following <span class="inlinecode"><span class="id" type="var">block</span><
 </div>
 
 <div class="doc">
-To evaluate a basic block, given an initial state, is to compute
-    the final state and the label to jump to next.  Because basic
-    blocks do not _contain_ loops or other control structures,
-    evaluation of basic blocks is a total function &mdash; we don't need to
-    worry about non-termination. 
+给定一个初始状态，对基本块的求值是计算出最终状态和跳转的目标标签。
+    由于基本块不包含循环或其他控制结构，对基本块的求值是一个全函数——我们不需要
+    担心非停机性。
 </div>
 <div class="code code-tight">
 
@@ -1781,15 +1659,14 @@ To evaluate a basic block, given an initial state, is to compute
 </div>
 
 <div class="doc">
-<a name="lab584"></a><h2 class="section">Flowchart programs</h2>
+<a name="lab584"></a><h2 class="section">流程图程序</h2>
 
 <div class="paragraph"> </div>
 
- A flowchart program is simply a lookup function that maps labels
-    to basic blocks.  Actually, some labels are _halting states_ and
-    do not map to any basic block.  So, more precisely, a flowchart
-    <span class="inlinecode"><span class="id" type="var">program</span></span> whose labels are of type <span class="inlinecode"><span class="id" type="var">L</span></span> is a function from <span class="inlinecode"><span class="id" type="var">L</span></span> to
-    <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode">(<span class="id" type="var">block</span></span> <span class="inlinecode"><span class="id" type="var">L</span>)</span>. 
+ 一个流程图程序是一个查找函数将标签映射到基本块。事实上，有的标签是
+    <b>停机状态（halting state）</b>并且不被映射到任何基本块。因此准确地说，一个
+    流程图程序 <span class="inlinecode"><span class="id" type="var">program</span></span> 是一个将 <span class="inlinecode"><span class="id" type="var">L</span></span> 映射到到 <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode">(<span class="id" type="var">block</span></span> <span class="inlinecode"><span class="id" type="var">L</span>)</span> 
+    的函数，其中 <span class="inlinecode"><span class="id" type="var">L</span></span> 是标签的类型。 
 </div>
 <div class="code code-tight">
 
@@ -1804,9 +1681,8 @@ To evaluate a basic block, given an initial state, is to compute
 </div>
 
 <div class="doc">
-Unlike a basic block, a program may not terminate, so we model the
-    evaluation of programs by an inductive relation <span class="inlinecode"><span class="id" type="var">peval</span></span> rather
-    than a recursive function. 
+不同与基本块，一个程序可能不会终止，因此我们把程序的求值建模为归纳关系 <span class="inlinecode"><span class="id" type="var">peval</span></span>
+    而非递归函数。
 </div>
 <div class="code code-tight">
 
@@ -1830,18 +1706,15 @@ Unlike a basic block, a program may not terminate, so we model the
 </div>
 
 <div class="doc">
-<a name="lab585"></a><h2 class="section">Partial Evaluation of Basic Blocks and Flowchart Programs</h2>
+<a name="lab585"></a><h2 class="section">基本块和流程图程序的部分求值</h2>
 
 <div class="paragraph"> </div>
 
- Partial evaluation changes the label type in a systematic way: if
-    the label type used to be <span class="inlinecode"><span class="id" type="var">L</span></span>, it becomes <span class="inlinecode"><span class="id" type="var">pe_state</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">L</span></span>.  So the
-    same label in the original program may be unfolded, or blown up,
-    into multiple labels by being paired with different partial
-    states.  For example, the label <span class="inlinecode"><span class="id" type="var">loop</span></span> in the <span class="inlinecode"><span class="id" type="var">parity</span></span> program
-    will become two labels: <span class="inlinecode">([(<span class="id" type="var">X</span>,0)],</span> <span class="inlinecode"><span class="id" type="var">loop</span>)</span> and <span class="inlinecode">([(<span class="id" type="var">X</span>,1)],</span> <span class="inlinecode"><span class="id" type="var">loop</span>)</span>.
-    This change of label type is reflected in the types of <span class="inlinecode"><span class="id" type="var">pe_block</span></span>
-    and <span class="inlinecode"><span class="id" type="var">pe_program</span></span> defined presently. 
+ 部分求值系统地改变了标签类型：如果标签类型是 <span class="inlinecode"><span class="id" type="var">L</span></span>，那么它会变为 <span class="inlinecode"><span class="id" type="var">pe_state</span></span> <span class="inlinecode">*</span> <span class="inlinecode"><span class="id" type="var">L</span></span>。
+    因此源程序中的同同一个标签可能会未折叠、或展开多次，成为多个标签并和不同的部分状态配
+    对在一起。比如说，<span class="inlinecode"><span class="id" type="var">parity</span></span> 程序中的 <span class="inlinecode"><span class="id" type="var">loop</span></span> 标签会变为两个标签：<span class="inlinecode">([(<span class="id" type="var">X</span>,0)],</span> <span class="inlinecode"><span class="id" type="var">loop</span>)</span>
+    和 <span class="inlinecode">([(<span class="id" type="var">X</span>,1)],</span> <span class="inlinecode"><span class="id" type="var">loop</span>)</span>。标签类型的改变也在下面定义的 <span class="inlinecode"><span class="id" type="var">pe_block</span></span> 和 <span class="inlinecode"><span class="id" type="var">pe_program</span></span>
+    的类型中反映出来。
 </div>
 <div class="code code-tight">
 

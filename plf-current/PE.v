@@ -1,38 +1,31 @@
-(** * PE: Partial Evaluation *)
+(** * PE: 部分求值 *)
 
-(* Chapter written and maintained by Chung-chieh Shan *)
+(* 本章由單中杰（Chung-chieh Shan）撰写和维护。*)
 
-(** The [Equiv] chapter introduced constant folding as an example of a
-    program transformation and proved that it preserves the meaning of
-    programs.  Constant folding operates on manifest constants such as
-    [ANum] expressions.  For example, it simplifies the command [Y ::=
-    3 + 1] to the command [Y ::= 4].  However,
-    it does not propagate known constants along data flow.  For
-    example, it does not simplify the sequence
+(** [Equiv] 一章介绍了常量折叠作为程序变换的一个例子，并证明了此变换保持了程序的语义。
+    常量折叠变换适用于明显的常量上，例如 [ANum] 表达式。比如说，它将命令 [Y ::= 3 + 1]
+    化简为 [Y ::= 4]。然而它并不会顺着数据流传播已知的常量。例如，它无法化简如下的
+    语句序列
 
       X ::= 3;; Y ::= X + 1
 
-    to
+    为
 
       X ::= 3;; Y ::= 4
 
-    because it forgets that [X] is [3] by the time it gets to [Y].
+    因为当其运行到 [Y] 的时候并不知道 [X] 是 [3]。  
 
-    We might naturally want to enhance constant folding so that it
-    propagates known constants and uses them to simplify programs.
-    Doing so constitutes a rudimentary form of _partial evaluation_.
-    As we will see, partial evaluation is so called because it is like
-    running a program, except only part of the program can be
-    evaluated because only part of the input to the program is known.
-    For example, we can only simplify the program
+    我们自然想要改进常量折叠，使其可以传播已知的常量并使用他们化简程序。
+    这样做便得到了_'部分求值（partial evaluation）'_的初级形式。我们将会看到，
+    部分求值之所以被这样形容是因为看起来它像在运行程序，但只有部分程序会被求值，
+    因为程序只有一部分输入是已知的。比如，在不知道 [Y] 的初始值的情况下，我们仅能把
 
       X ::= 3;; Y ::= (X + 1) - Y
 
-    to
+    化简到
 
       X ::= 3;; Y ::= 4 - Y
-
-    without knowing the initial value of [Y]. *)
+*)
 
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
@@ -47,34 +40,25 @@ Require Import Imp.
 Require Import Smallstep.
 
 (* ################################################################# *)
-(** * Generalizing Constant Folding *)
+(** * 一般化的常量折叠 *)
 
-(** The starting point of partial evaluation is to represent our
-    partial knowledge about the state.  For example, between the two
-    assignments above, the partial evaluator may know only that [X] is
-    [3] and nothing about any other variable. *)
+(** 作为开始，首先需要确定如何表达状态的部分事实。例如在上面的例子中，部分求值器会知道
+    在两个赋值语句中间时 [X] 是 [3]，但不知道关于其他变量的任何信息。 *)
 
 (* ================================================================= *)
-(** ** Partial States *)
+(** ** 部分状态 *)
 
-(** Conceptually speaking, we can think of such partial states as the
-    type [string -> option nat] (as opposed to the type [string -> nat] of
-    concrete, full states).  However, in addition to looking up and
-    updating the values of individual variables in a partial state, we
-    may also want to compare two partial states to see if and where
-    they differ, to handle conditional control flow.  It is not possible
-    to compare two arbitrary functions in this way, so we represent
-    partial states in a more concrete format: as a list of [string * nat]
-    pairs. *)
+(** 从概念上讲，我们可以认为部分状态（partial state）的类型是 [string -> option nat]
+    (相反全状态的类型是 [string -> nat]）。然而，除了对部分状态中的变量进行查询和更新以外，
+    我们还想要比较两个部分状态，得到其不同的之处，并处理条件控制流。
+    由于无法对两个任意的函数进行比较，因此我们更具体地把部分状态表示为由 
+    [string * nat] 序对构成的列表。*)
 
 Definition pe_state := list (string * nat).
 
-(** The idea is that a variable (of type [string]) appears in the list if and only
-    if we know its current [nat] value.  The [pe_lookup] function thus
-    interprets this concrete representation.  (If the same variable
-    appears multiple times in the list, the first occurrence
-    wins, but we will define our partial evaluator to never construct
-    such a [pe_state].) *)
+(** 一个（类型为 [string] 的）变量出现在列表中当且仅当我们知道其当前的 [nat] 值。
+    [pe_lookup] 函数实现了这个功能的具体表示。（如果变量名在列表中出现了多次，
+    那么我们仅使用第一个，但我们会定义部分求值器使其不会构造出这样的 [pe_state]。）*)
 
 Fixpoint pe_lookup (pe_st : pe_state) (V:string) : option nat :=
   match pe_st with
@@ -83,21 +67,18 @@ Fixpoint pe_lookup (pe_st : pe_state) (V:string) : option nat :=
                       else pe_lookup pe_st V
   end.
 
-(** For example, [empty_pe_state] represents complete ignorance about
-    every variable -- the function that maps every identifier to [None]. *)
+(** 比如，[empty_pe_state] 表示空状态——一个将任何标识符都映射到 [None] 的函数。 *)
 
 Definition empty_pe_state : pe_state := [].
 
-(** More generally, if the [list] representing a [pe_state] does not
-    contain some identifier, then that [pe_state] must map that identifier to
-    [None].  Before we prove this fact, we first define a useful
-    tactic for reasoning with [string] equality.  The tactic
+(** 更一般地，如果这个 [list] 表示的 [pe_state] 不含有某个标识符，那么此 [pe_state]
+    必将这个标识符映射到 [None]。在证明这一点之前，我们首先定义一个策略来帮助我们对
+    字符串的等价性进行推理。策略
 
       compare V V'
 
-    means to reason by cases over [beq_string V V'].
-    In the case where [V = V'], the tactic
-    substitutes [V] for [V'] throughout. *)
+    用于对 [beq_string V V'] 的分类情形进行推理。
+    当 [V = V'] 时，此策略将全部的 [V] 替换为 [V']。 *)
 
 Tactic Notation "compare" ident(i) ident(j) :=
   let H := fresh "Heq" i j in
@@ -111,8 +92,7 @@ Proof. intros pe_st V n H. induction pe_st as [| [V' n'] pe_st].
   - (* [] *) inversion H.
   - (* :: *) simpl in H. simpl. compare V V'; auto. Qed.
 
-(** In what follows, we will make heavy use of the [In] property from
-    the standard library, also defined in [Logic.v]: *)
+(** 接下来，我们会大量使用标准库和 [Logic.v] 中定义的 [In] 性质： *)
 
 Print In.
 (* ===> Fixpoint In {A:Type} (a: A) (l:list A) : Prop :=
@@ -122,17 +102,14 @@ Print In.
             end
         : forall A : Type, A -> list A -> Prop *)
 
-(** Besides the various lemmas about [In] that we've already come
-    across, the following one (taken from the standard library) will
-    also be useful: *)
+(** 除了我们之前学习过的关于 [In] 的众多引理，下面这个也会非常有用： *)
 
 Check filter_In.
 (* ===> filter_In : forall (A : Type) (f : A -> bool) (x : A) (l : list A),
             In x (filter f l) <-> In x l /\ f x = true  *)
 
-(** If a type [A] has an operator [beq] for testing equality of its
-    elements, we can compute a boolean [inb beq a l] for testing
-    whether [In a l] holds or not. *)
+(** 如果类型 [A] 有操作符 [beq] 用于测试其元素的相等性，我们可以计算一个布尔值 [inb beq a l]
+    用于测试 [In a l] 是否成立。 *)
 
 Fixpoint inb {A : Type} (beq : A -> A -> bool) (a : A) (l : list A) :=
   match l with
@@ -140,7 +117,7 @@ Fixpoint inb {A : Type} (beq : A -> A -> bool) (a : A) (l : list A) :=
   | a'::l' => beq a a' || inb beq a l'
   end.
 
-(** It is easy to relate [inb] to [In] with the [reflect] property: *)
+(** 容易使用 [reflect] 性质关联起 [inb] 和 [In]： *)
 
 Lemma inbP : forall A : Type, forall beq : A->A->bool,
   (forall a1 a2, reflect (a1 = a2) (beq a1 a2)) ->
@@ -157,17 +134,15 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(** ** Arithmetic Expressions *)
+(** ** 算术表达式 *)
 
-(** Partial evaluation of [aexp] is straightforward -- it is basically
-    the same as constant folding, [fold_constants_aexp], except that
-    sometimes the partial state tells us the current value of a
-    variable and we can replace it by a constant expression. *)
+(** 对 [aexp] 的部分求值是简单的——它基本上和常量折叠 [fold_constants_aexp] 相同，
+    除了有时候部分状态可以告诉我们变量对应的值，我们便可以用一个常量替换这个变量。*)
 
 Fixpoint pe_aexp (pe_st : pe_state) (a : aexp) : aexp :=
   match a with
   | ANum n => ANum n
-  | AId i => match pe_lookup pe_st i with (* <----- NEW *)
+  | AId i => match pe_lookup pe_st i with (* <----- 新添加的 *)
              | Some n => ANum n
              | None => AId i
              end
@@ -188,8 +163,7 @@ Fixpoint pe_aexp (pe_st : pe_state) (a : aexp) : aexp :=
       end
   end.
 
-(** This partial evaluator folds constants but does not apply the
-    associativity of addition. *)
+(** 部分求值器会折叠起常量，但并不会应用加法的结合律。 *)
 
 Open Scope aexp_scope.
 Open Scope bexp_scope.
@@ -204,13 +178,10 @@ Example text_pe_aexp2:
   = (X + 1 + 3).
 Proof. reflexivity. Qed.
 
-(** Now, in what sense is [pe_aexp] correct?  It is reasonable to
-    define the correctness of [pe_aexp] as follows: whenever a full
-    state [st:state] is _consistent_ with a partial state
-    [pe_st:pe_state] (in other words, every variable to which [pe_st]
-    assigns a value is assigned the same value by [st]), evaluating
-    [a] and evaluating [pe_aexp pe_st a] in [st] yields the same
-    result.  This statement is indeed true. *)
+(** 现在，[pe_aexp] 在什么意义上是正确的呢？可以合理地将 [pe_aexp] 的正确性
+    定义为：若一个全状态 [st:state] 与部分状态 [pe_st:pe_state] 是相容的
+    （换句话说，[pe_st] 中每个变量的值同 [st] 中这个变量的值相同），那么在 [st] 
+    状态中对 [a] 求值和对 [pe_aexp pe_st a] 求值会产生相同结果。这个陈述确实是真的。*)
 
 Definition pe_consistent (st:state) (pe_st:pe_state) :=
   forall V n, Some n = pe_lookup pe_st V -> st V = n.
@@ -223,52 +194,42 @@ Proof. unfold pe_consistent. intros st pe_st H a.
     try (destruct (pe_aexp pe_st a1);
          destruct (pe_aexp pe_st a2);
          rewrite IHa1; rewrite IHa2; reflexivity).
-  (* Compared to fold_constants_aexp_sound,
-     the only interesting case is AId *)
+  (* 同 fold_constants_aexp_sound 比较，唯一不同的分类是 AId。 *)
   - (* AId *)
     remember (pe_lookup pe_st s) as l. destruct l.
     + (* Some *) rewrite H with (n:=n) by apply Heql. reflexivity.
     + (* None *) reflexivity.
 Qed.
 
-(** However, we will soon want our partial evaluator to remove
-    assignments.  For example, it will simplify
+(** 然而，我们很快就会希望这个部分求值器可以移除掉赋值语句。比如说，它会将
 
     X ::= 3;; Y ::= X - Y;; X ::= 4
 
-    to just
+    简化为
 
     Y ::= 3 - Y;; X ::= 4
 
-    by delaying the assignment to [X] until the end.  To accomplish
-    this simplification, we need the result of partial evaluating
+    它保留了最后对 [X] 的赋值语句。为了完成这种简化，我们需要部分求值的结果
 
     pe_aexp [(X,3)] (X - Y)
 
-    to be equal to [3 - Y] and _not_ the original
-    expression [X - Y].  After all, it would be
-    incorrect, not just inefficient, to transform
+    等于 [3 - Y] 而_非_原始的表达式 [X -Y]。毕竟，若将
 
     X ::= 3;; Y ::= X - Y;; X ::= 4
 
-    to
+    变换为
 
     Y ::= X - Y;; X ::= 4
 
-    even though the output expressions [3 - Y] and
-    [X - Y] both satisfy the correctness criterion
-    that we just proved.  Indeed, if we were to just define [pe_aexp
-    pe_st a = a] then the theorem [pe_aexp_correct'] would already
-    trivially hold.
-
-    Instead, we want to prove that the [pe_aexp] is correct in a
-    stronger sense: evaluating the expression produced by partial
-    evaluation ([aeval st (pe_aexp pe_st a)]) must not depend on those
-    parts of the full state [st] that are already specified in the
-    partial state [pe_st].  To be more precise, let us define a
-    function [pe_override], which updates [st] with the contents of
-    [pe_st].  In other words, [pe_override] carries out the
-    assignments listed in [pe_st] on top of [st]. *)
+    就不仅仅是低效的，而是不正确的结果了，尽管结果表达式 [3 - Y] 和 [X - Y]
+    都满足我们上面证明的正确性条件。确实，如果我们只是定义 [pe_aexp pt_st a = a]
+    那么定理 [pe_aexp_correct_weak] 也会直接成立。
+    
+    但是，我们想要证明关于 [pe_aexp] 更强的正确性：对部分求值产生的表达式进行求值
+    （[aeval st (pe_aexp pe_st a)]） 必须不依赖全状态 [st] 中已经被部分状态 
+    [pe_st] 所指明的部分。为了精确地表达，让我们定义一个函数 [pe_override]，
+    它使用 [pe_st] 中的内容更新 [st]。换句话说，[pe_override] 将 [pe_st]
+    中的赋值语句置于 [st] 之上。 *)
 
 Fixpoint pe_update (st:state) (pe_st:pe_state) : state :=
   match pe_st with
@@ -281,9 +242,8 @@ Example test_pe_update:
   = { Y --> 1 ; Z --> 2 ; X --> 3 }.
 Proof. reflexivity. Qed.
 
-(** Although [pe_update] operates on a concrete [list] representing
-    a [pe_state], its behavior is defined entirely by the [pe_lookup]
-    interpretation of the [pe_state]. *)
+(** 尽管 [pe_update] 对一个具体的 [list] 表示的 [pe_state] 进行操作，它的行为完全
+    由 [pe_lookup] 对 [pe_state] 的解释所定义。 *)
 
 Theorem pe_update_correct: forall st pe_st V0,
   pe_update st pe_st V0 =
@@ -295,11 +255,10 @@ Proof. intros. induction pe_st as [| [V n] pe_st]. reflexivity.
   simpl in *. unfold t_update.
   compare V0 V; auto. rewrite <- beq_string_refl; auto. rewrite false_beq_string; auto. Qed.
 
-(** We can relate [pe_consistent] to [pe_update] in two ways.
-    First, overriding a state with a partial state always gives a
-    state that is consistent with the partial state.  Second, if a
-    state is already consistent with a partial state, then overriding
-    the state with the partial state gives the same state. *)
+(** 我们可以以两种方式关联起 [pe_consistent] 和 [pe_update]。
+    首先，用部分状态覆写一个状态总是会得到同这个部分状态相容的状态。
+    第二，如果一个状态本身同某个部分状态相容，那么用这个部分状态覆写
+    这个状态会得到相同的状态。*)
 
 Theorem pe_update_consistent: forall st pe_st,
   pe_consistent (pe_update st pe_st) pe_st.
@@ -311,19 +270,13 @@ Theorem pe_consistent_update: forall st pe_st,
 Proof. intros st pe_st H V. rewrite pe_update_correct.
   remember (pe_lookup pe_st V) as l. destruct l; auto. Qed.
 
-(** Now we can state and prove that [pe_aexp] is correct in the
-    stronger sense that will help us define the rest of the partial
-    evaluator.
+(** 现在我们可以表述和证明 [pe_aexp] 更强的正确性，这会帮助我们定义接下来的部分求值器。
 
-    Intuitively, running a program using partial evaluation is a
-    two-stage process.  In the first, _static_ stage, we partially
-    evaluate the given program with respect to some partial state to
-    get a _residual_ program.  In the second, _dynamic_ stage, we
-    evaluate the residual program with respect to the rest of the
-    state.  This dynamic state provides values for those variables
-    that are unknown in the static (partial) state.  Thus, the
-    residual program should be equivalent to _prepending_ the
-    assignments listed in the partial state to the original program. *)
+    直观地讲，使用部分求值来运行程序由两个阶段构成。第一个为_'静态'_阶段（static stage），
+    我们在部分状态下对程序进行部分求值，并得到一个_'剩余'_程序（residual program）。
+    第二个为_'动态'_阶段（dynamic stage），我们在动态状态中对剩余程序进行求值。
+    这个动态状态提供了在静态（部分）状态中未知的变量的值。因此，剩余程序应当等价于
+    对原始程序_'预添加（prepending）'_上部分状态中的赋值语句。 *)
 
 Theorem pe_aexp_correct: forall (pe_st:pe_state) (a:aexp) (st:state),
   aeval (pe_update st pe_st) a = aeval st (pe_aexp pe_st a).
@@ -334,17 +287,15 @@ Proof.
     try (destruct (pe_aexp pe_st a1);
          destruct (pe_aexp pe_st a2);
          rewrite IHa1; rewrite IHa2; reflexivity).
-  (* Compared to fold_constants_aexp_sound, the only
-     interesting case is AId. *)
+  (* 同 fold_constants_aexp_sound 比较，唯一不同的分类是 AId。 *)
   rewrite pe_update_correct. destruct (pe_lookup pe_st s); reflexivity.
 Qed.
 
 (* ================================================================= *)
-(** ** Boolean Expressions *)
+(** ** 布尔表达式 *)
 
-(** The partial evaluation of boolean expressions is similar.  In
-    fact, it is entirely analogous to the constant folding of boolean
-    expressions, because our language has no boolean variables. *)
+(** 对布尔表达式的部分求值是相似的。事实上，它完全类似于对布尔表达式常量折叠，
+    因为我们的语言中并没有布尔值的变量。 *)
 
 Fixpoint pe_bexp (pe_st : pe_state) (b : bexp) : bexp :=
   match b with
@@ -386,8 +337,7 @@ Example test_pe_bexp2: forall b:bexp,
   pe_bexp [] b = b.
 Proof. intros b H. rewrite -> H. reflexivity. Qed.
 
-(** The correctness of [pe_bexp] is analogous to the correctness of
-    [pe_aexp] above. *)
+(** [pe_bexp] 的正确性和上面 [pe_aexp] 的正确性类似。 *)
 
 Theorem pe_bexp_correct: forall (pe_st:pe_state) (b:bexp) (st:state),
   beval (pe_update st pe_st) b = beval st (pe_bexp pe_st b).
@@ -410,68 +360,48 @@ Proof.
 Qed.
 
 (* ################################################################# *)
-(** * Partial Evaluation of Commands, Without Loops *)
+(** * 无循环命令的部分求值 *)
 
-(** What about the partial evaluation of commands?  The analogy
-    between partial evaluation and full evaluation continues: Just as
-    full evaluation of a command turns an initial state into a final
-    state, partial evaluation of a command turns an initial partial
-    state into a final partial state.  The difference is that, because
-    the state is partial, some parts of the command may not be
-    executable at the static stage.  Therefore, just as [pe_aexp]
-    returns a residual [aexp] and [pe_bexp] returns a residual [bexp]
-    above, partially evaluating a command yields a residual command.
+(** 接下来如何处理对命令的部分求值呢？部分求值和完全求值之间的类比仍然适用：
+    对命令的完全求值将初始状态转换为最终的状态，而对命令的部分求值将初始状态转换为
+    最终的部分状态。不过，由于状态是局部的，一些命令可能无法在静态阶段执行。
+    因此，正如同 [pe_aexp] 返回一个 [aexp] 的剩余表达式、[pe_bexp] 返回一个
+    [bexp] 的剩余表达式，对命令的部分求值也产生剩余命令。
 
-    Another way in which our partial evaluator is similar to a full
-    evaluator is that it does not terminate on all commands.  It is
-    not hard to build a partial evaluator that terminates on all
-    commands; what is hard is building a partial evaluator that
-    terminates on all commands yet automatically performs desired
-    optimizations such as unrolling loops.  Often a partial evaluator
-    can be coaxed into terminating more often and performing more
-    optimizations by writing the source program differently so that
-    the separation between static and dynamic information becomes more
-    apparent.  Such coaxing is the art of _binding-time improvement_.
-    The binding time of a variable tells when its value is known --
-    either "static", or "dynamic."
+    另一个部分求值和完全求值相似的地方是它不会对所有命令都停机。构造出一个
+    部分求值器使其对所有的命令都停机并不是困难的；困难在于所构造的部分求值器
+    在停机的同时还能自动地执行想要的优化，例如循环展开。如果我们有意把
+    源程序以一种更容易区分出静态阶段和动态阶段的方式写出，那么部分求值器
+    常常可以停机并执行更多优化。这种方式被称作_'绑定时间改进（binding-time
+    improvement）'_。变量的绑定时间告诉我们何时可以知道它的值——“静态”或“动态”。
 
-    Anyway, for now we will just live with the fact that our partial
-    evaluator is not a total function from the source command and the
-    initial partial state to the residual command and the final
-    partial state.  To model this non-termination, just as with the
-    full evaluation of commands, we use an inductively defined
-    relation.  We write
+    不管怎样，我们现在先接受这样的事实，即这个部分求值器不会是一个从源程序
+    和初始状态到剩余程序和最终部分状态的全函数。为了对这种非停机性建模，我们
+    采用和命令的完全求值相同的技术，即归纳地定义关系。我们写下
 
       c1 / st \\ c1' / st'
 
-    to mean that partially evaluating the source command [c1] in the
-    initial partial state [st] yields the residual command [c1'] and
-    the final partial state [st'].  For example, we want something like
+    意思是对源程序 [c1] 在初始状态 [st] 中部分求值产生剩余程序 [c1']
+    和最终部分状态 [st']。举个例子，我们想要让
 
       (X ::= 3 ;; Y ::= Z * (X + X)
       / [] \\ (Y ::= Z * 6) / [(X,3)]
 
-    to hold.  The assignment to [X] appears in the final partial state,
-    not the residual command. *)
+    成立。对 [X] 的赋值出现在最终部分状态中，而非剩余命令中。*)
 
 (* ================================================================= *)
-(** ** Assignment *)
+(** ** 赋值 *)
 
-(** Let's start by considering how to partially evaluate an
-    assignment.  The two assignments in the source program above needs
-    to be treated differently.  The first assignment [X ::= 3],
-    is _static_: its right-hand-side is a constant (more generally,
-    simplifies to a constant), so we should update our partial state
-    at [X] to [3] and produce no residual code.  (Actually, we produce
-    a residual [SKIP].)  The second assignment [Y ::= Z * (X + X)] 
-    is _dynamic_: its right-hand-side does
-    not simplify to a constant, so we should leave it in the residual
-    code and remove [Y], if present, from our partial state.  To
-    implement these two cases, we define the functions [pe_add] and
-    [pe_remove].  Like [pe_update] above, these functions operate on
-    a concrete [list] representing a [pe_state], but the theorems
-    [pe_add_correct] and [pe_remove_correct] specify their behavior by
-    the [pe_lookup] interpretation of the [pe_state]. *)
+(** 让我们首先考虑对赋值语句的部分求值。上面源程序中的两个赋值语句需要区别对待。
+    第一个赋值 [X ::= 3] 是_'静态的'_：它的右值是一个常量（更一般地讲，可以
+    简化为常量），因此我们需要更新部分状态中的 [X] 为 [3]，而不产生剩余代码。
+    （实际上，我们产生了剩余程序 [SKIP]。）第二个赋值 [Y ::= Z * (X + X)]
+    是_'动态的'_：它的右值无法被简化为常量，因此我们应当将它保留在剩余程序
+    中，并且若 [Y] 出现在部分状态中，则应当被移除。为了实现这两个情形，我们定
+    义函数 [pe_add] 和 [pe_remove]。与 [pe_update] 类似，这些函数操作
+    某个具体的 [list] 表示的 [pe_state]，但定理 [pe_add_correct] 和
+    [pe_remove_correct] 通过 [pe_lookup] 对 [pe_state] 的解释定义了
+    他们的行为。*)
 
 Fixpoint pe_remove (pe_st:pe_state) (V:string) : pe_state :=
   match pe_st with
@@ -486,12 +416,12 @@ Theorem pe_remove_correct: forall pe_st V V0,
 Proof. intros pe_st V V0. induction pe_st as [| [V' n'] pe_st].
   - (* [] *) destruct (beq_string V V0); reflexivity.
   - (* :: *) simpl. compare V V'.
-    + (* equal *) rewrite IHpe_st.
+    + (* 相等 *) rewrite IHpe_st.
       destruct (beq_stringP V V0).  reflexivity.  
       rewrite false_beq_string; auto.
-    + (* not equal *) simpl. compare V0 V'.
-      * (* equal *) rewrite false_beq_string; auto.
-      * (* not equal *) rewrite IHpe_st. reflexivity.
+    + (* 不相等 *) simpl. compare V0 V'.
+      * (* 相等 *) rewrite false_beq_string; auto.
+      * (* 不相等 *) rewrite IHpe_st. reflexivity.
 Qed.
 
 Definition pe_add (pe_st:pe_state) (V:string) (n:nat) : pe_state :=
@@ -502,14 +432,12 @@ Theorem pe_add_correct: forall pe_st V n V0,
   = if beq_string V V0 then Some n else pe_lookup pe_st V0.
 Proof. intros pe_st V n V0. unfold pe_add. simpl.
   compare V V0.
-  - (* equal *) rewrite <- beq_string_refl; auto.
-  - (* not equal *) rewrite pe_remove_correct. 
+  - (* 相等 *) rewrite <- beq_string_refl; auto.
+  - (* 不相等 *) rewrite pe_remove_correct. 
     repeat rewrite false_beq_string; auto.
 Qed.
 
-(** We will use the two theorems below to show that our partial
-    evaluator correctly deals with dynamic assignments and static
-    assignments, respectively. *)
+(** 我们将会用下面的两个定理证明部分求值器正确地处理了动态赋值和静态赋值。*)
 
 Theorem pe_update_update_remove: forall st pe_st V n,
   t_update (pe_update st pe_st) V n =
@@ -527,16 +455,14 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
   destruct (beq_string V V0); reflexivity. Qed.
 
 (* ================================================================= *)
-(** ** Conditional *)
+(** ** 条件 *)
 
-(** Trickier than assignments to partially evaluate is the
-    conditional, [IFB b1 THEN c1 ELSE c2 FI].  If [b1] simplifies to
-    [BTrue] or [BFalse] then it's easy: we know which branch will be
-    taken, so just take that branch.  If [b1] does not simplify to a
-    constant, then we need to take both branches, and the final
-    partial state may differ between the two branches!
+(** 比赋值语句的部分求值要麻烦一点的是条件语句 [IFB b1 THEN c1 ELSE c2 FI]。
+    如果 [b1] 被简化为 [BTrue] 或 [BFalse]，那么会很容易：我们知道哪个分支
+    会被运行。如果 [b1] 不会被简化为常量，那么我们需要对两个分支部分地求值，
+    且最终的部分状态在两个分支上可能是不同的！
 
-    The following program illustrates the difficulty:
+    下面的程序展示了这种困难：
 
       X ::= 3;;
       IFB Y <= 4 THEN
@@ -544,21 +470,16 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
           IFB X <= Y THEN Y ::= 999 ELSE SKIP FI
       ELSE SKIP FI
 
-    Suppose the initial partial state is empty.  We don't know
-    statically how [Y] compares to [4], so we must partially evaluate
-    both branches of the (outer) conditional.  On the [THEN] branch,
-    we know that [Y] is set to [4] and can even use that knowledge to
-    simplify the code somewhat.  On the [ELSE] branch, we still don't
-    know the exact value of [Y] at the end.  What should the final
-    partial state and residual program be?
-
-    One way to handle such a dynamic conditional is to take the
-    intersection of the final partial states of the two branches.  In
-    this example, we take the intersection of [(Y,4),(X,3)] and
-    [(X,3)], so the overall final partial state is [(X,3)].  To
-    compensate for forgetting that [Y] is [4], we need to add an
-    assignment [Y ::= 4] to the end of the [THEN] branch.  So,
-    the residual program will be something like
+    假设初始的部分状态为空状态。静态来说，我们不知道 [Y] 和 [4] 比较的结果，
+    因此必须对（外层的）条件语句的两个分支都进行部分求值。在其 [THEN] 
+    分支中，我们知道 [Y] 被赋值为 [4]，并且可以利用这一点来化简一部分代码。
+    在 [ELSE] 分支中，到最后我们仍然不知道 [Y] 的值会是什么。最终部分状态
+    和剩余程序应该是什么呢？
+    
+    一种处理动态的条件语句的方法是取两个分支上最终部分状态的交。在上面的例子中，
+    我们取 [(Y,4),(X,3)] 和 [(X,3)] 的交，因此最终的部分状态为 [(X,3)]。
+    为了抵消丢失掉的对 [Y] 的赋值 [4]，我们需要在 [THEN] 分支的最后添加赋值语句
+    [Y ::= 4]。因此，剩余程序为
 
       SKIP;;
       IFB Y <= 4 THEN
@@ -567,14 +488,12 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
           Y ::= 4
       ELSE SKIP FI
 
-    Programming this case in Coq calls for several auxiliary
-    functions: we need to compute the intersection of two [pe_state]s
-    and turn their difference into sequences of assignments.
+    在 Coq 中编程处理这种情况需要几个辅助函数：我们需要计算两个 [pe_state]
+    的交（intersection），并将他们的差（difference）转换为一系列的赋值语句。
 
-    First, we show how to compute whether two [pe_state]s to disagree
-    at a given variable.  In the theorem [pe_disagree_domain], we
-    prove that two [pe_state]s can only disagree at variables that
-    appear in at least one of them. *)
+    首先，我们展示如何计算两个 [pe_state] 是否对某个变量有不同的值。定理
+    [pe_disagree_domain] 证明了两个 [pe_state] 若对某个变量有不同的值，
+    那么此变量必在至少一个状态中出现。 *)
 
 Definition pe_disagree_at (pe_st1 pe_st2 : pe_state) (V:string) : bool :=
   match pe_lookup pe_st1 V, pe_lookup pe_st2 V with
@@ -594,12 +513,10 @@ Proof. unfold pe_disagree_at. intros pe_st1 pe_st2 V H.
   destruct lookup2 as [n2|]. right. apply pe_domain with n2. auto.
   inversion H. Qed.
 
-(** We define the [pe_compare] function to list the variables where
-    two given [pe_state]s disagree.  This list is exact, according to
-    the theorem [pe_compare_correct]: a variable appears on the list
-    if and only if the two given [pe_state]s disagree at that
-    variable.  Furthermore, we use the [pe_unique] function to
-    eliminate duplicates from the list. *)
+(** 给定两个 [pe_state]，我们定义函数 [pe_compare] 用于列出在他们中值不同的变量。
+    根据 [pe_compare_correct]，列出的变量是精确的：一个变量在列表中当且仅当给定
+    的两个 [pe_state] 对其有不同的值。进一步地，我们用 [pe_unique] 函数来消除
+    列表中的重复。*)
 
 Fixpoint pe_unique (l : list string) : list string :=
   match l with
@@ -643,7 +560,7 @@ Proof. intros pe_st1 pe_st2 V.
     inversion H0.
   - (* <- *)
     assert (Hagree: pe_disagree_at pe_st1 pe_st2 V = false).
-    { (* Proof of assertion *)
+    { (* 对断言的证明 *)
       remember (pe_disagree_at pe_st1 pe_st2 V) as disagree.
       destruct disagree; [| reflexivity].
       apply  pe_disagree_domain in Heqdisagree.
@@ -655,19 +572,13 @@ Proof. intros pe_st1 pe_st2 V.
     rewrite negb_false_iff in Hagree.
     apply beq_nat_true in Hagree. subst. reflexivity. Qed.
 
-(** The intersection of two partial states is the result of removing
-    from one of them all the variables where the two disagree.  We
-    define the function [pe_removes], in terms of [pe_remove] above,
-    to perform such a removal of a whole list of variables at once.
+(** 两个部分状态的交是从其中一个状态中移除所有值不同的变量。我们用上面的 
+    [pe_remove] 来定义函数 [pe_removes]，用于一次性地移除一个列表中的变量。
 
-    The theorem [pe_compare_removes] testifies that the [pe_lookup]
-    interpretation of the result of this intersection operation is the
-    same no matter which of the two partial states we remove the
-    variables from.  Because [pe_update] only depends on the
-    [pe_lookup] interpretation of partial states, [pe_update] also
-    does not care which of the two partial states we remove the
-    variables from; that theorem [pe_compare_update] is used in the
-    correctness proof shortly. *)
+    定理 [pe_compare_removes] 证明了无论我们从哪个状态中移除变量，最终得到
+    的交在 [pe_lookup] 的解释下都是相同的。因为 [pe_update] 仅依赖 [pe_lookup]
+    对部分状态的解释，我们选择从哪个状态中移除变量也不会影响到 [pe_update]；
+    后面的正确性证明中会用到 [pe_compare_update] 定理。*)
 
 Fixpoint pe_removes (pe_st:pe_state) (ids : list string) : pe_state :=
   match ids with
@@ -701,10 +612,8 @@ Proof. intros. apply functional_extensionality. intros V.
   rewrite !pe_update_correct. rewrite pe_compare_removes. reflexivity.
 Qed.
 
-(** Finally, we define an [assign] function to turn the difference
-    between two partial states into a sequence of assignment commands.
-    More precisely, [assign pe_st ids] generates an assignment command
-    for each variable listed in [ids]. *)
+(** 最后，我们定义 [assign] 函数将两个部分状态的差转换为一系列的赋值命令。
+    准确地说，[assign pe_st ids] 对 [ids] 中的每个变量生成一个赋值命令。*)
 
 Fixpoint assign (pe_st : pe_state) (ids : list string) : com :=
   match ids with
@@ -715,12 +624,9 @@ Fixpoint assign (pe_st : pe_state) (ids : list string) : com :=
               end
   end.
 
-(** The command generated by [assign] always terminates, because it is
-    just a sequence of assignments.  The (total) function [assigned]
-    below computes the effect of the command on the (dynamic state).
-    The theorem [assign_removes] then confirms that the generated
-    assignments perfectly compensate for removing the variables from
-    the partial state. *)
+(** 由 [assign] 生成的命令总是会停机，因为他们仅仅是赋值命令而已。下面的（全）函数
+    [assigned] 计算了命令在动态状态上的作用。定理 [assign_removes] 进一步确认了
+    生成的赋值语句抵消了部分状态中所移除的变量。*)
 
 Definition assigned (pe_st:pe_state) (ids : list string) (st:state) : state :=
   fun V => if inb beq_string V ids then
@@ -752,24 +658,22 @@ Proof. intros pe_st ids st. induction ids as [| V ids]; simpl.
     + (* Some *) eapply E_Seq. apply IHids. unfold assigned. simpl.
       eapply ceval_extensionality. apply E_Ass. simpl. reflexivity.
       intros V0. unfold t_update.  compare V V0.
-      * (* equal *) rewrite <- Heqlookup. rewrite <- beq_string_refl. reflexivity.
-      * (* not equal *) rewrite false_beq_string; simpl; congruence.
+      * (* 相等 *) rewrite <- Heqlookup. rewrite <- beq_string_refl. reflexivity.
+      * (* 不相等 *) rewrite false_beq_string; simpl; congruence.
     + (* None *) eapply ceval_extensionality. apply IHids.
       unfold assigned. intros V0. simpl. compare V V0.
-      * (* equal *) rewrite <- Heqlookup.
+      * (* 相等 *) rewrite <- Heqlookup.
         rewrite <- beq_string_refl.
         destruct (inbP _ _ beq_stringP V ids); reflexivity.
-      * (* not equal *) rewrite false_beq_string; simpl; congruence.
+      * (* 不相等 *) rewrite false_beq_string; simpl; congruence.
 Qed.
 
 (* ================================================================= *)
-(** ** The Partial Evaluation Relation *)
+(** ** 部分求值关系 *)
 
-(** At long last, we can define a partial evaluator for commands
-    without loops, as an inductive relation!  The inequality
-    conditions in [PE_AssDynamic] and [PE_If] are just to keep the
-    partial evaluator deterministic; they are not required for
-    correctness. *)
+(** 终于，我们可以将无循环命令的部分求值器定义为一个归纳关系了！
+    [PE_AssDynamic] 和 [PE_If] 中的不等式仅仅是为了使部分求值器
+    保持确定性；他们并不是正确性所需要的。*)
 
 Reserved Notation "c1 '/' st '\\' c1' '/' st'"
   (at level 40, st at level 39, c1' at level 39).
@@ -813,12 +717,11 @@ Hint Constructors pe_com.
 Hint Constructors ceval.
 
 (* ================================================================= *)
-(** ** Examples *)
+(** ** 例子 *)
 
-(** Below are some examples of using the partial evaluator.  To make
-    the [pe_com] relation actually usable for automatic partial
-    evaluation, we would need to define more automation tactics in
-    Coq.  That is not hard to do, but it is not needed here. *)
+(** 下面给出一些使用部分求值器的例子。为了使 [pe_com] 关系可以自动化地完成
+    部分求值，我们会需要在 Coq 中定义一些自动化的策略。这不会十分困难，
+    但这里并不是必须的。 *)
 
 Example pe_example1:
   (X ::= 3 ;; Y ::= Z * (X + X))
@@ -852,9 +755,9 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st).
   reflexivity. reflexivity. Qed.
 
 (* ================================================================= *)
-(** ** Correctness of Partial Evaluation *)
+(** ** 部分求值的正确性 *)
 
-(** Finally let's prove that this partial evaluator is correct! *)
+(** 最后，让我们来证明这个部分求值器是正确的！ *)
 
 Reserved Notation "c' '/' pe_st' '/' st '\\' st''"
   (at level 40, pe_st' at level 39, st at level 39).
@@ -932,7 +835,7 @@ Proof. intros c pe_st pe_st' c' Hpe.
       rewrite <- assign_removes. eauto.
 Qed.
 
-(** The main theorem. Thanks to David Menendez for this formulation! *)
+(** 最终的主定理。感谢 David Menendez 所贡献的这个公式！ *)
 
 Corollary pe_com_correct:
   forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
@@ -945,35 +848,28 @@ Proof. intros c pe_st pe_st' c' H st st''. split.
 Qed.
 
 (* ################################################################# *)
-(** * Partial Evaluation of Loops *)
+(** * 循环的部分求值 *)
 
-(** It may seem straightforward at first glance to extend the partial
-    evaluation relation [pe_com] above to loops.  Indeed, many loops
-    are easy to deal with.  Considered this repeated-squaring loop,
-    for example:
+(** 初看上去，将部分求值关系 [pe_com] 扩展到循环是简单直接的。确实，很多循环程序
+    是容易处理的。比如说，考虑下面重复计算平方的循环：
 
       WHILE 1 <= X DO
           Y ::= Y * Y;;
           X ::= X - 1
       END
 
-    If we know neither [X] nor [Y] statically, then the entire loop is
-    dynamic and the residual command should be the same.  If we know
-    [X] but not [Y], then the loop can be unrolled all the way and the
-    residual command should be, for example,
+    如果我们不知道 [X] 或 [Y] 的静态值，那么整个循环是动态的，其剩余程序与源程序相同。
+    如果我们知道 [X] 但不知道 [Y]，那么循环可以被展开，最后的剩余程序可能是
 
       Y ::= Y * Y;;
       Y ::= Y * Y;;
       Y ::= Y * Y
 
-    if [X] is initially [3] (and finally [0]).  In general, a loop is
-    easy to partially evaluate if the final partial state of the loop
-    body is equal to the initial state, or if its guard condition is
-    static.
+    当 [X] 初始为 [3] 时（最终变为 [0]）。一般来说，如果循环体的最终部分状态和初始状态
+    相同，或者其条件是静态的，那么对循环的部分求值很容易。
 
-    But there are other loops for which it is hard to express the
-    residual program we want in Imp.  For example, take this program
-    for checking whether [Y] is even or odd:
+    但是其他的循环程序则很难在 Imp 中表达出我们期待的剩余程序。举个例子，下面的程序检查
+    [Y] 是奇数还是偶数：
 
       X ::= 0;;
       WHILE 1 <= Y DO
@@ -981,9 +877,8 @@ Qed.
           X ::= 1 - X
       END
 
-    The value of [X] alternates between [0] and [1] during the loop.
-    Ideally, we would like to unroll this loop, not all the way but
-    _two-fold_, into something like
+    [X] 的值在循环过程中交替地为 [0] 或 [1]。理想情况，我们想要展开循环两次，
+    而非不加限制地，并得到类似如下程序
 
       WHILE 1 <= Y DO
           Y ::= Y - 1;;
@@ -995,15 +890,11 @@ Qed.
       END;;
       X ::= 0
 
-    Unfortunately, there is no [EXIT] command in Imp.  Without
-    extending the range of control structures available in our
-    language, the best we can do is to repeat loop-guard tests or add
-    flag variables.  Neither option is terribly attractive.
+    不幸地是，Imp 中并没有 [EXIT] 命令。在不对语言扩展控制结构的情况，我们能采取的
+    最好方法是是重复循环条件或添加标记变量。不论哪种都不是非常有吸引力。
 
-    Still, as a digression, below is an attempt at performing partial
-    evaluation on Imp commands.  We add one more command argument
-    [c''] to the [pe_com] relation, which keeps track of a loop to
-    roll up. *)
+    作为一个题外话，下面是一个对 Imp 命令进行部分求值的尝试。我们对 [pe_com]
+    关系添加一个新的命令参数 [c'']，用于记录循环的累积。*)
 
 Module Loop.
 
@@ -1076,8 +967,7 @@ Inductive pe_com : com -> pe_state -> com -> pe_state -> com -> Prop :=
       pe_compare pe_st pe_st'' = [] ->
       (WHILE b1 DO c1 END) / pe_st
         \\ (WHILE BTrue DO SKIP END) / pe_st / SKIP
-      (* Because we have an infinite loop, we should actually
-         start to throw away the rest of the program:
+      (* 因为这里是一个无限循环，我们实际上应该开始抛弃剩下的程序：
          (WHILE b1 DO c1 END) / pe_st
          \\ SKIP / pe_st / (WHILE BTrue DO SKIP END) *)
   | PE_WhileFixed : forall pe_st pe_st' pe_st'' b1 c1 c1' c2',
@@ -1095,7 +985,7 @@ Inductive pe_com : com -> pe_state -> com -> pe_state -> com -> Prop :=
 Hint Constructors pe_com.
 
 (* ================================================================= *)
-(** ** Examples *)
+(** ** 例子 *)
 
 Ltac step i :=
   (eapply i; intuition eauto; try solve_by_invert);
@@ -1176,13 +1066,10 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   inversion H. reflexivity. reflexivity. reflexivity. Qed.
 
 (* ================================================================= *)
-(** ** Correctness *)
+(** ** 正确性 *)
 
-(** Because this partial evaluator can unroll a loop n-fold where n is
-    a (finite) integer greater than one, in order to show it correct
-    we need to perform induction not structurally on dynamic
-    evaluation but on the number of times dynamic evaluation enters a
-    loop body. *)
+(** 由于部分求值器可以展开一个循环 n 次，其中 n 是一个大于一的有限整数，为了证明其
+    正确性我们需要对循环体动态求值的次数进行归纳，而非结构地对动态求值归纳。*)
 
 Reserved Notation "c1 '/' st '\\' st' '#' n"
   (at level 40, st at level 39, st' at level 39).
@@ -1441,27 +1328,21 @@ Qed.
 End Loop.
 
 (* ################################################################# *)
-(** * Partial Evaluation of Flowchart Programs *)
+(** * 流程图程序的部分求值 *)
 
-(** Instead of partially evaluating [WHILE] loops directly, the
-    standard approach to partially evaluating imperative programs is
-    to convert them into _flowcharts_.  In other words, it turns out
-    that adding labels and jumps to our language makes it much easier
-    to partially evaluate.  The result of partially evaluating a
-    flowchart is a residual flowchart.  If we are lucky, the jumps in
-    the residual flowchart can be converted back to [WHILE] loops, but
-    that is not possible in general; we do not pursue it here. *)
+(** 除了直接对 [WHILE] 的循环直接进行部分求值，一种对命令式程序进行部分求值
+    的标准方式是将他们转换为_'流程图（Flowcharts）'_。换句话说，为我们的语言
+    添加标签和跳转会使部分求值更容易。流程图程序的部分求值结果是一个剩余流程图。
+    幸运的话，剩余流程图程序中的跳转会被转换回 [WHILE] 循环，但一般来说这可
+    能不会发生；在这里我们并不追求达成这一点。*)
 
 (* ================================================================= *)
-(** ** Basic blocks *)
+(** ** 基本块 *)
 
-(** A flowchart is made of _basic blocks_, which we represent with the
-    inductive type [block].  A basic block is a sequence of
-    assignments (the constructor [Assign]), concluding with a
-    conditional jump (the constructor [If]) or an unconditional jump
-    (the constructor [Goto]).  The destinations of the jumps are
-    specified by _labels_, which can be of any type.  Therefore, we
-    parameterize the [block] type by the type of labels. *)
+(** 一个流程图程序由_'基本块（basic blocks）'_构成，我们用归纳类型 [block]
+    来表示它。一个基本块是一个赋值语句（[Assign] 构造子）序列，并以条件跳转（[If] 
+    构造子）或者无条件跳转（[Goto] 构造子）结束。跳转的目标由_'标签（labels）'_所指明，
+    其可为任意类型。因此，我们用标签的类型来参数化 [block] 类型。*)
 
 Inductive block (Label:Type) : Type :=
   | Goto : Label -> block Label
@@ -1472,9 +1353,8 @@ Arguments Goto {Label} _.
 Arguments If   {Label} _ _ _.
 Arguments Assign {Label} _ _ _.
 
-(** We use the "even or odd" program, expressed above in Imp, as our
-    running example.  Converting this program into a flowchart turns
-    out to require 4 labels, so we define the following type. *)
+(** 我们用上面 Imp 的“奇或偶”程序作为例子。将这个程序转换为流程图程序需要 4
+    个标签，因此我们定义如下类型。*)
 
 Inductive parity_label : Type :=
   | entry : parity_label
@@ -1482,19 +1362,16 @@ Inductive parity_label : Type :=
   | body  : parity_label
   | done  : parity_label.
 
-(** The following [block] is the basic block found at the [body] label
-    of the example program. *)
+(** 下面的 [block] 是一个基本块，构成了例子程序的 [body] 标签所代表的基本块。*)
 
 Definition parity_body : block parity_label :=
   Assign Y (Y - 1)
    (Assign X (1 - X)
      (Goto loop)).
 
-(** To evaluate a basic block, given an initial state, is to compute
-    the final state and the label to jump to next.  Because basic
-    blocks do not _contain_ loops or other control structures,
-    evaluation of basic blocks is a total function -- we don't need to
-    worry about non-termination. *)
+(** 给定一个初始状态，对基本块的求值是计算出最终状态和跳转的目标标签。
+    由于基本块不包含循环或其他控制结构，对基本块的求值是一个全函数——我们不需要
+    担心非停机性。*)
 
 Fixpoint keval {L:Type} (st:state) (k : block L) : state * L :=
   match k with
@@ -1509,13 +1386,12 @@ Example keval_example:
 Proof. reflexivity. Qed.
 
 (* ================================================================= *)
-(** ** Flowchart programs *)
+(** ** 流程图程序 *)
 
-(** A flowchart program is simply a lookup function that maps labels
-    to basic blocks.  Actually, some labels are _halting states_ and
-    do not map to any basic block.  So, more precisely, a flowchart
-    [program] whose labels are of type [L] is a function from [L] to
-    [option (block L)]. *)
+(** 一个流程图程序是一个查找函数将标签映射到基本块。事实上，有的标签是
+    _'停机状态（halting state）'_并且不被映射到任何基本块。因此准确地说，一个
+    流程图程序 [program] 是一个将 [L] 映射到到 [option (block L)] 
+    的函数，其中 [L] 是标签的类型。 *)
 
 Definition program (L:Type) : Type := L -> option (block L).
 
@@ -1527,9 +1403,8 @@ Definition parity : program parity_label := fun l =>
   | done => None (* halt *)
   end.
 
-(** Unlike a basic block, a program may not terminate, so we model the
-    evaluation of programs by an inductive relation [peval] rather
-    than a recursive function. *)
+(** 不同与基本块，一个程序可能不会终止，因此我们把程序的求值建模为归纳关系 [peval]
+    而非递归函数。*)
 
 Inductive peval {L:Type} (p : program L)
   : state -> L -> state -> L -> Prop :=
@@ -1551,16 +1426,13 @@ Proof. erewrite f_equal with (f := fun st => peval _ _ _ st _).
 Qed.
 
 (* ================================================================= *)
-(** ** Partial Evaluation of Basic Blocks and Flowchart Programs *)
+(** ** 基本块和流程图程序的部分求值 *)
 
-(** Partial evaluation changes the label type in a systematic way: if
-    the label type used to be [L], it becomes [pe_state * L].  So the
-    same label in the original program may be unfolded, or blown up,
-    into multiple labels by being paired with different partial
-    states.  For example, the label [loop] in the [parity] program
-    will become two labels: [([(X,0)], loop)] and [([(X,1)], loop)].
-    This change of label type is reflected in the types of [pe_block]
-    and [pe_program] defined presently. *)
+(** 部分求值系统地改变了标签类型：如果标签类型是 [L]，那么它会变为 [pe_state * L]。
+    因此源程序中的同同一个标签可能会未折叠、或展开多次，成为多个标签并和不同的部分状态配
+    对在一起。比如说，[parity] 程序中的 [loop] 标签会变为两个标签：[([(X,0)], loop)]
+    和 [([(X,1)], loop)]。标签类型的改变也在下面定义的 [pe_block] 和 [pe_program]
+    的类型中反映出来。*)
 
 Fixpoint pe_block {L:Type} (pe_st:pe_state) (k : block L)
   : block (pe_state * L) :=
