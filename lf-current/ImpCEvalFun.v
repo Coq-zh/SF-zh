@@ -191,8 +191,8 @@ Proof. reflexivity. Qed.
 (** [] *)
 
 (** **** 练习：2 星, optional (peven)  *)
-(** 编写一个 [While] 程序，它在 [X] 为偶数时将 [Z] 置为 [0]，否则置为 [1]。
-    使用 [ceval_test] 来测试你的程序。 *)
+(** 编写一个 [Imp] 程序：该程序在 [X] 为偶数时将 [Z] 置为 [0]，
+    否则将 [Z] 置为 [1]。使用 [test_ceval] 测试你的程序。 *)
 
 (* 请在此处解答 *)
 (** [] *)
@@ -264,6 +264,7 @@ Proof.
     请让你的证明能够将主要想法传达给读者。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_ceval_step__ceval_inf : option (prod nat string) := None.
 (** [] *)

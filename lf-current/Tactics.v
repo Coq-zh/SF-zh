@@ -59,8 +59,8 @@ Proof.
 
 Theorem silly_ex :
      (forall n, evenb n = true -> oddb (S n) = true) ->
-     evenb 3 = true ->
-     oddb 4 = true.
+     oddb 3 = true ->
+     evenb 4 = true.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -212,9 +212,9 @@ Proof.
   intros n m H. inversion H as [Hnm]. reflexivity.  Qed.
 
 (** **** 练习：1 星 (inversion_ex3)  *)
-Example inversion_ex3 : forall (X : Type) (x y z : X) (l j : list X),
-  x :: y :: l = z :: j ->
-  y :: l = x :: j ->
+Example inversion_ex3 : forall (X : Type) (x y z w : X) (l j : list X),
+  x :: y :: l = w :: z :: j ->
+  x :: l = z :: j ->
   x = y.
 Proof.
   (* 请在此处解答 *) Admitted.
@@ -493,10 +493,11 @@ Proof.
 
 (** **** 练习：2 星, advanced (beq_nat_true_informal)  *)
 (** 给出一个详细的 [beq_nat_true] 的非形式化证明，量词要尽可能明确。 *)
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_informal_proof : option (prod nat string) := None.
 
 (* 请在此处解答 *)
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_informal_proof : option (prod nat string) := None.
 (** [] *)
 
 (** 在 [induction] 之前做一些 [intros] 来获得更一般归纳假设并不总是奏效。
@@ -898,7 +899,7 @@ Proof.
     是 [combine] 的反函数。之后，证明该性质成立。（除必要的 [intros]
     之外，不要进行更多的 [intros]，以此来保证你的归纳假设的一般性。
     提示：你需要 [l1] 和 [l2] 的什么性质来保证
-    [split] [combine l1 l2 = (l1,l2)] 成立？） *)
+    [split (combine l1 l2 = (l1,l2)] 成立？） *)
 
 Definition split_combine_statement : Prop
   (* （“[: Prop]” 表示我们在这里给出了一个逻辑命题。） *)
@@ -907,6 +908,7 @@ Definition split_combine_statement : Prop
 Theorem split_combine : split_combine_statement.
 Proof.
 (* 请在此处解答 *) Admitted.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_split_combine : option (prod nat string) := None.
 
@@ -950,6 +952,7 @@ Proof.
     最后，证明定理 [existsb_existsb'] 指出 [existsb'] 和 [existsb] 的行为相同。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_forall_exists_challenge : option (prod nat string) := None.
 (** [] *)

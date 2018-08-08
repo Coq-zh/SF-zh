@@ -374,6 +374,7 @@ Proof with (eauto using wf_rcd_lookup).
     lemma. *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_rcd_types_match_informal : option (prod nat string) := None.
 (** [] *)

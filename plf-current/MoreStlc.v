@@ -2155,6 +2155,7 @@ Proof with eauto.
 Qed.
 
 End STLCExtended.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_STLC_extensions : option (prod nat string) := None.
 (** [] *)

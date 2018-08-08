@@ -9,7 +9,7 @@
     OCaml，提取结果大都可以直接使用的 Haskell，以及提取机制有些过时的 Scheme。 *)
 
 Require Coq.extraction.Extraction.
-Extraction Language Ocaml.
+Extraction Language OCaml.
 
 (** 现在我们将待提取的定义加载到 Coq 环境中。你可以直接写出定义，
     也可以从其它模块中加载。 *)

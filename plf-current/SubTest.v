@@ -145,14 +145,14 @@ idtac " ".
 idtac "-------------------  products  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: ProductExtension.progress".
+idtac "#> Manually graded: progress".
 idtac "Possible points: 2".
-print_manual_grade ProductExtension.manual_grade_for_progress.
+print_manual_grade manual_grade_for_progress.
 idtac " ".
 
-idtac "#> Manually graded: ProductExtension.preservation".
+idtac "#> Manually graded: preservation".
 idtac "Possible points: 2".
-print_manual_grade ProductExtension.manual_grade_for_preservation.
+print_manual_grade manual_grade_for_preservation.
 idtac " ".
 
 idtac " ".

@@ -20,7 +20,7 @@ Require Export Basics.
 
          [coqc Basics.v]
 
-       （它应该在任何终端窗口中都可用）
+       （它应该在任何场景下均可用）
 
     如果你遇到了问题（例如，稍后你可能会在本文件中遇到缺少标识符的提示），
     那可能是因为没有正确设置 Coq 的“加载路径”。命令 [Print LoadPath.]
@@ -178,6 +178,7 @@ Proof.
 
 (* 请在此处解答 *)
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_destruct_induction : option (prod nat string) := None.
 (** [] *)
@@ -335,6 +336,7 @@ Proof.
 
     Proof: (* 请在此处解答 *)
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_plus_comm_informal : option (prod nat string) := None.
 (** [] *)
@@ -473,6 +475,7 @@ Proof.
     请自便！ *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_binary_commute : option (prod nat string) := None.
 (** [] *)
@@ -494,6 +497,7 @@ Definition manual_grade_for_binary_commute : option (prod nat string) := None.
     再次说明，如果对此有帮助的话，请随意更改你之前的定义。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_binary_inverse : option (prod nat string) := None.
 (** [] *)

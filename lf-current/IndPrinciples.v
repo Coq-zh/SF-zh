@@ -1,6 +1,6 @@
 (** * IndPrinciples: 归纳原理 *)
 
-(** 理解了柯里-霍华德同构和它在 Coq 中的实现后，我们现在可以深入学习归纳原理。 *)
+(** 理解了柯里-霍华德同构及其 Coq 实现之后，我们可以深入学习归纳原理。 *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Export ProofObjects.

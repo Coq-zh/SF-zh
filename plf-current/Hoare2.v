@@ -268,6 +268,7 @@ These decorations were constructed as follows:
       FI
         {{ Y = X + Z }}
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_if_minus_plus_reloaded : option (prod nat string) := None.
 (** [] *)
@@ -572,6 +573,7 @@ Proof.
     is correct. *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_slow_assignment : option (prod nat string) := None.
 (** [] *)
@@ -854,6 +856,7 @@ Proof.
     {{ Y = m! }}
 *)
 
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_factorial : option (prod nat string) := None.
 (** [] *)
@@ -894,6 +897,7 @@ Definition manual_grade_for_decorations_in_factorial : option (prod nat string) 
   {{                            }} ->>
   {{ Z = min a b }}
 *)
+
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_decorations_in_Min_Hoare : option (prod nat string) := None.
@@ -1963,6 +1967,7 @@ Example slow_assignment_dec (m:nat) : decorated
 Theorem slow_assignment_dec_correct : forall m,
   dec_correct (slow_assignment_dec m).
 Proof. (* 请在此处解答 *) Admitted.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_check_defn_of_slow_assignment_dec : option (prod nat string) := None.
 (** [] *)
@@ -1981,6 +1986,7 @@ Fixpoint real_fact (n:nat) : nat :=
     prove it correct as [factorial_dec_correct]. *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_factorial_dec : option (prod nat string) := None.
 (** [] *)

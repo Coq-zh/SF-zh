@@ -420,6 +420,7 @@ Proof.
    并且用 [hoare_asgn] 来证明它们。*)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoare_asgn_examples : option (prod nat string) := None.
 (** [] *)
@@ -437,6 +438,7 @@ Definition manual_grade_for_hoare_asgn_examples : option (prod nat string) := No
     反例应该包含一个使这个规则不能正确工作的 [a]。）*)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoare_asgn_wrong : option (prod nat string) := None.
 (** [] *)
@@ -719,6 +721,7 @@ Qed.
    并且使用 [hoare_asgn] 和 [hoare_consequence_pre] 证明它们。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoare_asgn_examples_2 : option (prod nat string) := None.
 (** [] *)
@@ -845,6 +848,7 @@ Proof.
 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoarestate1 : option (prod nat string) := None.
 (** [] *)
@@ -1075,6 +1079,7 @@ Lemma hoare_if1_good :
 Proof. (* 请在此处解答 *) Admitted.
 
 End If1.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_if1_hoare : option (prod nat string) := None.
 (** [] *)
@@ -1325,6 +1330,7 @@ Proof.
 *)
 
 End RepeatExercise.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_hoare_repeat : option (prod nat string) := None.
 (** [] *)

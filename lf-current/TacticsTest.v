@@ -49,8 +49,8 @@ idtac " ".
 idtac "#> inversion_ex3".
 idtac "Possible points: 1".
 check_type @inversion_ex3 (
-(forall (X : Type) (x y z : X) (l j : list X),
- x :: y :: l = z :: j -> y :: l = x :: j -> x = y)).
+(forall (X : Type) (x y z w : X) (l j : list X),
+ x :: y :: l = w :: z :: j -> x :: l = z :: j -> x = y)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions inversion_ex3.

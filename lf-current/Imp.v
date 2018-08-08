@@ -24,7 +24,6 @@ Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
-Require Import Coq.omega.Omega.
 Import ListNotations.
 
 Require Import Maps.
@@ -1248,6 +1247,7 @@ Proof.
 (** 叙述并证明 [XtimesYinZ] 的规范（Specification）。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_XtimesYinZ_spec : option (prod nat string) := None.
 (** [] *)
@@ -1303,6 +1303,7 @@ Proof.
 (** 按照你的偏好使用 [no_whiles] 或 [no_whilesR]。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_no_whiles_terminating : option (prod nat string) := None.
 (** [] *)

@@ -635,6 +635,7 @@ Definition bool_step_prop3 :=
        tfalse.
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_smallstep_bools : option (prod nat string) := None.
 (** [] *)
@@ -1036,6 +1037,7 @@ Proof.
 
 (* 请在此处解答 *)
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_eval__multistep_inf : option (prod nat string) := None.
 (** [] *)
@@ -1131,6 +1133,7 @@ Inductive step : tm -> tm -> Prop :=
 (* 请在此处解答 *)
 
 End Combined.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_combined_properties : option (prod nat string) := None.
 (** [] *)

@@ -346,6 +346,7 @@ Require Import Smallstep.
     the application gets stuck.)
 
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_arrow_sub_wrong : option (prod nat string) := None.
 (** [] *)
@@ -455,6 +456,7 @@ That is, state how [Top -> (Top -> Student)] compares with each
 of the five types above. It may be unrelated to some of them.
 
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_subtype_order : option (prod nat string) := None.
 (** [] *)
@@ -488,6 +490,7 @@ Definition manual_grade_for_subtype_order : option (prod nat string) := None.
            exists S1 S2,
               S = S1*S2  /\  S1 <: T1  /\  S2 <: T2  
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_subtype_instances_tf_2 : option (prod nat string) := None.
 (** [] *)
@@ -521,6 +524,7 @@ Definition manual_grade_for_subtype_instances_tf_2 : option (prod nat string) :=
       each [S(i+1)] is a supertype of [Si].
 
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_subtype_concepts_tf : option (prod nat string) := None.
 (** [] *)
@@ -536,6 +540,7 @@ Definition manual_grade_for_subtype_concepts_tf : option (prod nat string) := No
          exists S,
             S <: T  /\  S <> T
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_proper_subtypes : option (prod nat string) := None.
 (** [] *)
@@ -554,6 +559,7 @@ Definition manual_grade_for_proper_subtypes : option (prod nat string) := None.
    - What is the _largest_ type [T] that makes the same assertion true?
 
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_small_large_1 : option (prod nat string) := None.
 (** [] *)
@@ -569,6 +575,7 @@ Definition manual_grade_for_small_large_1 : option (prod nat string) := None.
    - What is the _largest_ type [T] that makes the same assertion true?
 
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_small_large_2 : option (prod nat string) := None.
 (** [] *)
@@ -599,6 +606,7 @@ Definition manual_grade_for_small_large_2 : option (prod nat string) := None.
      assertion true?
 
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_small_large_4 : option (prod nat string) := None.
 (** [] *)
@@ -610,6 +618,7 @@ Definition manual_grade_for_small_large_4 : option (prod nat string) := None.
       exists S, exists t,
         empty |- (\x:T. x x) t : S
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_smallest_1 : option (prod nat string) := None.
 (** [] *)
@@ -620,6 +629,7 @@ Definition manual_grade_for_smallest_1 : option (prod nat string) := None.
 
       empty |- (\x:Top. x) ((\z:A.z) , (\z:B.z)) : T
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_smallest_2 : option (prod nat string) := None.
 (** [] *)
@@ -650,6 +660,7 @@ Definition manual_grade_for_smallest_2 : option (prod nat string) := None.
     for products.  Is this a good idea? Briefly explain why or why not.
 
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_pair_permutation : option (prod nat string) := None.
 (** [] *)
@@ -1591,6 +1602,7 @@ Qed.
 
 
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_variations : option (prod nat string) := None.
 (** [] *)
@@ -1652,16 +1664,11 @@ Inductive tm : Type :=
 (** Copy and extend and/or fill in required definitions and lemmas
     here. *)
 
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_progress : option (prod nat string) := None.
 Theorem progress : forall t T,
      empty |- t \in T ->
      value t \/ exists t', t ==> t'.
 Proof.
   (* 请在此处解答 *) Admitted.
-
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_preservation : option (prod nat string) := None.
 Theorem preservation : forall t t' T,
      empty |- t \in T  ->
      t ==> t'  ->
@@ -1670,6 +1677,10 @@ Proof.
   (* 请在此处解答 *) Admitted.
 
 End ProductExtension.
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_progress : option (prod nat string) := None.
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_preservation : option (prod nat string) := None.
 (** [] *)
 
 (** $Date$ *)

@@ -201,12 +201,8 @@ Proof. simpl. reflexivity. Qed.
 
 (** **** 练习：1 星 (nandb)  *)
 (** 移除“[Admitted.]”并补完以下函数的定义，然后确保下列每一个 [Example]
-    中的断言都能被 Coq 验证通过。（仿照前面 [orb] 测试的模式，移除每一个
-    [Admitted.] 并补充证明。）此函数应在两个输入之一或二者均为 [false]
-    时返回 [true] 。  *)
-(** 每个章节都附有 [[*Test.v]] 测试脚本。以本章为例：在完成练习后，可在命令行下执行
-    [[make BasicsTest.vo]] 并检查其输出。正确的结果显示为“Type: ok”
-    且不依赖任何假设（“Assumptions”）。 *)
+    中的断言都能被 Coq 验证通过。（即仿照上文 [orb] 测试的模式补充证明。）
+    此函数应在两个输入中包含 [false] 时返回 [true] 。  *)
 
 Definition nandb (b1:bool) (b2:bool) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -281,8 +277,8 @@ Inductive color : Type :=
 
     每个归纳定义的类型（如 [day]、[bool]、[rgb]、[color] 等）包含一个由构造子
     （如 [red]、[primary]、[true]、[false]、[monday] 等）构建的
-    _'构造子表达式'_ 的集合。[rgb] 和 [color] 的定义说明了集合 [rgb] 与
-    [color] 中的表达式时如何构建的：
+    _'构造子表达式'_ 的集合。 *)
+(** [rgb] 和 [color] 的定义描述了如何构造这两个集合中的元素（即表达式）：
 
     - [red]、[green] 和 [blue] 是 [rgb] 的构造子；
     - [black]、[white] 和 [primary] 是 [color] 的构造子；
@@ -528,18 +524,18 @@ Notation "x * y" := (mult x y)
 Check ((0 + 1) + 1).
 
 (** （[level]、[associativity] 和 [nat_scope] 标记控制着 Coq
-    语法分析器如何处理上述记法。细节无关紧要，有兴趣的读者可以参考本章末尾的
-    “进阶资料”中“关于记法的更多内容”一节。）
+    语法分析器如何处理上述记法。本课程不关注其细节。有兴趣的读者可参阅本章末尾
+    “关于记法的更多内容”一节。）
 
     注意，它们并不会改变我们之前的定义，而只是让 Coq 语法分析器接受用
     [x + y] 来代替 [plus x y]，并在 Coq 美化输出时反过来将 [plus x y]
     显示为 [x + y]。 *)
 
-(** 我们说 Coq 不包含任何内置定义时，实际上是指：
-    Coq 甚至连数值的相等性测试都是用户定义的操作！我们定义了 [beq_nat]
-    函数来测试自然数 [nat] 的相等性 [eq]，产生一个布尔值 [b]。
-    注意嵌套匹配 [match] 的使用（我们也可以使用同时匹配，和在 [minus]
-    中的做法一样）。 *)
+(** Coq 不包含任何内置定义，以至于数值间相等关系的测试也是由用户来实现。
+
+    [beq_nat] 函数定义如下：该函数测试自然数 [nat] 间相等关系 [eq]，
+    并以布尔值 [bool] 表示。注意该定义使用嵌套匹配 [match]
+    （亦可仿照 [minus] 使用并列匹配）。 *)
 
 Fixpoint beq_nat (n m : nat) : bool :=
   match n with
@@ -975,6 +971,11 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
 (* ################################################################# *)
 (** * 更多练习 *)
 
+(** Each SF chapter comes with a tester file (e.g.  [BasicsTest.v]),
+    containing scripts that check most of the exercises. You can run
+    [make BasicsTest.vo] in a terminal and check its output to make
+    sure you didn't miss anything. *)
+
 (** **** 练习：2 星 (boolean_functions)  *)
 (** 用你学过的策略证明以下关于布尔函数的定理。 *)
 
@@ -993,6 +994,7 @@ Proof.
    在后面的章节中，我们会大量使用字符串，
    不过目前我们只需要字符串字面量的语法来处理评分器的注释。 *)
 From Coq Require Export String.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_negation_fn_applied_twice : option (prod nat string) := None.
 (** [] *)
@@ -1044,6 +1046,7 @@ Proof.
         先自增再转换为一进制数，应该与将其先转换成一进制后再自增获得的结果相同。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_binary : option (prod nat string) := None.
 (** [] *)

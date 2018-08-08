@@ -137,6 +137,7 @@ Inductive grumble (X:Type) : Type :=
       - [c] *)
 (* 请在此处解答 *)
 End MumbleGrumble.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_mumble_grumble : option (prod nat string) := None.
 (** [] *)
@@ -765,6 +766,7 @@ Proof. reflexivity. Qed.
     [Y] 不同时的应用情景吗？ *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_fold_types_different : option (prod nat string) := None.
 (** [] *)
@@ -844,6 +846,7 @@ Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y
 (** 在 Coq 中写出 [fold_map_correct] 来陈述 [fold_map] 是正确的，然后证明它。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_fold_map : option (prod nat string) := None.
 (** [] *)
@@ -910,6 +913,7 @@ Proof.
    forall X n l, length l = n -> @nth_error X l n = None
 *)
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_informal_proof : option (prod nat string) := None.
 (** [] *)
@@ -1009,6 +1013,7 @@ Example exp_3 : exp three zero = one.
 Proof. (* 请在此处解答 *) Admitted.
 
 End Church.
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_succ_plus_mult_exp : option (prod nat string) := None.
 (** [] *)

@@ -53,6 +53,7 @@ Hint Constructors multi.
     straightforward induction on the size of a well-typed term? *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_norm_fail : option (prod nat string) := None.
 (** [] *)
@@ -63,6 +64,7 @@ Definition manual_grade_for_norm_fail : option (prod nat string) := None.
     parts of the following development, including some proofs of lemmas
     and the all the cases involving products and conditionals.  Fill them
     in. *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_norm : option (prod nat string) := None.
 (** [] *)

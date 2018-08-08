@@ -244,6 +244,7 @@ Definition closed (t:tm) :=
     properties, which are really the crux of the lambda-calculus. *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_afi : option (prod nat string) := None.
 (** [] *)
@@ -584,6 +585,7 @@ Qed.
 
 (* 请在此处解答 *)
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_subject_expansion_stlc : option (prod nat string) := None.
 (** [] *)
@@ -619,6 +621,7 @@ Proof.
       [unique_types], and prove your theorem. *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_types_unique : option (prod nat string) := None.
 (** [] *)
@@ -632,6 +635,7 @@ Definition manual_grade_for_types_unique : option (prod nat string) := None.
     Coq theorems).
     You can write [Admitted] for the proofs. *)
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_progress_preservation_statement : option (prod nat string) := None.
 (** [] *)
@@ -659,6 +663,7 @@ and the following typing rule:
       - Preservation
 (* 请在此处解答 *)
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_stlc_variation1 : option (prod nat string) := None.
 (** [] *)
@@ -685,6 +690,7 @@ Definition manual_grade_for_stlc_variation1 : option (prod nat string) := None.
       - Preservation
 (* 请在此处解答 *)
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_stlc_variation2 : option (prod nat string) := None.
 (** [] *)
@@ -703,6 +709,7 @@ Definition manual_grade_for_stlc_variation2 : option (prod nat string) := None.
       - Preservation
 (* 请在此处解答 *)
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_stlc_variation3 : option (prod nat string) := None.
 (** [] *)
@@ -865,6 +872,7 @@ Inductive tm : Type :=
         accepts the whole file. *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_stlc_arith : option (prod nat string) := None.
 (** [] *)

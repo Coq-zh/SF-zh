@@ -299,7 +299,7 @@ Proof.
     { intros [k' Hk']. rewrite Hk'. exists (S k'). reflexivity. }
     apply I. (* 将原始目标归约到新目标上 *)
 
-Admitted.
+Abort.
 
 (* ================================================================= *)
 (** ** 对证据进行归纳 *)
@@ -557,6 +557,7 @@ Inductive R : nat -> nat -> nat -> Prop :=
 
 (* 请在此处解答 *)
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_R_provability : option (prod nat string) := None.
 (** [] *)
@@ -575,8 +576,6 @@ Proof.
 End R.
 
 (** **** 练习：4 星, advanced (subsequence)  *)
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_subsequence : option (prod nat string) := None.
 (** 如果一个列表的所有元素以相同的顺序出现在另一个列表之中（但允许其中出现其他额外的元素），
     我们把第一个列表称作第二个列表的_'子序列'_。 例如：
 
@@ -608,6 +607,9 @@ Definition manual_grade_for_subsequence : option (prod nat string) := None.
       （提示：仔细选择进行归纳的项！） *)
 
 (* 请在此处解答 *)
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_subsequence : option (prod nat string) := None.
 (** [] *)
 
 (** **** 练习：2 星, optional (R_provability2)  *)
@@ -624,6 +626,7 @@ Definition manual_grade_for_subsequence : option (prod nat string) := None.
     - [R 1 [1;2;1;0]]
     - [R 6 [3;2;1;0]]  *)
 
+(* 请在此处解答 *)
 (** [] *)
 
 
@@ -1231,10 +1234,11 @@ Proof.
 (** 写出一个性质的归纳定义是本课程中你需要的重要技能。请尝试去独立解决
     以下的练习。
 
-    如果一个列表连续地重复一个元素，那么我们说这个列表是百叶窗式的（stutters）。
-    （这和上面练习中的 [NoDup] 性质是不同的：列表 [1;4;1] 虽然有重复但并不是
-    百叶窗式的。） [nostutter mylist] 表示 [mylist] 不是百叶窗式的。
-    请尝试写出 [nostutter] 的归纳定义。*)
+    列表连续地重复某元素称为 "百叶窗式" (stutter)。
+    （此概念不同于不包含重复元素：[1;4;1] 虽然包含重复元素 [1]，
+    但因其未连续出现，故不是百叶窗式列表）。
+    [nostutter mylist] 表示 [mylist] 不是百叶窗式列表。
+    请写出 [nostutter] 的归纳定义。 *)
 
 Inductive nostutter {X:Type} : list X -> Prop :=
  (* 请在此处解答 *)
@@ -1273,6 +1277,7 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
   end.
   contradiction H1; auto. Qed.
 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_nostutter : option (prod nat string) := None.
 (** [] *)
@@ -1304,6 +1309,7 @@ Definition manual_grade_for_nostutter : option (prod nat string) := None.
     请使用归纳关系而非 [Fixpoint] 来完成。）*)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
 (** [] *)
@@ -1335,6 +1341,7 @@ Definition manual_grade_for_filter_challenge : option (prod nat string) := None.
 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) := None.
 (** [] *)
@@ -1372,17 +1379,16 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (prod nat string) :
 (** 最后，使用 [disjoint]，[NoDup] 和 [++] （列表连接）陈述并证明一个或多个有趣的定理。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_NoDup_disjoint_etc : option (prod nat string) := None.
 (** [] *)
 
 (** **** 练习：4 星, advanced, optional (pigeonhole_principle)  *)
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_check_repeats : option (prod nat string) := None.
-(** _鸽笼原理（Pigeonhole Principle）'_陈述了一个关于计数的基本事实：
-    如果我们将超过 [n] 个项分布于 [n] 个鸽笼，那么一些鸽笼
-    必定含有至少两个项。往往有之，这个看起来关于数字的平凡事实却需要
-    非平凡的手段来证明，但我们现在已经有了…… *)
+(** _鸽笼原理（Pigeonhole Principle）'_是一个关于计数的基本事实：
+    如果我们将超过 [n] 个物体放进 [n] 个鸽笼，那么必有鸽笼
+    包含至少两个物体。与此前诸多情形相似，这一数学事实看似乏味，
+    但其证明手段并不平凡，如下所述： *)
 
 (** 首先容易证明一个有用的引理。 *)
 
@@ -1416,6 +1422,9 @@ Theorem pigeonhole_principle: forall (X:Type) (l1  l2:list X),
 Proof.
    intros X l1. induction l1 as [|x l1' IHl1'].
   (* 请在此处解答 *) Admitted.
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_check_repeats : option (prod nat string) := None.
 (** [] *)
 
 

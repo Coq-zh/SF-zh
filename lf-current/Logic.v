@@ -391,6 +391,7 @@ Proof.
    _'定理'_：对于任何命题 [P] 而言，[P] 蕴含 [~~P]。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_double_neg_inf : option (prod nat string) := None.
 (** [] *)
@@ -410,10 +411,10 @@ Proof.
 (** [] *)
 
 (** **** 练习：1 星, advanced (informal_not_PNP)  *)
-Definition informal_not_PNP_TODO := 0.
 (** 请写出 [forall P : Prop, ~(P /\ ~P)] 的非形式化证明。 *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_informal_not_PNP : option (prod nat string) := None.
 (** [] *)
@@ -983,7 +984,8 @@ Proof.
   - intros [k Hk]. rewrite Hk. apply evenb_double.
 Qed.
 
-(** 根据此定理，我们说布尔计算 [evenb n] _'反映'_了逻辑命题 [exists k, n = double k]。 *)
+(** 此定理说明，逻辑命题 [exists k, n = double k] 的真伪对应布尔计算 [evenb n]
+    的真值。 *)
 
 (** 我们可以用类似的方式陈述 [n] 和 [m] 的相等性，即 (1) [beq_nat n m] 返回 [true]
     或 (2) [n = m]。同样，二者是等价的。 *)

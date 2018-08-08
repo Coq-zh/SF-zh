@@ -441,6 +441,7 @@ Definition tseq t1 t2 :=
 would it behave the same? *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_compact_update : option (prod nat string) := None.
 (** [] *)
@@ -496,6 +497,7 @@ Definition manual_grade_for_compact_update : option (prod nat string) := None.
 (** Show how this can lead to a violation of type safety. *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_type_safety_violation : option (prod nat string) := None.
 (** [] *)
@@ -935,6 +937,7 @@ Definition context := partial_map ty.
 (** **** 练习：2 星 (cyclic_store)  *)
 (** Can you find a term whose reduction will create this particular
     cyclic store? *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_cyclic_store : option (prod nat string) := None.
 (** [] *)
@@ -1148,6 +1151,7 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     [ST1 |- st] and [ST2 |- st]? *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_store_not_unique : option (prod nat string) := None.
 (** [] *)
@@ -1622,6 +1626,7 @@ Qed.
 
 (* 请在此处解答 *)
  *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_preservation_informal : option (prod nat string) := None.
 (** [] *)

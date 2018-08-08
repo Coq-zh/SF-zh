@@ -17,8 +17,8 @@ Inductive natprod : Type :=
 
 Check (pair 3 5).
 
-(** 以下两个简单的函数定义分别用于提取序对中的第一个和第二个分量。
-          此定义同时也展示了如何对带有两个参数的构造子进行模式匹配。 *)
+(** 下述函数分别用于提取二元组中的第一个和第二个分量，
+          兼展示如何匹配带有两个参数的构造子。 *)
 
 Definition fst (p : natprod) : nat :=
   match p with
@@ -60,8 +60,8 @@ Definition swap_pair (p : natprod) : natprod :=
 
 (** 我们现在来证明一些有关二元组的简单事实。
 
-    如果我们以一种特定的（稍微有点古怪）的方式来书写我们的引理，仅通过
-    [reflexivity]（还有它自带的简化）我们就能完成证明。 *)
+    定理倘若以稍显古怪的方式书写，则只需 [reflexivity]（及其内建的简化）
+    即可完成证明。 *)
 
 Theorem surjective_pairing' : forall (n m : nat),
   (n,m) = (fst (n,m), snd (n,m)).
@@ -350,8 +350,6 @@ Example test_member2:             member 2 [1;4;1] = false.
 (** [] *)
 
 (** **** 练习：3 星, optional (bag_more_functions)  *)
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_bag_theorem : option (prod nat string) := None.
 (** 你可以把下面这些和 [bag] 有关的函数当作额外的练习 *)
 
 (** 当 [remove_one] 被应用到一个没有数可以移除的背包时，
@@ -395,6 +393,9 @@ Example test_subset1:              subset [1;2] [2;1;4;1] = true.
  (* 请在此处解答 *) Admitted.
 Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
  (* 请在此处解答 *) Admitted.
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_bag_theorem : option (prod nat string) := None.
 (** [] *)
 
 (** **** 练习：3 星, recommended (bag_theorem)  *)
@@ -555,8 +556,8 @@ Proof.
     (* ...但也仅此而已。 *)
 Abort.
 
-(** 所以我们把有关 [++] 和 [length] 的，
-    可以推进证明的等式单独拿出来作为一个引理证明。 *)
+(** 不妨单独提出引理，阐述 [++] 与 [length] 形成的等式关系，
+    以推进证明。 *)
 
 Theorem app_length : forall l1 l2 : natlist,
   length (l1 ++ l2) = (length l1) + (length l2).
@@ -754,8 +755,8 @@ Proof.
   - (* S n' *)
     simpl.  rewrite IHn'.  reflexivity.  Qed.
 
-(** **** 练习：3 星, advanced (remove_decreases_count)  *)
-Theorem remove_decreases_count: forall (s : bag),
+(** **** 练习：3 星, advanced (remove_does_not_increase_count)  *)
+Theorem remove_does_not_increase_count: forall (s : bag),
   leb (count 0 (remove_one 0 s)) (count 0 s) = true.
 Proof.
   (* 请在此处解答 *) Admitted.
@@ -768,15 +769,16 @@ Proof.
 (** [] *)
 
 (** **** 练习：4 星, advanced (rev_injective)  *)
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_rev_injective : option (prod nat string) := None.
-(** 证明 [rev] 函数是单射的，也就是说，
+(** 求证 [rev] 是单射函数，即：
 
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
 
     （这个问题既可以用简单的方式解决也可以用繁琐的方式来解决。） *)
 
 (* 请在此处解答 *)
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_rev_injective : option (prod nat string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -917,8 +919,8 @@ Inductive partial_map : Type :=
     表示一个空的偏映射，或通过将构造子 [record] 应用到一个键、一个值和一个既有的
     [partial_map] 来构造一个带“键-值”映射 的 [partial_map]。”*)
 
-(** [update] 函数用于覆盖偏映射中给定键所对应的项
-    （若给定的键尚不存在则添加一个新项）。 *)
+(** [update] 函数在部分映射中覆盖给定的键以取缔原值（如该键尚不存在，
+    则新建其记录）。 *)
 
 Definition update (d : partial_map)
                   (x : id) (value : nat)
@@ -965,6 +967,7 @@ Inductive baz : Type :=
 (** 类型 [baz] 有_'多少'_个元素？（请用汉语或你习惯的自然语言解答。） *)
 
 (* 请在此处解答 *)
+
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_baz_num_elts : option (prod nat string) := None.
 (** [] *)

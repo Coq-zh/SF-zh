@@ -317,18 +317,18 @@ Print Assumptions NatList.count_member_nonzero.
 Goal True.
 idtac " ".
 
-idtac "-------------------  remove_decreases_count  --------------------".
+idtac "-------------------  remove_does_not_increase_count  --------------------".
 idtac " ".
 
-idtac "#> NatList.remove_decreases_count".
+idtac "#> NatList.remove_does_not_increase_count".
 idtac "Advanced".
 idtac "Possible points: 3".
-check_type @NatList.remove_decreases_count (
+check_type @NatList.remove_does_not_increase_count (
 (forall s : NatList.bag,
  leb (NatList.count 0 (NatList.remove_one 0 s)) (NatList.count 0 s) = true)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions NatList.remove_decreases_count.
+Print Assumptions NatList.remove_does_not_increase_count.
 Goal True.
 idtac " ".
 
