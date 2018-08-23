@@ -49,6 +49,9 @@ Require Import Perm.
 Require Import Extract.
 Require Import Coq.Lists.List. 
 Export ListNotations.
+Require Import Coq.Logic.FunctionalExtensionality.
+Require Import ZArith.
+Open Scope Z_scope.
 
 Definition key := int.
 
@@ -132,10 +135,6 @@ Definition insert x vx s := makeBlack (ins x vx s).
      the root to each leaf; and there are never two red nodes in a row.
 
   First, we'll treat the [SearchTree] property. *)
-
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import ZArith.
-Open Scope Z_scope.
 
 (* ################################################################# *)
 (** * Proof Automation for Case-Analysis Proofs. *)
@@ -596,8 +595,9 @@ Definition elements (s: tree) : list (key * V) := elements' s nil.
 
 Definition elements_property (t: tree) (cts: total_map V) : Prop :=
    forall k v,
-    (In (k,v) (elements t) -> cts (int2Z k) = v) /\ 
-    (cts (int2Z k) <> default -> In (k, cts (int2Z k)) (elements t)).
+     (In (k,v) (elements t) -> cts (int2Z k) = v) /\
+     (cts (int2Z k) <> default ->
+      exists k', int2Z k = int2Z k' /\ In (k', cts (int2Z k)) (elements t)).
 
 Theorem elements_relate:
   forall t cts,  

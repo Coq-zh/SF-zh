@@ -444,11 +444,11 @@ Theorem not_true_is_false' : forall b : bool,
   b <> true -> b = false.
 Proof.
   intros [] H.
-  - (* b = false *)
+  - (* b = true *)
     unfold not in H.
     exfalso.                (* <=== *)
     apply H. reflexivity.
-  - (* b = true *) reflexivity.
+  - (* b = false *) reflexivity.
 Qed.
 
 (* ================================================================= *)

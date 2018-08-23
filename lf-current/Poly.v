@@ -7,10 +7,10 @@ Set Warnings "-notation-overridden,-parsing".
 Require Export Lists.
 
 (* ################################################################# *)
-(** * FULL: 多态 *)
+(** * 多态 *)
 
-(** 在本章中，我们会继续发展函数式编程的基本概念，其中最关键的新概念就是
-    _'多态'_（在所处理的数据类型上抽象出函数）和_'高阶函数'_（函数作为数据）。 *)
+(** 本章进一步讨论函数式编程中重要的基本概念：
+    将数据类型进行抽象而得的_'多态'_函数、取函数为数据的_'高阶函数'_。 *)
 
 (* ================================================================= *)
 (** ** 多态列表 *)
@@ -558,8 +558,8 @@ Example test_filter2:
   = [ [3]; [4]; [8] ].
 Proof. reflexivity.  Qed.
 
-(** 我们可以使用 [filter] 给出 [Lists] 中 [countoddmembers]
-    函数的简洁的版本。 *)
+(** 我们可以使用 [filter] 来简化 [Lists] 中 [countoddmembers]
+    函数的定义。 *)
 
 Definition countoddmembers' (l:list nat) : nat :=
   length (filter oddb l).
@@ -640,7 +640,7 @@ Example test_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
 
 (** 另一个方便的高阶函数叫做 [map]。 *)
 
-Fixpoint map {X Y:Type} (f:X->Y) (l:list X) : (list Y) :=
+Fixpoint map {X Y: Type} (f:X->Y) (l:list X) : (list Y) :=
   match l with
   | []     => []
   | h :: t => (f h) :: (map f t)
@@ -691,7 +691,7 @@ Proof.
       = [1; 2; 3; 5; 6; 7; 10; 11; 12].
 *)
 
-Fixpoint flat_map {X Y:Type} (f:X -> list Y) (l:list X)
+Fixpoint flat_map {X Y: Type} (f: X -> list Y) (l: list X)
                    : (list Y)
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
@@ -725,7 +725,7 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
 (** 一个更加强大的高阶函数叫做 [fold]。本函数启发自“[reduce] 归约”
     操作，它是 Google 的 map/reduce 分布式编程框架的核心。 *)
 
-Fixpoint fold {X Y:Type} (f: X->Y->Y) (l:list X) (b:Y)
+Fixpoint fold {X Y: Type} (f: X->Y->Y) (l: list X) (b: Y)
                          : Y :=
   match l with
   | nil => b
@@ -840,7 +840,7 @@ Proof.
 (** **** 练习：3 星 (fold_map)  *)
 (** 我们也可以用 [fold] 来定义 [map]。请完成下面的 [fold_map]。 *)
 
-Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y
+Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 (** 在 Coq 中写出 [fold_map_correct] 来陈述 [fold_map] 是正确的，然后证明它。 *)

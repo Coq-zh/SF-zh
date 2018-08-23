@@ -1027,7 +1027,7 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
             ...
             | WHILE b DO c END =>
                 if (beval st b)
-                  then ceval_fun st (c; WHILE b DO c END)
+                  then ceval_fun st (c;; WHILE b DO c END)
                   else st
           end.
 

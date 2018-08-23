@@ -906,7 +906,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 现在我们定义偏映射的类型： *)
+(** 部分映射定义如下： *)
 
 Module PartialMap.
 Export NatList.

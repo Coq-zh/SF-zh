@@ -159,7 +159,12 @@
 <div class="code code-tight">
 
 &nbsp;&nbsp;<span class="id" type="tactic">symmetry</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="comment">(*&nbsp;（此处的&nbsp;<span class="inlinecode"><span class="id" type="tactic">simpl</span></span>&nbsp;是可选的，因为&nbsp;<span class="inlinecode"><span class="id" type="tactic">apply</span></span>&nbsp;会在需要时先进行化简。）&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. </div>
+
+<div class="doc">
+（此处可省略 <span class="inlinecode"><span class="id" type="tactic">simpl</span></span>，因为 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> 会在必要时先进行化简。） 
+</div>
+<div class="code code-tight">
 &nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
@@ -192,7 +197,7 @@
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab136"></a><h1 class="section"><span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode">...</span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode">...</span> 策略</h1>
+<a name="lab136"></a><h1 class="section"><span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> 策略</h1>
 
 <div class="paragraph"> </div>
 
@@ -1084,11 +1089,10 @@
 </div>
 
 <div class="doc">
-<span class="inlinecode"><span class="id" type="tactic">simpl</span></span> 没有进展的原因在于，它注意到在试着展开 <span class="inlinecode"><span class="id" type="var">bar</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> 之后会留下被匹配的
-    <span class="inlinecode"><span class="id" type="var">m</span></span>，它是一个变量，因此 <span class="inlinecode"><span class="id" type="keyword">match</span></span> 无法被进一步化简。（它还没有聪明到发现
-    <span class="inlinecode"><span class="id" type="keyword">match</span></span> 的两个分支是完全相同的。）因此它会放弃展开 <span class="inlinecode"><span class="id" type="var">bar</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> 并留在那。
-    类似地，在试着展开 <span class="inlinecode"><span class="id" type="var">bar</span></span> <span class="inlinecode">(<span class="id" type="var">m</span>+1)</span> 时会留下一个 <span class="inlinecode"><span class="id" type="keyword">match</span></span>，被匹配者是一个函数应用
-    （即它本身，即便在展开 <span class="inlinecode">+</span> 的定义后也无法被化简），因此 <span class="inlinecode"><span class="id" type="tactic">simpl</span></span> 会留下它。 
+<span class="inlinecode"><span class="id" type="tactic">simpl</span></span> 之所以没有化简表达式，是因为展开 <span class="inlinecode"><span class="id" type="var">bar</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> 需对 <span class="inlinecode"><span class="id" type="var">m</span></span> 这一变量进行匹配。
+    虽然两个分支得到的结果相同，但策略未能察觉这一点，因而放弃展开 <span class="inlinecode"><span class="id" type="var">bar</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span>
+    而保留原式。类似地，展开 <span class="inlinecode"><span class="id" type="var">bar</span></span> <span class="inlinecode">(<span class="id" type="var">m</span>+1)</span> 时，因被匹配的表达式是函数调用
+    （该表达式即使展开 <span class="inlinecode">+</span> 的定义也无法化简），故保留原式。 
 <div class="paragraph"> </div>
 
  此时有两种方法可以继续。一种是用 <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> 将证明分为两种情况，
