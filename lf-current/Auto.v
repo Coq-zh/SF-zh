@@ -2,8 +2,8 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.omega.Omega.
-Require Import Maps.
-Require Import Imp.
+From LF Require Import Maps.
+From LF Require Import Imp.
 
 (** 到目前为止，我们大多使用的都是 Coq 策略系统中手动的部分。
     在本章中，我们会学习更多 Coq 强大的自动化特性：通过 [auto]
@@ -308,8 +308,8 @@ Proof.
     subst st'0.
     auto. Qed.
 
-(** 但是这并没有改进多少。我们真正希望的是 Coq 能自己发现发现有关的前提。
-    我们可以使用 Ltac 的 [match goal with ... end] 功能达到此目的。 *)
+(** 此例相比之前略有改进，但我们更希望 Coq 能替我们找到相关的假设。
+    Ltac 中的 [match goal] 功能可达成此目的。 *)
 
 Ltac find_rwinv :=
   match goal with
@@ -407,12 +407,12 @@ Qed.
 Module Repeat.
 
 Inductive com : Type :=
-  | CSkip : com
-  | CAsgn : string -> aexp -> com
-  | CSeq : com -> com -> com
-  | CIf : bexp -> com -> com -> com
-  | CWhile : bexp -> com -> com
-  | CRepeat : com -> bexp -> com.
+  | CSkip
+  | CAsgn (x : string) (a : aexp)
+  | CSeq (c1 c2 : com)
+  | CIf (b : bexp) (c1 c2 : com)
+  | CWhile (b : bexp) (c : com)
+  | CRepeat (c : com) (b : bexp).
 
 (** [REPEAT] 的行为和 [WHILE] 类似，只是循环条件会在每次循环体执行完
     _'之后'_ 执行，且只在循环条件为_'false'_时重复执行。

@@ -133,6 +133,18 @@ Ltac gen_until_mark :=
   | _ => generalize H; clear H; gen_until_mark
   end end.
 
+(** [gen_until_mark_with_processing F] is similar to [gen_until_mark]
+    except that it calls [F] on each hypothesis immediately before
+    generalizing it. This is useful for processing the hypotheses. *)
+
+Ltac gen_until_mark_with_processing cont :=
+  match goal with H: ?T |- _ =>
+  match T with
+  | ltac_Mark => clear H
+  | _ => cont H; generalize H; clear H;
+         gen_until_mark_with_processing cont
+  end end.
+
 (** [intro_until_mark] repeats [intro] until reaching an hypothesis of
     type [Mark]. It throws away the hypothesis [Mark].
     It fails if [Mark] does not appear as an hypothesis in the
@@ -355,25 +367,27 @@ Ltac fast_rm_inside E :=
 
 Require BinPos Coq.ZArith.BinInt.
 
-Definition ltac_nat_from_int (x:BinInt.Z) : nat :=
+Require Coq.Numbers.BinNums Coq.ZArith.BinInt.
+
+Definition ltac_int_to_nat (x:BinInt.Z) : nat :=
   match x with
   | BinInt.Z0 => 0%nat
   | BinInt.Zpos p => BinPos.nat_of_P p
   | BinInt.Zneg p => 0%nat
   end.
 
-Ltac nat_from_number N :=
+Ltac number_to_nat N :=
   match type of N with
   | nat => constr:(N)
-  | BinInt.Z => let N' := constr:(ltac_nat_from_int N) in eval compute in N'
+  | BinInt.Z => let N' := constr:(ltac_int_to_nat N) in eval compute in N'
   end.
 
 (** [ltac_pattern E at K] is the same as [pattern E at K] except that
-    [K] is a Coq natural rather than a Ltac integer. Syntax
+    [K] is a Coq number (nat or Z) rather than a Ltac integer. Syntax
     [ltac_pattern E as K in H] is also available. *)
 
 Tactic Notation "ltac_pattern" constr(E) "at" constr(K) :=
-  match nat_from_number K with
+  match number_to_nat K with
   | 1 => pattern E at 1
   | 2 => pattern E at 2
   | 3 => pattern E at 3
@@ -382,10 +396,11 @@ Tactic Notation "ltac_pattern" constr(E) "at" constr(K) :=
   | 6 => pattern E at 6
   | 7 => pattern E at 7
   | 8 => pattern E at 8
+  | _ => fail "ltac_pattern: arity not supported"
   end.
 
 Tactic Notation "ltac_pattern" constr(E) "at" constr(K) "in" hyp(H) :=
-  match nat_from_number K with
+  match number_to_nat K with
   | 1 => pattern E at 1 in H
   | 2 => pattern E at 2 in H
   | 3 => pattern E at 3 in H
@@ -394,8 +409,29 @@ Tactic Notation "ltac_pattern" constr(E) "at" constr(K) "in" hyp(H) :=
   | 6 => pattern E at 6 in H
   | 7 => pattern E at 7 in H
   | 8 => pattern E at 8 in H
+  | _ => fail "ltac_pattern: arity not supported"
   end.
 
+(** [ltac_set (x := E) at K] is the same as [set (x := E) at K] except
+    that [K] is a Coq number (nat or Z) rather than a Ltac integer. *)
+
+Tactic Notation "ltac_set" "(" ident(X) ":=" constr(E) ")" "at" constr(K) :=
+  match number_to_nat K with
+  | 1%nat => set (X := E) at 1
+  | 2%nat => set (X := E) at 2
+  | 3%nat => set (X := E) at 3
+  | 4%nat => set (X := E) at 4
+  | 5%nat => set (X := E) at 5
+  | 6%nat => set (X := E) at 6
+  | 7%nat => set (X := E) at 7
+  | 8%nat => set (X := E) at 8
+  | 9%nat => set (X := E) at 9
+  | 10%nat => set (X := E) at 10
+  | 11%nat => set (X := E) at 11
+  | 12%nat => set (X := E) at 12
+  | 13%nat => set (X := E) at 13
+  | _ => fail "ltac_set: arity not supported"
+  end.
 
 (* ================================================================= *)
 (** ** Testing Tactics *)
@@ -414,7 +450,7 @@ Lemma dup_lemma : forall P, P -> P -> P.
 Proof using. auto. Qed.
 
 Ltac dup_tactic N :=
-  match nat_from_number N with
+  match number_to_nat N with
   | 0 => idtac
   | S 0 => idtac
   | S ?N' => apply dup_lemma; [ | dup_tactic N' ]
@@ -427,14 +463,34 @@ Tactic Notation "dup" :=
 
 
 (* ================================================================= *)
+(** ** Testing evars and non-evars *)
+
+(** [is_not_evar E] succeeds only if [E] is not an evar;
+    it fails otherwise. It thus implements the negation of [is_evar] *)
+
+Ltac is_not_evar E :=
+  first [ is_evar E; fail 1
+        | idtac ].
+
+(** [is_evar_as_bool E] evaluates to [true] if [E] is an evar
+    and to [false] otherwise. *)
+
+Ltac is_evar_as_bool E :=
+  constr:(ltac:(first
+    [ is_evar E; exact true
+    | exact false ])).
+
+
+(* ================================================================= *)
 (** ** Check No Evar in Goal *)
 
 Ltac check_noevar M :=
   first [ has_evar M; fail 2 | idtac ].
 
-Ltac check_noevar_hyp H := (* todo: imlement using check_noevar *)
+Ltac check_noevar_hyp H :=
   let T := type of H in check_noevar T.
-Ltac check_noevar_goal := (* todo: imlement using check_noevar *)
+
+Ltac check_noevar_goal :=
   match goal with |- ?G => check_noevar G end.
 
 (* ================================================================= *)
@@ -444,7 +500,7 @@ Ltac check_noevar_goal := (* todo: imlement using check_noevar *)
     be used in the tactic [tac] under the name [M]. *)
 
 Ltac with_evar_base T cont :=
-  let x := fresh in evar (x:T); cont x; subst x.
+  let x := fresh "TEMP" in evar (x:T); cont x; subst x.
 
 Tactic Notation "with_evar" constr(T) tactic(cont) :=
   with_evar_base T cont.
@@ -517,12 +573,12 @@ Ltac get_head E :=
 
 Ltac get_fun_arg E :=
   match E with
-  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X6 ?X7 ?X => constr:((X1 X2 X3 X4 X5 X6,X))
-  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X6 ?X => constr:((X1 X2 X3 X4 X5,X))
-  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X => constr:((X1 X2 X3 X4,X))
-  | ?X1 ?X2 ?X3 ?X4 ?X => constr:((X1 X2 X3,X))
-  | ?X1 ?X2 ?X3 ?X => constr:((X1 X2,X))
-  | ?X1 ?X2 ?X => constr:((X1,X))
+  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X6 ?X7 ?X => constr:((X1 X2 X3 X4 X5 X6 X7,X))
+  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X6 ?X => constr:((X1 X2 X3 X4 X5 X6,X))
+  | ?X1 ?X2 ?X3 ?X4 ?X5 ?X => constr:((X1 X2 X3 X4 X5,X))
+  | ?X1 ?X2 ?X3 ?X4 ?X => constr:((X1 X2 X3 X4,X))
+  | ?X1 ?X2 ?X3 ?X => constr:((X1 X2 X3,X))
+  | ?X1 ?X2 ?X => constr:((X1 X2,X))
   | ?X1 ?X => constr:((X1,X))
   end.
 
@@ -536,12 +592,12 @@ Ltac get_fun_arg E :=
     [ltac_action_at K of E in H do Tac] is also available. *)
 
 Tactic Notation "ltac_action_at" constr(K) "of" constr(E) "do" tactic(Tac) :=
-  let p := fresh in ltac_pattern E at K;
+  let p := fresh "TEMP" in ltac_pattern E at K;
   match goal with |- ?P _ => set (p:=P) end;
   Tac; unfold p; clear p.
 
 Tactic Notation "ltac_action_at" constr(K) "of" constr(E) "in" hyp(H) "do" tactic(Tac) :=
-  let p := fresh in ltac_pattern E at K in H;
+  let p := fresh "TEMP" in ltac_pattern E at K in H;
   match type of H with ?P _ => set (p:=P) in H end;
   Tac; unfold p in H; clear p.
 
@@ -577,10 +633,10 @@ Notation "x '='' y" := (@eq' _ x y)
 (** * Common Tactics for Simplifying Goals Like [intuition] *)
 
 Ltac jauto_set_hyps :=
-  repeat match goal with H: ?T |- _ => 
+  repeat match goal with H: ?T |- _ =>
     match T with
     | _ /\ _ => destruct H
-    | exists a, _ => destruct H 
+    | exists a, _ => destruct H
     | _ => generalize H; clear H
     end
   end.
@@ -592,7 +648,7 @@ Ltac jauto_set_goal :=
   end.
 
 Ltac jauto_set :=
-  intros; jauto_set_hyps; 
+  intros; jauto_set_hyps;
   intros; jauto_set_goal;
   unfold not in *.
 
@@ -604,7 +660,7 @@ Ltac jauto_set :=
 (* ================================================================= *)
 (** ** Application *)
 
-Ltac old_refine f := 
+Ltac old_refine f :=
   refine f. (* ; shelve_unifiable. *)
 
 (** [rapply] is a tactic similar to [eapply] except that it is
@@ -614,24 +670,24 @@ Ltac old_refine f :=
     and it is able to instantiate existentials when required. *)
 
 Tactic Notation "rapply" constr(t) :=
-  first  (* todo: les @ sont inutiles *)
+  first  (* --TODO: the @ are not useful *)
   [ eexact (@t)
-  | refine (@t)
-  | refine (@t _)
-  | refine (@t _ _)
-  | refine (@t _ _ _)
-  | refine (@t _ _ _ _)
-  | refine (@t _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _)
-  | refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t)
+  | old_refine (@t _)
+  | old_refine (@t _ _)
+  | old_refine (@t _ _ _)
+  | old_refine (@t _ _ _ _)
+  | old_refine (@t _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _)
+  | old_refine (@t _ _ _ _ _ _ _ _ _ _ _ _ _ _ _)
   ].
 
 (** The tactics [applys_N T], where [N] is a natural number,
@@ -640,27 +696,27 @@ Tactic Notation "rapply" constr(t) :=
     the arity of function [T]. *)
 
 Tactic Notation "rapply_0" constr(t) :=
-  refine (@t).
+  old_refine (@t).
 Tactic Notation "rapply_1" constr(t) :=
-  refine (@t _).
+  old_refine (@t _).
 Tactic Notation "rapply_2" constr(t) :=
-  refine (@t _ _).
+  old_refine (@t _ _).
 Tactic Notation "rapply_3" constr(t) :=
-  refine (@t _ _ _).
+  old_refine (@t _ _ _).
 Tactic Notation "rapply_4" constr(t) :=
-  refine (@t _ _ _ _).
+  old_refine (@t _ _ _ _).
 Tactic Notation "rapply_5" constr(t) :=
-  refine (@t _ _ _ _ _).
+  old_refine (@t _ _ _ _ _).
 Tactic Notation "rapply_6" constr(t) :=
-  refine (@t _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _).
 Tactic Notation "rapply_7" constr(t) :=
-  refine (@t _ _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _ _).
 Tactic Notation "rapply_8" constr(t) :=
-  refine (@t _ _ _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _ _ _).
 Tactic Notation "rapply_9" constr(t) :=
-  refine (@t _ _ _ _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _ _ _ _).
 Tactic Notation "rapply_10" constr(t) :=
-  refine (@t _ _ _ _ _ _ _ _ _ _).
+  old_refine (@t _ _ _ _ _ _ _ _ _ _).
 
 (** [lets_base H E] adds an hypothesis [H : T] to the context, where [T] is
     the type of term [E]. If [H] is an introduction pattern, it will
@@ -673,7 +729,7 @@ Ltac lets_base I E := generalize E; intros I.
     [E] to [H]. Intuitively, it is equivalent to [lets H: (E H)]. *)
 
 Tactic Notation "applys_to" hyp(H) constr(E) :=
-  let H' := fresh in rename H into H';
+  let H' := fresh "TEMP" in rename H into H';
   (first [ lets_base H (E H')
          | lets_base H (E _ H')
          | lets_base H (E _ _ H')
@@ -689,11 +745,11 @@ Tactic Notation "applys_to" hyp(H) constr(E) :=
 (** [applys_to H1,...,HN E] applys [E] to several hypotheses *)
 
 Tactic Notation "applys_to" hyp(H1) "," hyp(H2) constr(E) :=
-  applys_to H1 E; applys_to H2 E.  
+  applys_to H1 E; applys_to H2 E.
 Tactic Notation "applys_to" hyp(H1) "," hyp(H2) "," hyp(H3) constr(E) :=
-  applys_to H1 E; applys_to H2 E; applys_to H3 E.  
+  applys_to H1 E; applys_to H2 E; applys_to H3 E.
 Tactic Notation "applys_to" hyp(H1) "," hyp(H2) "," hyp(H3) "," hyp(H4) constr(E) :=
-  applys_to H1 E; applys_to H2 E; applys_to H3 E; applys_to H4 E.  
+  applys_to H1 E; applys_to H2 E; applys_to H3 E; applys_to H4 E.
 
 (** [constructors] calls [constructor] or [econstructor]. *)
 
@@ -709,7 +765,7 @@ Tactic Notation "constructors" :=
     [asserts \[H|H\] (n = 0 \/ n = 1). *)
 
 Tactic Notation "asserts" simple_intropattern(I) ":" constr(T) :=
-  let H := fresh in assert (H : T);
+  let H := fresh "TEMP" in assert (H : T);
   [ | generalize H; clear H; intros I ].
 
 (** [asserts H1 .. HN: T] is a shorthand for
@@ -738,7 +794,7 @@ Tactic Notation "asserts" simple_intropattern(I1)
 (** [asserts: T] is [asserts H: T] with [H] being chosen automatically. *)
 
 Tactic Notation "asserts" ":" constr(T) :=
-  let H := fresh in asserts H : T.
+  let H := fresh "TEMP" in asserts H : T.
 
 (** [cuts H: T] is the same as [asserts H: T] except that the two subgoals
     generated are swapped: the subgoal [T] comes second. Note that contrary
@@ -750,7 +806,7 @@ Tactic Notation "cuts" simple_intropattern(I) ":" constr(T) :=
 (** [cuts: T] is [cuts H: T] with [H] being chosen automatically. *)
 
 Tactic Notation "cuts" ":" constr(T) :=
-  let H := fresh in cuts H: T.
+  let H := fresh "TEMP" in cuts H: T.
 
 (** [cuts H1 .. HN: T] is a shorthand for
     [cuts \[H1 \[H2 \[.. HN\]\]\]\]: T]. *)
@@ -790,7 +846,7 @@ Tactic Notation "cuts" simple_intropattern(I1)
     (written [__]), then an existential variable will be introduced in
     place of the argument.
 
-      It is very convenient to give some arguments the lemma should be
+    It is very convenient to give some arguments the lemma should be
     instantiated on, and let the tactic find out automatically where
     underscores should be insterted. Underscore arguments [__] are
     interpret as follows: an underscore means that we want to skip the
@@ -807,7 +863,7 @@ Tactic Notation "cuts" simple_intropattern(I1)
     Finally, if the argument [EN] given is a triple-underscore [___],
     then it is equivalent to providing a list of wildcards, with
     the appropriate number of wildcards. This means that all
-    the remaining arguments of the lemma will be instantiated. 
+    the remaining arguments of the lemma will be instantiated.
     Definitions in the conclusion are not unfolded in this case. *)
 
 (* Underlying implementation *)
@@ -845,7 +901,7 @@ Ltac boxerlist_next_type vs :=
   end.
 
 (* Note: refuse to instantiate a dependent hypothesis with a proposition;
-    refuse to instantiate an argument of type Type with one that 
+    refuse to instantiate an argument of type Type with one that
     does not have the type Type.
 *)
 
@@ -854,48 +910,48 @@ Ltac build_app_hnts t vs final :=
     match vs with
     | nil => first [ final t | fail 1 ]
     | (boxer ltac_wilds)::_ => first [ build_app_alls t final | fail 1 ]
-    | (boxer ?v)::?vs' => 
+    | (boxer ?v)::?vs' =>
       let cont t' := go t' vs in
       let cont' t' := go t' vs' in
-      let T := type of t in 
+      let T := type of t in
       let T := eval hnf in T in
       match v with
-      | ltac_wild => 
+      | ltac_wild =>
          first [ let U := boxerlist_next_type vs' in
            match U with
            | ltac_wild =>
-             match T with  
+             match T with
              | ?P -> ?Q => first [ app_assert t P cont' | fail 3 ]
-             | forall _:?A, _ => first [ app_evar t A cont' | fail 3 ] 
-             end 
+             | forall _:?A, _ => first [ app_evar t A cont' | fail 3 ]
+             end
            | _ =>
              match T with  (* should test T for unifiability *)
              | U -> ?Q => first [ app_assert t U cont' | fail 3 ]
-             | forall _:U, _ => first [ app_evar t U cont' | fail 3 ] 
+             | forall _:U, _ => first [ app_evar t U cont' | fail 3 ]
              | ?P -> ?Q => first [ app_assert t P cont | fail 3 ]
-             | forall _:?A, _ => first [ app_evar t A cont | fail 3 ] 
-             end 
+             | forall _:?A, _ => first [ app_evar t A cont | fail 3 ]
+             end
            end
          | fail 2 ]
-      | _ => 
+      | _ =>
           match T with
           | ?P -> ?Q => first [ app_arg t P v cont'
                               | app_assert t P cont
                               | fail 3 ]
-           | forall _:Type, _ => 
-              match type of v with 
-              | Type => first [ cont' (t v) 
+           | forall _:Type, _ =>
+              match type of v with
+              | Type => first [ cont' (t v)
                               | app_evar t Type cont
                               | fail 3 ]
               | _ => first [ app_evar t Type cont
                            | fail 3 ]
-              end 
-          | forall _:?A, _ => 
+              end
+          | forall _:?A, _ =>
              let V := type of v in
              match type of V with
              | Prop =>  first [ app_evar t A cont
                               | fail 3 ]
-             | _ => first [ cont' (t v) 
+             | _ => first [ cont' (t v)
                           | app_evar t A cont
                           | fail 3 ]
              end
@@ -913,14 +969,14 @@ Ltac app_typeclass t cont :=
 
 Ltac build_app_alls t final ::=
   let rec go t :=
-    match type of t with 
+    match type of t with
     | ?P -> ?Q => app_assert t P go
-    | forall _:?A, _ => 
+    | forall _:?A, _ =>
         first [ app_evar t A go
               | app_typeclass t go
               | fail 3 ]
     | _ => final t
-    end in 
+    end in
   go t.
 
 Ltac build_app_hnts t vs final ::=
@@ -928,57 +984,57 @@ Ltac build_app_hnts t vs final ::=
     match vs with
     | nil => first [ final t | fail 1 ]
     | (boxer ltac_wilds)::_ => first [ build_app_alls t final | fail 1 ]
-    | (boxer ?v)::?vs' => 
+    | (boxer ?v)::?vs' =>
       let cont t' := go t' vs in
       let cont' t' := go t' vs' in
-      let T := type of t in 
+      let T := type of t in
       let T := eval hnf in T in
       match v with
-      | ltac_wild => 
+      | ltac_wild =>
          first [ let U := boxerlist_next_type vs' in
            match U with
            | ltac_wild =>
-             match T with  
+             match T with
              | ?P -> ?Q => first [ app_assert t P cont' | fail 3 ]
              | forall _:?A, _ => first [ app_typeclass t cont'
-                                       | app_evar t A cont' 
-                                       | fail 3 ] 
-             end 
+                                       | app_evar t A cont'
+                                       | fail 3 ]
+             end
            | _ =>
              match T with  (* should test T for unifiability *)
              | U -> ?Q => first [ app_assert t U cont' | fail 3 ]
-             | forall _:U, _ => first 
+             | forall _:U, _ => first
                  [ app_typeclass t cont'
-                 | app_evar t U cont' 
-                 | fail 3 ] 
+                 | app_evar t U cont'
+                 | fail 3 ]
              | ?P -> ?Q => first [ app_assert t P cont | fail 3 ]
-             | forall _:?A, _ => first 
+             | forall _:?A, _ => first
                  [ app_typeclass t cont
                  | app_evar t A cont
-                 | fail 3 ] 
-             end 
+                 | fail 3 ]
+             end
            end
          | fail 2 ]
-      | _ => 
+      | _ =>
           match T with
           | ?P -> ?Q => first [ app_arg t P v cont'
                               | app_assert t P cont
                               | fail 3 ]
-           | forall _:Type, _ => 
-              match type of v with 
-              | Type => first [ cont' (t v) 
+           | forall _:Type, _ =>
+              match type of v with
+              | Type => first [ cont' (t v)
                               | app_evar t Type cont
                               | fail 3 ]
               | _ => first [ app_evar t Type cont
                            | fail 3 ]
-              end 
-          | forall _:?A, _ => 
+              end
+          | forall _:?A, _ =>
              let V := type of v in
              match type of V with
              | Prop => first [ app_typeclass t cont
                               | app_evar t A cont
                               | fail 3 ]
-             | _ => first [ cont' (t v) 
+             | _ => first [ cont' (t v)
                           | app_typeclass t cont
                           | app_evar t A cont
                           | fail 3 ]
@@ -987,7 +1043,7 @@ Ltac build_app_hnts t vs final ::=
       end
     end in
   go t vs.
-  (* todo: use local function for first [...] *)
+  (* --TODO: use local function for first [...] *)
 
 
 (*--old version
@@ -1182,7 +1238,7 @@ Tactic Notation "forwards" ":" constr(E0)
  constr(A1) constr(A2) constr(A3) constr(A4) constr(A5) :=
   forwards: (>> E0 A1 A2 A3 A4 A5).
 
-(* todo: deprecated, do not use *)
+(* --TODO: deprecated, do not use *)
 Tactic Notation "forwards" simple_intropattern(I1) simple_intropattern(I2)
  ":" constr(E) :=
   forwards [I1 I2]: E.
@@ -1213,11 +1269,18 @@ Tactic Notation "forwards" simple_intropattern(I) ":" constr(E0)
  constr(A1) constr(A2) constr(A3) constr(A4) constr(A5) :=
   forwards I: (>> E0 A1 A2 A3 A4 A5).
 
-  (* for use by tactics -- todo: factorize better *)
+(** [forwards_nounfold I: E] is like [forwards I: E] but does not
+    unfold the head constant of [E] if there is no visible quantification
+    or hypothesis in [E]. It is meant to be used mainly by tactics. *)
+
 Tactic Notation "forwards_nounfold" simple_intropattern(I) ":" constr(Ei) :=
   let args := list_boxer_of Ei in
   let args := (eval simpl in (args ++ ((boxer ___)::nil))) in
   build_app args ltac:(fun R => lets_base I R).
+
+(** [forwards_nounfold_then E ltac:(fun K => ..)]
+    is like [forwards: E] but it provides the resulting term
+    to a continuation, under the name [K]. *)
 
 Ltac forwards_nounfold_then Ei cont :=
   let args := list_boxer_of Ei in
@@ -1267,7 +1330,7 @@ Ltac fapplys_build Ei :=
   let args := args_unfold_head_if_not_product_but_params args in
   build_app args ltac:(fun R => apply R).
 
-Tactic Notation "fapplys" constr(E0) :=  (* todo: use the tactic for that*)
+Tactic Notation "fapplys" constr(E0) :=  (* --todo: use the tactic for that*)
   match type of E0 with
   | list Boxer => fapplys_build E0
   | _ => fapplys_build (>> E0)
@@ -1312,7 +1375,7 @@ Tactic Notation "specializes" hyp(H) constr(A1) constr(A2) constr(A3) constr(A4)
 Tactic Notation "specializes" hyp(H) constr(A1) constr(A2) constr(A3) constr(A4) constr(A5) :=
   specializes H (>> A1 A2 A3 A4 A5).
 
-(** [specializes_vars H] is equivalent to [specializes H __ .. __] 
+(** [specializes_vars H] is equivalent to [specializes H __ .. __]
     with as many double underscore as the number of dependent arguments
     visible from the type of [H]. Note that no unfolding is currently
     being performed (this behavior might change in the future).
@@ -1320,7 +1383,7 @@ Tactic Notation "specializes" hyp(H) constr(A1) constr(A2) constr(A3) constr(A4)
     [H] is an existing hypothesis -- TODO: generalize. *)
 
 Ltac specializes_var_base H :=
-  match type of H with 
+  match type of H with
   | ?P -> ?Q => fail 1
   | forall _:_, _ => specializes H __
   end.
@@ -1340,10 +1403,10 @@ Tactic Notation "specializes_vars" hyp(H) :=
 (** [fapply] is a version of [apply] based on [forwards]. *)
 
 Tactic Notation "fapply" constr(E) :=
-  let H := fresh in forwards H: E;
+  let H := fresh "TEMP" in forwards H: E;
   first [ apply H | eapply H | rapply H | hnf; apply H
         | hnf; eapply H | applys H ].
-   (* todo: is applys redundant with rapply ? *)
+   (* --TODO: is applys redundant with rapply ? *)
 
 (** [sapply] stands for "super apply". It tries
     [apply], [eapply], [applys] and [fapply],
@@ -1365,17 +1428,17 @@ Tactic Notation "lets_simpl" ident(H) ":" constr(E) :=
   lets H: E; try simpl in H.
 
 Tactic Notation "lets_simpl" ":" constr(T) :=
-  let H := fresh in lets_simpl H: T.
+  let H := fresh "TEMP" in lets_simpl H: T.
 
 (** [lets_hnf H: E] is the same as [lets H: E] excepts that it
-    calls [hnf] to set the definition in head normal form. 
+    calls [hnf] to set the definition in head normal form.
     [lets_hnf: E] is also provided. *)
 
 Tactic Notation "lets_hnf" ident(H) ":" constr(E) :=
   lets H: E; hnf in H.
 
 Tactic Notation "lets_hnf" ":" constr(T) :=
-  let H := fresh in lets_hnf H: T.
+  let H := fresh "TEMP" in lets_hnf H: T.
 
 (** [puts X: E] is a synonymous for [pose (X := E)].
     Alternative syntax is [puts: E]. *)
@@ -1463,7 +1526,7 @@ Proof. intros. subst. auto. Qed.
 End equatesLemma.
 
 Ltac equates_lemma n :=
-  match nat_from_number n with
+  match number_to_nat n with
   | 0 => constr:(equates_0)
   | 1 => constr:(equates_1)
   | 2 => constr:(equates_2)
@@ -1515,7 +1578,7 @@ Tactic Notation "applys_eq" constr(H) constr(n1) constr(n2) constr(n3) constr(n4
 (* ================================================================= *)
 (** ** Absurd Goals *)
 
-(** [false_goal] replaces any goal by the goal [False]. 
+(** [false_goal] replaces any goal by the goal [False].
     Contrary to the tactic [false] (below), it does not try to do
     anything else *)
 
@@ -1526,7 +1589,7 @@ Tactic Notation "false_goal" :=
     of the form [False]. In the default implementation, it proves
     the goal if the context contains [False] or an hypothesis of the
     form [C x1 .. xN  =  D y1 .. yM], or if the [congruence] tactic
-    finds a proof of [x <> x] for some [x]. *) 
+    finds a proof of [x <> x] for some [x]. *)
 
 Ltac false_post :=
   solve [ assumption | discriminate | congruence ].
@@ -1552,10 +1615,10 @@ Tactic Notation "tryfalse" :=
 Ltac false_then E cont :=
   false_goal; first
   [ applys E; instantiate
-  | forwards_then E ltac:(fun M => 
-      pose M; jauto_set_hyps; intros; false) ]; 
+  | forwards_then E ltac:(fun M =>
+      pose M; jauto_set_hyps; intros; false) ];
   cont tt.
-  (* TODO: is [cont] needed? *)
+  (* --TODO: is [cont] needed? *)
 
 Tactic Notation "false" constr(E) :=
   false_then E ltac:(fun _ => idtac).
@@ -1572,14 +1635,14 @@ Tactic Notation "false" constr(E) constr(E1) constr(E2) constr(E3) constr(E4) :=
     calling [inversion H] and [false] *)
 
 Ltac false_invert_for H :=
-  let M := fresh in pose (M := H); inversion H; false.
+  let M := fresh "TEMP" in pose (M := H); inversion H; false.
 
-Tactic Notation "false_invert" constr(H) :=  
+Tactic Notation "false_invert" constr(H) :=
   try solve [ false_invert_for H | false ].
 
-(** [false_invert] proves any goal provided there is at least 
+(** [false_invert] proves any goal provided there is at least
     one hypothesis [H] in the context (or as a universally quantified
-    hypothesis visible at the head of the goal) that can be proved absurd by calling 
+    hypothesis visible at the head of the goal) that can be proved absurd by calling
     [inversion H]. *)
 
 Ltac false_invert_iter :=
@@ -1591,7 +1654,7 @@ Ltac false_invert_iter :=
 Tactic Notation "false_invert" :=
   intros; solve [ false_invert_iter | false ].
 
-(** [tryfalse_invert H] and [tryfalse_invert] are like the 
+(** [tryfalse_invert H] and [tryfalse_invert] are like the
     above but leave the goal unchanged if they don't solve it. *)
 
 Tactic Notation "tryfalse_invert" constr(H) :=
@@ -1601,12 +1664,12 @@ Tactic Notation "tryfalse_invert" :=
   try false_invert.
 
 (** [false_neq_self_hyp] proves any goal if the context
-    contains an hypothesis of the form [E <> E]. It is 
-    a restricted and optimized version of [false]. It is 
+    contains an hypothesis of the form [E <> E]. It is
+    a restricted and optimized version of [false]. It is
     intended to be used by other tactics only. *)
 
 Ltac false_neq_self_hyp :=
-  match goal with H: ?x <> ?x |- _ => 
+  match goal with H: ?x <> ?x |- _ =>
     false_goal; apply H; reflexivity end.
 
 
@@ -1714,7 +1777,7 @@ Tactic Notation "introv" simple_intropattern(I1) simple_intropattern(I2)
 
 (** [intros_all] repeats [intro] as long as possible. Contrary to [intros],
     it unfolds any definition on the way. Remark that it also unfolds the
-    definition of negation, so applying [introz] to a goal of the form
+    definition of negation, so applying [intros_all] to a goal of the form
     [forall x, P x -> ~Q] will introduce [x] and [P x] and [Q], and will
     leave [False] in the goal. *)
 
@@ -1727,7 +1790,117 @@ Tactic Notation "intro_hnf" :=
   intro; match goal with H: _ |- _ => hnf in H end.
 
 
+(* ================================================================= *)
+(** ** Introduction using [=>] and [=>>] *)
 
+(* [=> I1 .. IN] is the same as [intros I1 .. IN] *)
+
+Ltac ltac_intros_post := idtac.
+
+Tactic Notation "=>" :=
+  intros.
+Tactic Notation "=>" simple_intropattern(I1) :=
+  intros I1.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2) :=
+  intros I1 I2.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) :=
+  intros I1 I2 I3.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) :=
+  intros I1 I2 I3 I4.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5) :=
+  intros I1 I2 I3 I4 I5.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) :=
+  intros I1 I2 I3 I4 I5 I6.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) :=
+  intros I1 I2 I3 I4 I5 I6 I7.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8) :=
+  intros I1 I2 I3 I4 I5 I6 I7 I8.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
+ simple_intropattern(I9) :=
+  intros I1 I2 I3 I4 I5 I6 I7 I8 I9.
+Tactic Notation "=>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
+ simple_intropattern(I9) simple_intropattern(I10) :=
+  intros I1 I2 I3 I4 I5 I6 I7 I8 I9 I10.
+
+(* [=>>] first introduces all non-dependent variables,
+   then behaves as [intros]. It unfolds the head of the goal using [hnf]
+   if there are not head visible quantifiers.
+
+   Remark: instances of [Inhab] are treated as non-dependent and
+   are introduced automatically. *)
+
+(* NOTE: this tactic is later redefined for supporting Inhab *)
+Ltac intro_nondeps_aux_special_intro G :=
+  fail.
+
+Ltac intro_nondeps_aux is_already_hnf :=
+  match goal with
+  | |- (?P -> ?Q) => idtac
+  | |- ?G -> _ => intro_nondeps_aux_special_intro G;
+                  intro; intro_nondeps_aux true
+  | |- (forall _,_) => intros ?; intro_nondeps_aux true
+  | |- _ =>
+     match is_already_hnf with
+     | true => idtac
+     | false => hnf; intro_nondeps_aux true
+     end
+  end.
+
+Ltac intro_nondeps tt := intro_nondeps_aux false.
+
+Tactic Notation "=>>" :=
+  intro_nondeps tt.
+Tactic Notation "=>>" simple_intropattern(I1) :=
+  =>>; intros I1.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2) :=
+  =>>; intros I1 I2.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) :=
+  =>>; intros I1 I2 I3.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) :=
+  =>>; intros I1 I2 I3 I4.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5) :=
+  =>>; intros I1 I2 I3 I4 I5.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) :=
+  =>>; intros I1 I2 I3 I4 I5 I6.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) :=
+  =>>; intros I1 I2 I3 I4 I5 I6 I7.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8) :=
+  =>>; intros I1 I2 I3 I4 I5 I6 I7 I8.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
+ simple_intropattern(I9) :=
+  =>>; intros I1 I2 I3 I4 I5 I6 I7 I8 I9.
+Tactic Notation "=>>" simple_intropattern(I1) simple_intropattern(I2)
+ simple_intropattern(I3) simple_intropattern(I4) simple_intropattern(I5)
+ simple_intropattern(I6) simple_intropattern(I7) simple_intropattern(I8)
+ simple_intropattern(I9) simple_intropattern(I10) :=
+  =>>; intros I1 I2 I3 I4 I5 I6 I7 I8 I9 I10.
+
+
+(* ---------------------------------------------------------------------- *)
 (* ================================================================= *)
 (** ** Generalization *)
 
@@ -1873,7 +2046,7 @@ Tactic Notation "set_eq" "<-" ":" constr(E) "in" "|-" :=
     [gen_eq: E] and [gen_eq: E as X] are also accepted. *)
 
 Tactic Notation "gen_eq" ident(X) ":" constr(E) :=
-  let EQ := fresh in sets_eq X EQ: E; revert EQ.
+  let EQ := fresh "EQ" X in sets_eq X EQ: E; revert EQ.
 Tactic Notation "gen_eq" ":" constr(E) :=
   let X := fresh "X" in gen_eq X: E.
 Tactic Notation "gen_eq" ":" constr(E) "as" ident(X) :=
@@ -1921,11 +2094,11 @@ Tactic Notation "sets_eq_let" ident(X) "in" hyp(H) :=
 (** [rewrites E] is similar to [rewrite] except that
     it supports the [rm] directives to clear hypotheses
     on the fly, and that it supports a list of arguments in the form
-    [rewrites (>> E1 E2 E3)] to indicate that [forwards] should be 
+    [rewrites (>> E1 E2 E3)] to indicate that [forwards] should be
     invoked first before [rewrites] is called. *)
 
 Ltac rewrites_base E cont :=
-  match type of E with 
+  match type of E with
   | List.list Boxer => forwards_then E cont
   | _ => cont E; fast_rm_inside E
   end.
@@ -1943,7 +2116,7 @@ Tactic Notation "rewrites" "<-" constr(E) "in" hyp(H) :=
 Tactic Notation "rewrites" "<-" constr(E) "in" "*" :=
   rewrites_base E ltac:(fun M => rewrite <- M in *).
 
-(* TODO: extend tactics below to use [rewrites] *)
+(* --TODO: extend tactics below to use [rewrites] *)
 
 (** [rewrite_all E] iterates version of [rewrite E] as long as possible.
     Warning: this tactic can easily get into an infinite loop.
@@ -1971,7 +2144,7 @@ Tactic Notation "rewrite_all" "<-" constr(E) "in" "*" :=
     plays a similar role. *)
 
 Ltac asserts_rewrite_tactic E action :=
-  let EQ := fresh in (assert (EQ : E);
+  let EQ := fresh "TEMP" in (assert (EQ : E);
   [ idtac | action EQ; clear EQ ]).
 
 Tactic Notation "asserts_rewrite" constr(E) :=
@@ -1991,7 +2164,7 @@ Tactic Notation "asserts_rewrite" "<-" constr(E) "in" "*" :=
     that subgoals are permuted. *)
 
 Ltac cuts_rewrite_tactic E action :=
-  let EQ := fresh in (cuts EQ: E;
+  let EQ := fresh "TEMP" in (cuts EQ: E;
   [ action EQ; clear EQ | idtac ]).
 
 Tactic Notation "cuts_rewrite" constr(E) :=
@@ -2007,7 +2180,7 @@ Tactic Notation "cuts_rewrite" "<-" constr(E) "in" hyp(H) :=
     but in hypothesis [H]. Mainly useful for other tactics. *)
 
 Ltac rewrite_except H EQ :=
-  let K := fresh in let T := type of H in
+  let K := fresh "TEMP" in let T := type of H in
   set (K := T) in H;
   rewrite EQ in *; unfold K in H; clear K.
 
@@ -2041,10 +2214,10 @@ Tactic Notation "rewrites" "<-" constr(E) "at" constr(K) "in" hyp(H) :=
     [asserts_rewrite (E = F)]. *)
 
 Tactic Notation "replaces" constr(E) "with" constr(F) :=
-  let T := fresh in assert (T: E = F); [ | replace E with F; clear T ].
+  let T := fresh "TEMP" in assert (T: E = F); [ | replace E with F; clear T ].
 
 Tactic Notation "replaces" constr(E) "with" constr(F) "in" hyp(H) :=
-  let T := fresh in assert (T: E = F); [ | replace E with F in H; clear T ].
+  let T := fresh "TEMP" in assert (T: E = F); [ | replace E with F in H; clear T ].
 
 
 (** [replaces E at K with F] replaces the [K]-th occurence of [E]
@@ -2052,19 +2225,19 @@ Tactic Notation "replaces" constr(E) "with" constr(F) "in" hyp(H) :=
     is also available. *)
 
 Tactic Notation "replaces" constr(E) "at" constr(K) "with" constr(F) :=
-  let T := fresh in assert (T: E = F); [ | rewrites T at K; clear T ].
+  let T := fresh "TEMP" in assert (T: E = F); [ | rewrites T at K; clear T ].
 
 Tactic Notation "replaces" constr(E) "at" constr(K) "with" constr(F) "in" hyp(H) :=
-  let T := fresh in assert (T: E = F); [ | rewrites T at K in H; clear T ].
+  let T := fresh "TEMP" in assert (T: E = F); [ | rewrites T at K in H; clear T ].
 
 
 (**  ** Change *)
 
 (** [changes] is like [change] except that it does not silently
    fail to perform its task. (Note that, [changes] is implemented
-   using [rewrite], meaning that it might perform additional 
+   using [rewrite], meaning that it might perform additional
    beta-reductions compared with the original [change] tactic. *)
-(* TODO: support "changes (E1 = E2)" *)
+(* --TODO: support "changes (E1 = E2)" *)
 
 Tactic Notation "changes" constr(E1) "with" constr(E2) "in" hyp(H) :=
   asserts_rewrite (E1 = E2) in H; [ reflexivity | ].
@@ -2109,7 +2282,7 @@ Tactic Notation "renames" ident(X1) "to" ident(Y1) ","
 (* ================================================================= *)
 (** ** Unfolding *)
 
-(** [unfolds] unfolds the head definition in the goal, i.e., if the
+(** [unfolds] unfolds the head definition in the goal, i.e. if the
     goal has form [P x1 ... xN] then it calls [unfold P].
     If the goal is an equality, it tries to unfold the head constant
     on the left-hand side, and otherwise tries on the right-hand side.
@@ -2132,7 +2305,7 @@ Ltac unfolds_base :=
 Tactic Notation "unfolds" :=
   unfolds_base.
 
-(** [unfolds in H] unfolds the head definition of hypothesis [H], i.e., if
+(** [unfolds in H] unfolds the head definition of hypothesis [H], i.e. if
     [H] has type [P x1 ... xN] then it calls [unfold P in H]. *)
 
 Ltac unfolds_in_base H :=
@@ -2151,6 +2324,8 @@ Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) :=
   unfolds in H1; unfolds in H2 H3.
 Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) hyp(H4) :=
   unfolds in H1; unfolds in H2 H3 H4.
+Tactic Notation "unfolds" "in" hyp(H1) hyp(H2) hyp(H3) hyp(H4) hyp(H5) :=
+  unfolds in H1; unfolds in H2 H3 H4 H5.
 
 (** [unfolds P1,..,PN] is a shortcut for [unfold P1,..,PN in *]. *)
 
@@ -2158,24 +2333,24 @@ Tactic Notation "unfolds" constr(F1) :=
   unfold F1 in *.
 Tactic Notation "unfolds" constr(F1) "," constr(F2) :=
   unfold F1,F2 in *.
-Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+Tactic Notation "unfolds" constr(F1) "," constr(F2)
  "," constr(F3) :=
   unfold F1,F2,F3 in *.
-Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+Tactic Notation "unfolds" constr(F1) "," constr(F2)
  "," constr(F3) "," constr(F4) :=
   unfold F1,F2,F3,F4 in *.
-Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+Tactic Notation "unfolds" constr(F1) "," constr(F2)
  "," constr(F3) "," constr(F4) "," constr(F5) :=
   unfold F1,F2,F3,F4,F5 in *.
-Tactic Notation "unfolds" constr(F1) "," constr(F2) 
+Tactic Notation "unfolds" constr(F1) "," constr(F2)
  "," constr(F3) "," constr(F4) "," constr(F5) "," constr(F6) :=
   unfold F1,F2,F3,F4,F5,F6 in *.
-Tactic Notation "unfolds" constr(F1) "," constr(F2) 
- "," constr(F3) "," constr(F4) "," constr(F5) 
+Tactic Notation "unfolds" constr(F1) "," constr(F2)
+ "," constr(F3) "," constr(F4) "," constr(F5)
  "," constr(F6) "," constr(F7) :=
   unfold F1,F2,F3,F4,F5,F6,F7 in *.
-Tactic Notation "unfolds" constr(F1) "," constr(F2) 
- "," constr(F3) "," constr(F4) "," constr(F5) 
+Tactic Notation "unfolds" constr(F1) "," constr(F2)
+ "," constr(F3) "," constr(F4) "," constr(F5)
  "," constr(F6) "," constr(F7) "," constr(F8) :=
   unfold F1,F2,F3,F4,F5,F6,F7,F8 in *.
 
@@ -2210,10 +2385,10 @@ Tactic Notation "simpls" constr(F1) :=
   simpl F1 in *.
 Tactic Notation "simpls" constr(F1) "," constr(F2) :=
   simpls F1; simpls F2.
-Tactic Notation "simpls" constr(F1) "," constr(F2) 
+Tactic Notation "simpls" constr(F1) "," constr(F2)
  "," constr(F3) :=
   simpls F1; simpls F2; simpls F3.
-Tactic Notation "simpls" constr(F1) "," constr(F2) 
+Tactic Notation "simpls" constr(F1) "," constr(F2)
  "," constr(F3) "," constr(F4) :=
   simpls F1; simpls F2; simpls F3; simpls F4.
 
@@ -2347,7 +2522,7 @@ Require Import ProofIrrelevance.
     when [E'] is a big expression. *)
 
 Ltac pi_rewrite_base E rewrite_tac :=
-  let E' := fresh in let T := type of E in evar (E':T);
+  let E' := fresh "TEMP" in let T := type of E in evar (E':T);
   rewrite_tac (@proof_irrelevance _ E E'); subst E'.
 
 Tactic Notation "pi_rewrite" constr(E) :=
@@ -2435,7 +2610,7 @@ Tactic Notation "invert" hyp(H) :=
     but it also clears hypothesis [H]. *)
 
 Tactic Notation "invert_tactic" hyp(H) tactic(tac) :=
-  let H' := fresh in rename H into H'; tac H'; clear H'.
+  let H' := fresh "TEMP" in rename H into H'; tac H'; clear H'.
 Tactic Notation "invert" hyp(H) "as" simple_intropattern(I1) :=
   invert_tactic H (fun H => invert keep H as I1).
 Tactic Notation "invert" hyp(H) "as" simple_intropattern(I1)
@@ -2453,22 +2628,22 @@ Tactic Notation "invert" hyp(H) "as" simple_intropattern(I1)
     generated by [inversion], using proof irrelevance. *)
 
 (* --we do not import Eqdep because it imports nasty hints automatically
-    Require Import Eqdep. *)
+    From TLC Require Import Eqdep. *)
 
 Axiom inj_pair2 :  (* is in fact derivable from the axioms in LibAxiom.v *)
   forall (U : Type) (P : U -> Type) (p : U) (x y : P p),
-       existT P p x = existT P p y -> x = y.
+  existT P p x = existT P p y -> x = y.
 (* Proof using. apply Eqdep.EqdepTheory.inj_pair2. Qed.*)
 
 Ltac inverts_tactic H i1 i2 i3 i4 i5 i6 :=
   let rec go i1 i2 i3 i4 i5 i6 :=
     match goal with
     | |- (ltac_Mark -> _) => intros _
-    | |- (?x = ?y -> _) => let H := fresh in intro H;
+    | |- (?x = ?y -> _) => let H := fresh "TEMP" in intro H;
                            first [ subst x | subst y ];
                            go i1 i2 i3 i4 i5 i6
     | |- (existT ?P ?p ?x = existT ?P ?p ?y -> _) =>
-         let H := fresh in intro H;
+         let H := fresh "TEMP" in intro H;
          generalize (@inj_pair2 _ P p x y H);
          clear H; go i1 i2 i3 i4 i5 i6
     | |- (?P -> ?Q) => i1; go i2 i3 i4 i5 i6 ltac:(intro)
@@ -2518,13 +2693,13 @@ Tactic Notation "inverts" "keep" hyp(H) "as" simple_intropattern(I1)
     clears hypothesis [H]. *)
 
 Tactic Notation "inverts" hyp(H) :=
-  inverts keep H; clear H.
+  inverts keep H; try clear H.
 
 (** [inverts H as X1 .. XN] is the same as [inverts keep H as X1 .. XN]
     but it also clears the hypothesis [H]. *)
 
 Tactic Notation "inverts_tactic" hyp(H) tactic(tac) :=
-  let H' := fresh in rename H into H'; tac H'; clear H'.
+  let H' := fresh "TEMP" in rename H into H'; tac H'; clear H'.
 Tactic Notation "inverts" hyp(H) "as" simple_intropattern(I1) :=
   invert_tactic H (fun H => inverts keep H as I1).
 Tactic Notation "inverts" hyp(H) "as" simple_intropattern(I1)
@@ -2559,7 +2734,7 @@ Ltac inverts_as_tactic H :=
                            first [ subst x | subst y ];
                            go tt
     | |- (existT ?P ?p ?x = existT ?P ?p ?y -> _) =>
-         let H := fresh in intro H;
+         let H := fresh "TEMP" in intro H;
          generalize (@inj_pair2 _ P p x y H);
          clear H; go tt
     | |- (forall _, _) =>
@@ -2588,7 +2763,7 @@ Tactic Notation "inverts" hyp(H) "as" simple_intropattern(I1)
 
 
 (** [lets_inverts E as I1 .. IN] is intuitively equivalent to
-    [inverts E], with the difference that it applies to any 
+    [inverts E], with the difference that it applies to any
     expression and not just to the name of an hypothesis. *)
 
 Ltac lets_inverts_base E cont :=
@@ -2619,7 +2794,7 @@ Ltac injects_tactic H :=
   let rec go _ :=
     match goal with
     | |- (ltac_Mark -> _) => intros _
-    | |- (?x = ?y -> _) => let H := fresh in intro H;
+    | |- (?x = ?y -> _) => let H := fresh "TEMP" in intro H;
                            first [ subst x | subst y | idtac ];
                            go tt
     end in
@@ -2664,7 +2839,9 @@ Tactic Notation "inject" hyp(H) "as" ident(X1) ident(X2) ident(X3)
     are similar to [inverts] and [injects] except that they perform
     substitution on all equalities from the context and not only
     the ones freshly generated. The counterpart is that they have
-    simpler implementations. *)
+    simpler implementations.
+
+    DEPRECATED: these tactics should no longer be used. *)
 
 (** [inversions keep H] is the same as [inversions H] but it does
     not clear hypothesis [H]. *)
@@ -2680,7 +2857,7 @@ Tactic Notation "inversions" "keep" hyp(H) :=
     too slow. *)
 
 Tactic Notation "inversions" hyp(H) :=
-  inversion H; subst; clear H.
+  inversion H; subst; try clear H.
 
 (** [injections keep H] is the same as [injection H] followed
     by [intros] and [subst]. It is a rough implementation of
@@ -2692,7 +2869,7 @@ Tactic Notation "injections" "keep" hyp(H) :=
   injection H; intros; subst.
 
 (** [injections H] is the same as [injection H] followed
-    by [intros] and [clear H] and [subst]. It is a rough
+    by [clear H] and [intros] and [subst]. It is a rough
     implementation of [injects keep H] which behave
     badly when the proof context already contains equalities,
     or when the goal starts with a forall or an implication. *)
@@ -2717,18 +2894,20 @@ Tactic Notation "cases" constr(E) "as" ident(H) :=
 Tactic Notation "cases" constr(E) :=
   let H := fresh "Eq" in cases E as H.
 
-(** [case_if_post] is to be defined later as a tactic to clean
-    up goals. By defaults, it looks for obvious contradictions. 
+(** [case_if_post H] is to be defined later as a tactic to clean
+    up hypothesis [H] and the goal.
+    By defaults, it looks for obvious contradictions.
     Currently, this tactic is extended in LibReflect to clean up
     boolean propositions. *)
 
-Ltac case_if_post := tryfalse.
+Ltac case_if_post H :=
+  tryfalse.
 
 (** [case_if] looks for a pattern of the form [if ?B then ?E1 else ?E2]
     in the goal, and perform a case analysis on [B] by calling
     [destruct B]. Subgoals containing a contradiction are discarded.
     [case_if] looks in the goal first, and otherwise in the
-    first hypothesis that contains and [if] statement.
+    first hypothesis that contains an [if] statement.
     [case_if in H] can be used to specify which hypothesis to consider.
     Syntaxes [case_if as Eq] and [case_if in H as Eq] allows to name
     the hypothesis coming from the case analysis. *)
@@ -2736,13 +2915,13 @@ Ltac case_if_post := tryfalse.
 Ltac case_if_on_tactic_core E Eq :=
   match type of E with
   | {_}+{_} => destruct E as [Eq | Eq]
-  | _ => let X := fresh in
+  | _ => let X := fresh "TEMP" in
          sets_eq <- X Eq: E;
          destruct X
   end.
 
 Ltac case_if_on_tactic E Eq :=
-  case_if_on_tactic_core E Eq; case_if_post.
+  case_if_on_tactic_core E Eq; case_if_post Eq.
 
 Tactic Notation "case_if_on" constr(E) "as" simple_intropattern(Eq) :=
   case_if_on_tactic E Eq.
@@ -2758,26 +2937,26 @@ Tactic Notation "case_if" "in" hyp(H) "as" simple_intropattern(Eq) :=
     case_if_on B as Eq end.
 
 Tactic Notation "case_if" :=
-  let Eq := fresh in case_if as Eq.
+  let Eq := fresh "C" in case_if as Eq.
 
 Tactic Notation "case_if" "in" hyp(H) :=
-  let Eq := fresh in case_if in H as Eq.
+  let Eq := fresh "C" in case_if in H as Eq.
 
 
 (** [cases_if] is similar to [case_if] with two main differences:
-    if it creates an equality of the form [x = y] and then 
+    if it creates an equality of the form [x = y] and then
     substitutes it in the goal *)
 
 Ltac cases_if_on_tactic_core E Eq :=
   match type of E with
   | {_}+{_} => destruct E as [Eq|Eq]; try subst_hyp Eq
-  | _ => let X := fresh in
+  | _ => let X := fresh "TEMP" in
          sets_eq <- X Eq: E;
          destruct X
   end.
 
-Ltac cases_if_on_tactic E Eq := 
-  cases_if_on_tactic_core E Eq; tryfalse; case_if_post.
+Ltac cases_if_on_tactic E Eq :=
+  cases_if_on_tactic_core E Eq; tryfalse; case_if_post Eq.
 
 Tactic Notation "cases_if_on" constr(E) "as" simple_intropattern(Eq) :=
   cases_if_on_tactic E Eq.
@@ -2793,23 +2972,23 @@ Tactic Notation "cases_if" "in" hyp(H) "as" simple_intropattern(Eq) :=
     cases_if_on B as Eq end.
 
 Tactic Notation "cases_if" :=
-  let Eq := fresh in cases_if as Eq.
+  let Eq := fresh "C" in cases_if as Eq.
 
 Tactic Notation "cases_if" "in" hyp(H) :=
-  let Eq := fresh in cases_if in H as Eq.
+  let Eq := fresh "C" in cases_if in H as Eq.
 
 (** [case_ifs] is like [repeat case_if] *)
 
 Ltac case_ifs_core :=
   repeat case_if.
 
-Tactic Notation "case_ifs" := 
+Tactic Notation "case_ifs" :=
   case_ifs_core.
 
 (** [destruct_if] looks for a pattern of the form [if ?B then ?E1 else ?E2]
     in the goal, and perform a case analysis on [B] by calling
     [destruct B]. It looks in the goal first, and otherwise in the
-    first hypothesis that contains and [if] statement. *)
+    first hypothesis that contains an [if] statement. *)
 
 Ltac destruct_if_post := tryfalse.
 
@@ -2838,7 +3017,7 @@ Tactic Notation "destruct_if" "in" hyp(H) :=
   let Eq := fresh "C" in destruct_if in H as Eq Eq.
 
 
-(** ---BROKEN since v8.5beta2.
+(** ---BROKEN since v8.5beta2. TODO: cleanup.
 
     [destruct_head_match] performs a case analysis on the argument
     of the head pattern matching when the goal has the form
@@ -2859,7 +3038,7 @@ Ltac find_head_match T :=
 Ltac destruct_head_match_core cont :=
   match goal with
   | |- ?T1 = ?T2 => first [ let E := find_head_match T1 in cont E
-                          | let E := find_head_match T2 in cont E ]
+		          | let E := find_head_match T2 in cont E ]
   | |- ?T1 => let E := find_head_match T1 in cont E
   end;
   destruct_if_post.
@@ -2874,7 +3053,7 @@ Tactic Notation "destruct_head_match" :=
 (**--provided for compatibility with [remember] *)
 
 (** [cases' E] is similar to [case_eq E] except that it generates the
-    equality in the context and not in the goal. The syntax [cases E as H]
+    equality in the context and not in the goal. The syntax [cases' E as H]
     allows specifying the name [H] of that hypothesis. *)
 
 Tactic Notation "cases'" constr(E) "as" ident(H) :=
@@ -2891,10 +3070,10 @@ Tactic Notation "cases'" constr(E) :=
 Ltac cases_if_on' E Eq :=
   match type of E with
   | {_}+{_} => destruct E as [Eq|Eq]; try subst_hyp Eq
-  | _ => let X := fresh in
+  | _ => let X := fresh "TEMP" in
          sets_eq X Eq: E;
          destruct X
-  end; case_if_post.
+  end; case_if_post Eq.
 
 Tactic Notation "cases_if'" "as" simple_intropattern(Eq) :=
   match goal with
@@ -2903,7 +3082,7 @@ Tactic Notation "cases_if'" "as" simple_intropattern(Eq) :=
   end.
 
 Tactic Notation "cases_if'" :=
-  let Eq := fresh in cases_if' as Eq.
+  let Eq := fresh "C" in cases_if' as Eq.
 
 
 (* ################################################################# *)
@@ -2947,24 +3126,65 @@ Tactic Notation "inductions" ident(E) "gen" ident(X1) ident(X2)
     principle, for a given well-founded relation. It applies to a goal
     [PX] where [PX] is a proposition on [X]. First, it sets up the
     goal in the form [(fun a => P a) X], using [pattern X], and then
-    it applies the well-founded induction principle instantiated on [E],
-    where [E] is a term of type [well_founded R], and [R] is a binary
-    relation.
+    it applies the well-founded induction principle instantiated on [E].
+
+    Here [E] may be either:
+   - a proof of [wf R] for [R] of type [A->A->Prop]
+   - a binary relation of type [A->A->Prop]
+   - a measure of type [A -> nat] // only when LibWf is used
+
     Syntaxes [induction_wf: E X] and [induction_wf E X]. *)
 
+(* DEPRECATED
 Tactic Notation "induction_wf" ident(IH) ":" constr(E) ident(X) :=
   pattern X; apply (well_founded_ind E); clear X; intros X IH.
+*)
+
+(* Tactic is later extended in module LibWf *)
+Ltac induction_wf_core_then IH E X cont :=
+  let T := type of E in
+  let T := eval hnf in T in
+  let clearX tt :=
+    first [ clear X | fail 3 "the variable on which the induction is done appears in the hypotheses" ] in
+  match T with
+  (* Support for measures from LibWf, add this:
+  | ?A -> nat =>
+     induction_wf_core_then IH (wf_measure E) X cont
+  *)
+  | ?A -> ?A -> Prop =>
+     pattern X;
+     first [
+       applys well_founded_ind E;
+       clearX tt;
+       [ (* Support for [wf] from LibWf
+         change well_founded with wf; auto with wf *)
+       | intros X IH; cont tt ]
+     | fail 2 ]
+  | _ =>
+    pattern X;
+    applys well_founded_ind E;
+    clearX tt;
+    intros X IH;
+    cont tt
+  end.
+
+Ltac induction_wf_core IH E X :=
+  induction_wf_core_then IH E X ltac:(fun _ => idtac).
+
+Tactic Notation "induction_wf" ident(IH) ":" constr(E) ident(X) :=
+  induction_wf_core IH E X.
 Tactic Notation "induction_wf" ":" constr(E) ident(X) :=
   let IH := fresh "IH" in induction_wf IH: E X.
 Tactic Notation "induction_wf" ":" constr(E) ident(X) :=
   induction_wf: E X.
 
 (** Induction on the height of a derivation: the helper tactic
-    [induct_height] helps proving the equivalence of the auxiliary 
+    [induct_height] helps proving the equivalence of the auxiliary
     judgment that includes a counter for the maximal height
     (see LibTacticsDemos for an example) *)
 
-Require Import Compare_dec Omega.
+Require Import Coq.Arith.Compare_dec.
+Require Import Coq.omega.Omega.
 
 Lemma induct_height_max2 : forall n1 n2 : nat,
   exists n, n1 < n /\ n2 < n.
@@ -2975,10 +3195,10 @@ Proof using.
 Qed.
 
 Ltac induct_height_step x :=
-  match goal with 
-  | H: exists _, _ |- _ =>  
+  match goal with
+  | H: exists _, _ |- _ =>
      let n := fresh "n" in let y := fresh "x" in
-     destruct H as [n ?]; 
+     destruct H as [n ?];
      forwards (y&?&?): induct_height_max2 n x;
      induct_height_step y
   | _ => exists (S x); eauto
@@ -2998,7 +3218,7 @@ Ltac induct_height := induct_height_step O.
 Definition COIND (P:Prop) := P.
 
 Tactic Notation "cofixs" ident(IH) :=
-  cofix IH; 
+  cofix IH;
   match type of IH with ?P => change P with (COIND P) in IH end.
 
 (** Tactic [clear_coind] clears all the coinduction hypotheses,
@@ -3037,7 +3257,7 @@ Tactic Notation "decides_equality" :=
 (** [iff H] can be used to prove an equivalence [P <-> Q] and name [H]
     the hypothesis obtained in each case. The syntaxes [iff] and [iff H1 H2]
     are also available to specify zero or two names. The tactic [iff <- H]
-    swaps the two subgoals, i.e., produces (Q -> P) as first subgoal. *)
+    swaps the two subgoals, i.e. produces (Q -> P) as first subgoal. *)
 
 Lemma iff_intro_swap : forall (P Q : Prop),
   (Q -> P) -> (P -> Q) -> (P <-> Q).
@@ -3094,7 +3314,7 @@ Ltac get_term_conjunction_arity T :=
          | T => fail 1
          | _ => get_term_conjunction_arity T'
          end
-         (* todo: warning this can loop... *)
+         (* --TODO: warning this can loop... *)
   end.
 
 Ltac get_goal_conjunction_arity :=
@@ -3113,18 +3333,8 @@ Tactic Notation "splits" :=
     definitions as necessary to obtain an [N]-ary conjunction. *)
 
 Tactic Notation "splits" constr(N) :=
-  let N := nat_from_number N in
+  let N := number_to_nat N in
   splits_tactic N.
-
-(** [splits_all] will recursively split any conjunction, unfolding
-    definitions when necessary. Warning: this tactic will loop
-    on goals of the form [well_founded R]. Todo: fix this *)
-
-Ltac splits_all_base := repeat split.
-
-Tactic Notation "splits_all" :=
-  splits_all_base.
-
 
 (** N-ary Conjunctions Deconstruction *)
 
@@ -3155,7 +3365,7 @@ Tactic Notation "destructs" constr(T) :=
     names. Remark that it is not restricted to N-ary conjunctions. *)
 
 Tactic Notation "destructs" constr(N) constr(T) :=
-  let N := nat_from_number N in
+  let N := number_to_nat N in
   destructs_conjunction_tactic N T.
 
 
@@ -3206,7 +3416,7 @@ Ltac get_goal_disjunction_arity :=
     [branch K of N]. *)
 
 Tactic Notation "branch" constr(K) :=
-  let K := nat_from_number K in
+  let K := number_to_nat K in
   unfold_goal_until_disjunction;
   let N := get_goal_disjunction_arity in
   branch_tactic K N.
@@ -3218,8 +3428,8 @@ Tactic Notation "branch" constr(K) :=
     [P1 \/ ... \/ PK \/ ... \/ PN] and leaves the goal [PK]. *)
 
 Tactic Notation "branch" constr(K) "of" constr(N) :=
-  let N := nat_from_number N in
-  let K := nat_from_number K in
+  let N := number_to_nat N in
+  let K := number_to_nat K in
   branch_tactic K N.
 
 
@@ -3249,10 +3459,16 @@ Tactic Notation "branches" constr(T) :=
     on the fly. *)
 
 Tactic Notation "branches" constr(N) constr(T) :=
-  let N := nat_from_number N in
+  let N := number_to_nat N in
   destructs_disjunction_tactic N T.
 
+(** [branches] automatically finds a hypothesis [h] that is a disjunction
+    and destructs it. *)
 
+Tactic Notation "branches" :=
+  match goal with h: _ \/ _ |- _ => branches h end.
+
+(* ---------------------------------------------------------------------- *)
 (** N-ary Existentials *)
 
 (* Underlying implementation of [exists]. *)
@@ -3306,8 +3522,23 @@ Tactic Notation "exists" constr(T1) constr(T2) constr(T3) constr(T4)
  constr(T5) constr(T6) :=
   exists T1; exists T2; exists T3; exists T4; exists T5; exists T6.
 
+(** For compatibility with Coq syntax, [exists T1, .., TN] is also provided. *)
+
+Tactic Notation "exists" constr(T1) "," constr(T2) :=
+  exists T1 T2.
+Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) :=
+  exists T1 T2 T3.
+Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) "," constr(T4) :=
+  exists T1 T2 T3 T4.
+Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) "," constr(T4) ","
+ constr(T5) :=
+  exists T1 T2 T3 T4 T5.
+Tactic Notation "exists" constr(T1) "," constr(T2) "," constr(T3) "," constr(T4) ","
+ constr(T5) "," constr(T6) :=
+  exists T1 T2 T3 T4 T5 T6.
+
 (* The tactic [exists___ N] is short for [exists __ ... __]
-   with [N] double-underscores. The tactic [exists] is equivalent 
+   with [N] double-underscores. The tactic [exists] is equivalent
    to calling [exists___ N], where the value of [N] is obtained
    by counting the number of existentials syntactically present
    at the head of the goal. The behaviour of [exists] differs
@@ -3320,18 +3551,18 @@ Tactic Notation "exists___" constr(N) :=
     | 0 => idtac
     | S ?N' => esplit; aux N'
     end in
-  let N := nat_from_number N in aux N.
+  let N := number_to_nat N in aux N.
 
-  (* todo: deprecated *)
+  (* --TODO: deprecated *)
 Tactic Notation "exists___" :=
   let N := get_goal_existential_arity in
   exists___ N.
 
-  (* todo: does not seem to work *)
-Tactic Notation "exists" := 
+  (* --TODO: does not seem to work *)
+Tactic Notation "exists" :=
   exists___.
 
-  (* todo: [exists_all] is the new syntax for [exists___] *)
+  (* --TODO: [exists_all] is the new syntax for [exists___] *)
 Tactic Notation "exists_all" := exists___.
 
 (** Existentials and conjunctions in hypotheses *)
@@ -3342,17 +3573,32 @@ Tactic Notation "exists_all" := exists___.
 Ltac unpack_core :=
   repeat match goal with
   | H: _ /\ _ |- _ => destruct H
-  | H: exists a, _ |- _ => destruct H
+  | H: exists (varname: _), _ |- _ =>
+      (* kludge to preserve the name of the quantified variable *)
+      let name := fresh varname in
+      destruct H as [name ?]
   end.
 
-Ltac unpack_from H :=
-  first [ progress (unpack_core)
-        | destruct H; unpack_core ].
+Ltac unpack_hypothesis H :=
+  try match type of H with
+  | _ /\ _ =>
+      let h1 := fresh "TEMP" in
+      let h2 := fresh "TEMP" in
+      destruct H as [ h1 h2 ];
+      unpack_hypothesis h1;
+      unpack_hypothesis h2
+  | exists (varname: _), _ =>
+      (* kludge to preserve the name of the quantified variable *)
+      let name := fresh varname in
+      let body := fresh "TEMP" in
+      destruct H as [name body];
+      unpack_hypothesis body
+  end.
 
 Tactic Notation "unpack" :=
   unpack_core.
 Tactic Notation "unpack" constr(H) :=
-  unpack_from H.
+  unpack_hypothesis H.
 
 
 (* ################################################################# *)
@@ -3381,7 +3627,7 @@ Tactic Notation "solve_typeclass" :=
 
 Tactic Notation "f_equal" :=
   f_equal.
-Tactic Notation "constructor" := 
+Tactic Notation "constructor" :=
   constructor.
 Tactic Notation "simple" :=
   simpl.
@@ -3459,7 +3705,7 @@ Ltac auto_star := auto_star_default.
     for solving the goal. *)
 (** [autos] is an alias for [autos~] *)
 
-Tactic Notation "autos" := 
+Tactic Notation "autos" :=
   auto_tilde.
 Tactic Notation "autos" "~" :=
   auto_tilde.
@@ -3488,7 +3734,7 @@ Tactic Notation "autos" "*" constr(E1) constr(E2) constr(E3) :=
     [auto_false~] and [auto_false*] are also available. *)
 
 Ltac auto_false_base cont :=
-  try solve [ 
+  try solve [
     intros_all; try match goal with |- _ <-> _ => split end;
     solve [ cont tt | intros_all; false; cont tt ] ].
 
@@ -3498,6 +3744,10 @@ Tactic Notation "auto_false" "~" :=
    auto_false_base ltac:(fun tt => auto_tilde).
 Tactic Notation "auto_false" "*" :=
    auto_false_base ltac:(fun tt => auto_star).
+
+Tactic Notation "dauto" :=
+  dintuition eauto.
+
 
 (* ================================================================= *)
 (** ** Parsing for Light Automation *)
@@ -3565,9 +3815,9 @@ Tactic Notation "false" "~" constr(E0) constr(E1) :=
 Tactic Notation "false" "~" constr(E0) constr(E1) constr(E2) :=
   false~ (>> E0 E1 E2).
 Tactic Notation "false" "~" constr(E0) constr(E1) constr(E2) constr(E3) :=
-  false~ (>> E0 E1 E2 E3).  
+  false~ (>> E0 E1 E2 E3).
 Tactic Notation "false" "~" constr(E0) constr(E1) constr(E2) constr(E3) constr(E4) :=
-  false~ (>> E0 E1 E2 E3 E4). 
+  false~ (>> E0 E1 E2 E3 E4).
 Tactic Notation "tryfalse" "~" :=
   try solve [ false~ ].
 
@@ -3699,7 +3949,7 @@ Tactic Notation "unfolds" "~" constr(F1) "," constr(F2) :=
   unfolds F1, F2; auto_tilde.
 Tactic Notation "unfolds" "~" constr(F1) "," constr(F2) "," constr(F3) :=
   unfolds F1, F2, F3; auto_tilde.
-Tactic Notation "unfolds" "~" constr(F1) "," constr(F2) "," constr(F3) ","  
+Tactic Notation "unfolds" "~" constr(F1) "," constr(F2) "," constr(F3) ","
  constr(F4) :=
   unfolds F1, F2, F3, F4; auto_tilde.
 
@@ -3808,7 +4058,7 @@ Tactic Notation "cases" "~" constr(E) :=
   cases E; auto_tilde.
 Tactic Notation "case_if" "~" :=
   case_if; auto_tilde.
-Tactic Notation "case_ifs" "~" := 
+Tactic Notation "case_ifs" "~" :=
   case_ifs; auto_tilde.
 Tactic Notation "case_if" "~" "in" hyp(H) :=
   case_if in H; auto_tilde.
@@ -3837,12 +4087,12 @@ Tactic Notation "decides_equality" "~" :=
 
 Tactic Notation "iff" "~" :=
   iff; auto_tilde.
+Tactic Notation "iff" "~" simple_intropattern(I) :=
+  iff I; auto_tilde.
 Tactic Notation "splits" "~" :=
   splits; auto_tilde.
 Tactic Notation "splits" "~" constr(N) :=
   splits N; auto_tilde.
-Tactic Notation "splits_all" "~" :=
-  splits_all; auto_tilde.
 
 Tactic Notation "destructs" "~" constr(T) :=
   destructs T; auto_tilde.
@@ -3854,12 +4104,14 @@ Tactic Notation "branch" "~" constr(N) :=
 Tactic Notation "branch" "~" constr(K) "of" constr(N) :=
   branch K of N; auto_tilde.
 
+Tactic Notation "branches" "~" :=
+  branches; auto_tilde.
 Tactic Notation "branches" "~" constr(T) :=
   branches T; auto_tilde.
 Tactic Notation "branches" "~" constr(N) constr(T) :=
   branches N T; auto_tilde.
 
-Tactic Notation "exists" "~" := 
+Tactic Notation "exists" "~" :=
   exists; auto_tilde.
 Tactic Notation "exists___" "~" :=
   exists___; auto_tilde.
@@ -3944,9 +4196,9 @@ Tactic Notation "false" "*" constr(E0) constr(E1) :=
 Tactic Notation "false" "*" constr(E0) constr(E1) constr(E2) :=
   false* (>> E0 E1 E2).
 Tactic Notation "false" "*" constr(E0) constr(E1) constr(E2) constr(E3) :=
-  false* (>> E0 E1 E2 E3).  
+  false* (>> E0 E1 E2 E3).
 Tactic Notation "false" "*" constr(E0) constr(E1) constr(E2) constr(E3) constr(E4) :=
-  false* (>> E0 E1 E2 E3 E4).  
+  false* (>> E0 E1 E2 E3 E4).
 Tactic Notation "tryfalse" "*" :=
   try solve [ false* ].
 
@@ -4079,7 +4331,7 @@ Tactic Notation "unfolds" "*" constr(F1) "," constr(F2) :=
   unfolds F1, F2; auto_star.
 Tactic Notation "unfolds" "*" constr(F1) "," constr(F2) "," constr(F3) :=
   unfolds F1, F2, F3; auto_star.
-Tactic Notation "unfolds" "*" constr(F1) "," constr(F2) "," constr(F3) ","  
+Tactic Notation "unfolds" "*" constr(F1) "," constr(F2) "," constr(F3) ","
  constr(F4) :=
   unfolds F1, F2, F3, F4; auto_star.
 
@@ -4188,7 +4440,7 @@ Tactic Notation "cases" "*" constr(E) :=
   cases E; auto_star.
 Tactic Notation "case_if" "*" :=
   case_if; auto_star.
-Tactic Notation "case_ifs" "*" := 
+Tactic Notation "case_ifs" "*" :=
   case_ifs; auto_star.
 Tactic Notation "case_if" "*" "in" hyp(H) :=
   case_if in H; auto_star.
@@ -4224,8 +4476,6 @@ Tactic Notation "splits" "*" :=
   splits; auto_star.
 Tactic Notation "splits" "*" constr(N) :=
   splits N; auto_star.
-Tactic Notation "splits_all" "*" :=
-  splits_all; auto_star.
 
 Tactic Notation "destructs" "*" constr(T) :=
   destructs T; auto_star.
@@ -4242,7 +4492,7 @@ Tactic Notation "branches" "*" constr(T) :=
 Tactic Notation "branches" "*" constr(N) constr(T) :=
   branches N T; auto_star.
 
-Tactic Notation "exists" "*" := 
+Tactic Notation "exists" "*" :=
   exists; auto_star.
 Tactic Notation "exists___" "*" :=
   exists___; auto_star.
@@ -4307,7 +4557,7 @@ Tactic Notation "show_def" hyp(x) :=
 Tactic Notation "show_def" :=
   unfold ltac_something.
 Tactic Notation "show_def" "in" hyp(H) :=
-  unfold ltac_something in H. 
+  unfold ltac_something in H.
 Tactic Notation "show_def" "in" "*" :=
   unfold ltac_something in *.
 
@@ -4390,9 +4640,9 @@ Tactic Notation "show_term" "in" hyp(H) :=
   unfold ltac_something in H.
 
 (** [show_unfold R] unfolds the definition of [R] and
-    reveals the hidden definition of R. --todo:test, 
-    and implement using unfold simply *) 
-    (* todo: change "unfolds" *)
+    reveals the hidden definition of R. --todo:test,
+    and implement using unfold simply *)
+    (* --TODO: change "unfolds" *)
 
 Tactic Notation "show_unfold" constr(R1) :=
   unfold R1; show_def.
@@ -4443,9 +4693,9 @@ Tactic Notation "clears" ident(X1) ident(X2) ident(X3) ident(X4)
 
 (** [clears] (without any argument) clears all the unused variables
     from the context. In other words, it removes any variable
-    which is not a proposition (i.e., not of type Prop) and which
+    which is not a proposition (i.e. not of type Prop) and which
     does not appear in another hypothesis nor in the goal. *)
-  (* todo: rename to clears_var ? *)
+  (* --TODO: rename to clears_var ? *)
 
 Ltac clears_tactic :=
   match goal with H: ?T |- _ =>
@@ -4463,7 +4713,7 @@ Tactic Notation "clears" :=
     are mentioned in the goal. *)
 
 Ltac clears_or_generalizes_all_core :=
-  repeat match goal with H: _ |- _ => 
+  repeat match goal with H: _ |- _ =>
            first [ clear H | generalizes H] end.
 
 Tactic Notation "clears_all" :=
@@ -4493,7 +4743,7 @@ Tactic Notation "clears_but" ident(H1) ident(H2) ident(H3) ident(H4) :=
 Tactic Notation "clears_but" ident(H1) ident(H2) ident(H3) ident(H4) ident(H5) :=
   clears_but_core ltac:(fun _ => gen H1 H2 H3 H4 H5).
 
-Lemma demo_clears_all_and_clears_but : 
+Lemma demo_clears_all_and_clears_but :
   forall x y:nat, y < 2 -> x = x -> x >= 2 -> x < 3 -> True.
 Proof using.
   introv M1 M2 M3. dup 6.
@@ -4503,7 +4753,7 @@ Proof using.
   clears_but M3. auto.
   clears_but y. auto.
   clears_but x. auto.
-  clears_but M2 M3. auto.  
+  clears_but M2 M3. auto.
   clears_but x y. auto.
 Qed.
 
@@ -4514,7 +4764,7 @@ Tactic Notation "clears_last" :=
   match goal with H: ?T |- _ => clear H end.
 
 Ltac clears_last_base N :=
-  match nat_from_number N with
+  match number_to_nat N with
   | 0 => idtac
   | S ?p => clears_last; clears_last_base p
   end.
@@ -4559,7 +4809,7 @@ Tactic Notation "clears_last" constr(N) :=
 
 Ltac skip_with_existential :=
   match goal with |- ?G =>
-    let H := fresh in evar(H:G); eexact H end.
+    let H := fresh "TEMP" in evar(H:G); eexact H end.
 
 (* TO BE DEPRECATED: *)
 Parameter skip_axiom : False.
@@ -4568,20 +4818,19 @@ Ltac skip_with_axiom :=
   elimtype False; apply skip_axiom.
 
 Tactic Notation "skip" :=
-   skip_with_axiom.
+  skip_with_axiom.
 Tactic Notation "skip'" :=
-   skip_with_existential.
+  skip_with_existential.
 
 (* SF DOES NOT NEED THIS
 (* For backward compatibility *)
-Tactic Notation "admit" := 
+Tactic Notation "admit" :=
   skip.
-*) 
+*)
 
 (** [demo] is like [admit] but it documents the fact that admit is intended *)
-
-Tactic Notation "demo" := 
-  skip. 
+Tactic Notation "demo" :=
+  skip.
 
 (** [skip H: T] adds an assumption named [H] of type [T] to the
     current context, blindly assuming that it is true.
@@ -4594,7 +4843,7 @@ Tactic Notation "demo" :=
 Tactic Notation "skip" simple_intropattern(I) ":" constr(T) :=
   asserts I: T; [ skip | ].
 Tactic Notation "skip" ":" constr(T) :=
-  let H := fresh in skip H: T.
+  let H := fresh "TEMP" in skip H: T.
 Tactic Notation "skip" "~" ":" constr(T) :=
   skip: T; auto_tilde.
 Tactic Notation "skip" "*" ":" constr(T) :=
@@ -4646,19 +4895,19 @@ Tactic Notation "skip_goal" :=
     the goal. *)
 
 Tactic Notation "skip_rewrite" constr(T) :=
-  let M := fresh in skip_asserts M: T; rewrite M; clear M.
+  let M := fresh "TEMP" in skip_asserts M: T; rewrite M; clear M.
 
 (** [skip_rewrite T in H] is similar as [rewrite_skip], except that
     it rewrites in hypothesis [H]. *)
 
 Tactic Notation "skip_rewrite" constr(T) "in" hyp(H) :=
-  let M := fresh in skip_asserts M: T; rewrite M in H; clear M.
+  let M := fresh "TEMP" in skip_asserts M: T; rewrite M in H; clear M.
 
 (** [skip_rewrites_all T] is similar as [rewrite_skip], except that
     it rewrites everywhere (goal and all hypotheses). *)
 
 Tactic Notation "skip_rewrite_all" constr(T) :=
-  let M := fresh in skip_asserts M: T; rewrite_all M; clear M.
+  let M := fresh "TEMP" in skip_asserts M: T; rewrite_all M; clear M.
 
 (** [skip_induction E] applies to any goal. It simply assumes
     the current goal to be true (the assumption is named "IH" by
@@ -4666,7 +4915,7 @@ Tactic Notation "skip_rewrite_all" constr(T) :=
     It is useful to try and set up a proof by induction
     first, and fix the applications of the induction hypotheses
     during a second pass on the Proof using.  *)
-(* TODO: deprecated *)
+(* --TODO: deprecated *)
 
 Tactic Notation "skip_induction" constr(E) :=
   let IH := fresh "IH" in skip_goal IH; destruct E.
@@ -4674,9 +4923,31 @@ Tactic Notation "skip_induction" constr(E) :=
 Tactic Notation "skip_induction" constr(E) "as" simple_intropattern(I) :=
   let IH := fresh "IH" in skip_goal IH; destruct E as I.
 
+(** [forwards_nounfold_skip_sides_then E ltac:(fun K => ..)]
+    is like [forwards: E] but it provides the resulting term
+    to a continuation, under the name [K], and it admits
+    any side-condition produced by the instantiation of [E],
+    using the [skip] tactic. *)
 
+Inductive ltac_goal_to_discard := ltac_goal_to_discard_intro.
+
+Ltac forwards_nounfold_skip_sides_then S cont :=
+  let MARK := fresh "TEMP" in
+  generalize ltac_goal_to_discard_intro;
+  intro MARK;
+  forwards_nounfold_then S ltac:(fun K =>
+    clear MARK;
+    cont K);
+  match goal with
+  | MARK: ltac_goal_to_discard |- _ => skip
+  | _ => idtac
+  end.
+
+
+
+(* ********************************************************************** *)
 (* ################################################################# *)
-(** * Compatibility with Standard Library *)
+(** * Compatibility with standard library *)
 
 (** The module [Program] contains definitions that conflict with the
     current module. If you import [Program], either directly or indirectly

@@ -25,7 +25,7 @@
    operating on arrays.  But it works just as well as a functional
    program operating on linked lists! *)
 
-Require Import Perm. 
+From VFA Require Import Perm. 
 
 Fixpoint insert (i:nat) (l: list nat) := 
   match l with

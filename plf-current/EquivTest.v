@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Equiv.
-Parameter MISSING: Type. 
+From PLF Require Import Equiv.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Equiv.
+From PLF Require Import Equiv.
 Import Check.
 
 Goal True.
@@ -227,4 +228,40 @@ idtac " ".
 
 idtac "Max points - standard: 27".
 idtac "Max points - advanced: 39".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- skip_right ---------".
+Print Assumptions skip_right.
+idtac "---------- IFB_false ---------".
+Print Assumptions IFB_false.
+idtac "---------- swap_if_branches ---------".
+Print Assumptions swap_if_branches.
+idtac "---------- WHILE_true ---------".
+Print Assumptions WHILE_true.
+idtac "---------- assign_aequiv ---------".
+Print Assumptions assign_aequiv.
+idtac "---------- equiv_classes ---------".
+idtac "MANUAL".
+idtac "---------- CIf_congruence ---------".
+Print Assumptions CIf_congruence.
+idtac "---------- fold_constants_com_sound ---------".
+Print Assumptions fold_constants_com_sound.
+idtac "---------- inequiv_exercise ---------".
+Print Assumptions inequiv_exercise.
+idtac "---------- Check_rule_for_HAVOC ---------".
+idtac "MANUAL".
+idtac "---------- Himp.pXY_cequiv_pYX ---------".
+Print Assumptions Himp.pXY_cequiv_pYX.
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- Himp.p1_may_diverge ---------".
+Print Assumptions Himp.p1_may_diverge.
+idtac "---------- Himp.p2_may_diverge ---------".
+Print Assumptions Himp.p2_may_diverge.
+idtac "---------- Himp.p1_p2_equiv ---------".
+Print Assumptions Himp.p1_p2_equiv.
+idtac "---------- Himp.p3_p4_inequiv ---------".
+Print Assumptions Himp.p3_p4_inequiv.
 Abort.

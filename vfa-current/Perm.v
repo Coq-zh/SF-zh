@@ -54,8 +54,6 @@ Notation  "a >=? b" := (Nat.leb b a)
                           (at level 70, only parsing) : nat_scope.
 Notation  "a >? b"  := (Nat.ltb b a)
                        (at level 70, only parsing) : nat_scope.
-Notation " a =? b"  := (beq_nat a b)
-                       (at level 70) : nat_scope.
 
 (* ================================================================= *)
 (** ** Relating [Prop] to [bool] *)
@@ -69,19 +67,19 @@ Print reflect.
      lemma like these next three:
 *)
 
-Lemma beq_reflect : forall x y, reflect (x = y) (x =? y).
+Lemma eqb_reflect : forall x y, reflect (x = y) (x =? y).
 Proof.
   intros x y.
-  apply iff_reflect. symmetry.  apply beq_nat_true_iff.
+  apply iff_reflect. symmetry.  apply Nat.eqb_eq.
 Qed.
 
-Lemma blt_reflect : forall x y, reflect (x < y) (x <? y).
+Lemma ltb_reflect : forall x y, reflect (x < y) (x <? y).
 Proof.
   intros x y.
   apply iff_reflect. symmetry. apply Nat.ltb_lt.
 Qed.
 
-Lemma ble_reflect : forall x y, reflect (x <= y) (x <=? y).
+Lemma leb_reflect : forall x y, reflect (x <= y) (x <=? y).
 Proof.
   intros x y.
   apply iff_reflect. symmetry. apply Nat.leb_le.
@@ -90,12 +88,12 @@ Qed.
 (** Here's an example of how you could use these lemmas.
     Suppose you have this simple program, [(if a <? 5 then a else 2)],
     and you want to prove that it evaluates to a number smaller than 6.
-    You can use [blt_reflect] "by hand": *)
+    You can use [ltb_reflect] "by hand": *)
 
 Example reflect_example1: forall a, (if a<?5 then a else 2) < 6.
 Proof.
   intros.
-  destruct (blt_reflect a 5) as [H|H].
+  destruct (ltb_reflect a 5) as [H|H].
   * (* Notice that [H] above the line has a [Prop]ositional
        fact _related_ to [a<?5]*)
      omega.  (* More explanation of [omega] later in this chapter. *)
@@ -106,7 +104,7 @@ Proof.
      omega.
 Qed.
 
-(** But there's another way to use [blt_reflect], etc: read on. *)
+(** But there's another way to use [ltb_reflect], etc: read on. *)
 
 (* ================================================================= *)
 (** ** Some Advanced Tactical Hacking *)
@@ -118,7 +116,7 @@ Qed.
     called [bdestruct] because we'll use it in our boolean-destruction
     tactic: *)
 
-Hint Resolve blt_reflect ble_reflect beq_reflect : bdestruct.
+Hint Resolve ltb_reflect leb_reflect eqb_reflect : bdestruct.
 
 (** Our high-tech _boolean destruction_ tactic: *)
 
@@ -136,7 +134,7 @@ Ltac bdestruct X :=
 Example reflect_example2: forall a, (if a<?5 then a else 2) < 6.
 Proof.
   intros.
-  bdestruct (a<?5).  (* instead of: [destruct (blt_reflect a 5) as [H|H]]. *)
+  bdestruct (a<?5).  (* instead of: [destruct (ltb_reflect a 5) as [H|H]]. *)
   * (* Notice that [H] above the line has a [Prop]ositional
        fact _related_ to [a<?5]*)
      omega.  (* More explanation of [omega] later in this chapter. *)
@@ -349,7 +347,7 @@ Proof.
 
   (** This is where we left off before. Now, watch: *)
 
-  destruct (blt_reflect b a).   (* THIS LINE *)
+  destruct (ltb_reflect b a).   (* THIS LINE *)
   (* Notice that [b<a] is above the line as a Prop, not a bool.
      Now, comment out THIS LINE, and uncomment THAT LINE.  *)
   (* bdestruct (b <? a).    (* THAT LINE *) *)
@@ -467,7 +465,7 @@ Search Permutation.  (* Browse through the results of this query! *)
 
 *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_Permutation_properties : option (prod nat string) := None.
+Definition manual_grade_for_Permutation_properties : option (nat*string) := None.
 (** [] *)
 
 (** Let's use the permutation rules in the library to prove the

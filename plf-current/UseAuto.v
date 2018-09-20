@@ -8,14 +8,14 @@
     procedures that enable the system to automatically synthesize
     simple pieces of proof. Automation is very powerful when set up
     appropriately. The purpose of this chapter is to explain the
-    basics of working of automation.
+    basics of how automation works in Coq.
 
     The chapter is organized in two parts. The first part focuses on a
     general mechanism called "proof search." In short, proof search
     consists in naively trying to apply lemmas and assumptions in all
     possible ways. The second part describes "decision procedures",
     which are tactics that are very good at solving proof obligations
-    that fall in some particular fragment of the logic of Coq.
+    that fall in some particular fragments of the logic of Coq.
 
     Many of the examples used in this chapter consist of small lemmas
     that have been made up to illustrate particular aspects of automation.
@@ -29,12 +29,12 @@
 
 Require Import Coq.Arith.Arith.
 
-Require Import Maps.
-Require Import Smallstep.
-Require Import Stlc.
-Require Import LibTactics.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
+From PLF Require Import LibTactics.
 
-Require Imp.
+From PLF Require Imp.
 
 Require Import Coq.Lists.List.
 Import ListNotations.
@@ -121,7 +121,7 @@ Proof. auto. Qed.
     using the command:
 
        [Print solving_by_apply.]
-   
+
    The proof term is:
 
    [fun (P Q : nat -> Prop) (H : forall n : nat, Q n -> P n) (H0 : forall n : nat, Q n)
@@ -147,7 +147,8 @@ Proof. auto. Qed.
 
 Lemma solving_by_eapply : forall (P Q : nat->Prop),
   (forall n m, Q m -> P n) ->
-  Q 1 -> P 2.
+  Q 1 ->
+  P 2.
 Proof. auto. eauto. Qed.
 
 
@@ -166,7 +167,9 @@ Proof. auto. eauto. Qed.
     An example follows. *)
 
 Lemma solving_conj_goal : forall (P : nat->Prop) (F : Prop),
-  (forall n, P n) -> F -> F /\ P 2.
+  (forall n, P n) ->
+  F ->
+  F /\ P 2.
 Proof. auto. Qed.
 
 (** However, when an assumption is a conjunction, [auto] and [eauto]
@@ -177,7 +180,8 @@ Proof. auto. Qed.
     Here is an example. *)
 
 Lemma solving_conj_hyp : forall (F F' : Prop),
-  F /\ F' -> F.
+  F /\ F' ->
+  F.
 Proof. auto. eauto. jauto. (* or [iauto] *) Qed.
 
 (** The tactic [jauto] is implemented by first calling a
@@ -186,7 +190,8 @@ Proof. auto. eauto. jauto. (* or [iauto] *) Qed.
     call the tactic [jauto_set]. *)
 
 Lemma solving_conj_hyp' : forall (F F' : Prop),
-  F /\ F' -> F.
+  F /\ F' ->
+  F.
 Proof. intros. jauto_set. eauto. Qed.
 
 (** Next is a more involved goal that can be solved by [iauto] and
@@ -207,7 +212,8 @@ Proof. jauto. (* or [iauto] *) Qed.
     of Coq proof search mechanisms. *)
 
 Lemma solving_conj_hyp_forall : forall (P Q : nat->Prop),
-  (forall n, P n /\ Q n) -> P 2.
+  (forall n, P n /\ Q n) ->
+  P 2.
 Proof.
   auto. eauto. iauto. jauto.
   (* Nothing works, so we have to do some of the work by hand *)
@@ -220,7 +226,8 @@ Qed.
     distributed over the conjunction. *)
 
 Lemma solved_by_jauto : forall (P Q : nat->Prop) (F : Prop),
-  (forall n, P n) /\ (forall n, Q n) -> P 2.
+  (forall n, P n) /\ (forall n, Q n) ->
+  P 2.
 Proof. jauto. (* or [iauto] *) Qed.
 
 
@@ -231,7 +238,8 @@ Proof. jauto. (* or [iauto] *) Qed.
     occur in the goal. *)
 
 Lemma solving_disj_goal : forall (F F' : Prop),
-  F -> F \/ F'.
+  F ->
+  F \/ F'.
 Proof. auto. Qed.
 
 (** However, only [iauto] is able to automate reasoning on the
@@ -239,7 +247,8 @@ Proof. auto. Qed.
     prove that [F \/ F'] entails [F' \/ F]. *)
 
 Lemma solving_disj_hyp : forall (F F' : Prop),
-  F \/ F' -> F' \/ F.
+  F \/ F' ->
+  F' \/ F.
 Proof. auto. eauto. jauto. iauto. Qed.
 
 (** More generally, [iauto] can deal with complex combinations of
@@ -269,12 +278,13 @@ Proof. iauto. Qed.
     x, f x], the tactic [eauto] introduces an existential variable,
     say [?25], in place of [x]. The remaining goal is [f ?25], and
     [eauto] tries to solve this goal, allowing itself to instantiate
-    [?25] with any appropriate value. For example, if an assumption [f
-    2] is available, then the variable [?25] gets instantiated with
+    [?25] with any appropriate value. For example, if an assumption
+    [f 2] is available, then the variable [?25] gets instantiated with
     [2] and the goal is solved, as shown below. *)
 
 Lemma solving_exists_goal : forall (f : nat->Prop),
-  f 2 -> exists x, f x.
+  f 2 ->
+  exists x, f x.
 Proof.
   auto. (* observe that [auto] does not deal with existentials, *)
   eauto. (* whereas [eauto], [iauto] and [jauto] solve the goal *)
@@ -305,7 +315,9 @@ Qed.
     automatically. Consider the following example. *)
 
 Lemma negation_study_1 : forall (P : nat->Prop),
-  P 0 -> (forall x, ~ P x) -> False.
+  P 0 ->
+  (forall x, ~ P x) ->
+  False.
 Proof.
   intros P H0 HX.
   eauto. (* It fails to see that [HX] applies *)
@@ -317,7 +329,9 @@ Qed.
     they are able to solve the previous goal right away. *)
 
 Lemma negation_study_2 : forall (P : nat->Prop),
-  P 0 -> (forall x, ~ P x) -> False.
+  P 0 ->
+  (forall x, ~ P x) ->
+  False.
 Proof. jauto. (* or [iauto] *) Qed.
 
 (** We will come back later on to the behavior of proof search with
@@ -334,7 +348,8 @@ Proof. jauto. (* or [iauto] *) Qed.
     applying the hypothesis. *)
 
 Lemma equality_by_auto : forall (f g : nat->Prop),
-  (forall x, f x = g x) -> g 2 = f 2.
+  (forall x, f x = g x) ->
+  g 2 = f 2.
 Proof. auto. Qed.
 
 (** To automate more advanced reasoning on equalities, one should
@@ -483,10 +498,10 @@ Proof. intros P H1 H2 H3. (* debug *) eauto. Qed.
 
 (** The output message produced by [debug eauto] is as follows.
 
-    depth=5
-    depth=4 apply H2
-    depth=3 apply H2
-    depth=3 exact H1
+  1 depth=5
+  1.1 depth=4 simple apply H2
+  1.1.1 depth=3 simple apply H2
+  1.1.1.1 depth=3 exact H1
 
     The depth indicates the value of [n] with which [eauto n] is
     called. The tactics shown in the message indicate that the first
@@ -515,7 +530,7 @@ Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
     we observe that the proof term refers to [H3]. Thus the proof
     is not the simplest one, since only [H2] and [H1] are needed.
 
-    In turns out that the proof goes through the proof obligation [P 3], 
+    In turns out that the proof goes through the proof obligation [P 3],
     even though it is not required to do so. The following tree drawing
     describes all the goals that [eauto] has been going through.
 
@@ -643,7 +658,6 @@ Ltac auto_star ::= try solve [ jauto ].
     tilde symbol is described by the [auto_tilde] tactic, whose
     default implementation is [auto]. *)
 
-
 Ltac auto_tilde ::= auto.
 
 (** In the examples that follow, only [auto_star] is needed. *)
@@ -664,7 +678,7 @@ Ltac auto_tilde ::= auto.
 *)
 
 (* ################################################################# *)
-(** * Examples of Use of Automation *)
+(** * Example Proofs using Automation *)
 
 (** Let's see how to use proof search in practice on the main theorems
     of the "Software Foundations" course, proving in particular
@@ -828,7 +842,7 @@ End DeterministicImp.
 (** ** Preservation for STLC *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import StlcProp.
+From PLF Require Import StlcProp.
 Module PreservationProgressStlc.
 Import STLC.
 Import STLCProp.
@@ -927,7 +941,7 @@ End PreservationProgressStlc.
 (* ================================================================= *)
 (** ** BigStep and SmallStep *)
 
-Require Import Smallstep.
+From PLF Require Import Smallstep.
 Require Import Program.
 Module Semantics.
 
@@ -1004,7 +1018,7 @@ End Semantics.
 (** ** Preservation for STLCRef *)
 
 Require Import Coq.omega.Omega.
-Require Import References.
+From PLF Require Import References.
 Import STLCRef.
 Require Import Program.
 Module PreservationProgressReferences.
@@ -1165,12 +1179,12 @@ Qed.
     takes the form [nth (length l) (l ++ x::nil) d = x]. This lemma is
     hard to exploit because its first argument, [length l], mentions
     a list [l] that has to be exactly the same as the [l] occuring in
-    [snoc l x]. In practice, the first argument is often a natural
+    [l ++ x::nil]. In practice, the first argument is often a natural
     number [n] that is provably equal to [length l] yet that is not
     syntactically equal to [length l]. There is a simple fix for
     making [nth_eq_last] easy to apply: introduce the intermediate
     variable [n] explicitly, so that the goal becomes
-    [nth n (snoc l x) d = x], with a premise asserting [n = length l]. *)
+    [nth n (l ++ x::nil) d = x], with a premise asserting [n = length l]. *)
 
 Lemma nth_eq_last' : forall (A : Type) (l : list A) (x d : A) (n : nat),
   n = length l -> nth n (l ++ x::nil) d = x.
@@ -1273,7 +1287,7 @@ End PreservationProgressReferences.
 (* ================================================================= *)
 (** ** Subtyping *)
 
-Require Sub.
+From PLF Require Sub.
 Module SubtypingInversion.
 Import Sub.
 
@@ -1349,14 +1363,18 @@ End SubtypingInversion.
     [forall n m, m <> 0 -> P m -> P n], the tactic [eauto] fails. *)
 
 Lemma order_matters_1 : forall (P : nat->Prop),
-  (forall n m, P m -> m <> 0 -> P n) -> P 2 -> P 1.
+  (forall n m, P m -> m <> 0 -> P n) ->
+  P 2 ->
+  P 1.
 Proof.
   eauto. (* Success *)
   (* The proof: [intros P H K. eapply H. apply K. auto.] *)
 Qed.
 
 Lemma order_matters_2 : forall (P : nat->Prop),
-  (forall n m, m <> 0 -> P m -> P n) -> P 5 -> P 1.
+  (forall n m, m <> 0 -> P m -> P n) ->
+  P 5 ->
+  P 1.
 Proof.
   eauto. (* Failure *)
 
@@ -1412,7 +1430,8 @@ Definition myFact := forall x, x <= 3 -> P x.
     unfold the definition of [myFact] explicitly. *)
 
 Lemma demo_hint_unfold_goal_1 :
-  (forall x, P x) -> myFact.
+  (forall x, P x) ->
+  myFact.
 Proof.
   auto.                (* Proof search doesn't know what to do, *)
   unfold myFact. auto. (* unless we unfold the definition. *)
@@ -1429,7 +1448,8 @@ Hint Unfold myFact.
     of [myFact]. *)
 
 Lemma demo_hint_unfold_goal_2 :
-  (forall x, P x) -> myFact.
+  (forall x, P x) ->
+  myFact.
 Proof. auto. Qed.
 
 (** However, the [Hint Unfold] mechanism only works for unfolding
@@ -1439,7 +1459,8 @@ Proof. auto. Qed.
     myFact]. *)
 
 Lemma demo_hint_unfold_context_1 :
-  (True -> myFact) -> P 3.
+  (True -> myFact) ->
+  P 3.
 Proof.
   intros.
   auto.                      (* fails *)
@@ -1452,7 +1473,8 @@ Qed.
     [auto] can prove [myFact -> P 3], as illustrated below. *)
 
 Lemma demo_hint_unfold_context_2 :
-  myFact -> P 3.
+  myFact ->
+  P 3.
 Proof. auto. Qed.
 
 
@@ -1469,20 +1491,24 @@ Proof. auto. Qed.
     less than or equal to 3 is not greater than 3. *)
 
 Parameter le_not_gt : forall x,
-  (x <= 3) -> ~ (x > 3).
+  (x <= 3) ->
+  ~ (x > 3).
 
 (** Equivalently, one could state that a number greater than three is
     not less than or equal to 3. *)
 
 Parameter gt_not_le : forall x,
-  (x > 3) -> ~ (x <= 3).
+  (x > 3) ->
+  ~ (x <= 3).
 
 (** In fact, both statements are equivalent to a third one stating
     that [x <= 3] and [x > 3] are contradictory, in the sense that
     they imply [False]. *)
 
 Parameter le_gt_false : forall x,
-  (x <= 3) -> (x > 3) -> False.
+  (x <= 3) ->
+  (x > 3) ->
+  False.
 
 (** The following investigation aim at figuring out which of the three
     statments is the most convenient with respect to proof
@@ -1500,7 +1526,8 @@ Section DemoAbsurd1.
 Hint Resolve le_not_gt.
 
 Lemma demo_auto_absurd_1 :
-  (exists x, x <= 3 /\ x > 3) -> False.
+  (exists x, x <= 3 /\ x > 3) ->
+  False.
 Proof.
   intros. jauto_set. (* decomposes the assumption *)
   (* debug *) eauto. (* does not see that [le_not_gt] could apply *)
@@ -1515,7 +1542,8 @@ Qed.
 Hint Resolve le_gt_false.
 
 Lemma demo_auto_absurd_2 :
-  (exists x, x <= 3 /\ x > 3) -> False.
+  (exists x, x <= 3 /\ x > 3) ->
+  False.
 Proof.
   dup.
 
@@ -1549,7 +1577,9 @@ End DemoAbsurd1.
     or [le_gt_false] can be used. *)
 
 Lemma demo_false : forall x,
-  (x <= 3) -> (x > 3) -> 4 = 5.
+  (x <= 3) ->
+  (x > 3) ->
+  4 = 5.
 Proof.
   intros. dup 4.
 
@@ -1703,7 +1733,10 @@ Hint Extern 1 (subtype ?S ?U) =>
 (** Let us see an example illustrating how the hint works. *)
 
 Lemma transitivity_workaround_1 : forall T1 T2 T3 T4,
-  subtype T1 T2 -> subtype T2 T3 -> subtype T3 T4 -> subtype T1 T4.
+  subtype T1 T2 ->
+  subtype T2 T3 ->
+  subtype T3 T4 ->
+  subtype T1 T4.
 Proof.
   intros. (* debug *) eauto. (* The trace shows the external hint being used *)
 Qed.
@@ -1749,7 +1782,10 @@ Require Import Omega.
     it must be the case that [x] is equal to one. *)
 
 Lemma omega_demo_1 : forall (x y : nat),
-  (y <= 4) -> (x + x + 1 <= y) -> (x <> 0) -> (x = 1).
+  (y <= 4) ->
+  (x + x + 1 <= y) ->
+  (x <> 0) ->
+  (x = 1).
 Proof. intros. omega. Qed.
 
 (** Another example: if [z] is the mean of [x] and [y], and if the
@@ -1757,7 +1793,9 @@ Proof. intros. omega. Qed.
     between [x] and [z] is at most 2. *)
 
 Lemma omega_demo_2 : forall (x y z : nat),
-  (x + y = z + z) -> (x - y <= 4) -> (x - z <= 2).
+  (x + y = z + z) ->
+  (x - y <= 4) ->
+  (x - z <= 2).
 Proof. intros. omega. Qed.
 
 (** One can proof [False] using [omega] if the mathematical facts
@@ -1766,7 +1804,9 @@ Proof. intros. omega. Qed.
     satisfied in the same time. *)
 
 Lemma omega_demo_3 : forall (x y : nat),
-  (x + 5 <= y) -> (y - x < 3) -> False.
+  (x + 5 <= y) ->
+  (y - x < 3) ->
+  False.
 Proof. intros. omega. Qed.
 
 (** Note: [omega] can prove a goal by contradiction only if its
@@ -1775,7 +1815,9 @@ Proof. intros. omega. Qed.
     [False] implies any proposition [P] (by [ex_falso_quodlibet]). *)
 
 Lemma omega_demo_4 : forall (x y : nat) (P : Prop),
-  (x + 5 <= y) -> (y - x < 3) -> P.
+  (x + 5 <= y) ->
+  (y - x < 3) ->
+  P.
 Proof.
   intros.
   (* Calling [omega] at this point fails with the message:

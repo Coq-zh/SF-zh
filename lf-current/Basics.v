@@ -55,17 +55,15 @@
     以下声明会告诉 Coq 我们定义了一个新的数据集合，即一个_'类型（Type）'_。 *)
 
 Inductive day : Type :=
-  | monday : day
-  | tuesday : day
-  | wednesday : day
-  | thursday : day
-  | friday : day
-  | saturday : day
-  | sunday : day.
+  | monday
+  | tuesday
+  | wednesday
+  | thursday
+  | friday
+  | saturday
+  | sunday.
 
 (** 该类型名为 [day]，成员包括 [monday]、[tuesday] 等等。
-    第二行以及之后的定义可以读作“[monday] 是一个 [day]”，“[tuesday]
-    是一个 [day]”，依次类推。
 
     定义了 [day] 之后, 我们就能写一些操作星期的函数了。 *)
 
@@ -132,7 +130,31 @@ Proof. simpl. reflexivity.  Qed.
         可以在 [.v] 文件中留下部分证明，这没关系，不过此时请确认它以 [Admitted]
         结尾（不要用 [Abort] 之类的东西）。
       - 你也可以在解答中使用附加定义（如辅助函数，需要的引理等）。
-        你可以将它们放在练习的头部和你要证明的定理之间。 *)
+        你可以将它们放在练习的头部和你要证明的定理之间。
+
+    You will also notice that each chapter (like [Basics.v]) is
+    accompanied by a _test script_ ([BasicsTest.v]) that automatically
+    calculates points for the finished homework problems in the
+    chapter.  These scripts are mostly for the auto-grading
+    infrastructure that your instructor may use to help process
+    assignments, but you may also like to use them to double-check
+    that your file is well formatted before handing it in.  In a
+    terminal window either type [make BasicsTest.vo] or do the
+    following:
+
+       coqc -Q . LF Basics.v
+       coqc -Q . LF BasicsTest.v
+
+    There is no need to hand in [BasicsTest.v] itself (or [Preface.v]).
+
+    _If your class is using the Canvas system to hand in assignments_:
+      - If you submit multiple versions of the assignment, you may
+        notice that they are given different names.  This is fine: The
+        most recent submission is the one that will be graded.
+      - To hand in multiple files at the same time (if more than one
+        chapter is assigned in the same week), you need to make a
+        single submission with all the files at once using the button
+        "Add another file" just above the comment box. *)
 
 (* ================================================================= *)
 (** ** 布尔值 *)
@@ -141,8 +163,8 @@ Proof. simpl. reflexivity.  Qed.
     [true] 和 [false] 两个成员。 *)
 
 Inductive bool : Type :=
-  | true : bool
-  | false : bool.
+  | true
+  | false.
 
 (** 当然，Coq 的标准库中提供了布尔类型的默认实现，以及大量有用的函数和引理。
     （有兴趣的话可参考 Coq 库文档中的 [Coq.Init.Datatypes]。）
@@ -235,7 +257,7 @@ Example test_andb34:                 (andb3 true true false) = false.
 (** [] *)
 
 (* ================================================================= *)
-(** ** 函数类型 *)
+(** ** 类型 *)
 
 (** Coq 中的每个表达式都有类型，它描述了该表达式所计算的东西的类别。
     [Check] 命令会让 Coq 显示一个表达式的类型。 *)
@@ -257,21 +279,21 @@ Check negb.
     “给定两个 [bool] 类型的输入，该函数产生一个 [bool] 类型的输出。” *)
 
 (* ================================================================= *)
-(** ** 复合类型 *)
+(** ** 由旧类型构造新类型 *)
 
 (** 到目前为止，我们定义的类型都是“枚举类型”：它们的定义显式地枚举了
     一个元素的有限集，其中每个元素都只是一个裸构造子（译注：即无参数构造子）。
     下面是一个更加有趣的类型定义，其中有个构造子接受一个参数： *)
 
 Inductive rgb : Type :=
-  | red : rgb
-  | green : rgb
-  | blue : rgb.
+  | red
+  | green
+  | blue.
 
 Inductive color : Type :=
-  | black : color
-  | white : color
-  | primary : rgb -> color.
+  | black
+  | white
+  | primary (p : rgb).
 
 (** 我们来仔细研究一下。
 
@@ -294,11 +316,11 @@ Definition monochrome (c : color) : bool :=
   match c with
   | black => true
   | white => true
-  | primary p => false
+  | primary q => false
   end.
 
-(** 由于 [primary] 构造子接受一个参数，因此 [primary]
-    的模式匹配应当包含一个变量或一个对应类型的常量（如下）。 *)
+(** 鉴于 [primary] 构造子接收一个参数，匹配到 [primary] 的模式应当带有一个
+    变量或常量。变量可以取任意名称，如上文所示；常量需有适当的类型，例如： *)
 
 Definition isred (c : color) : bool :=
   match c with
@@ -311,6 +333,45 @@ Definition isred (c : color) : bool :=
 (** 这里的模式 [primary _] 是“[primary] 应用到除 [red] 之外的任何 [rgb] 构造子”
     的简写形式（通配模式 [_] 的效果与 [monochrome] 定义中的哑（dummy）模式变量
     [p] 相同。） *)
+
+(* ================================================================= *)
+(** ** Tuples *)
+
+(** A single constructor with multiple parameters can be used
+    to create a tuple type. As an example, consider representing
+    the four bits in a nybble (half a byte). We first define
+    a datatype [bit] that resembles [bool] (using the
+    constructors [B0] and [B1] for the two possible bit values),
+    and then define the datatype [nybble], which is essentially
+    a tuple of four bits.*)
+
+Inductive bit : Type :=
+  | B0
+  | B1.
+
+Inductive nybble : Type :=
+  | bits (b0 b1 b2 b3 : bit).
+
+Check (bits B1 B0 B1 B0).
+(* ==> bits B1 B0 B1 B0 : nybble *)
+
+(** The [bits] constructor acts as a wrapper for its contents.
+    Unwrapping can be done by pattern-matching, as in the [all_zero]
+    function which tests a nybble to see if all its bits are O.
+    Note that we are using underscore (_) as a _wildcard pattern_ to
+    avoid inventing variable names that will not be used.*)
+
+
+Definition all_zero (nb : nybble) : bool :=
+  match nb with
+    | (bits B0 B0 B0 B0) => true
+    | (bits _ _ _ _) => false
+  end.
+
+Compute (all_zero (bits B1 B0 B1 B0)).
+(* ===> false : bool *)
+Compute (all_zero (bits B0 B0 B0 B0)).
+(* ===> true : bool *)
 
 (* ================================================================= *)
 (** ** 模块 *)
@@ -327,14 +388,42 @@ Module NatPlayground.
 (* ================================================================= *)
 (** ** 数值 *)
 
-(** 有一种更有趣的方式来定义类型，就是允许其构造子接受同种类型的参数，
-    即，允许描述其元素的规则是_'归纳（Inductive）'_定义的。
+(** The types we have defined so far, "enumerated types" such as
+    [day], [bool], and [bit], and tuple types such as [nybble] built
+    from them, share the property that each type has a finite set of
+    values. The natural numbers are an infinite set, and we need to
+    represent all of them in a datatype with a finite number of
+    constructors. There are many representations of numbers to choose
+    from. We are most familiar with decimal notation (base 10), using
+    the digits 0 through 9, for example, to form the number 123.  You
+    may have encountered hexadecimal notation (base 16), in which the
+    same number is represented as 7B, or octal (base 8), where it is
+    173, or binary (base 2), where it is 1111011. Using an enumerated
+    type to represent digits, we could use any of these to represent
+    natural numbers. There are circumstances where each of these
+    choices can be useful.
 
-    例如，我们可以将（一进制表示法的）自然数作如下定义： *)
+    Binary is valuable in computer hardware because it can in turn be
+    represented with two voltage levels, resulting in simple
+    circuitry. Analogously, we wish here to choose a representation
+    that makes _proofs_ simpler.
+
+    Indeed, there is a representation of numbers that is even simpler
+    than binary, namely unary (base 1), in which only a single digit
+    is used (as one might do while counting days in prison by scratching
+    on the walls). To represent unary with a Coq datatype, we use
+    two constructors. The capital-letter [O] constructor represents zero.
+    When the [S] constructor is applied to the representation of the
+    natural number _n_, the result is the representation of _n+1_.
+    ([S] stands for "successor", or "scratch" if one is in prison.)
+    Here is the complete datatype definition. *)
 
 Inductive nat : Type :=
-  | O : nat
-  | S : nat -> nat.
+  | O
+  | S (n : nat).
+
+(** With this definition, 0 is represented by [O], 1 by [S O],
+    2 by [S (S O)], and so on. *)
 
 (** 此定义中的从句可读作：
       - [O] 是一个自然数（注意这里是字母“[O]”，不是数字“[0]”）。
@@ -362,9 +451,10 @@ Inductive nat : Type :=
     它们只是我们能用来写下数字的两个不同的记号（以及一个说明了任何 [nat]
     都能写成一串 [S] 后跟一个 [O] 的规则）。如果你喜欢，完全可以将同样的定义写成： *)
 
+
 Inductive nat' : Type :=
-  | stop : nat'
-  | tick : nat' -> nat'.
+  | stop
+  | tick (foo : nat').
 
 (** 这些记号的_'解释'_完全取决于我们如何用它进行计算。 *)
 
@@ -383,9 +473,9 @@ Definition pred (n : nat) : nat :=
 
 End NatPlayground.
 
-(** 由于自然数这种数据形式无处不在，因此 Coq 在解析和输出它们时用了点内建的小魔术：
-    普通的阿拉伯数字可看做 [S] 和 [O] 构造器定义的“一进制”自然数的另一种记法。
-    Coq 默认也会将自然数输出为阿拉伯数字的形式： *)
+(** 为了让自然数使用起来更加自然，Coq 内建了一小部分解析打印功能：
+    普通的十进制数可视为“一进制”自然数的另一种记法，以代替 [S] 与 [O] 构造子；
+    反过来，Coq 也会默认将自然数打印为十进制形式： *)
 
 Check (S (S (S (S O)))).
   (* ===> 4 : nat *)
@@ -406,17 +496,16 @@ Check S.
 Check pred.
 Check minustwo.
 
-(** 以上这些都是通过应用到一个数上来产生另一个数的，不过它们之间有本质上的区别：
-    像 [pred] 和 [minustwo] 这样的函数带有_'计算规则'_ —— 也就是说，
-    [pred] 的定义表明 [pred 2] 可被化简为 [1] —— 然而 [S] 的定义却没有
-    附带这种计算行为。尽管它感觉像是个可以应用到一个参数上的函数，
-    但却完全没有_'执行'_任何计算！它只是一种写下数字的方式。
-    （考虑标准的阿拉伯数字：数字 [1] 并不是一个计算，它只是一段数据。当我们写下
-    [111] 来代表数字一百一十一时，我们把 [1] 写了三次来具体表示一个数。）
+(** 以上三个函数均可作用于自然数，并产生自然数结果，但第一个 [S]
+    与后两者有本质区别：[pred] 和 [minustwo] 这类函数定义了 _'计算规则'_——
+    例如 [pred] 的定义表明 [pred 2] 可化简为 [1]——但 [S] 的定义不表征此类行为。
+    虽然 [S] 可以作用于参数这点与函数相仿，但其作用仅限于构造数字。
+    （考虑标准的十进制数：数字 [1] 不代表任何计算，只表示一部分数据。
+    用 [111] 指代数字一百一十一，实则使用三个 [1] 符号表示此数各位。）
 
-    对于为数值定义的大部分函数来说，只有模式匹配是不够的：我们还需要递归。
-    比如，想要判断一个数 [n] 是否为偶数，我们需要递归地判断 [n-2] 是否为偶数。
-    为了写出这样的函数，我们可以使用关键字 [Fixpoint]。  *)
+    模式匹配不足以描述很多数字运算，我们还需要递归定义。
+    例如：给定自然数 [n]，欲判定其是否为偶数，则需递归检查 [n-2] 是否为偶数。
+    关键字 [Fixpoint] 可用于定义此类函数。 *)
 
 Fixpoint evenb (n:nat) : bool :=
   match n with
@@ -481,9 +570,6 @@ Fixpoint minus (n m:nat) : nat :=
   | S n', S m' => minus n' m'
   end.
 
-(** 第一行中的 [_] 是一个_'通配符'_。在模式匹配中使用 [_]
-    就如同写一个变量但在匹配的右侧不使用它。这样可以避免声明无用的变量名。 *)
-
 End NatPlayground2.
 
 Fixpoint exp (base power : nat) : nat :=
@@ -533,11 +619,11 @@ Check ((0 + 1) + 1).
 
 (** Coq 不包含任何内置定义，以至于数值间相等关系的测试也是由用户来实现。
 
-    [beq_nat] 函数定义如下：该函数测试自然数 [nat] 间相等关系 [eq]，
+    [eqb] 函数定义如下：该函数测试自然数 [nat] 间相等关系 [eq]，
     并以布尔值 [bool] 表示。注意该定义使用嵌套匹配 [match]
     （亦可仿照 [minus] 使用并列匹配）。 *)
 
-Fixpoint beq_nat (n m : nat) : bool :=
+Fixpoint eqb (n m : nat) : bool :=
   match n with
   | O => match m with
          | O => true
@@ -545,11 +631,11 @@ Fixpoint beq_nat (n m : nat) : bool :=
          end
   | S n' => match m with
             | O => false
-            | S m' => beq_nat n' m'
+            | S m' => eqb n' m'
             end
   end.
 
-(** [leb] 函数测试其第一个参数是否小于或等于第二个参数，并产生一个布尔值。 *)
+(** 类似地，[leb] 函数检查其第一个参数是否小于等于第二个参数，以布尔值表示。 *)
 
 Fixpoint leb (n m : nat) : bool :=
   match n with
@@ -568,18 +654,30 @@ Proof. simpl. reflexivity.  Qed.
 Example test_leb3:             (leb 4 2) = false.
 Proof. simpl. reflexivity.  Qed.
 
-(** **** 练习：1 星 (blt_nat)  *)
-(** [blt_nat] 函数测试自然数 [nat] 的小于性 [lt]，并产生一个布尔值 [b]。
-    这次不必完全重新定义一个 [Fixpoint]，可以利用前面已经定义的函数。 *)
+(** Since we'll be using these (especially [eqb]) a lot, let's give
+    them infix notations. *)
 
-Definition blt_nat (n m : nat) : bool
+Notation "x =? y" := (eqb x y) (at level 70) : nat_scope.
+Notation "x <=? y" := (leb x y) (at level 70) : nat_scope.
+
+Example test_leb3':             (4 <=? 2) = false.
+Proof. simpl. reflexivity.  Qed.
+
+(** **** 练习：1 星 (ltb)  *)
+(** [ltb] 函数检查自然数间的小于关系，以布尔值表示。
+    利用前文定义的函数写出该定义，不要使用 [Fixpoint] 构造新的递归。
+    （只需前文中的一个函数即可实现定义，但亦可两者皆用。） *)
+
+Definition ltb (n m : nat) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-Example test_blt_nat1:             (blt_nat 2 2) = false.
+Notation "x <? y" := (ltb x y) (at level 70) : nat_scope.
+
+Example test_ltb1:             (ltb 2 2) = false.
 (* 请在此处解答 *) Admitted.
-Example test_blt_nat2:             (blt_nat 2 4) = true.
+Example test_ltb2:             (ltb 2 4) = true.
 (* 请在此处解答 *) Admitted.
-Example test_blt_nat3:             (blt_nat 4 2) = false.
+Example test_ltb3:             (ltb 4 2) = false.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
@@ -735,43 +833,57 @@ Proof.
     （现在我们用 [Abort] 命令来放弃证明。） *)
 
 Theorem plus_1_neq_0_firsttry : forall n : nat,
-  beq_nat (n + 1) 0 = false.
+  (n + 1) =? 0 = false.
 Proof.
   intros n.
   simpl.  (* 无能为力! *)
 Abort.
 
-(** 原因在于 [beq_nat] 和 [+] 的定义都是对它们的第一个参数进行
-    [match] 匹配的。但在这里，[+] 的第一个参数是未知数 [n]，而 [beq_nat]
-    的第一个参数是复合表达式 [n + 1]，二者都不能被化简。
+(** 原因在于：根据 [eqb] 和 [+] 的定义，其第一个参数先被 [match] 匹配。
+    但此处 [+] 的第一个参数 [n] 未知，而 [eqb] 的第一个参数 [n + 1]
+    是复杂表达式，二者均无法化简。
 
-    为了继续前进，我们需要分别考虑 [n] 所有可能的形式。如果 [n] 是 [0]，
-    那么我们可以计算 [beq_nat (n + 1) 0] 的最终结果并验证，即 [false]。
-    若对于某个 [n'] 有 [n = S n']，那么，尽管我们无法确切知道 [n + 1] 得到的数字，
-    但仍然可以进行计算，至少它应该以 [S] 开头。这对于计算来说足够了。同样，
-    [beq_nat (n + 1) 0] 会得到 [false]。
+    欲进行规约，则需分情况讨论 [n] 的所有可能构造。如果 [n] 为 [O]，
+    则可验算 [(n + 1) =? 0] 的结果确实为 [false]；如果 [n] 由 [S n'] 构造，
+    那么即使我们不知道 [n + 1] 的确切结果，但至少知道它的构造子为 [S]，
+    因而足以得出 [(n + 1) =? 0] 的结果为 [false]。
 
     告诉 Coq 分别对 [n = 0] 和 [n = S n'] 这两种情况进行分析的策略，叫做 [destruct]。 *)
 
 Theorem plus_1_neq_0 : forall n : nat,
-  beq_nat (n + 1) 0 = false.
+  (n + 1) =? 0 = false.
 Proof.
-  intros n. destruct n as [| n'].
+  intros n. destruct n as [| n'] eqn:E.
   - reflexivity.
   - reflexivity.   Qed.
 
-(** [destruct] 会生成_'两个'_子目标，这两个目标我们要分别证明，
-    然后才能让 Coq 接受此定理是已证明的。记法“[as [| n']]”叫做
-    _'引入模式'_，用来告诉 Coq 每个子目标中引入的变量名。
-    通常，方括号内是一组_'名字列表的列表'_，中间用 [|] 分隔。在本例中，
-    列表的第一个成员为空，因为 [0] 的构造子是零元的（不包含任何参数）。
-    第二个成员给出了一个名字 [n']，因为 [S] 是一进制构造子。
+(** The [destruct] generates _two_ subgoals, which we must then
+    prove, separately, in order to get Coq to accept the theorem.
+
+    The annotation "[as [| n']]" is called an _intro pattern_.  It
+    tells Coq what variable names to introduce in each subgoal.  In
+    general, what goes between the square brackets is a _list of
+    lists_ of names, separated by [|].  In this case, the first
+    component is empty, since the [O] constructor is nullary (it
+    doesn't have any arguments).  The second component gives a single
+    name, [n'], since [S] is a unary constructor.
+
+    In each subgoal, Coq remembers the assumption about [n] that is
+    relevant for this subgoal -- either [n = 0] or [n = S n'] for some
+    n'.  The [eqn:E] annotation tells [destruct] to give the name [E] to
+    this equation.  (Leaving off the [eqn:E] annotation causes Coq to
+    elide these assumptions in the subgoals.  This slightly
+    streamlines proofs where the assumptions are not explicitly used,
+    but it is better practice to keep them for the sake of
+    documentation, as they can help keep you oriented when working
+    with the subgoals.)
+
 
     第二行和第三行中的 [-] 符号叫做_'标号'_，它标明了每个生成的子目标所对应的证明部分。
     （译注：此处的“标号”应理解为一个项目列表中每个 _'条目'_ 前的小标记，如 ‣ 或 •。）
     标号后面的代码是一个子目标的完整证明。在本例中，每个子目标都简单地使用
     [reflexivity] 完成了证明。通常，[reflexivity] 本身会执行一些化简操作。
-    例如，第一段证明将 [beq_nat (S n' + 1) 0] 化简成 [false]，是通过先将
+    例如，第二段证明将 [at (S n' + 1) 0] 化简成 [false]，是通过先将
     [(S n' + 1)] 转写成 [S (n' + 1)]，接着展开 [beq_nat]，之后再化简 [match] 完成的。
 
     用标号来区分情况完全是可选的：如果没有标号，Coq 只会简单地要求你依次证明每个子目标。
@@ -796,7 +908,7 @@ Proof.
 Theorem negb_involutive : forall b : bool,
   negb (negb b) = b.
 Proof.
-  intros b. destruct b.
+  intros b. destruct b eqn:E.
   - reflexivity.
   - reflexivity.  Qed.
 
@@ -811,11 +923,11 @@ Proof.
 
 Theorem andb_commutative : forall b c, andb b c = andb c b.
 Proof.
-  intros b c. destruct b.
-  - destruct c.
+  intros b c. destruct b eqn:Eb.
+  - destruct c eqn:Ec.
     + reflexivity.
     + reflexivity.
-  - destruct c.
+  - destruct c eqn:Ec.
     + reflexivity.
     + reflexivity.
 Qed.
@@ -828,11 +940,11 @@ Qed.
 
 Theorem andb_commutative' : forall b c, andb b c = andb c b.
 Proof.
-  intros b c. destruct b.
-  { destruct c.
+  intros b c. destruct b eqn:Eb.
+  { destruct c eqn:Ec.
     { reflexivity. }
     { reflexivity. } }
-  { destruct c.
+  { destruct c eqn:Ec.
     { reflexivity. }
     { reflexivity. } }
 Qed.
@@ -843,19 +955,19 @@ Qed.
 Theorem andb3_exchange :
   forall b c d, andb (andb b c) d = andb (andb b d) c.
 Proof.
-  intros b c d. destruct b.
-  - destruct c.
-    { destruct d.
+  intros b c d. destruct b eqn:Eb.
+  - destruct c eqn:Ec.
+    { destruct d eqn:Ed.
       - reflexivity.
       - reflexivity. }
-    { destruct d.
+    { destruct d eqn:Ed.
       - reflexivity.
       - reflexivity. }
-  - destruct c.
-    { destruct d.
+  - destruct c eqn:Ec.
+    { destruct d eqn:Ed.
       - reflexivity.
       - reflexivity. }
-    { destruct d.
+    { destruct d eqn:Ed.
       - reflexivity.
       - reflexivity. }
 Qed.
@@ -863,14 +975,18 @@ Qed.
 (** 在本章结束之前，我们最后说一种简便写法。或许你已经注意到了，
     很多证明在引入变量之后会立即对它进行情况分析：
 
-       intros x y. destruct y as [|y].
+       intros x y. destruct y as [|y] eqn:E.
 
-    这种模式很常见，Coq 为此提供了一种简写：当使用引入模式而非变量名来引入变量时，
-    我们可以直接对变量进行分类讨论。例如，下面就是个更短的对 [plus_1_neq_0]
-    定理的证明。 *)
+    This pattern is so common that Coq provides a shorthand for it: we
+    can perform case analysis on a variable when introducing it by
+    using an intro pattern instead of a variable name. For instance,
+    here is a shorter proof of the [plus_1_neq_0] theorem
+    above.  (You'll also note one downside of this shorthand: we lose
+    the equation recording the assumption we are making in each
+    subgoal, which we previously got from the [eqn:E] annotation.) *)
 
 Theorem plus_1_neq_0' : forall n : nat,
-  beq_nat (n + 1) 0 = false.
+  (n + 1) =? 0 = false.
 Proof.
   intros [|n].
   - reflexivity.
@@ -899,7 +1015,7 @@ Proof.
 
 (** **** 练习：1 星 (zero_nbeq_plus_1)  *)
 Theorem zero_nbeq_plus_1 : forall n : nat,
-  beq_nat 0 (n + 1) = false.
+  0 =? (n + 1) = false.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -961,9 +1077,13 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     因此有时必须用一点不同寻常的方式来编写函数。 *)
 
 (** **** 练习：2 星, optional (decreasing)  *)
-(** 为了对此有更加具体的认知，请想一种方式来写出有效的 [Fixpoint] 定义
-    (比如有关数字的简单函数)，它对于各种输入应当_'确实'_能够终止，但是
-    Coq 却受限于此而拒绝接受。 *)
+(** To get a concrete sense of this, find a way to write a sensible
+    [Fixpoint] definition (of a simple function on numbers, say) that
+    _does_ terminate on all inputs, but that Coq will reject because
+    of this restriction.  (If you choose to turn in this optional
+    exercise as part of a homework assignment, make sure you comment
+    out your solution so that it doesn't cause Coq to reject the whole
+    file!) *)
 
 (* 请在此处解答 *)
 (** [] *)
@@ -976,7 +1096,7 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     [make BasicsTest.vo] in a terminal and check its output to make
     sure you didn't miss anything. *)
 
-(** **** 练习：2 星 (boolean_functions)  *)
+(** **** 练习：1 星 (indentity_fn_applied_twice)  *)
 (** 用你学过的策略证明以下关于布尔函数的定理。 *)
 
 Theorem identity_fn_applied_twice :
@@ -986,6 +1106,9 @@ Theorem identity_fn_applied_twice :
 Proof.
   (* 请在此处解答 *) Admitted.
 
+(** [] *)
+
+(** **** 练习：1 星 (negation_fn_applied_twice)  *)
 (** 现在声明并证明定理 [negation_fn_applied_twice]，与上一个类似，
     但是第二个前提说明函数 [f] 有 [f x = negb x] 的性质。 *)
 
@@ -996,7 +1119,7 @@ Proof.
 From Coq Require Export String.
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_negation_fn_applied_twice : option (prod nat string) := None.
+Definition manual_grade_for_negation_fn_applied_twice : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：3 星, optional (andb_eq_orb)  *)
@@ -1013,41 +1136,62 @@ Proof.
 (** [] *)
 
 (** **** 练习：3 星 (binary)  *)
-(** 设想一种不同的，更加有效的方式来表示自然数，即使用二进制，而不是一进制数。
-    换言之，并不是说每个自然数是零或者另一个自然数的后继，我们可以说每个
-    自然数：
+(** We can generalize our unary representation of natural numbers to
+    the more efficient binary representation by treating a binary
+    number as a sequence of constructors [A] and [B] (representing 0s
+    and 1s), terminated by a [Z]. For comparison, in the unary
+    representation, a number is a sequence of [S]s terminated by an
+    [O].
 
-      - 要么是零，
-      - 要么是一个二进制数的两倍，
-      - 要么比一个二进制数的两倍还多一。
+    For example:
 
-    (a) 首先，写出对应上述二进制数类型 [bin] 的归纳定义。
+        decimal            binary                           unary
+           0                   Z                              O
+           1                 B Z                            S O
+           2              A (B Z)                        S (S O)
+           3              B (B Z)                     S (S (S O))
+           4           A (A (B Z))                 S (S (S (S O)))
+           5           B (A (B Z))              S (S (S (S (S O))))
+           6           A (B (B Z))           S (S (S (S (S (S O)))))
+           7           B (B (B Z))        S (S (S (S (S (S (S O))))))
+           8        A (A (A (B Z)))    S (S (S (S (S (S (S (S O)))))))
 
-        （提示：回想一下 [nat] 的定义，
+    Note that the low-order bit is on the left and the high-order bit
+    is on the right -- the opposite of the way binary numbers are
+    usually written.  This choice makes them easier to manipulate. *)
 
-         Inductive nat : Type :=
-           | O : nat
-           | S : nat -> nat.
+Inductive bin : Type :=
+  | Z
+  | A (n : bin)
+  | B (n : bin).
 
-        它并没有说明 [O] 和 [S] 的“含义”。它只是说“[O] 属于 [nat] 集合，
-        且如果 [n] 属于该集合，那么 [S n] 也属于该集合。”之所以把 [O]
-        解释为零，把 [S]定义为后继或者加一运算，只是因为我们按这种方式去“使用”了
-        [nat] 的值而已。我们写出函数来计算它们，证明与之相关的东西，等等。
-        你对 [bin] 的定义应该相对简单，之后你写出的函数才会赋予它数学含义。）
+(** (a) Complete the definitions below of an increment function [incr]
+        for binary numbers, and a function [bin_to_nat] to convert
+        binary numbers to unary numbers. *)
 
-        警告：如果你在你的定义中使用 [O] 或 [S] 作为构造子的名字，
-        就会干扰 [BasicsTest.v] 中的自动评分脚本。请选择不同的名字。
+Fixpoint incr (m:bin) : bin
+  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-    (b) 接下来，为二进制数写出自增函数 [incr]，并写出函数 [bin_to_nat]
-        来将二进制数转换成一进制数。
+Fixpoint bin_to_nat (m:bin) : nat
+  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-    (c) 针对你写出的自增函数和二进制到一进制的转换函数，写五个单元测试，
-        如 [test_bin_incr1]、[test_bin_incr2] 等等。注意，将一个二进制数
-        先自增再转换为一进制数，应该与将其先转换成一进制后再自增获得的结果相同。 *)
+(**    (b) Write five unit tests [test_bin_incr1], [test_bin_incr2], etc.
+        for your increment and binary-to-unary functions.  (A "unit
+        test" in Coq is a specific [Example] that can be proved with
+        just [reflexivity], as we've done for several of our
+        definitions.)  Notice that incrementing a binary number and
+        then converting it to unary should yield the same result as
+        first converting it to unary and then incrementing. *)
 
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_binary : option (prod nat string) := None.
+Definition manual_grade_for_binary : option (nat*string) := None.
 (** [] *)
+
+(** NEW NAME: The next line is a temporary hack to allow
+    [zero_nbeq_plus_1] to be used as a synonym for the "more
+    up-to-date" (i.e., consistent with the Coq library) name
+    [zero_neqb_plus_1]... *)
+Notation zero_neqb_plus_1 := zero_nbeq_plus_1 (only parsing).
 

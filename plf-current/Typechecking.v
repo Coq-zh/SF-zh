@@ -18,10 +18,10 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
-Require Import Maps.
-Require Import Smallstep.
-Require Import Stlc.
-Require MoreStlc.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
+From PLF Require MoreStlc.
 
 Module STLCTypes.
 Export STLC.
@@ -31,29 +31,29 @@ Export STLC.
 
 (** First, we need a function to compare two types for equality... *)
 
-Fixpoint beq_ty (T1 T2:ty) : bool :=
+Fixpoint eqb_ty (T1 T2:ty) : bool :=
   match T1,T2 with
   | TBool, TBool =>
       true
   | TArrow T11 T12, TArrow T21 T22 =>
-      andb (beq_ty T11 T21) (beq_ty T12 T22)
+      andb (eqb_ty T11 T21) (eqb_ty T12 T22)
   | _,_ =>
       false
   end.
 
 (** ... and we need to establish the usual two-way connection between
-    the boolean result returned by [beq_ty] and the logical
+    the boolean result returned by [eqb_ty] and the logical
     proposition that its inputs are equal. *)
 
-Lemma beq_ty_refl : forall T1,
-  beq_ty T1 T1 = true.
+Lemma eqb_ty_refl : forall T1,
+  eqb_ty T1 T1 = true.
 Proof.
   intros T1. induction T1; simpl.
     reflexivity.
     rewrite IHT1_1. rewrite IHT1_2. reflexivity.  Qed.
 
-Lemma beq_ty__eq : forall T1 T2,
-  beq_ty T1 T2 = true -> T1 = T2.
+Lemma eqb_ty__eq : forall T1 T2,
+  eqb_ty T1 T2 = true -> T1 = T2.
 Proof with auto.
   intros T1. induction T1; intros T2 Hbeq; destruct T2; inversion Hbeq.
   - (* T1=TBool *)
@@ -90,7 +90,7 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
   | tapp t1 t2 =>
       match type_check Gamma t1, type_check Gamma t2 with
       | Some (TArrow T11 T12),Some T2 =>
-          if beq_ty T11 T2 then Some T12 else None
+          if eqb_ty T11 T2 then Some T12 else None
       | _,_ => None
       end
   | ttrue =>
@@ -102,7 +102,7 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
       | Some TBool =>
           match type_check Gamma t, type_check Gamma f with
           | Some T1, Some T2 =>
-              if beq_ty T1 T2 then Some T1 else None
+              if eqb_ty T1 T2 then Some T1 else None
           | _,_ => None
           end
       | _ => None
@@ -157,7 +157,7 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
       T2 <- type_check Gamma t2 ;;
       match T1 with 
       | TArrow T11 T12 =>
-          if beq_ty T11 T2 then return T12 else fail
+          if eqb_ty T11 T2 then return T12 else fail
       | _ => fail
       end
   | ttrue =>
@@ -170,7 +170,7 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
       T2 <- type_check Gamma t2 ;;
       match Tguard with
       | TBool =>
-          if beq_ty T1 T2 then return T1 else fail
+          if eqb_ty T1 T2 then return T1 else fail
       | _ => fail
       end
   end.
@@ -196,8 +196,8 @@ Proof with eauto.
     destruct T1 as [|T11 T12]; try solve_by_invert; 
     remember (type_check Gamma t2) as TO2;
     destruct TO2 as [T2|]; try solve_by_invert.
-    destruct (beq_ty T11 T2) eqn: Heqb.
-    apply beq_ty__eq in Heqb.
+    destruct (eqb_ty T11 T2) eqn: Heqb.
+    apply eqb_ty__eq in Heqb.
     inversion H0; subst...
     inversion H0.
   - (* tabs *)
@@ -216,9 +216,9 @@ Proof with eauto.
     destruct Tc; try solve_by_invert;
     destruct TO1 as [T1|]; try solve_by_invert;
     destruct TO2 as [T2|]; try solve_by_invert.
-    destruct (beq_ty T1 T2) eqn:Heqb;
+    destruct (eqb_ty T1 T2) eqn:Heqb;
     try solve_by_invert.
-    apply beq_ty__eq in Heqb.
+    apply eqb_ty__eq in Heqb.
     inversion H0. subst. subst...
 Qed.
 
@@ -231,11 +231,11 @@ Proof with auto.
   - (* T_Abs *) rewrite IHHty...
   - (* T_App *)
     rewrite IHHty1. rewrite IHHty2.
-    rewrite (beq_ty_refl T11)...
+    rewrite (eqb_ty_refl T11)...
   - (* T_True *) eauto.
   - (* T_False *) eauto.
   - (* T_If *) rewrite IHHty1. rewrite IHHty2.
-    rewrite IHHty3. rewrite (beq_ty_refl T)...
+    rewrite IHHty3. rewrite (eqb_ty_refl T)...
 Qed.
 
 End STLCChecker.
@@ -250,32 +250,32 @@ End STLCChecker.
 
 Module TypecheckerExtensions.
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_type_checking_sound : option (prod nat string) := None.
+Definition manual_grade_for_type_checking_sound : option (nat*string) := None.
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_type_checking_complete : option (prod nat string) := None.
+Definition manual_grade_for_type_checking_complete : option (nat*string) := None.
 Import MoreStlc.
 Import STLCExtended.
   
-Fixpoint beq_ty (T1 T2: ty) : bool :=
+Fixpoint eqb_ty (T1 T2: ty) : bool :=
   match T1,T2 with
   | TNat, TNat =>
       true
   | TUnit, TUnit =>
       true
   | TArrow T11 T12, TArrow T21 T22 =>
-      andb (beq_ty T11 T21) (beq_ty T12 T22)
+      andb (eqb_ty T11 T21) (eqb_ty T12 T22)
   | TProd T11 T12, TProd T21 T22 =>
-      andb (beq_ty T11 T21) (beq_ty T12 T22)
+      andb (eqb_ty T11 T21) (eqb_ty T12 T22)
   | TSum T11 T12, TSum T21 T22 =>
-      andb (beq_ty T11 T21) (beq_ty T12 T22)
+      andb (eqb_ty T11 T21) (eqb_ty T12 T22)
   | TList T11, TList T21 =>
-      beq_ty T11 T21
+      eqb_ty T11 T21
   | _,_ =>
       false
   end.
 
-Lemma beq_ty_refl : forall T1,
-  beq_ty T1 T1 = true.
+Lemma eqb_ty_refl : forall T1,
+  eqb_ty T1 T1 = true.
 Proof.
   intros T1.
   induction T1; simpl;
@@ -283,8 +283,8 @@ Proof.
     try (rewrite IHT1_1; rewrite IHT1_2; reflexivity);
     try (rewrite IHT1; reflexivity).  Qed.
 
-Lemma beq_ty__eq : forall T1 T2,
-  beq_ty T1 T2 = true -> T1 = T2.
+Lemma eqb_ty__eq : forall T1 T2,
+  eqb_ty T1 T2 = true -> T1 = T2.
 Proof.
   intros T1.
   induction T1; intros T2 Hbeq; destruct T2; inversion Hbeq;
@@ -309,7 +309,7 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
       T2 <- type_check Gamma t2 ;;
       match T1 with 
       | TArrow T11 T12 =>
-          if beq_ty T11 T2 then return T12 else fail
+          if eqb_ty T11 T2 then return T12 else fail
       | _ => fail
       end
   | tnat _ =>
@@ -338,7 +338,7 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
       T1 <- type_check Gamma t ;;
       T2 <- type_check Gamma f ;;
       match Tguard with
-      | TNat => if beq_ty T1 T2 then return T1 else fail
+      | TNat => if eqb_ty T1 T2 then return T1 else fail
       | _ => fail
       end
   (* 请在此处解答 *)
@@ -348,7 +348,7 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
           match type_check Gamma t1,
                 type_check (update (update Gamma x22 (TList T)) x21 T) t2 with
           | Some T1', Some T2' =>
-              if beq_ty T1' T2' then Some T1' else None
+              if eqb_ty T1' T2' then Some T1' else None
           | _,_ => None
           end
       | _ => None
@@ -376,8 +376,8 @@ Ltac fully_invert_typecheck Gamma t T T1 T2 :=
   try solve_by_invert; try (inversion H0; eauto); try (subst; eauto).
 
 Ltac case_equality S T :=
-  destruct (beq_ty S T) eqn: Heqb;
-  inversion H0; apply beq_ty__eq in Heqb; subst; subst; eauto.
+  destruct (eqb_ty S T) eqn: Heqb;
+  inversion H0; apply eqb_ty__eq in Heqb; subst; subst; eauto.
 
 Theorem type_checking_sound : forall Gamma t T,
   type_check Gamma t = Some T -> has_type Gamma t T.
@@ -433,9 +433,9 @@ Proof.
     try (rewrite IHHty1);
     try (rewrite IHHty2);
     try (rewrite IHHty3);
-    try (rewrite (beq_ty_refl T)); 
-    try (rewrite (beq_ty_refl T1)); 
-    try (rewrite (beq_ty_refl T2)); 
+    try (rewrite (eqb_ty_refl T)); 
+    try (rewrite (eqb_ty_refl T1)); 
+    try (rewrite (eqb_ty_refl T2)); 
     eauto.
   - destruct (Gamma x); try solve_by_invert. eauto.
   Admitted. (* ... and delete this line *)

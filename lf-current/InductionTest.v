@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Induction.
-Parameter MISSING: Type. 
+From LF Require Import Induction.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Induction.
+From LF Require Import Induction.
 Import Check.
 
 Goal True.
@@ -122,14 +123,56 @@ idtac " ".
 idtac "-------------------  binary_inverse  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: binary_inverse".
+idtac "#> Manually graded: binary_inverse_a".
 idtac "Advanced".
-idtac "Possible points: 5".
-print_manual_grade manual_grade_for_binary_inverse.
+idtac "Possible points: 2".
+print_manual_grade manual_grade_for_binary_inverse_a.
+idtac " ".
+
+idtac "#> Manually graded: binary_inverse_b".
+idtac "Advanced".
+idtac "Possible points: 1".
+print_manual_grade manual_grade_for_binary_inverse_b.
+idtac " ".
+
+idtac "#> Manually graded: binary_inverse_c".
+idtac "Advanced".
+idtac "Possible points: 2".
+print_manual_grade manual_grade_for_binary_inverse_c.
 idtac " ".
 
 idtac " ".
 
 idtac "Max points - standard: 11".
 idtac "Max points - advanced: 18".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- mult_0_r ---------".
+Print Assumptions mult_0_r.
+idtac "---------- plus_n_Sm ---------".
+Print Assumptions plus_n_Sm.
+idtac "---------- plus_comm ---------".
+Print Assumptions plus_comm.
+idtac "---------- plus_assoc ---------".
+Print Assumptions plus_assoc.
+idtac "---------- double_plus ---------".
+Print Assumptions double_plus.
+idtac "---------- destruct_induction ---------".
+idtac "MANUAL".
+idtac "---------- mult_comm ---------".
+Print Assumptions mult_comm.
+idtac "---------- binary_commute ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- plus_comm_informal ---------".
+idtac "MANUAL".
+idtac "---------- binary_inverse_a ---------".
+idtac "MANUAL".
+idtac "---------- binary_inverse_b ---------".
+idtac "MANUAL".
+idtac "---------- binary_inverse_c ---------".
+idtac "MANUAL".
 Abort.

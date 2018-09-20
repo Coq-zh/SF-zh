@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Binom.
-Parameter MISSING: Type. 
+From VFA Require Import Binom.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Binom.
+From VFA Require Import Binom.
 Import Check.
 
 Goal True.
@@ -193,4 +194,32 @@ idtac " ".
 
 idtac "Max points - standard: 23".
 idtac "Max points - advanced: 23".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- BinomQueue.empty_priq ---------".
+Print Assumptions BinomQueue.empty_priq.
+idtac "---------- BinomQueue.smash_valid ---------".
+Print Assumptions BinomQueue.smash_valid.
+idtac "---------- BinomQueue.carry_valid ---------".
+Print Assumptions BinomQueue.carry_valid.
+idtac "---------- priqueue_elems ---------".
+idtac "MANUAL".
+idtac "---------- BinomQueue.tree_elems_ext ---------".
+Print Assumptions BinomQueue.tree_elems_ext.
+idtac "---------- BinomQueue.tree_perm ---------".
+Print Assumptions BinomQueue.tree_perm.
+idtac "---------- BinomQueue.priqueue_elems_ext ---------".
+Print Assumptions BinomQueue.priqueue_elems_ext.
+idtac "---------- BinomQueue.abs_perm ---------".
+Print Assumptions BinomQueue.abs_perm.
+idtac "---------- BinomQueue.can_relate ---------".
+Print Assumptions BinomQueue.can_relate.
+idtac "---------- BinomQueue.empty_relate ---------".
+Print Assumptions BinomQueue.empty_relate.
+idtac "---------- BinomQueue.smash_elems ---------".
+Print Assumptions BinomQueue.smash_elems.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

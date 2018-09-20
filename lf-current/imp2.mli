@@ -15,14 +15,11 @@ val mul : int -> int -> int
 
 val sub : int -> int -> int
 
+val eqb : int -> int -> bool
+
+val leb : int -> int -> bool
+
 val bool_dec : bool -> bool -> sumbool
-
-module Nat :
- sig
-  val eqb : int -> int -> bool
-
-  val leb : int -> int -> bool
- end
 
 type ascii =
 | Ascii of bool * bool * bool * bool * bool * bool * bool * bool
@@ -35,7 +32,7 @@ type string =
 
 val string_dec : string -> string -> sumbool
 
-val beq_string : string -> string -> bool
+val eqb_string : string -> string -> bool
 
 type 'a total_map = string -> 'a
 

@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Hoare2.
-Parameter MISSING: Type. 
+From PLF Require Import Hoare2.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Hoare2.
+From PLF Require Import Hoare2.
 Import Check.
 
 Goal True.
@@ -104,4 +105,26 @@ idtac " ".
 
 idtac "Max points - standard: 13".
 idtac "Max points - advanced: 20".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- decorations_in_if_minus_plus_reloaded ---------".
+idtac "MANUAL".
+idtac "---------- decorations_in_slow_assignment ---------".
+idtac "MANUAL".
+idtac "---------- decorations_in_factorial ---------".
+idtac "MANUAL".
+idtac "---------- decorations_in_Min_Hoare ---------".
+idtac "MANUAL".
+idtac "---------- decorations_in_two_loops ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- check_defn_of_slow_assignment_dec ---------".
+idtac "MANUAL".
+idtac "---------- slow_assignment_dec_correct ---------".
+Print Assumptions slow_assignment_dec_correct.
+idtac "---------- factorial_dec ---------".
+idtac "MANUAL".
 Abort.

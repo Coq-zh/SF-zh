@@ -30,7 +30,7 @@ End TABLE.
   It's easy to make an implementation of [TABLE], using [Maps].
   Just for example, let's choose [V] to be [Type]. *)
 
-Require Import Maps.
+From VFA Require Import Maps.
 
 Module MapsTable <: TABLE.
  Definition V := Type.
@@ -74,7 +74,7 @@ Eval compute in MapsTable.get 1 (MapsTable.set 3 unit (MapsTable.set 1 bool Maps
    of [N] [get] and [set] operations, it can take time quadratic in [N].
    For a more efficient implementation, let's use our search trees. *)
 
-Require Import SearchTree.
+From VFA Require Import SearchTree.
 
 Module TreeTable <: TABLE.
  Definition V := Type.

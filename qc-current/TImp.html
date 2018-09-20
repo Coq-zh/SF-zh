@@ -1,0 +1,1899 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>TImp: Case Study: a Typed Imperative Language</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/qc.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 4: QuickChick: Property-Based Testing in Coq</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">TImp<span class="subtitle">Case Study: a Typed Imperative Language</span></h1>
+
+
+
+<div class="doc">
+Having covered the basics of QuickChick in the previous
+    chapter, we are ready to dive into a more realistic case study: a
+    typed variant of Imp, the simple imperative language introduced in
+    _Logical Foundations_.
+
+<div class="paragraph"> </div>
+
+    The version of Imp presented there enforces a syntactic separation
+    between boolean and arithmetic expressions: <span class="inlinecode"><span class="id" type="var">bexp</span></span> just ranges
+    over boolean expressions, while <span class="inlinecode"><span class="id" type="var">aexp</span></span> ranges over arithmetic
+    ones.  Moreover, variables are only allowed in <span class="inlinecode"><span class="id" type="var">aexp</span></span> and hence
+    only take numeric values.  By contrast, in _Typed Imp_ (TImp) we
+    collapse the expression syntax and allow variables to range over
+    both numbers and booleans. With the unified syntax, we introduce
+    the notion of _well-typed_ Imp expressions and programs (where
+    every variable only ranges over values of a single type throughout
+    the whole program).  We then give an operational semantics to TImp
+    in the form of a (partial) evaluation function &mdash; partial since,
+    in the unified syntax, we can write nonsensical expressions such
+    as <span class="inlinecode">0</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">True</span></span>.
+
+<div class="paragraph"> </div>
+
+    A common mantra in functional programming is "well-typed programs
+    cannot go wrong," and TImp is no exception. The _soundness_
+    property for TImp will state that evaluating well-typed
+    expressions and programs always succeeds.
+
+<div class="paragraph"> </div>
+
+    From the point of view of testing, soundness is interesting
+    because it is a _conditional_ property. As we saw in the previous
+    chapter, testing such properties effectively requires custom
+    generators.  In this chapter, we show how to scale the techniques
+    for writing generators explained in <a href="QC.html"><span class="inlineref">QC</span></a> to more realistic
+    generators for well-typed expressions and programs. In addition,
+    we dicuss the need for custom shrinkers preserving invariants, a
+    problem dual to that of custom generators. 
+<div class="paragraph"> </div>
+
+ Acknowledgement: We are grateful to Nicolas Koh for important
+    contributions to an early version of this chapter. 
+<div class="paragraph"> </div>
+
+<a name="lab74"></a><h1 class="section">Identifiers, Types and Contexts</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab75"></a><h2 class="section">Identifiers</h2>
+
+<div class="paragraph"> </div>
+
+ For the type of identifiers of TImp we will use a wrapper around 
+    plain natural numbers. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">id</span> :=<br/>
+|  <span class="id" type="var">Id</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">id</span>.<br/>
+</div>
+
+<div class="doc">
+We will need one identifier-specific operation, <span class="inlinecode"><span class="id" type="tactic">fresh</span></span>: given any
+    finite set of identifiers, we can produce one that is distinct
+    from all other identifiers in the set.
+
+<div class="paragraph"> </div>
+
+    To compute a fresh <span class="inlinecode"><span class="id" type="var">id</span></span> given a list of <span class="inlinecode"><span class="id" type="var">id</span></span>s we can just produce
+    the number that is 1 larger than the maximum element: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">max_elt</span> (<span class="id" type="var">al</span>:<span class="id" type="var">list</span> <span class="id" type="var">id</span>) : <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">al</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ 0 <br/>
+&nbsp;&nbsp;| (<span class="id" type="var">Id</span> <span class="id" type="var">n'</span>)::<span class="id" type="var">al'</span> ⇒ <span class="id" type="var">max</span> <span class="id" type="var">n'</span> (<span class="id" type="var">max_elt</span> <span class="id" type="var">al'</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">fresh</span> (<span class="id" type="var">al</span>:<span class="id" type="var">list</span> <span class="id" type="var">id</span>) : <span class="id" type="var">id</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">Id</span> (<span class="id" type="var">S</span> (<span class="id" type="var">max_elt</span> <span class="id" type="var">al</span>)).<br/>
+</div>
+
+<div class="doc">
+We will also need a way of testing for equality, which we can 
+    derive with the standard <span class="inlinecode"><span class="id" type="var">dec_eq</span></span> tactic. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">eq_id_dec</span> (<span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> : <span class="id" type="var">id</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">x<sub>1</sub></span> = <span class="id" type="var">x<sub>2</sub></span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="var">dec_eq</span>. <span class="id" type="keyword">Defined</span>.<br/>
+</div>
+
+<div class="doc">
+One advantage of using natural numbers as identifiers is that 
+    we can take advantage of the <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instance of <span class="inlinecode"><span class="id" type="var">nat</span></span> to print 
+    them. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;BCP:&nbsp;Print&nbsp;them&nbsp;as&nbsp;"A",&nbsp;"B",&nbsp;etc.&nbsp;&nbsp;Or&nbsp;maybe&nbsp;"X<sub>1</sub>",&nbsp;"X<sub>2</sub>",&nbsp;etc.&nbsp;*)</span><br/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">show_id</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">id</span> :=<br/>
+&nbsp;&nbsp;{ <span class="id" type="var">show</span> <span class="id" type="var">x</span> := <span class="id" type="keyword">let</span> '(<span class="id" type="var">Id</span> <span class="id" type="var">n</span>) := <span class="id" type="var">x</span> <span class="id" type="keyword">in</span> <span class="id" type="var">show</span> <span class="id" type="var">n</span> }.<br/>
+</div>
+
+<div class="doc">
+To generate identifiers for TImp, we will not just generate
+    arbitrary natural numbers. More often than not, we will need to
+    generate a set of identifiers, or pick an identifier from such a
+    set. If we represent a set as a list, we can do the former with a
+    recursive function that generates <span class="inlinecode"><span class="id" type="var">n</span></span> fresh <span class="inlinecode"><span class="id" type="var">nat</span></span>s starting from
+    the empty list. For the latter, we have QuickChick's <span class="inlinecode"><span class="id" type="var">elems_</span></span>
+    combinator. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">get_fresh_ids</span> <span class="id" type="var">n</span> <span class="id" type="var">l</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| 0 ⇒ <span class="id" type="var">l</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">n'</span> ⇒ <span class="id" type="var">get_fresh_ids</span> <span class="id" type="var">n'</span> ((<span class="id" type="tactic">fresh</span> <span class="id" type="var">l</span>) :: <span class="id" type="var">l</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab76"></a><h4 class="section">练习：2 星 (genId)</h4>
+ Write a <span class="inlinecode"><span class="id" type="var">Gen</span></span> instance for <span class="inlinecode"><span class="id" type="var">id</span></span> using the <span class="inlinecode"><span class="id" type="var">elems_</span></span>
+    combinator and <span class="inlinecode"><span class="id" type="var">get_fresh_ids</span></span>.  
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ There remains the question of how to <span class="inlinecode"><span class="id" type="var">shrink</span></span> <span class="inlinecode"><span class="id" type="var">id</span></span>s. 
+    We will answer that question when <span class="inlinecode"><span class="id" type="var">id</span></span>s are used later 
+    in the chapter. For now, let's leave the <span class="inlinecode"><span class="id" type="var">Shrink</span></span> instance
+    as a no-op.
+ 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">shrinkId</span> : <span class="id" type="var">Shrink</span> <span class="id" type="var">id</span> :=<br/>
+&nbsp;&nbsp;{ <span class="id" type="var">shrink</span> <span class="id" type="var">x</span> := [] }.<br/>
+</div>
+
+<div class="doc">
+<a name="lab77"></a><h2 class="section">Types</h2>
+
+<div class="paragraph"> </div>
+
+ Here is the type of TImp types: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">ty</span> := <span class="id" type="var">TBool</span> | <span class="id" type="var">TNat</span>.<br/>
+</div>
+
+<div class="doc">
+That is, TImp has two kinds of values: booleans and natural
+    numbers. 
+<div class="paragraph"> </div>
+
+ To use <span class="inlinecode"><span class="id" type="var">ty</span></span> in testing, we will need <span class="inlinecode"><span class="id" type="var">Arbitrary</span></span>, <span class="inlinecode"><span class="id" type="keyword">Show</span></span>, and
+    <span class="inlinecode"><span class="id" type="var">Dec</span></span> instances. 
+<div class="paragraph"> </div>
+
+ In QC.v, we saw how to write such generators by hand.
+    We also saw, however, that this process can largely be automated
+    for simple inductive types (like <span class="inlinecode"><span class="id" type="var">ty</span></span>, <span class="inlinecode"><span class="id" type="var">nat</span></span>, <span class="inlinecode"><span class="id" type="var">list</span></span>, <span class="inlinecode"><span class="id" type="var">tree</span></span>, etc.).
+    QuickChick provides a top-level vernacular command to derive such
+    instances. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Derive</span> (<span class="id" type="var">Arbitrary</span>, <span class="id" type="keyword">Show</span>) <span class="id" type="keyword">for</span> <span class="id" type="var">ty</span>.<br/>
+<span class="comment">(*&nbsp;==&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;GenSizedty&nbsp;is&nbsp;defined<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;Shrinkty&nbsp;is&nbsp;defined<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;Showty&nbsp;is&nbsp;defined<br/>
+*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">GenSizedty</span>.<br/>
+<span class="comment">(*&nbsp;==&gt;&nbsp;GenSizedty&nbsp;:&nbsp;GenSized&nbsp;ty&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Shrinkty</span>.<br/>
+<span class="comment">(*&nbsp;==&gt;&nbsp;Shrinkty&nbsp;&nbsp;:&nbsp;Shrink&nbsp;ty&nbsp;&nbsp;&nbsp;*)</span><br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">Showty</span>.<br/>
+<span class="comment">(*&nbsp;==&gt;&nbsp;Showty&nbsp;:&nbsp;Show&nbsp;ty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+Decidable equality instances are not yet derived fully
+    automatically by QuickChick.  However, the boilerplate we have to
+    write is largely straightforward. As we saw in the previous
+    chapters, <span class="inlinecode"><span class="id" type="var">Dec</span></span> is a typeclass wrapper around ssreflect's
+    <span class="inlinecode"><span class="id" type="var">decidable</span></span> and we can use the <span class="inlinecode"><span class="id" type="var">dec_eq</span></span> tactic to automate 
+    the process. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">eq_dec_ty</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">ty</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>).<br/>
+<span class="id" type="keyword">Proof</span>. <span class="id" type="var">dec_eq</span>. <span class="id" type="keyword">Defined</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab78"></a><h2 class="section">List-Based Maps</h2>
+
+<div class="paragraph"> </div>
+
+ To encode typing environments (and, later on, states), we will
+    need maps from identifiers to values. However, the function-based
+    representation in the _Software Foundations_ version of Imp is not
+    well suited for testing: we need to be able to access the domain
+    of the map, fold over it, and test for equality; these are all
+    awkward to define for Coq functions. Therefore, we introduce a
+    simple list-based map representation that uses <span class="inlinecode"><span class="id" type="var">id</span></span>s as the keys.
+
+<div class="paragraph"> </div>
+
+    The operations we need are:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode"><span class="id" type="var">empty</span></span> : To create the empty map.
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">get</span></span> : To look up the binding of an element, if any.
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="tactic">set</span></span> : To update the binding of an element.
+
+</li>
+<li> <span class="inlinecode"><span class="id" type="var">dom</span></span> : To get the list of keys in the map. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ The implementation of a map is a simple association list.  If a
+    list contains multiple tuples with the same key, then the binding
+    of the key in the map is the one that appears first in the list;
+    that is, later bindings can be shadowed. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">Map</span> <span class="id" type="var">A</span> := <span class="id" type="var">list</span> (<span class="id" type="var">id</span> * <span class="id" type="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">empty</span></span> map is the empty list. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">map_empty</span> {<span class="id" type="var">A</span>} : <span class="id" type="var">Map</span> <span class="id" type="var">A</span> := [].<br/>
+</div>
+
+<div class="doc">
+To <span class="inlinecode"><span class="id" type="var">get</span></span> the binding of an identifier <span class="inlinecode"><span class="id" type="var">x</span></span>, we just need to walk 
+    through the list and find the first <span class="inlinecode"><span class="id" type="var">cons</span></span> cell where the key 
+    is equal to <span class="inlinecode"><span class="id" type="var">x</span></span>, if any. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">map_get</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">Map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> : <span class="id" type="var">option</span> <span class="id" type="var">A</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">m</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| [] ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;| (<span class="id" type="var">k</span>, <span class="id" type="var">v</span>) :: <span class="id" type="var">m'</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">x</span> = <span class="id" type="var">k</span> ? <span class="id" type="keyword">then</span> <span class="id" type="var">Some</span> <span class="id" type="var">v</span> <span class="id" type="keyword">else</span> <span class="id" type="var">map_get</span> <span class="id" type="var">m'</span> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+To <span class="inlinecode"><span class="id" type="tactic">set</span></span> the binding of an identifier, we just need to <span class="inlinecode"><span class="id" type="var">cons</span></span> 
+    it at the front of the list. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">map_set</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">m</span>:<span class="id" type="var">Map</span> <span class="id" type="var">A</span>) (<span class="id" type="var">x</span>:<span class="id" type="var">id</span>) (<span class="id" type="var">v</span>:<span class="id" type="var">A</span>) : <span class="id" type="var">Map</span> <span class="id" type="var">A</span> := (<span class="id" type="var">x</span>, <span class="id" type="var">v</span>) :: <span class="id" type="var">m</span>.<br/>
+</div>
+
+<div class="doc">
+Finally, the domain of a map is just the set of its keys. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">map_dom</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">m</span>:<span class="id" type="var">Map</span> <span class="id" type="var">A</span>) : <span class="id" type="var">list</span> <span class="id" type="var">id</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">m</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| [] ⇒ []<br/>
+&nbsp;&nbsp;| (<span class="id" type="var">k'</span>, <span class="id" type="var">v</span>) :: <span class="id" type="var">m'</span> ⇒ <span class="id" type="var">k'</span> :: <span class="id" type="var">map_dom</span> <span class="id" type="var">m'</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+We next introduce a simple inductive relation, <span class="inlinecode"><span class="id" type="var">bound_to</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span>, that 
+    holds precisely when the binding of some identifier <span class="inlinecode"><span class="id" type="var">x</span></span> is equal to <span class="inlinecode"><span class="id" type="var">a</span></span> in 
+    <span class="inlinecode"><span class="id" type="var">m</span></span> 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">bound_to</span> {<span class="id" type="var">A</span>} : <span class="id" type="var">Map</span> <span class="id" type="var">A</span> → <span class="id" type="var">id</span> → <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="keyword">Bind</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">m</span> <span class="id" type="var">a</span>, <span class="id" type="var">map_get</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">a</span> → <span class="id" type="var">bound_to</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">a</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab79"></a><h2 class="section">Deciding <span class="inlinecode"><span class="id" type="var">bound_to</span></span> (optional)</h2>
+
+<div class="paragraph"> </div>
+
+ We can now decide whether <span class="inlinecode"><span class="id" type="var">bound_to</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> holds for a given
+    arrangement of <span class="inlinecode"><span class="id" type="var">m</span></span>, <span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">a</span></span>.  On a first reading, you may
+    prefer to skip the next few paragraphs (until the start of the
+    <span class="inlinecode"><span class="id" type="keyword">Context</span></span> subsection), which deal with partially automating the
+    proofs for such instances. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_bound_to</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> (<span class="id" type="var">T</span> : <span class="id" type="var">A</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" type="var">D</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)} <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">map_get</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Get</span>.<br/>
+</div>
+
+<div class="doc">
+After unfolding <span class="inlinecode"><span class="id" type="var">decidable</span></span> and destructing <span class="inlinecode"><span class="id" type="var">map_get</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>, we are
+    left with two subgoals. In the first, we know that <span class="inlinecode"><span class="id" type="var">map_get</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span>
+    <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> and effectively want to decide whether <span class="inlinecode"><span class="id" type="var">map_get</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span>
+    <span class="inlinecode"><span class="id" type="var">T</span></span> or not. Which means we need to decide whether <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">T</span></span>. Thankfully,
+    we can decide that using our hypothesis <span class="inlinecode"><span class="id" type="var">D</span></span>. 
+</div>
+<div class="code code-tight">
+
+&nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> (<span class="id" type="var">D</span> <span class="id" type="var">a</span> <span class="id" type="var">T</span>) <span class="id" type="keyword">as</span> [[<span class="id" type="var">Eq</span> | <span class="id" type="var">NEq</span>]]; <span class="id" type="tactic">subst</span>.<br/>
+</div>
+
+<div class="doc">
+At this point, the first goal can be immediately decided positevely
+    using constructor. 
+</div>
+<div class="code code-tight">
+
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="var">left</span>. <span class="id" type="var">constructor</span>. <span class="id" type="tactic">auto</span>.<br/>
+</div>
+
+<div class="doc">
+In the second subgoal, we can show that <span class="inlinecode"><span class="id" type="var">bound_to</span></span> doesn't hold. 
+</div>
+<div class="code code-tight">
+
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="var">right</span>; <span class="id" type="tactic">intro</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">Contra</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">congruence</span>.<br/>
+</div>
+
+<div class="doc">
+Both of these tactic patterns are very common in non-trival <span class="inlinecode"><span class="id" type="var">Dec</span></span> 
+    instances. It is worth we automating them a bit using LTac. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Abort</span>.<br/>
+</div>
+
+<div class="doc">
+A lot of the time, we can immediately decide a property positivly 
+    using constructor applications. That is captured in <span class="inlinecode"><span class="id" type="var">solve_left</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_left</span>  := <span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="var">left</span>; <span class="id" type="var">econstructor</span>; <span class="id" type="tactic">eauto</span>].<br/>
+</div>
+
+<div class="doc">
+Much of the time, we can also immediately decide that a property
+    _doesn't_ hold by assuming it, doing inversion, and using
+    <span class="inlinecode"><span class="id" type="tactic">congruence</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_right</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">Contra</span> := <span class="id" type="tactic">fresh</span> "Contra" <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="var">right</span>; <span class="id" type="tactic">intro</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">subst</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">eauto</span>; <span class="id" type="tactic">congruence</span>].<br/>
+</div>
+
+<div class="doc">
+We group both in a single tactic, which does nothing at all if 
+    it fails to solve a goal, thanks to <span class="inlinecode"><span class="id" type="tactic">try</span></span> <span class="inlinecode"><span class="id" type="var">solve</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_sum</span> := <span class="id" type="var">solve_left</span>; <span class="id" type="var">solve_right</span>.<br/>
+</div>
+
+<div class="doc">
+We can now prove the <span class="inlinecode"><span class="id" type="var">Dec</span></span> instance quite concisely. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_bound_to</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> (<span class="id" type="var">T</span> : <span class="id" type="var">A</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" type="var">D</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)}<br/>
+&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span>).<br/>
+<div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
+<div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">map_get</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Get</span>; <span class="id" type="var">solve_sum</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">D</span> <span class="id" type="var">a</span> <span class="id" type="var">T</span>) <span class="id" type="keyword">as</span> [[<span class="id" type="var">Eq</span> | <span class="id" type="var">NEq</span>]]; <span class="id" type="tactic">subst</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab80"></a><h2 class="section">Contexts</h2>
+
+<div class="paragraph"> </div>
+
+ Typing contexts in TImp are just maps from identifiers to types. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">context</span> := <span class="id" type="var">Map</span> <span class="id" type="var">ty</span>.<br/>
+</div>
+
+<div class="doc">
+Given a context <span class="inlinecode"><span class="id" type="var">Gamma</span></span> and a type <span class="inlinecode"><span class="id" type="var">T</span></span>, we can try to generate a
+    random <span class="inlinecode"><span class="id" type="var">identifier</span></span> whose binding in <span class="inlinecode"><span class="id" type="var">Gamma</span></span> is <span class="inlinecode"><span class="id" type="var">T</span></span>.
+
+<div class="paragraph"> </div>
+
+    We use <span class="inlinecode"><span class="id" type="var">List.filter</span></span> to extract all of the elements in <span class="inlinecode"><span class="id" type="var">Gamma</span></span>
+    whose type is equal to <span class="inlinecode"><span class="id" type="var">T</span></span> and then, for each <span class="inlinecode">(<span class="id" type="var">a</span>,<span class="id" type="var">T'</span>)</span> that
+    remains, return the name <span class="inlinecode"><span class="id" type="var">a</span></span>. We use the <span class="inlinecode"><span class="id" type="var">oneOf_</span></span> combinator to
+    pick an generator from this list at random.
+
+<div class="paragraph"> </div>
+
+    Since the filtered list might be empty we return an <span class="inlinecode"><span class="id" type="var">option</span></span>,
+    we use <span class="inlinecode"><span class="id" type="var">ret</span></span> <span class="inlinecode"><span class="id" type="var">None</span></span> as the default element for <span class="inlinecode"><span class="id" type="var">oneOf_</span></span>.
+ 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_typed_id_from_context</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">id</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">oneOf_</span> (<span class="id" type="var">ret</span> <span class="id" type="var">None</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> '(<span class="id" type="var">x</span>,<span class="id" type="var">T'</span>) ⇒ <span class="id" type="var">ret</span> (<span class="id" type="var">Some</span> <span class="id" type="var">x</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">List.filter</span> (<span class="id" type="keyword">fun</span> '(<span class="id" type="var">x</span>,<span class="id" type="var">T'</span>) ⇒ <span class="id" type="var">T</span> = <span class="id" type="var">T'</span>?) <span class="id" type="var">Gamma</span>)).<br/>
+</div>
+
+<div class="doc">
+We also need to generate typing contexts. 
+<div class="paragraph"> </div>
+
+ Given some natural number <span class="inlinecode"><span class="id" type="var">n</span></span> to serve as the size of the context,
+    we first create its domain, <span class="inlinecode"><span class="id" type="var">n</span></span> fresh identifiers.  We then create <span class="inlinecode"><span class="id" type="var">n</span></span>
+    arbitrary types with <span class="inlinecode"><span class="id" type="var">vectorOf</span></span>, using the <span class="inlinecode"><span class="id" type="var">Gen</span></span> instance for <span class="inlinecode"><span class="id" type="var">ty</span></span>
+    we derived earlier.  Finally, we zip (<span class="inlinecode"><span class="id" type="var">List.combine</span></span>) the domain
+    with the ranges which creates the (list-based) map.
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_context</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) : <span class="id" type="var">G</span> <span class="id" type="var">context</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">domain</span> := <span class="id" type="var">get_fresh_ids</span> <span class="id" type="var">n</span> [] <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">range</span> &lt;- <span class="id" type="var">vectorOf</span> <span class="id" type="var">n</span> <span class="id" type="var">arbitrary</span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">List.combine</span> <span class="id" type="var">domain</span> <span class="id" type="var">range</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab81"></a><h1 class="section">Expressions</h1>
+
+<div class="paragraph"> </div>
+
+ We are now ready to introduce the syntax of expressions in TImp.
+    The original Imp had two distinct types of expressions,
+    arithmetic and boolean expressions; variables were only
+    allowed to range over natural numbers. In TImp, we extend
+    variables to range over boolean values as well, and we collapse
+    expressions into a single type <span class="inlinecode"><span class="id" type="var">exp</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">exp</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EVar</span> : <span class="id" type="var">id</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENum</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EPlus</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMinus</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMult</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ETrue</span> : <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EFalse</span> : <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EEq</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ELe</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENot</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EAnd</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span>.<br/>
+</div>
+
+<div class="doc">
+To print expressions we derive a <span class="inlinecode"><span class="id" type="keyword">Show</span></span> Instance. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Derive</span> <span class="id" type="keyword">Show</span> <span class="id" type="keyword">for</span> <span class="id" type="var">exp</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab82"></a><h2 class="section">Typed Expressions</h2>
+
+<div class="paragraph"> </div>
+
+ The following inductive relation characterizes well-typed
+    expressions of a particular type. It is straightforward, using
+    <span class="inlinecode"><span class="id" type="var">bound_to</span></span> to access the typing context in the variable case 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Reserved Notation</span> "Gamma '||-' e '\IN' T" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type</span> : <span class="id" type="var">context</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> := <br/>
+| <span class="id" type="var">Ty_Var</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> → <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">EVar</span> <span class="id" type="var">x</span> \<span class="id" type="var">IN</span> <span class="id" type="var">T</span><br/>
+| <span class="id" type="var">Ty_Num</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">n</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">ENum</span> <span class="id" type="var">n</span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span><br/>
+| <span class="id" type="var">Ty_Plus</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>1</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> → <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span>                                    <br/>
+| <span class="id" type="var">Ty_Minus</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>1</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> → <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span>                                    <br/>
+| <span class="id" type="var">Ty_Mult</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>1</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> → <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span>                                    <br/>
+| <span class="id" type="var">Ty_True</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span>, <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">ETrue</span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_False</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span>, <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">EFalse</span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_Eq</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>1</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> → <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_Le</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>1</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> → <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_Not</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e</span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span> →  <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">ENot</span> <span class="id" type="var">e</span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_And</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>1</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span> → <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span><br/>
+<br/>
+<span class="id" type="keyword">where</span> "Gamma '||-' e '\IN' T" := (<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span>).<br/>
+</div>
+
+<div class="doc">
+While the typing relation is almost entirely standard, there is a 
+    choice to make about the <span class="inlinecode"><span class="id" type="var">Ty_Eq</span></span> rule. The <span class="inlinecode"><span class="id" type="var">Ty_Eq</span></span> constructor
+    above requires that the arguments to an equality check are both 
+    arithmetic expressions (just like it was in Imp), which simplifies
+    some of the discussion in the remainder of the chapter. We could
+    have allowed for equality checks between booleans as well - that will
+    become an exercise at the end of this chapter. 
+<div class="paragraph"> </div>
+
+ Once again, we need a decidable instance for the typing relation of
+    TImp. You can skip to the next exercise if you are not interested in
+    specific proof details. 
+<div class="paragraph"> </div>
+
+ We will need a bit more automation for this proof. We will
+    have a lot of hypotheses of the form: 
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">IH</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">T</span>&nbsp;:&nbsp;<span class="id" type="var">ty</span>)&nbsp;(<span class="id" type="var">Gamma</span>&nbsp;:&nbsp;<span class="id" type="var">context</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ssrbool.decidable</span>&nbsp;(<span class="id" type="var">Gamma</span>&nbsp;||-&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;\<span class="id" type="var">IN</span>&nbsp;<span class="id" type="var">T</span>)
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+    Using a brute-force approach, we instantiate such <span class="inlinecode"><span class="id" type="var">IH</span></span>
+    with both <span class="inlinecode"><span class="id" type="var">TNat</span></span> and <span class="inlinecode"><span class="id" type="var">TBool</span></span>, destruct them and then 
+    call <span class="inlinecode"><span class="id" type="var">solve_sum</span></span>. 
+
+<div class="paragraph"> </div>
+
+    The <span class="inlinecode"><span class="id" type="var">pose</span></span> <span class="inlinecode"><span class="id" type="var">proof</span></span> tactic introduces a new hypothesis 
+    in our context, while <span class="inlinecode"><span class="id" type="tactic">clear</span></span> <span class="inlinecode"><span class="id" type="var">IH</span></span> removes it so that 
+    we don't try the same instantiations again and 
+    again.
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_inductives</span> <span class="id" type="var">Gamma</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ <span class="id" type="var">IH</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>, <span class="id" type="var">_</span> |- <span class="id" type="var">_</span> ] ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">H<sub>1</sub></span> := <span class="id" type="tactic">fresh</span> "H<sub>1</sub>" <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">IH</span> <span class="id" type="var">TNat</span> <span class="id" type="var">Gamma</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">H<sub>1</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">H<sub>2</sub></span> := <span class="id" type="tactic">fresh</span> "H<sub>2</sub>" <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">IH</span> <span class="id" type="var">TBool</span> <span class="id" type="var">Gamma</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">H<sub>2</sub></span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">IH</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="var">solve_sum</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>).<br/>
+</div>
+
+<div class="doc">
+Typing in TImp is decidable: given an expression <span class="inlinecode"><span class="id" type="var">e</span></span>, a context <span class="inlinecode"><span class="id" type="var">Gamma</span></span> 
+    and a type <span class="inlinecode"><span class="id" type="var">T</span></span>, we can decide whether <span class="inlinecode"><span class="id" type="var">has_type</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> holds. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_has_type</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) <br/>
+&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e</span> \<span class="id" type="var">IN</span> <span class="id" type="var">T</span>).<br/>
+<div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
+<div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="var">solve_sum</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">T</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">e</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">destruct</span> <span class="id" type="var">T</span>; <span class="id" type="var">solve_sum</span>];<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve</span> [<span class="id" type="tactic">destruct</span> <span class="id" type="var">T</span>; <span class="id" type="var">solve_inductives</span> <span class="id" type="var">Gamma</span>].<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;bound_to&nbsp;case:&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">i</span> <span class="id" type="var">T</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab83"></a><h4 class="section">练习：3 星 (arbitraryExp)</h4>
+ Derive <span class="inlinecode"><span class="id" type="var">Arbitrary</span></span> for expressions.  To see how good it is at
+    generating _well-typed_ expressions, write a conditional property 
+    <span class="inlinecode"><span class="id" type="var">cond_prop</span></span> that is (trivially) always true, with the precondition 
+    that some expression is well-typed. Try to check that property like 
+    this:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">QuickChickWith</span>&nbsp;(<span class="id" type="var">updMaxSize</span>&nbsp;<span class="id" type="var">stdArgs</span>&nbsp;3)&nbsp;<span class="id" type="var">cond_prop</span>.
+<div class="paragraph"> </div>
+
+</div>
+    This idiom sets the maximum-size parameter for all generators to
+    <span class="inlinecode">3</span>, rather the default, which is something larger like 10.  When
+    generating examples, QuickChick will start with size 0, gradually
+    increase the size until the maximum size is reached, and then
+    start over.  What happens when you vary the size bound? 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab84"></a><h2 class="section">Generating Typed Expressions</h2>
+
+<div class="paragraph"> </div>
+
+ Instead of generating expressions and filtering them using
+    <span class="inlinecode"><span class="id" type="var">has_type</span></span>, we can be smarter and generate _well-typed_
+    expressions for a given context directly.
+
+<div class="paragraph"> </div>
+
+    It is common for conditional generators to return <span class="inlinecode"><span class="id" type="var">option</span></span>s,
+    allowing the possibility of failure if a wrong choice is made
+    internally. For example, if we wanted to generate an expression of
+    type <span class="inlinecode"><span class="id" type="var">TNat</span></span> and chose to try to do so by generating a variable,
+    then we might not be able to finish (if the context is empty or
+    only binds booleans). 
+<div class="paragraph"> </div>
+
+ To chain together two generators with types of the form 
+    <span class="inlinecode"><span class="id" type="var">G</span></span> <span class="inlinecode">(<span class="id" type="var">option</span></span> <span class="inlinecode">...)</span>, we need to execute the first generator, match 
+    on its result, and, when it is a <span class="inlinecode"><span class="id" type="var">Some</span></span>, apply the second generator. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">bindGenOpt</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">gma</span> : <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>)) (<span class="id" type="var">k</span> : <span class="id" type="var">A</span> → <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">B</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">B</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">ma</span> &lt;- <span class="id" type="var">gma</span> ;;<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">ma</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">a</span> ⇒ <span class="id" type="var">k</span> <span class="id" type="var">a</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">ret</span> <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+This pattern is common enough that QuickChick introduces explicit monadic 
+    notations. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">GOpt</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>
+    GOpt = fun A : Type =&gt; G (option A)
+         : Type -&gt; Type
+</pre>
+
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;Check&nbsp;Monad_GOpt.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<pre>
+    Monad_GOpt
+         : Monad GOpt
+</pre>
+
+<div class="paragraph"> </div>
+
+ This brings us to our first interesting generator &mdash; one for typed
+    expressions.  We assume that <span class="inlinecode"><span class="id" type="var">Gamma</span></span> and <span class="inlinecode"><span class="id" type="var">T</span></span> are inputs to the
+    generation process.  We also use a <span class="inlinecode"><span class="id" type="var">size</span></span> parameter to control the
+    depth of generated expressions (i.e., we'll define a sized
+    generator). 
+<div class="paragraph"> </div>
+
+ Let's start with a much smaller relation: <span class="inlinecode"><span class="id" type="var">has_type_1</span></span> (which
+    consists of just the first constructor of <span class="inlinecode"><span class="id" type="var">has_type</span></span>), to
+    demonstrate how to build up complex generators for typed
+    expressions from smaller parts. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type_1</span> : <span class="id" type="var">context</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> := <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Ty_Var1</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> → <span class="id" type="var">has_type_1</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EVar</span> <span class="id" type="var">x</span>) <span class="id" type="var">T</span>.<br/>
+</div>
+
+<div class="doc">
+To generate <span class="inlinecode"><span class="id" type="var">e</span></span> such that <span class="inlinecode"><span class="id" type="var">has_type_1</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> holds, we need to
+    pick one of its constructors (there is only one choice, here) and
+    then try to satisfy its preconditions by generating more things.
+    To satisfy <span class="inlinecode"><span class="id" type="var">Ty_Var1</span></span> (given <span class="inlinecode"><span class="id" type="var">Gamma</span></span> and <span class="inlinecode"><span class="id" type="var">T</span></span>), we need to generate
+    <span class="inlinecode"><span class="id" type="var">x</span></span> such that <span class="inlinecode"><span class="id" type="var">bound_to</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span>. But we already have such a
+    generator!  We just need to wrap it in an <span class="inlinecode"><span class="id" type="var">EVar</span></span>.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_typed_evar</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) : <span class="id" type="var">GOpt</span> <span class="id" type="var">exp</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">x</span> &lt;- <span class="id" type="var">gen_typed_id_from_context</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>;;<br/>
+&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EVar</span> <span class="id" type="var">x</span>).<br/>
+</div>
+
+<div class="doc">
+(Note that this is the <span class="inlinecode"><span class="id" type="var">ret</span></span> of the <span class="inlinecode"><span class="id" type="var">GOpt</span></span> monad.) 
+<div class="paragraph"> </div>
+
+ Now let's consider a typing relation <span class="inlinecode"><span class="id" type="var">has_type_2</span></span>, extending
+    <span class="inlinecode"><span class="id" type="var">has_type_1</span></span> with all of the constructors of <span class="inlinecode"><span class="id" type="var">has_type</span></span> that do
+    not recursively require <span class="inlinecode"><span class="id" type="var">has_type</span></span> as a side-condition. These will
+    be the _base cases_ for our final generator. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type_2</span> : <span class="id" type="var">context</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">Ty_Var2</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> → <span class="id" type="var">has_type_2</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EVar</span> <span class="id" type="var">x</span>) <span class="id" type="var">T</span><br/>
+| <span class="id" type="var">Ty_Num2</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">n</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type_2</span> <span class="id" type="var">Gamma</span>  (<span class="id" type="var">ENum</span> <span class="id" type="var">n</span>) <span class="id" type="var">TNat</span><br/>
+| <span class="id" type="var">Ty_True2</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span>, <span class="id" type="var">has_type_2</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">ETrue</span> <span class="id" type="var">TBool</span><br/>
+| <span class="id" type="var">Ty_False2</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span>, <span class="id" type="var">has_type_2</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">EFalse</span> <span class="id" type="var">TBool</span>.<br/>
+</div>
+
+<div class="doc">
+We can already generate values satisfying <span class="inlinecode"><span class="id" type="var">Ty_Var2</span></span> using
+    <span class="inlinecode"><span class="id" type="var">gen_typed_evar</span></span>.  For the rest of the rules, we will need to
+    pattern match on the input <span class="inlinecode"><span class="id" type="var">T</span></span>, since <span class="inlinecode"><span class="id" type="var">Ty_Num</span></span> can only be used if
+    <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">TNat</span></span>, while <span class="inlinecode"><span class="id" type="var">Ty_True</span></span> and <span class="inlinecode"><span class="id" type="var">Ty_False</span></span> can only be used if <span class="inlinecode"><span class="id" type="var">T</span></span>
+    <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">TBool</span></span>.  
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">base'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> : <span class="id" type="var">list</span> (<span class="id" type="var">GOpt</span> <span class="id" type="var">exp</span>) := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">gen_typed_evar</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> ::<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span>  ⇒ [ <span class="id" type="var">n</span> &lt;- <span class="id" type="var">arbitrary</span>;; <span class="id" type="var">ret</span> (<span class="id" type="var">Some</span> (<span class="id" type="var">ENum</span> <span class="id" type="var">n</span>))]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ [ <span class="id" type="var">ret</span> <span class="id" type="var">ETrue</span> ; <span class="id" type="var">ret</span> <span class="id" type="var">EFalse</span> ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+We now need to go from a list of (optional) generators to a 
+    single generator. We could do that using the <span class="inlinecode"><span class="id" type="var">oneOf</span></span> combinator (which
+    chooses uniformly), or the <span class="inlinecode"><span class="id" type="var">freq</span></span> combinator (by adding weights).
+
+<div class="paragraph"> </div>
+
+    Instead, we introduce a new one, called <span class="inlinecode"><span class="id" type="var">backtrack</span></span>:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">backtrack</span>&nbsp;:&nbsp;<span class="id" type="var">list</span>&nbsp;(<span class="id" type="var">nat</span>&nbsp;*&nbsp;<span class="id" type="var">GOpt</span>&nbsp;?<span class="id" type="var">A</span>)&nbsp;→&nbsp;<span class="id" type="var">GOpt</span>&nbsp;?<span class="id" type="var">A</span>
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ Just like <span class="inlinecode"><span class="id" type="var">freq</span></span>, <span class="inlinecode"><span class="id" type="var">backtrack</span></span> selects one of the generators
+    according to the input weights. Unlike <span class="inlinecode"><span class="id" type="var">freq</span></span>, if the chosen
+    generator fails (i.e. produces <span class="inlinecode"><span class="id" type="var">None</span></span>), <span class="inlinecode"><span class="id" type="var">backtrack</span></span> will discard
+    it, choose another, and keep going until one succeeds or all
+    possibilities are exhausted. Our base-case generator could then be
+    like this: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">base</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2, <span class="id" type="var">gen_typed_evar</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) ::<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span>  ⇒ [ (2, <span class="id" type="var">n</span> &lt;- <span class="id" type="var">arbitrary</span>;; <span class="id" type="var">ret</span> (<span class="id" type="var">Some</span> (<span class="id" type="var">ENum</span> <span class="id" type="var">n</span>)))]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ [ (1, <span class="id" type="var">ret</span> <span class="id" type="var">ETrue</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (1, <span class="id" type="var">ret</span> <span class="id" type="var">EFalse</span>) ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_has_type_2</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> := <span class="id" type="var">backtrack</span> (<span class="id" type="var">base</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>).<br/>
+</div>
+
+<div class="doc">
+To see how we handle recursive rules, let's consider a third
+    sub-relation, <span class="inlinecode"><span class="id" type="var">has_type_3</span></span>, with just variables and addition: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type_3</span> : <span class="id" type="var">context</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;| <span class="id" type="var">Ty_Var3</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> <span class="id" type="var">Gamma</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> → <span class="id" type="var">has_type_3</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EVar</span> <span class="id" type="var">x</span>) <span class="id" type="var">T</span><br/>
+&nbsp;| <span class="id" type="var">Ty_Plus3</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type_3</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">TNat</span> → <span class="id" type="var">has_type_3</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="var">TNat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type_3</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>) <span class="id" type="var">TNat</span>.<br/>
+</div>
+
+<div class="doc">
+Typing derivations involving <span class="inlinecode"><span class="id" type="var">EPlus</span></span> nodes are binary trees, so we
+    need to add a <span class="inlinecode"><span class="id" type="var">size</span></span> parameter to enforce termination. The base
+    case (<span class="inlinecode"><span class="id" type="var">Ty_Var3</span></span>) is handled using <span class="inlinecode"><span class="id" type="var">gen_typed_evar</span></span> just like
+    before.  The non-base case can choose between trying to generate
+    <span class="inlinecode"><span class="id" type="var">Ty_Var3</span></span> and trying to generate <span class="inlinecode"><span class="id" type="var">Ty_Plus3</span></span>. For the latter, the
+    input type <span class="inlinecode"><span class="id" type="var">T</span></span> must be <span class="inlinecode"><span class="id" type="var">TNat</span></span>, otherwise it is not
+    applicable. Once again, this leads to a match on <span class="inlinecode"><span class="id" type="var">T</span></span>: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">gen_has_type_3</span> <span class="id" type="var">size</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> : <span class="id" type="var">GOpt</span> <span class="id" type="var">exp</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">size</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">gen_typed_evar</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">size'</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">backtrack</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;([ (1, <span class="id" type="var">gen_typed_evar</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) ] <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ <span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ (<span class="id" type="var">size</span>, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_has_type_3</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_has_type_3</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Putting all this together, we get the full generator for
+    well-typed expressions. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">gen_exp_typed_sized</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">size</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">GOpt</span> <span class="id" type="var">exp</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">base</span> := <span class="id" type="var">base</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">recs</span> <span class="id" type="var">size'</span> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ (<span class="id" type="var">size</span>, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (<span class="id" type="var">size</span>, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (<span class="id" type="var">size</span>, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;[ (<span class="id" type="var">size</span>, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (<span class="id" type="var">size</span>, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (<span class="id" type="var">size</span>, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">ENot</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; (<span class="id" type="var">size</span>, <span class="id" type="var">e<sub>1</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>2</sub></span> &lt;- <span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">size'</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span> ;; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)) ]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span> <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">size</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">backtrack</span> <span class="id" type="var">base</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">size'</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">backtrack</span> (<span class="id" type="var">base</span> ++ <span class="id" type="var">recs</span> <span class="id" type="var">size'</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+When writing such complex generators, it's good to have some tests
+    to verify that we are generating what we expect. For example, here
+    we would expect <span class="inlinecode"><span class="id" type="var">gen_exp_typed_sized</span></span> to always return expressions
+    that are well typed.
+
+<div class="paragraph"> </div>
+
+    We can use <span class="inlinecode"><span class="id" type="var">forAll</span></span> to encode such a property. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_typed_has_type</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 3 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> <span class="id" type="var">arbitrary</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">T</span> ⇒                                   <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">top_level_size</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ (<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span>)?<br/>
+&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">false</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>))).<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;gen_typed_has_type.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab85"></a><h1 class="section">Values and States</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab86"></a><h2 class="section">Values</h2>
+
+<div class="paragraph"> </div>
+
+ In the original Imp language from _Logical Foundations_, variables
+    ranged over natural numbers, so states were just maps from
+    identifiers to <span class="inlinecode"><span class="id" type="var">nat</span></span>.  Since we now want to extend this to also
+    include booleans, we need a type of <span class="inlinecode"><span class="id" type="var">value</span></span>s that includes
+    both. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">value</span> := <span class="id" type="var">VNat</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">value</span> | <span class="id" type="var">VBool</span> : <span class="id" type="var">bool</span> → <span class="id" type="var">value</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Derive</span> <span class="id" type="keyword">Show</span> <span class="id" type="keyword">for</span> <span class="id" type="var">value</span>.<br/>
+</div>
+
+<div class="doc">
+We can also quickly define a typing relation for values, a Dec instance
+    for it, and a generator for values of a given type. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type_value</span> : <span class="id" type="var">value</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TyVNat</span>  : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">has_type_value</span> (<span class="id" type="var">VNat</span>  <span class="id" type="var">n</span>) <span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TyVBool</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">b</span>, <span class="id" type="var">has_type_value</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>) <span class="id" type="var">TBool</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span> : <span class="id" type="var">Dec</span> (<span class="id" type="var">has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span>).<br/>
+<div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
+<div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
+<span class="id" type="keyword">Proof</span>. <span class="id" type="var">constructor</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">v</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">T</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_typed_value</span> (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) : <span class="id" type="var">G</span> <span class="id" type="var">value</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">TNat</span>  ⇒ <span class="id" type="var">n</span> &lt;- <span class="id" type="var">arbitrary</span>;; <span class="id" type="var">ret</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ <span class="id" type="var">b</span> &lt;- <span class="id" type="var">arbitrary</span>;; <span class="id" type="var">ret</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab87"></a><h2 class="section">States</h2>
+
+<div class="paragraph"> </div>
+
+ _States_ in TImp are just maps from identifiers to values 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">state</span> := <span class="id" type="var">Map</span> <span class="id" type="var">value</span>.<br/>
+</div>
+
+<div class="doc">
+We introduce an inductive relation that specifies when a state is
+    well typed in a context (that is, when all of its variables are
+    mapped to values of appropriate types).
+
+<div class="paragraph"> </div>
+
+    We encode this in an element-by-element style inductive relation:
+    empty states are only well typed with respect to an empty context,
+    while non-empty states need to map their head identifier to a value of
+    the appropriate type (and their tail must similarly be well
+    typed). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">well_typed_state</span> : <span class="id" type="var">context</span> → <span class="id" type="var">state</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">TS_Empty</span> : <span class="id" type="var">well_typed_state</span> <span class="id" type="var">map_empty</span> <span class="id" type="var">map_empty</span><br/>
+| <span class="id" type="var">TS_Elem</span>  : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span> <span class="id" type="var">st</span> <span class="id" type="var">Gamma</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span> → <span class="id" type="var">well_typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_typed_state</span> ((<span class="id" type="var">x</span>,<span class="id" type="var">T</span>)::<span class="id" type="var">Gamma</span>) ((<span class="id" type="var">x</span>,<span class="id" type="var">v</span>)::<span class="id" type="var">st</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_well_typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> : <span class="id" type="var">Dec</span> (<span class="id" type="var">well_typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span>).<br/>
+<div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
+<div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="var">constructor</span>; <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>.<br/>
+<span class="id" type="tactic">induction</span> <span class="id" type="var">st</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">Gamma</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="tactic">destruct</span> <span class="id" type="var">a</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">a</span> <span class="id" type="var">v</span>]; <span class="id" type="tactic">destruct</span> <span class="id" type="var">p</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">a'</span> <span class="id" type="var">T</span>].<br/>
+<span class="id" type="tactic">destruct</span> (@<span class="id" type="var">dec</span> (<span class="id" type="var">a</span> = <span class="id" type="var">a'</span>) <span class="id" type="var">_</span> ); <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="tactic">subst</span>; <span class="id" type="var">specialize</span> (<span class="id" type="var">IHst</span> <span class="id" type="var">Gamma</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHst</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Defined</span>.<br/>
+</div>
+
+<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">gen_well_typed_state</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) : <span class="id" type="var">G</span> <span class="id" type="var">state</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="var">sequenceGen</span> (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> '(<span class="id" type="var">x</span>, <span class="id" type="var">T</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">v</span> &lt;- <span class="id" type="var">gen_typed_value</span> <span class="id" type="var">T</span>;;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ret</span> (<span class="id" type="var">x</span>, <span class="id" type="var">v</span>)) <span class="id" type="var">Gamma</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab88"></a><h1 class="section">Evaluation</h1>
+
+<div class="paragraph"> </div>
+
+ The evaluation function takes a state and an expression and
+    returns an optional value, which can be <span class="inlinecode"><span class="id" type="var">None</span></span> if the expression
+    encounters a dynamic type error like trying to perform addition on
+    a boolean. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">eval</span> (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">option</span> <span class="id" type="var">value</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EVar</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">map_get</span> <span class="id" type="var">st</span> <span class="id" type="var">x</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENum</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> (<span class="id" type="var">n<sub>1</sub></span> + <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> (<span class="id" type="var">n<sub>1</sub></span> - <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> (<span class="id" type="var">n<sub>1</sub></span> * <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ETrue</span>       ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">true</span>  )<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EFalse</span>      ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">false</span> )<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> (<span class="id" type="var">n<sub>1</sub></span> =? <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>1</sub></span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> (<span class="id" type="var">n<sub>1</sub></span> &lt;? <span class="id" type="var">n<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENot</span> <span class="id" type="var">e</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> (<span class="id" type="var">negb</span> <span class="id" type="var">b</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>  ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>1</sub></span>, <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e<sub>2</sub></span> <span class="id" type="keyword">with</span> <br/>
+<span class="comment">(*&nbsp;Let's&nbsp;include&nbsp;a&nbsp;silly&nbsp;bug&nbsp;here!&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>), <span class="id" type="var">Some</span> (<span class="id" type="var">VNat</span> <span class="id" type="var">n<sub>2</sub></span>) ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> (<span class="id" type="var">negb</span> <span class="id" type="var">b</span>))<br/>
+<span class="comment">(*&nbsp;&nbsp;|&nbsp;Some&nbsp;(VBool&nbsp;b<sub>1</sub>),&nbsp;Some&nbsp;(VBool&nbsp;b<sub>2</sub>)&nbsp;=&gt;&nbsp;Some&nbsp;(VBool&nbsp;(andb&nbsp;b<sub>1</sub>&nbsp;b<sub>2</sub>))&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span>, <span class="id" type="var">_</span> ⇒ <span class="id" type="var">None</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+We will see in a later chapter (<a href="QuickChickTool.html"><span class="inlineref">QuickChickTool</span></a>) how we can
+    use QuickChick to introduce such _mutations_ and have them
+    automatically checked. 
+<div class="paragraph"> </div>
+
+ _Type soundness_ states that, if we have an expression <span class="inlinecode"><span class="id" type="var">e</span></span> of a
+    given type <span class="inlinecode"><span class="id" type="var">T</span></span> as well as a well-typed state <span class="inlinecode"><span class="id" type="var">st</span></span>, then evaluating
+    <span class="inlinecode"><span class="id" type="var">e</span></span> in <span class="inlinecode"><span class="id" type="var">st</span></span> will never fail.
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">isNone</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">option</span> <span class="id" type="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">m</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Conjecture</span> <span class="id" type="var">expression_soundness</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span>,  <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> →  <span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e</span> \<span class="id" type="var">IN</span> <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>) = <span class="id" type="var">false</span>.<br/>
+</div>
+
+<div class="doc">
+To test this property, we construct an appropriate checker: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">expression_soundness_exec</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 3 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>)  (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_well_typed_state</span> <span class="id" type="var">Gamma</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> <span class="id" type="var">arbitrary</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">T</span> ⇒                                    <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_exp_typed_sized</span> 3 <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒ <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span>  <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>)))).<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;expression_soundness_exec.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+<pre>     ===&gt;
+       QuickChecking expression_soundness_exec
+       [(1,TNat), (2,TNat), (3,TBool), (4,TNat)]
+       [(1,VNat 0), (2,VNat 0), (3,VBool true), (4,VNat 0)]
+       TBool
+       Some EAnd (EAnd (EEq (EVar 4) (EVar 1)) (EEq (ENum 0) (EVar 4))) EFalse
+       *** Failed after 8 tests and 0 shrinks. (0 discards)
+</pre>
+ Where is the bug??  Looks like we need some shrinking! 
+<div class="paragraph"> </div>
+
+<a name="lab89"></a><h2 class="section">Shrinking for Expressions</h2>
+
+<div class="paragraph"> </div>
+
+ Let's see what happens if we use the default shrinker for
+    expressions carelessly. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Derive</span> <span class="id" type="var">Shrink</span> <span class="id" type="keyword">for</span> <span class="id" type="var">exp</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">expression_soundness_exec_firstshrink</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 3 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>)  (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_well_typed_state</span> <span class="id" type="var">Gamma</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> <span class="id" type="var">arbitrary</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">T</span> ⇒                                    <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> (<span class="id" type="var">gen_exp_typed_sized</span> 3 <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) <span class="id" type="var">shrink</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒ <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span>  <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>)))).<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;expression_soundness_exec_firstshrink.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+<pre>     ===&gt; 
+       QuickChecking expression_soundness_exec_firsttry
+       [(1,TBool), (2,TNat), (3,TBool), (4,TBool)]
+       [(1,VBool false), (2,VNat 0), (3,VBool true), (4,VBool false)]
+       TBool
+       Some EAnd (ENum 0) ETrue
+       *** Failed after 28 tests and 7 shrinks. (0 discards)
+</pre>
+
+<div class="paragraph"> </div>
+
+ The expression shrank to something ill-typed! Since it causes the
+    checker to fail, QuickChick views this as a succesfull shrink, even 
+    though this could not actually be produced by our generator and 
+    doesn't satisfy our preconditions!  One solution would be to check 
+    the preconditions in the Checker, filtering out shrinks.  But that 
+    would be inefficient. 
+<div class="paragraph"> </div>
+
+ We not only need to shrink expressions, we need to shrink them so
+    that their type is preserved! To accomplish this, we need to
+    intuitively follow the opposite of the procedure we did for
+    generators: look at a typing derivation and see what parts of it
+    we can shrink to while maintaining their types so that the type of
+    the entire thing is preserved.
+
+<div class="paragraph"> </div>
+
+    As in the case of <span class="inlinecode"><span class="id" type="var">gen_exp_typed</span></span>, we are going to build up the
+    full shrinker in steps. Let's begin with shrinking constants.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">ENum</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> for some <span class="inlinecode"><span class="id" type="var">x</span></span>, all we can do is try to shrink
+      <span class="inlinecode"><span class="id" type="var">x</span></span>.
+
+</li>
+<li> If <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">ETrue</span></span> or <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">EFalse</span></span>, we could shrink it to the other.
+      But remember, we don't want to do both, as this would lead to an
+      infinite loop in shrinking!  We choose to shrink <span class="inlinecode"><span class="id" type="var">EFalse</span></span> to
+      <span class="inlinecode"><span class="id" type="var">ETrue</span></span>. 
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">shrink_base</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">list</span> <span class="id" type="var">exp</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENum</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">map</span> <span class="id" type="var">ENum</span> (<span class="id" type="var">shrink</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ETrue</span> ⇒ []<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EFalse</span> ⇒ [<span class="id" type="var">ETrue</span>] <br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+The next case, <span class="inlinecode"><span class="id" type="var">EVar</span></span>, must take the type <span class="inlinecode"><span class="id" type="var">T</span></span> to be preserved into
+    account. To shrink an <span class="inlinecode"><span class="id" type="var">EVar</span></span> we could try shrinking the inner
+    identifier, but shrinking an identifier by shrinking its natural
+    number representation makes little sense. Better, we can try to 
+    shrink the <span class="inlinecode"><span class="id" type="var">EVar</span></span> to a constant of the appropriate type. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">shrink_evar</span> (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">list</span> <span class="id" type="var">exp</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">EVar</span> <span class="id" type="var">x</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒ [<span class="id" type="var">ENum</span> 0]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ [<span class="id" type="var">ETrue</span> ; <span class="id" type="var">EFalse</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Finally, we need to be able to shrink the recursive cases. Consider 
+    <span class="inlinecode"><span class="id" type="var">EPlus</span></span> <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">e<sub>2</sub></span></span>: 
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> We could try (recursively) shrinking <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> or <span class="inlinecode"><span class="id" type="var">e<sub>2</sub></span></span> preserving their 
+        <span class="inlinecode"><span class="id" type="var">TNat</span></span> type.
+
+</li>
+<li> We could try to shrink directly to <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> or <span class="inlinecode"><span class="id" type="var">e<sub>2</sub></span></span> since their type 
+        is the same as <span class="inlinecode"><span class="id" type="var">EPlus</span></span> <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">e<sub>2</sub></span></span>. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ On the other hand, consider <span class="inlinecode"><span class="id" type="var">EEq</span></span> <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">e<sub>2</sub></span></span>:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Again, we could recursively shrink <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> or <span class="inlinecode"><span class="id" type="var">e<sub>2</sub></span></span>.
+
+</li>
+<li> But we can't shrink _to_ <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> or <span class="inlinecode"><span class="id" type="var">e<sub>2</sub></span></span> since they are of a
+        different type.
+
+</li>
+<li> For faster shrinking, we can also try to shrink such expressions
+        to boolean constants directly. 
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">shrink_rec</span> (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">list</span> <span class="id" type="var">exp</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_rec</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_rec</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_rec</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_rec</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Putting it all together yields the following smart shrinker: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">shrink_exp_typed</span> (<span class="id" type="var">T</span> : <span class="id" type="var">ty</span>) (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">list</span> <span class="id" type="var">exp</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">EVar</span> <span class="id" type="var">_</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">T</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TNat</span> ⇒ [<span class="id" type="var">ENum</span> 0]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TBool</span> ⇒ [<span class="id" type="var">ETrue</span> ; <span class="id" type="var">EFalse</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENum</span> <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ETrue</span> ⇒ []<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EFalse</span> ⇒ [<span class="id" type="var">ETrue</span>]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> :: (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> :: (<span class="id" type="var">EPlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> :: (<span class="id" type="var">EEq</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">ELe</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TNat</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ENot</span> <span class="id" type="var">e</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> :: <span class="id" type="var">e</span> :: (<span class="id" type="var">List.map</span> <span class="id" type="var">ENot</span> (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ETrue</span> :: <span class="id" type="var">EFalse</span> :: <span class="id" type="var">e<sub>1</sub></span> :: <span class="id" type="var">e<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:: (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>1</sub>'</span> ⇒ <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub>'</span> <span class="id" type="var">e<sub>2</sub></span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TBool</span> <span class="id" type="var">e<sub>1</sub></span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++ (<span class="id" type="var">List.map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e<sub>2</sub>'</span> ⇒ <span class="id" type="var">EAnd</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub>'</span>) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">TBool</span> <span class="id" type="var">e<sub>2</sub></span>))<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+As we saw for generators, we can also perform sanity checks on our
+    shrinkers.  Here, when the shrinker is applied to an expression of
+    a given type, all of its results should have the same type. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">shrink_typed_has_type</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 3 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> <span class="id" type="var">arbitrary</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">T</span> ⇒                                   <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_exp_typed_sized</span> <span class="id" type="var">top_level_size</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">List.forallb</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">e'</span> ⇒ (<span class="id" type="var">has_type</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e'</span> <span class="id" type="var">T</span>)?) (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span> <span class="id" type="var">e</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>))).<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;shrink_typed_has_type.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab90"></a><h2 class="section">Back to Soundness</h2>
+ To lift the shrinker to optional expressions, QuickChick provides
+    the following function. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">lift_shrink</span> {<span class="id" type="var">A</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">shr</span> : <span class="id" type="var">A</span> → <span class="id" type="var">list</span> <span class="id" type="var">A</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">option</span> <span class="id" type="var">A</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">list</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">m</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">List.map</span> <span class="id" type="var">Some</span> (<span class="id" type="var">shr</span> <span class="id" type="var">x</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ []<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Armed with shrinking, we can pinpoint the bug in the <span class="inlinecode"><span class="id" type="var">EAnd</span></span> branch
+    of the evaluator. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">expression_soundness_exec'</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">num_vars</span> := 4 <span class="id" type="keyword">in</span> <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">top_level_size</span> := 3 <span class="id" type="keyword">in</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_context</span> <span class="id" type="var">num_vars</span>)  (<span class="id" type="keyword">fun</span> <span class="id" type="var">Gamma</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> (<span class="id" type="var">gen_well_typed_state</span> <span class="id" type="var">Gamma</span>) (<span class="id" type="keyword">fun</span> <span class="id" type="var">st</span> ⇒<br/>
+&nbsp;&nbsp;<span class="id" type="var">forAll</span> <span class="id" type="var">arbitrary</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">T</span> ⇒                                    <br/>
+&nbsp;&nbsp;<span class="id" type="var">forAllShrink</span> (<span class="id" type="var">gen_exp_typed_sized</span> 3 <span class="id" type="var">Gamma</span> <span class="id" type="var">T</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">lift_shrink</span> (<span class="id" type="var">shrink_exp_typed</span> <span class="id" type="var">T</span>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">me</span> ⇒  <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">me</span> <span class="id" type="keyword">with</span>  <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">e</span> ⇒ <span class="id" type="var">negb</span> (<span class="id" type="var">isNone</span> (<span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>)))).<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;expression_soundness_exec'.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+<pre>     ===&gt;
+        QuickChecking expression_soundness_exec'
+        [(1,TNat), (2,TNat), (3,TNat), (4,TBool)]
+        [(1,VNat 0), (2,VNat 0), (3,VNat 0), (4,VBool false)]
+        TBool
+        Some EAnd ETrue ETrue
+        *** Failed after 8 tests and 1 shrinks. (0 discards)
+</pre>
+
+<div class="paragraph"> </div>
+
+<a name="lab91"></a><h1 class="section">Well-Typed Programs</h1>
+
+<div class="paragraph"> </div>
+
+ Now we're ready to introduce TImp commands; they are just like the
+    ones in Imp. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">com</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSkip</span>  : <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CAss</span>   : <span class="id" type="var">id</span>  → <span class="id" type="var">exp</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CSeq</span>   : <span class="id" type="var">com</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CIf</span>    : <span class="id" type="var">exp</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">CWhile</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">com</span> → <span class="id" type="var">com</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Notation</span> "'SKIP'" :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">CSkip</span>.<br/>
+<span class="id" type="keyword">Notation</span> "x '<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>' a" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CAss</span> <span class="id" type="var">x</span> <span class="id" type="var">a</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 60).<br/>
+<span class="id" type="keyword">Notation</span> "c<sub>1</sub> ;;; c<sub>2</sub>" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<span class="id" type="keyword">Notation</span> "'WHILE' b 'DO' c 'END'" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<span class="id" type="keyword">Notation</span> "'IFB' c<sub>1</sub> 'THEN' c<sub>2</sub> 'ELSE' c<sub>3</sub> 'FI'" :=<br/>
+&nbsp;&nbsp;(<span class="id" type="var">CIf</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">c<sub>3</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 80, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Derive</span> <span class="id" type="keyword">Show</span> <span class="id" type="keyword">for</span> <span class="id" type="var">com</span>.<br/>
+</div>
+
+<div class="doc">
+(Of course, the derived <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instance is not going to use these
+    notations!) 
+<div class="paragraph"> </div>
+
+ We can now define what it means for a command to be well typed
+    for a given context. The interesting cases are <span class="inlinecode"><span class="id" type="var">TAss</span></span> and <span class="inlinecode"><span class="id" type="var">TIf</span></span>/<span class="inlinecode"><span class="id" type="var">TWhile</span></span>. 
+    The first one, ensures that the type of the variable we are 
+    assigning to is the same as that of the expression. The latter,
+    requires that the conditional is indeed a boolean expression.
+ 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">well_typed_com</span> : <span class="id" type="var">context</span> → <span class="id" type="var">com</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TSkip</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span>, <span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">CSkip</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">TAss</span>  : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">e</span> <span class="id" type="var">T</span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">e</span> \<span class="id" type="var">IN</span> <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">CAss</span> <span class="id" type="var">x</span> <span class="id" type="var">e</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TSeq</span>  : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>1</sub></span> → <span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">CSeq</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TIf</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>, <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">b</span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>1</sub></span> → <span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c<sub>2</sub></span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">CIf</span> <span class="id" type="var">b</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">c<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">TWhile</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> ||- <span class="id" type="var">b</span> \<span class="id" type="var">IN</span> <span class="id" type="var">TBool</span> → <span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c</span> → <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> (<span class="id" type="var">CWhile</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab92"></a><h2 class="section">Decidable instance for well-typed.</h2>
+
+<div class="paragraph"> </div>
+
+ A couple of lemmas and a custom tactic will help the decidability
+    proof... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">bind_deterministic</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> (<span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> : <span class="id" type="var">ty</span>) :<br/>
+&nbsp;&nbsp;<span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>1</sub></span> → <span class="id" type="var">bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">T<sub>2</sub></span> → <br/>
+&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> = <span class="id" type="var">T<sub>2</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
+<div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">T<sub>1</sub></span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">T<sub>2</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="tactic">eauto</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="tactic">congruence</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">has_type_deterministic</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">e</span> (<span class="id" type="var">T<sub>1</sub></span> <span class="id" type="var">T<sub>2</sub></span> : <span class="id" type="var">ty</span>) : <br/>
+&nbsp;&nbsp;<span class="id" type="var">has_type</span> <span class="id" type="var">e</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T<sub>1</sub></span> → <span class="id" type="var">has_type</span> <span class="id" type="var">e</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">T<sub>2</sub></span> → <br/>
+&nbsp;&nbsp;<span class="id" type="var">T<sub>1</sub></span> = <span class="id" type="var">T<sub>2</sub></span>.<br/>
+<div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
+<div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">T<sub>1</sub></span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">T<sub>2</sub></span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="tactic">eauto</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>1</sub></span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>2</sub></span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">eauto</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">congruence</span>;<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>7</sub></span>; <span class="id" type="tactic">subst</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">bind_deterministic</span>; <span class="id" type="tactic">eauto</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+
+<br/>
+<span class="id" type="keyword">Ltac</span> <span class="id" type="var">solve_det</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| [ <span class="id" type="var">H<sub>1</sub></span> : <span class="id" type="var">bound_to</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ?<span class="id" type="var">T<sub>1</sub></span> ,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">H<sub>2</sub></span> : <span class="id" type="var">bound_to</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ?<span class="id" type="var">T<sub>2</sub></span> |- <span class="id" type="var">_</span> ] ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">T<sub>1</sub></span> = <span class="id" type="var">T<sub>2</sub></span>) <span class="id" type="tactic">by</span> (<span class="id" type="tactic">eapply</span> <span class="id" type="var">bind_deterministic</span>; <span class="id" type="tactic">eauto</span>)<br/>
+&nbsp;&nbsp;| [ <span class="id" type="var">H<sub>1</sub></span> : <span class="id" type="var">has_type</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ?<span class="id" type="var">T<sub>1</sub></span> ,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">H<sub>2</sub></span> : <span class="id" type="var">has_type</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ?<span class="id" type="var">T<sub>2</sub></span> |- <span class="id" type="var">_</span> ] ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">T<sub>1</sub></span> = <span class="id" type="var">T<sub>2</sub></span>) <span class="id" type="tactic">by</span> (<span class="id" type="tactic">eapply</span> <span class="id" type="var">bind_deterministic</span>; <span class="id" type="tactic">eauto</span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Now, here is a brute-force decision procedure for the typing
+    relation (which amounts to a simple typechecker). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">dec_well_typed_com</span> (<span class="id" type="var">Gamma</span> : <span class="id" type="var">context</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) <br/>
+&nbsp;&nbsp;: <span class="id" type="var">Dec</span> (<span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c</span>).<br/>
+<div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
+<div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">constructor</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">ssrbool.decidable</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">c</span>; <span class="id" type="var">solve_sum</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">i</span> <span class="id" type="var">TNat</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_has_type</span> <span class="id" type="var">e</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TNat</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_bound_to</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">i</span> <span class="id" type="var">TBool</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_has_type</span> <span class="id" type="var">e</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <span class="id" type="var">solve_sum</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve_det</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">congruence</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>; <span class="id" type="tactic">intro</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Contra</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">Contra</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve_det</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">congruence</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">T</span>; <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHc1</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHc2</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">eauto</span>; <span class="id" type="var">solve_sum</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHc1</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHc2</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">eauto</span>; <span class="id" type="var">solve_sum</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_has_type</span> <span class="id" type="var">e</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <span class="id" type="var">solve_sum</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHc</span>; <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">dec_has_type</span> <span class="id" type="var">e</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">TBool</span>); <span class="id" type="tactic">destruct</span> <span class="id" type="var">dec</span>; <span class="id" type="var">solve_sum</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab93"></a><h4 class="section">练习：4 星 (arbitrary_well_typed_com)</h4>
+ Write a generator and a shrinker for well_typed programs given
+    some context <span class="inlinecode"><span class="id" type="var">Gamma</span></span>.  Write some appropriate sanity checks and
+    make sure they give expected results. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+ To complete the tour of testing for TImp, here is a (buggy??)
+    evaluation function for commands given a state. To ensure
+    termination, we've included a "fuel" parameter: if it gets to zero
+    we return <span class="inlinecode"><span class="id" type="var">OutOfGas</span></span>, signifying that we're not sure if evaluation
+    would have succeeded, failed, or diverged if we'd gone on
+    evaluating. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">result</span> := <br/>
+| <span class="id" type="var">Success</span> : <span class="id" type="var">state</span> → <span class="id" type="var">result</span><br/>
+| <span class="id" type="var">Fail</span> : <span class="id" type="var">result</span> <br/>
+| <span class="id" type="var">OutOfGas</span> : <span class="id" type="var">result</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">ceval</span> (<span class="id" type="var">fuel</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) : <span class="id" type="var">result</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">fuel</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">OutOfGas</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">fuel'</span> ⇒ <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Success</span> <span class="id" type="var">st</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">x</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">e</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">v</span> ⇒ <span class="id" type="var">Success</span> (<span class="id" type="var">map_set</span> <span class="id" type="var">st</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Fail</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">c<sub>1</sub></span> ;;; <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">ceval</span> <span class="id" type="var">fuel'</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Success</span> <span class="id" type="var">st'</span> ⇒  <span class="id" type="var">ceval</span> <span class="id" type="var">fuel'</span> <span class="id" type="var">st'</span> <span class="id" type="var">c<sub>2</sub></span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Fail</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">IFB</span> <span class="id" type="var">b</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval</span> <span class="id" type="var">fuel'</span> <span class="id" type="var">st</span> (<span class="id" type="keyword">if</span> <span class="id" type="var">b</span> <span class="id" type="keyword">then</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="keyword">else</span> <span class="id" type="var">c<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">WHILE</span> <span class="id" type="var">b</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">eval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> (<span class="id" type="var">VBool</span> <span class="id" type="var">b'</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">b'</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">ceval</span> <span class="id" type="var">fuel'</span> <span class="id" type="var">st</span> (<span class="id" type="var">c</span> ;;; <span class="id" type="var">WHILE</span> <span class="id" type="var">b</span> <span class="id" type="var">DO</span> <span class="id" type="var">c</span> <span class="id" type="var">END</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">Success</span> <span class="id" type="var">st</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">Fail</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">isFail</span> <span class="id" type="var">r</span> := <br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">r</span> <span class="id" type="keyword">with</span> <br/>
+&nbsp;&nbsp;| <span class="id" type="var">Fail</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+<b>Type soundness_: well-typed commands never fail. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Conjecture</span> <span class="id" type="var">well_typed_state_never_stuck</span> : <br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span>, <span class="id" type="var">well_typed_state</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">st</span> →<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">c</span>, <span class="id" type="var">well_typed_com</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">c</span> →<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">fuel</span>, <span class="id" type="var">isFail</span> (<span class="id" type="var">ceval</span> <span class="id" type="var">fuel</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span>) = <span class="id" type="var">false</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab94"></a><h4 class="section">练习：4 星 (well_typed_state_never_stuck)</h4>
+ Write a checker for the above property, find any bugs, and fix them. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<a name="lab95"></a><h4 class="section">练习：4 星 (ty_eq_polymorphic)</h4>
+ In the <span class="inlinecode"><span class="id" type="var">has_type</span></span> relation we allowed equality checks between 
+    only arithmetic expressions. Introduce an additional typing 
+    rule that allows for equality checks between booleans.
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">Ty_Eq</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">Gamma</span>&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>,&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span>&nbsp;||-&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;\<span class="id" type="var">IN</span>&nbsp;<span class="id" type="var">TBool</span>&nbsp;→&nbsp;<span class="id" type="var">Gamma</span>&nbsp;||-&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;\<span class="id" type="var">IN</span>&nbsp;<span class="id" type="var">TBool</span>&nbsp;→<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span>&nbsp;||-&nbsp;<span class="id" type="var">EEq</span>&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;\<span class="id" type="var">IN</span>&nbsp;<span class="id" type="var">TBool</span>
+<div class="paragraph"> </div>
+
+</div>
+   Make sure you also update the evaluation relation to 
+   compare boolean values. Update the generators and shrinkers
+   accordingly to find counterexamples to the buggy properties
+   above. 
+
+<div class="paragraph"> </div>
+
+   HINT: When updating the shrinker, you will need to 
+   come up with the type of the equated expressions. The 
+   <span class="inlinecode"><span class="id" type="var">Dec</span></span> instance of <span class="inlinecode"><span class="id" type="var">has_type</span></span> will come in handy.
+
+<div class="paragraph"> </div>
+
+<a name="lab96"></a><h1 class="section">Automation (Revisited)</h1>
+
+<div class="paragraph"> </div>
+
+ QuickChick is under very active development.  Our vision is that
+    it should automate most of the tedious parts of testing, while
+    retaining full customizability.
+
+<div class="paragraph"> </div>
+
+    We close this case study with a brief demo of some things it can
+    do now. 
+<div class="paragraph"> </div>
+
+ Recall the <span class="inlinecode"><span class="id" type="var">has_type_value</span></span> property and its corresponding generator:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;<span class="id" type="keyword">Inductive</span>&nbsp;<span class="id" type="var">has_type_value</span>&nbsp;:&nbsp;<span class="id" type="var">value</span>&nbsp;→&nbsp;<span class="id" type="var">ty</span>&nbsp;→&nbsp;<span class="id" type="keyword">Prop</span>&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">TyVNat</span>&nbsp;&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">n</span>,&nbsp;<span class="id" type="var">has_type_value</span>&nbsp;(<span class="id" type="var">VNat</span>&nbsp;&nbsp;<span class="id" type="var">n</span>)&nbsp;<span class="id" type="var">TNat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">TyVBool</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">b</span>,&nbsp;<span class="id" type="var">has_type_value</span>&nbsp;(<span class="id" type="var">VBool</span>&nbsp;<span class="id" type="var">b</span>)&nbsp;<span class="id" type="var">TBool</span>.<br/>
+<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Definition</span>&nbsp;<span class="id" type="var">gen_typed_value</span>&nbsp;(<span class="id" type="var">T</span>&nbsp;:&nbsp;<span class="id" type="var">ty</span>)&nbsp;:&nbsp;<span class="id" type="var">G</span>&nbsp;<span class="id" type="var">value</span>&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span>&nbsp;<span class="id" type="var">T</span>&nbsp;<span class="id" type="keyword">with</span>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">TNat</span>&nbsp;&nbsp;⇒&nbsp;<span class="id" type="var">n</span>&nbsp;&lt;-&nbsp;<span class="id" type="var">arbitrary</span>;;&nbsp;<span class="id" type="var">ret</span>&nbsp;(<span class="id" type="var">VNat</span>&nbsp;<span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">TBool</span>&nbsp;⇒&nbsp;<span class="id" type="var">b</span>&nbsp;&lt;-&nbsp;<span class="id" type="var">arbitrary</span>;;&nbsp;<span class="id" type="var">ret</span>&nbsp;(<span class="id" type="var">VBool</span>&nbsp;<span class="id" type="var">b</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.
+<div class="paragraph"> </div>
+
+</div>
+    QuickChick includes a derivation mechanism that can _automatically_
+    produce such generators &mdash; i.e., generators for data structures 
+    satisfying inductively defined properties! 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Derive</span> <span class="id" type="var">ArbitrarySizedSuchThat</span> <span class="id" type="keyword">for</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">v</span> ⇒ <span class="id" type="var">has_type_value</span> <span class="id" type="var">v</span> <span class="id" type="var">T</span>).<br/>
+</div>
+
+<div class="doc">
+===&gt; 
+  GenSizedSuchThathas_type_value is defined. 
+<div class="paragraph"> </div>
+
+ Let's take a closer look at what is being generated (after 
+    doing some renaming and reformatting). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Print</span> <span class="id" type="var">GenSizedSuchThathas_type_value</span>.<br/>
+</div>
+
+<div class="doc">
+<pre>     ===&gt;
+       GenSizedSuchThathas_type_value = fun T : ty =&gt;
+       {| arbitrarySizeST := 
+          let fix aux_arb (size0 : nat) (T : ty) {struct size0} 
+                : G (option value) :=
+            match size0 with
+            | 0 =&gt; backtrack [(1, match T with
+                                  | TBool =&gt; ret None
+                                  | TNat =&gt; n &lt;- arbitrary;;
+                                            ret (Some (VNat n))
+                                  end)
+                             ;(1, match T with
+                                  | TBool =&gt; b &lt;- arbitrary;;
+                                             ret (Some (VBool b)))
+                                  | TNat =&gt; ret None
+                                  end)]
+            | S _ =&gt; backtrack [(1, match T with
+                                    | TBool =&gt; ret None
+                                    | TNat =&gt; n &lt;- arbitrary;;
+                                              ret (Some (VNat n))
+                                    end)
+                               ;(1, match T with
+                                    | TBool =&gt; b &lt;- arbitrary;;
+                                               ret (Some (VBool b)))
+                                    | TNat =&gt; ret None
+                                    end)]
+            end in
+            fun size0 : nat =&gt; aux_arb size0 T |}
+
+       : forall T : ty,
+           GenSizedSuchThat value 
+               (fun v =&gt; has_type_value v T)
+</pre>
+
+<div class="paragraph"> </div>
+
+ This is a rather more verbose version of the <span class="inlinecode"><span class="id" type="var">gen_typed_value</span></span>
+    generator, but the end result is actually exactly the same 
+    distribution! 
+<div class="paragraph"> </div>
+
+<a name="lab97"></a><h2 class="section">(More) Typeclasses for Generation</h2>
+
+<div class="paragraph"> </div>
+
+ QuickChick provides typeclasses for automating the generation 
+    for data satisfying predicates. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">GenSTPlayground</span>.<br/>
+</div>
+
+<div class="doc">
+A variant that takes a size,... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Class</span> <span class="id" type="var">GenSizedSuchThat</span> (<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">P</span> : <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>) := <br/>
+&nbsp;&nbsp;{ <span class="id" type="var">arbitrarySizeST</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>) }.<br/>
+</div>
+
+<div class="doc">
+...an unsized variant,... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Class</span> <span class="id" type="var">GenSuchThat</span> (<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">P</span> : <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>) := <br/>
+&nbsp;&nbsp;{ <span class="id" type="var">arbitraryST</span> : <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>) }.<br/>
+</div>
+
+<div class="doc">
+...convenient notation,... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> "'genST' x" := (@<span class="id" type="var">arbitraryST</span> <span class="id" type="var">_</span> <span class="id" type="var">x</span> <span class="id" type="var">_</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 70).<br/>
+</div>
+
+<div class="doc">
+...and a coercion between the two: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Instance</span> <span class="id" type="var">GenSuchThatOfBounded</span> (<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">P</span> : <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">H</span> : <span class="id" type="var">GenSizedSuchThat</span> <span class="id" type="var">A</span> <span class="id" type="var">P</span>)<br/>
+&nbsp;&nbsp;: <span class="id" type="var">GenSuchThat</span> <span class="id" type="var">A</span> <span class="id" type="var">P</span> := <br/>
+&nbsp;&nbsp;{ <span class="id" type="var">arbitraryST</span> := <span class="id" type="var">sized</span> <span class="id" type="var">arbitrarySizeST</span> }.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">GenSTPlayground</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab98"></a><h2 class="section">Using "SuchThat" Typeclasses</h2>
+
+<div class="paragraph"> </div>
+
+ QuickChick can now (ab)use the typeclass resolution mechanism to 
+    perform a bit of black magic: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Conjecture</span> <span class="id" type="var">conditional_prop_example</span> : <br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">nat</span>), <span class="id" type="var">x</span> = <span class="id" type="var">y</span> → <span class="id" type="var">x</span> = <span class="id" type="var">y</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;QuickChick&nbsp;conditional_prop_example.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+<pre>
+  ==&gt;
+    QuickChecking conditional_prop_example
+    +++ Passed 10000 tests (0 discards)
+</pre>
+
+<div class="paragraph"> </div>
+
+ Notice the "0 discards": that means that quickchick is using
+    generators that produce <span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span> such that <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>! 
+<div class="paragraph"> </div>
+
+<a name="lab99"></a><h1 class="section">Acknowledgements</h1>
+
+<div class="paragraph"> </div>
+
+ The first version of this material was developed in collaboration
+    with Nicolas Koh. 
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

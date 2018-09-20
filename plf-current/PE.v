@@ -30,14 +30,15 @@
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
+Require Import Coq.Arith.PeanoNat. Import Nat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
 
 (* ################################################################# *)
 (** * 一般化的常量折叠 *)
@@ -63,7 +64,7 @@ Definition pe_state := list (string * nat).
 Fixpoint pe_lookup (pe_st : pe_state) (V:string) : option nat :=
   match pe_st with
   | [] => None
-  | (V',n')::pe_st => if beq_string V V' then Some n'
+  | (V',n')::pe_st => if eqb_string V V' then Some n'
                       else pe_lookup pe_st V
   end.
 
@@ -77,12 +78,12 @@ Definition empty_pe_state : pe_state := [].
 
       compare V V'
 
-    用于对 [beq_string V V'] 的分类情形进行推理。
+    用于对 [eqb_string V V'] 的分类情形进行推理。
     当 [V = V'] 时，此策略将全部的 [V] 替换为 [V']。 *)
 
 Tactic Notation "compare" ident(i) ident(j) :=
   let H := fresh "Heq" i j in
-  destruct (beq_stringP i j);
+  destruct (eqb_stringP i j);
   [ subst j | ].
 
 Theorem pe_domain: forall pe_st V n,
@@ -108,22 +109,22 @@ Check filter_In.
 (* ===> filter_In : forall (A : Type) (f : A -> bool) (x : A) (l : list A),
             In x (filter f l) <-> In x l /\ f x = true  *)
 
-(** 如果类型 [A] 有操作符 [beq] 用于测试其元素的相等性，我们可以计算一个布尔值 [inb beq a l]
+(** 如果类型 [A] 有操作符 [eqb] 用于测试其元素的相等性，我们可以计算一个布尔值 [inb eqb a l]
     用于测试 [In a l] 是否成立。 *)
 
-Fixpoint inb {A : Type} (beq : A -> A -> bool) (a : A) (l : list A) :=
+Fixpoint inb {A : Type} (eqb : A -> A -> bool) (a : A) (l : list A) :=
   match l with
   | [] => false
-  | a'::l' => beq a a' || inb beq a l'
+  | a'::l' => eqb a a' || inb eqb a l'
   end.
 
 (** 容易使用 [reflect] 性质关联起 [inb] 和 [In]： *)
 
-Lemma inbP : forall A : Type, forall beq : A->A->bool,
-  (forall a1 a2, reflect (a1 = a2) (beq a1 a2)) ->
-  forall a l, reflect (In a l) (inb beq a l).
+Lemma inbP : forall A : Type, forall eqb : A->A->bool,
+  (forall a1 a2, reflect (a1 = a2) (eqb a1 a2)) ->
+  forall a l, reflect (In a l) (inb eqb a l).
 Proof.
-  intros A beq beqP a l.
+  intros A eqb beqP a l.
   induction l as [|a' l' IH].
   - constructor. intros [].
   - simpl. destruct (beqP a a').
@@ -196,7 +197,7 @@ Proof. unfold pe_consistent. intros st pe_st H a.
          rewrite IHa1; rewrite IHa2; reflexivity).
   (* 同 fold_constants_aexp_sound 比较，唯一不同的分类是 AId。 *)
   - (* AId *)
-    remember (pe_lookup pe_st s) as l. destruct l.
+    remember (pe_lookup pe_st x) as l. destruct l.
     + (* Some *) rewrite H with (n:=n) by apply Heql. reflexivity.
     + (* None *) reflexivity.
 Qed.
@@ -253,7 +254,7 @@ Theorem pe_update_correct: forall st pe_st V0,
   end.
 Proof. intros. induction pe_st as [| [V n] pe_st]. reflexivity.
   simpl in *. unfold t_update.
-  compare V0 V; auto. rewrite <- beq_string_refl; auto. rewrite false_beq_string; auto. Qed.
+  compare V0 V; auto. rewrite <- eqb_string_refl; auto. rewrite false_eqb_string; auto. Qed.
 
 (** 我们可以以两种方式关联起 [pe_consistent] 和 [pe_update]。
     首先，用部分状态覆写一个状态总是会得到同这个部分状态相容的状态。
@@ -288,7 +289,7 @@ Proof.
          destruct (pe_aexp pe_st a2);
          rewrite IHa1; rewrite IHa2; reflexivity).
   (* 同 fold_constants_aexp_sound 比较，唯一不同的分类是 AId。 *)
-  rewrite pe_update_correct. destruct (pe_lookup pe_st s); reflexivity.
+  rewrite pe_update_correct. destruct (pe_lookup pe_st x); reflexivity.
 Qed.
 
 (* ================================================================= *)
@@ -303,12 +304,12 @@ Fixpoint pe_bexp (pe_st : pe_state) (b : bexp) : bexp :=
   | BFalse       => BFalse
   | BEq a1 a2 =>
       match (pe_aexp pe_st a1, pe_aexp pe_st a2) with
-      | (ANum n1, ANum n2) => if beq_nat n1 n2 then BTrue else BFalse
+      | (ANum n1, ANum n2) => if n1 =? n2 then BTrue else BFalse
       | (a1', a2') => BEq a1' a2'
       end
   | BLe a1 a2 =>
       match (pe_aexp pe_st a1, pe_aexp pe_st a2) with
-      | (ANum n1, ANum n2) => if leb n1 n2 then BTrue else BFalse
+      | (ANum n1, ANum n2) => if n1 <=? n2 then BTrue else BFalse
       | (a1', a2') => BLe a1' a2'
       end
   | BNot b1 =>
@@ -345,14 +346,14 @@ Proof.
   intros pe_st b st.
   induction b; simpl;
     try reflexivity;
-    try (remember (pe_aexp pe_st a) as a';
-         remember (pe_aexp pe_st a0) as a0';
-         assert (Ha: aeval (pe_update st pe_st) a = aeval st a');
-         assert (Ha0: aeval (pe_update st pe_st) a0 = aeval st a0');
+    try (remember (pe_aexp pe_st a1) as a1';
+         remember (pe_aexp pe_st a2) as a2';
+         assert (H1: aeval (pe_update st pe_st) a1 = aeval st a1');
+         assert (H2: aeval (pe_update st pe_st) a2 = aeval st a2');
            try (subst; apply pe_aexp_correct);
-         destruct a'; destruct a0'; rewrite Ha; rewrite Ha0;
-         simpl; try destruct (beq_nat n n0);
-         try destruct (leb n n0); reflexivity);
+         destruct a1'; destruct a2'; rewrite H1; rewrite H2;
+         simpl; try destruct (n =? n0);
+         try destruct (n <=? n0); reflexivity);
     try (destruct (pe_bexp pe_st b); rewrite IHb; reflexivity);
     try (destruct (pe_bexp pe_st b1);
          destruct (pe_bexp pe_st b2);
@@ -406,21 +407,21 @@ Qed.
 Fixpoint pe_remove (pe_st:pe_state) (V:string) : pe_state :=
   match pe_st with
   | [] => []
-  | (V',n')::pe_st => if beq_string V V' then pe_remove pe_st V
+  | (V',n')::pe_st => if eqb_string V V' then pe_remove pe_st V
                       else (V',n') :: pe_remove pe_st V
   end.
 
 Theorem pe_remove_correct: forall pe_st V V0,
   pe_lookup (pe_remove pe_st V) V0
-  = if beq_string V V0 then None else pe_lookup pe_st V0.
+  = if eqb_string V V0 then None else pe_lookup pe_st V0.
 Proof. intros pe_st V V0. induction pe_st as [| [V' n'] pe_st].
-  - (* [] *) destruct (beq_string V V0); reflexivity.
+  - (* [] *) destruct (eqb_string V V0); reflexivity.
   - (* :: *) simpl. compare V V'.
     + (* 相等 *) rewrite IHpe_st.
-      destruct (beq_stringP V V0).  reflexivity.  
-      rewrite false_beq_string; auto.
+      destruct (eqb_stringP V V0).  reflexivity.  
+      rewrite false_eqb_string; auto.
     + (* 不相等 *) simpl. compare V0 V'.
-      * (* 相等 *) rewrite false_beq_string; auto.
+      * (* 相等 *) rewrite false_eqb_string; auto.
       * (* 不相等 *) rewrite IHpe_st. reflexivity.
 Qed.
 
@@ -429,12 +430,12 @@ Definition pe_add (pe_st:pe_state) (V:string) (n:nat) : pe_state :=
 
 Theorem pe_add_correct: forall pe_st V n V0,
   pe_lookup (pe_add pe_st V n) V0
-  = if beq_string V V0 then Some n else pe_lookup pe_st V0.
+  = if eqb_string V V0 then Some n else pe_lookup pe_st V0.
 Proof. intros pe_st V n V0. unfold pe_add. simpl.
   compare V V0.
-  - (* 相等 *) rewrite <- beq_string_refl; auto.
+  - (* 相等 *) rewrite <- eqb_string_refl; auto.
   - (* 不相等 *) rewrite pe_remove_correct. 
-    repeat rewrite false_beq_string; auto.
+    repeat rewrite false_eqb_string; auto.
 Qed.
 
 (** 我们将会用下面的两个定理证明部分求值器正确地处理了动态赋值和静态赋值。*)
@@ -444,7 +445,7 @@ Theorem pe_update_update_remove: forall st pe_st V n,
   pe_update (t_update st V n) (pe_remove pe_st V).
 Proof. intros st pe_st V n. apply functional_extensionality. 
   intros V0. unfold t_update. rewrite !pe_update_correct.
-  rewrite pe_remove_correct. destruct (beq_string V V0); reflexivity.
+  rewrite pe_remove_correct. destruct (eqb_string V V0); reflexivity.
   Qed.
 
 Theorem pe_update_update_add: forall st pe_st V n,
@@ -452,7 +453,7 @@ Theorem pe_update_update_add: forall st pe_st V n,
   pe_update st (pe_add pe_st V n).
 Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
   unfold t_update. rewrite !pe_update_correct. rewrite pe_add_correct.
-  destruct (beq_string V V0); reflexivity. Qed.
+  destruct (eqb_string V V0); reflexivity. Qed.
 
 (* ================================================================= *)
 (** ** 条件 *)
@@ -497,7 +498,7 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
 
 Definition pe_disagree_at (pe_st1 pe_st2 : pe_state) (V:string) : bool :=
   match pe_lookup pe_st1 V, pe_lookup pe_st2 V with
-  | Some x, Some y => negb (beq_nat x y)
+  | Some x, Some y => negb (x =? y)
   | None, None => false
   | _, _ => true
   end.
@@ -522,7 +523,7 @@ Fixpoint pe_unique (l : list string) : list string :=
   match l with
   | [] => []
   | x::l =>
-      x :: filter (fun y => if beq_string x y then false else true) (pe_unique l)
+      x :: filter (fun y => if eqb_string x y then false else true) (pe_unique l)
   end.
 
 Theorem pe_unique_correct: forall l x,
@@ -532,11 +533,11 @@ Proof. intros l x. induction l as [| h t]. reflexivity.
   - (* -> *)
     intros. inversion H; clear H.
       left. assumption.
-      destruct (beq_stringP h x).
+      destruct (eqb_stringP h x).
          left.  assumption.
          right.  apply filter_In. split.
            apply IHt. assumption.
-           rewrite false_beq_string; auto.
+           rewrite false_eqb_string; auto.
   - (* <- *)
     intros. inversion H; clear H.
        left. assumption.
@@ -570,7 +571,7 @@ Proof. intros pe_st1 pe_st2 V.
     destruct (pe_lookup pe_st2 V) as [n2|];
       try reflexivity; try solve_by_invert.
     rewrite negb_false_iff in Hagree.
-    apply beq_nat_true in Hagree. subst. reflexivity. Qed.
+    apply eqb_eq in Hagree. subst. reflexivity. Qed.
 
 (** 两个部分状态的交是从其中一个状态中移除所有值不同的变量。我们用上面的 
     [pe_remove] 来定义函数 [pe_removes]，用于一次性地移除一个列表中的变量。
@@ -588,12 +589,12 @@ Fixpoint pe_removes (pe_st:pe_state) (ids : list string) : pe_state :=
 
 Theorem pe_removes_correct: forall pe_st ids V,
   pe_lookup (pe_removes pe_st ids) V =
-  if inb beq_string V ids then None else pe_lookup pe_st V.
+  if inb eqb_string V ids then None else pe_lookup pe_st V.
 Proof. intros pe_st ids V. induction ids as [| V' ids]. reflexivity.
   simpl. rewrite pe_remove_correct. rewrite IHids.
   compare V' V.
-  - rewrite <- beq_string_refl. reflexivity.
-  - rewrite false_beq_string; try congruence. reflexivity.
+  - rewrite <- eqb_string_refl. reflexivity.
+  - rewrite false_eqb_string; try congruence. reflexivity.
 Qed.
 
 Theorem pe_compare_removes: forall pe_st1 pe_st2 V,
@@ -601,7 +602,7 @@ Theorem pe_compare_removes: forall pe_st1 pe_st2 V,
   pe_lookup (pe_removes pe_st2 (pe_compare pe_st1 pe_st2)) V.
 Proof.
   intros pe_st1 pe_st2 V. rewrite !pe_removes_correct.
-  destruct (inbP _ _ beq_stringP V (pe_compare pe_st1 pe_st2)).
+  destruct (inbP _ _ eqb_stringP V (pe_compare pe_st1 pe_st2)).
   - reflexivity.
   - apply pe_compare_correct. auto. Qed.
 
@@ -629,7 +630,7 @@ Fixpoint assign (pe_st : pe_state) (ids : list string) : com :=
     生成的赋值语句抵消了部分状态中所移除的变量。*)
 
 Definition assigned (pe_st:pe_state) (ids : list string) (st:state) : state :=
-  fun V => if inb beq_string V ids then
+  fun V => if inb eqb_string V ids then
                 match pe_lookup pe_st V with
                 | Some n => n
                 | None => st V
@@ -641,7 +642,7 @@ Theorem assign_removes: forall pe_st ids st,
   pe_update (assigned pe_st ids st) (pe_removes pe_st ids).
 Proof. intros pe_st ids st. apply functional_extensionality. intros V.
   rewrite !pe_update_correct. rewrite pe_removes_correct. unfold assigned.
-  destruct (inbP _ _ beq_stringP V ids); destruct (pe_lookup pe_st V); reflexivity.
+  destruct (inbP _ _ eqb_stringP V ids); destruct (pe_lookup pe_st V); reflexivity.
 Qed.
 
 Lemma ceval_extensionality: forall c st st1 st2,
@@ -658,14 +659,14 @@ Proof. intros pe_st ids st. induction ids as [| V ids]; simpl.
     + (* Some *) eapply E_Seq. apply IHids. unfold assigned. simpl.
       eapply ceval_extensionality. apply E_Ass. simpl. reflexivity.
       intros V0. unfold t_update.  compare V V0.
-      * (* 相等 *) rewrite <- Heqlookup. rewrite <- beq_string_refl. reflexivity.
-      * (* 不相等 *) rewrite false_beq_string; simpl; congruence.
+      * (* 相等 *) rewrite <- Heqlookup. rewrite <- eqb_string_refl. reflexivity.
+      * (* 不相等 *) rewrite false_eqb_string; simpl; congruence.
     + (* None *) eapply ceval_extensionality. apply IHids.
       unfold assigned. intros V0. simpl. compare V V0.
       * (* 相等 *) rewrite <- Heqlookup.
-        rewrite <- beq_string_refl.
-        destruct (inbP _ _ beq_stringP V ids); reflexivity.
-      * (* 不相等 *) rewrite false_beq_string; simpl; congruence.
+        rewrite <- eqb_string_refl.
+        destruct (inbP _ _ eqb_stringP V ids); reflexivity.
+      * (* 不相等 *) rewrite false_eqb_string; simpl; congruence.
 Qed.
 
 (* ================================================================= *)

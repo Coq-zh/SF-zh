@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import RecordSub.
-Parameter MISSING: Type. 
+From PLF Require Import RecordSub.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import RecordSub.
+From PLF Require Import RecordSub.
 Import Check.
 
 Goal True.
@@ -143,4 +144,26 @@ idtac " ".
 
 idtac "Max points - standard: 15".
 idtac "Max points - advanced: 15".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- Examples.subtyping_example_1 ---------".
+Print Assumptions Examples.subtyping_example_1.
+idtac "---------- Examples.subtyping_example_2 ---------".
+Print Assumptions Examples.subtyping_example_2.
+idtac "---------- Examples.subtyping_example_3 ---------".
+Print Assumptions Examples.subtyping_example_3.
+idtac "---------- Examples.subtyping_example_4 ---------".
+Print Assumptions Examples.subtyping_example_4.
+idtac "---------- rcd_types_match_informal ---------".
+idtac "MANUAL".
+idtac "---------- Examples2.typing_example_0 ---------".
+Print Assumptions Examples2.typing_example_0.
+idtac "---------- Examples2.typing_example_1 ---------".
+Print Assumptions Examples2.typing_example_1.
+idtac "---------- canonical_forms_of_arrow_types ---------".
+Print Assumptions canonical_forms_of_arrow_types.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

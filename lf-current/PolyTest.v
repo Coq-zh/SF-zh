@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Poly.
-Parameter MISSING: Type. 
+From LF Require Import Poly.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Poly.
+From LF Require Import Poly.
 Import Check.
 
 Goal True.
@@ -217,17 +218,205 @@ idtac "Possible points: 2".
 print_manual_grade Exercises.manual_grade_for_informal_proof.
 idtac " ".
 
-idtac "-------------------  church_numerals  --------------------".
+idtac "-------------------  church_succ  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: Exercises.succ_plus_mult_exp".
+idtac "#> Exercises.Church.succ_2".
 idtac "Advanced".
-idtac "Possible points: 4".
-print_manual_grade Exercises.manual_grade_for_succ_plus_mult_exp.
+idtac "Possible points: 0.5".
+check_type @Exercises.Church.succ_2 (
+(Exercises.Church.succ Exercises.Church.one = Exercises.Church.two)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.succ_2.
+Goal True.
+idtac " ".
+
+idtac "#> Exercises.Church.succ_3".
+idtac "Advanced".
+idtac "Possible points: 0.5".
+check_type @Exercises.Church.succ_3 (
+(Exercises.Church.succ Exercises.Church.two = Exercises.Church.three)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.succ_3.
+Goal True.
+idtac " ".
+
+idtac "-------------------  church_plus  --------------------".
+idtac " ".
+
+idtac "#> Exercises.Church.plus_2".
+idtac "Advanced".
+idtac "Possible points: 0.5".
+check_type @Exercises.Church.plus_2 (
+(Exercises.Church.plus Exercises.Church.two Exercises.Church.three =
+ Exercises.Church.plus Exercises.Church.three Exercises.Church.two)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.plus_2.
+Goal True.
+idtac " ".
+
+idtac "#> Exercises.Church.plus_3".
+idtac "Advanced".
+idtac "Possible points: 0.5".
+check_type @Exercises.Church.plus_3 (
+(Exercises.Church.plus
+   (Exercises.Church.plus Exercises.Church.two Exercises.Church.two)
+   Exercises.Church.three =
+ Exercises.Church.plus Exercises.Church.one
+   (Exercises.Church.plus Exercises.Church.three Exercises.Church.three))).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.plus_3.
+Goal True.
+idtac " ".
+
+idtac "-------------------  church_mult  --------------------".
+idtac " ".
+
+idtac "#> Exercises.Church.mult_1".
+idtac "Advanced".
+idtac "Possible points: 0.5".
+check_type @Exercises.Church.mult_1 (
+(Exercises.Church.mult Exercises.Church.one Exercises.Church.one =
+ Exercises.Church.one)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.mult_1.
+Goal True.
+idtac " ".
+
+idtac "#> Exercises.Church.mult_2".
+idtac "Advanced".
+idtac "Possible points: 0.5".
+check_type @Exercises.Church.mult_2 (
+(Exercises.Church.mult Exercises.Church.zero
+   (Exercises.Church.plus Exercises.Church.three Exercises.Church.three) =
+ Exercises.Church.zero)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.mult_2.
+Goal True.
+idtac " ".
+
+idtac "#> Exercises.Church.mult_3".
+idtac "Advanced".
+idtac "Possible points: 1".
+check_type @Exercises.Church.mult_3 (
+(Exercises.Church.mult Exercises.Church.two Exercises.Church.three =
+ Exercises.Church.plus Exercises.Church.three Exercises.Church.three)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.mult_3.
+Goal True.
+idtac " ".
+
+idtac "-------------------  church_exp  --------------------".
+idtac " ".
+
+idtac "#> Exercises.Church.exp_1".
+idtac "Advanced".
+idtac "Possible points: 0.5".
+check_type @Exercises.Church.exp_1 (
+(Exercises.Church.exp Exercises.Church.two Exercises.Church.two =
+ Exercises.Church.plus Exercises.Church.two Exercises.Church.two)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.exp_1.
+Goal True.
+idtac " ".
+
+idtac "#> Exercises.Church.exp_2".
+idtac "Advanced".
+idtac "Possible points: 0.5".
+check_type @Exercises.Church.exp_2 (
+(Exercises.Church.exp Exercises.Church.three Exercises.Church.zero =
+ Exercises.Church.one)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.exp_2.
+Goal True.
+idtac " ".
+
+idtac "#> Exercises.Church.exp_3".
+idtac "Advanced".
+idtac "Possible points: 1".
+check_type @Exercises.Church.exp_3 (
+(Exercises.Church.exp Exercises.Church.three Exercises.Church.two =
+ Exercises.Church.plus
+   (Exercises.Church.mult Exercises.Church.two
+      (Exercises.Church.mult Exercises.Church.two Exercises.Church.two))
+   Exercises.Church.one)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions Exercises.Church.exp_3.
+Goal True.
 idtac " ".
 
 idtac " ".
 
 idtac "Max points - standard: 19".
-idtac "Max points - advanced: 28".
+idtac "Max points - advanced: 30".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- mumble_grumble ---------".
+idtac "MANUAL".
+idtac "---------- split ---------".
+Print Assumptions split.
+idtac "---------- test_split ---------".
+Print Assumptions test_split.
+idtac "---------- test_filter_even_gt7_1 ---------".
+Print Assumptions test_filter_even_gt7_1.
+idtac "---------- test_filter_even_gt7_2 ---------".
+Print Assumptions test_filter_even_gt7_2.
+idtac "---------- partition ---------".
+Print Assumptions partition.
+idtac "---------- test_partition1 ---------".
+Print Assumptions test_partition1.
+idtac "---------- test_partition2 ---------".
+Print Assumptions test_partition2.
+idtac "---------- map_rev ---------".
+Print Assumptions map_rev.
+idtac "---------- flat_map ---------".
+Print Assumptions flat_map.
+idtac "---------- test_flat_map1 ---------".
+Print Assumptions test_flat_map1.
+idtac "---------- Exercises.fold_length_correct ---------".
+Print Assumptions Exercises.fold_length_correct.
+idtac "---------- fold_map ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- fold_types_different ---------".
+idtac "MANUAL".
+idtac "---------- Exercises.uncurry_curry ---------".
+Print Assumptions Exercises.uncurry_curry.
+idtac "---------- Exercises.curry_uncurry ---------".
+Print Assumptions Exercises.curry_uncurry.
+idtac "---------- informal_proof ---------".
+idtac "MANUAL".
+idtac "---------- Exercises.Church.succ_2 ---------".
+Print Assumptions Exercises.Church.succ_2.
+idtac "---------- Exercises.Church.succ_3 ---------".
+Print Assumptions Exercises.Church.succ_3.
+idtac "---------- Exercises.Church.plus_2 ---------".
+Print Assumptions Exercises.Church.plus_2.
+idtac "---------- Exercises.Church.plus_3 ---------".
+Print Assumptions Exercises.Church.plus_3.
+idtac "---------- Exercises.Church.mult_1 ---------".
+Print Assumptions Exercises.Church.mult_1.
+idtac "---------- Exercises.Church.mult_2 ---------".
+Print Assumptions Exercises.Church.mult_2.
+idtac "---------- Exercises.Church.mult_3 ---------".
+Print Assumptions Exercises.Church.mult_3.
+idtac "---------- Exercises.Church.exp_1 ---------".
+Print Assumptions Exercises.Church.exp_1.
+idtac "---------- Exercises.Church.exp_2 ---------".
+Print Assumptions Exercises.Church.exp_2.
+idtac "---------- Exercises.Church.exp_3 ---------".
+Print Assumptions Exercises.Church.exp_3.
 Abort.

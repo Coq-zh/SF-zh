@@ -1,0 +1,763 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>QuickChickTool: The QuickChick Command-Line Tool</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/qc.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 4: QuickChick: Property-Based Testing in Coq</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">QuickChickTool<span class="subtitle">The QuickChick Command-Line Tool</span></h1>
+
+
+
+<div class="doc">
+<a name="lab100"></a><h1 class="section">Overview</h1>
+
+<div class="paragraph"> </div>
+
+ In this chapter we will introduce the QuickChick command-line
+    tool, which supports testing of larger-scale projects than the
+    examples we have seen so far. The command-line tool offers several
+    useful features:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Batch processing, compilation and execution of tests
+
+</li>
+<li> Mutation testing
+
+</li>
+<li> Sectioning of tests and mutants
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    This chapter reads a bit differently than most SF chapters, as it
+    deals with a command-line tool. The code that it discusses, a
+    simple compiler from a high-level expression language to a
+    low-level stack machine, can be found in the directory
+    <span class="inlinecode"><span class="id" type="var">stack</span>-<span class="id" type="var">compiler</span></span>, broken up into two files: <span class="inlinecode"><span class="id" type="var">Exp.v</span></span> containing the
+    high-level expression languages and <span class="inlinecode"><span class="id" type="var">Stack.v</span></span> containing the low-level
+    stack machine and the compiler. The chapter's
+    text will tell you what to type on the command line or where to
+    look in the subdirectory as needed.
+
+<div class="paragraph"> </div>
+
+    To get started, let's try the tool out and see it's output! Go to
+    the <span class="inlinecode"><span class="id" type="var">stack</span>-<span class="id" type="var">compiler</span></span> subdirectory and run the following command:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">quickChick</span>&nbsp;-<span class="id" type="var">color</span>&nbsp;-<span class="id" type="var">top</span>&nbsp;<span class="id" type="var">Stack</span>
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ The <span class="inlinecode">-<span class="id" type="var">color</span></span> flag colors certain lines in the output for easier reading.
+    The <span class="inlinecode">-<span class="id" type="var">top</span></span> flag controls the namespace for the compilation and should 
+    be the same as the <span class="inlinecode">-<span class="id" type="var">R</span></span> or <span class="inlinecode">-<span class="id" type="var">Q</span></span> command in your <span class="inlinecode"><span class="id" type="var">_CoqProject</span></span> file.
+    Running this command should produce quite a bit of output in your
+    terminal.
+ 
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+    The output consists of four parts, delimited by (colored) headers such as 
+<pre>
+    Testing base...
+</pre>
+    or     
+<pre>
+    Testing mutant 2 (./Exp.v: line 20): Plus-copy-paste-error
+</pre>
+    Let's take a closer look at the first one.
+<pre>
+    Testing base...
+    make -f Makefile.coq 
+    make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    COQDEP VFILES
+    COQC Exp.v
+    COQC Stack.v
+    COQC QuickChickTop.v
+    make[1]: Leaving directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    Checking Exp.optimize_correct_prop...
+    +++ Passed 10000 tests (0 discards)
+    Checking Stack.compiles_correctly...
+    +++ Passed 10000 tests (0 discards)
+</pre>
+
+<div class="paragraph"> </div>
+
+    As we will see later in this chapter, the <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> command-line tool
+    gathers <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> tests from the sources and runs them together in one
+    single, efficient extraction. To do that, it copies all the files (here <span class="inlinecode"><span class="id" type="var">Exp.v</span></span>
+    and <span class="inlinecode"><span class="id" type="var">Stack.v</span></span>) in a new subdirectory that is a "sibling" of the current one 
+    (that is both the directory where you ran <span class="inlinecode"><span class="id" type="var">quickChick</span></span> and the new directory 
+    are subdirectories of the same parent). This new directory is always named 
+    <span class="inlinecode"><span class="id" type="var">_qc_</span>&lt;<span class="id" type="var">DIRNAME</span>&gt;.<span class="id" type="var">tmp</span></span>. <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> also produces a new file
+    <span class="inlinecode"><span class="id" type="var">QuickChickTop.v</span></span> that contains all the tests that will be run and more 
+    extraction directives. 
+
+<div class="paragraph"> </div>
+
+    Following the output of the <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> command-line tool, all it does is 
+    compile everything in <span class="inlinecode"><span class="id" type="var">_qc_stack</span>-<span class="id" type="var">compiler.tmp</span></span>, using the <span class="inlinecode"><span class="id" type="var">Makefile</span></span> of 
+    the original development as is and a <span class="inlinecode"><span class="id" type="var">_CoqProject</span></span> modified to include the 
+    new <span class="inlinecode"><span class="id" type="var">QuickChickTop.v</span></span> file. This compilation leads to extracting all necessary
+    files in _separate_ OCaml modules, which are in turn compiled using 
+    <span class="inlinecode"><span class="id" type="var">ocamlbuild</span></span>, and then run. The separate extraction into distinct
+    ocaml modules allows us to reuse compilation effort across different 
+    mutants as well as different calls to <span class="inlinecode"><span class="id" type="var">quickChick</span></span>, as we can identify whether 
+    newly extracted modules are actually different and recompile them or 
+    not accordingly!
+
+<div class="paragraph"> </div>
+
+    The rest of the 3 parts of the output are similar, with the main difference
+    being that instead of running all the tests on the unaltered, base development,
+    they run the same tests on _mutated_ code. We will see exactly what 
+    mutation testing is later in this chapter. 
+
+<div class="paragraph"> </div>
+
+    If all is well, the last line should be a reassuring success report:
+<pre>
+    All tests produced the expected results
+</pre>
+
+<div class="paragraph"> </div>
+
+<a name="lab101"></a><h1 class="section">Arithmetic Expressions</h1>
+
+<div class="paragraph"> </div>
+
+ The code in the <span class="inlinecode"><span class="id" type="var">stack</span>-<span class="id" type="var">compiler</span></span> subdirectory consists of two
+    modules, <span class="inlinecode"><span class="id" type="var">Exp</span></span> and <span class="inlinecode"><span class="id" type="var">Stack</span></span>, each containing a number of
+    definitions and properties. After some <span class="inlinecode"><span class="id" type="keyword">Import</span></span>s at the top, the
+    <span class="inlinecode"><span class="id" type="var">Exp</span></span> module begins with a _section declaration_:
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;Section&nbsp;arithmetic_expressions&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+   We will explain what quickChick sections are and how to use them
+   later in this chapter.
+
+<div class="paragraph"> </div>
+
+ It then defines a little arithmetic language, consisting of
+    natural literals, addition, subtraction and multiplication. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">exp</span> : <span class="id" type="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ANum</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">APlus</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMult</span> : <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span> → <span class="id" type="var">exp</span>.<br/>
+</div>
+
+<div class="doc">
+Since <span class="inlinecode"><span class="id" type="var">exp</span></span> is a simple datatype, QuickChick can derive a generator, a 
+    shrinker, and a printer automatically. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Derive</span> (<span class="id" type="var">Arbitrary</span>, <span class="id" type="keyword">Show</span>) <span class="id" type="keyword">for</span> <span class="id" type="var">exp</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">eval</span></span> function evaluates an expression to a number. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">eval</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ANum</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">n</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">APlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ (<span class="id" type="var">eval</span> <span class="id" type="var">e<sub>1</sub></span>) + (<span class="id" type="var">eval</span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span>  ⇒ (<span class="id" type="var">eval</span> <span class="id" type="var">e<sub>1</sub></span>) - (<span class="id" type="var">eval</span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ (<span class="id" type="var">eval</span> <span class="id" type="var">e<sub>1</sub></span>) * (<span class="id" type="var">eval</span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+(The actual definition in the file <span class="inlinecode"><span class="id" type="var">Exp.v</span></span> contains a few more
+    annotations in comments, defining a _mutant_. We will discuss
+    these annotations later in this chapter. 
+<div class="paragraph"> </div>
+
+ Now let's write a simple optimization: whenever we see an
+    unnecessary operation (adding/subtracting 0) we optimize it
+    away. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">optimize</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">exp</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ANum</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">ANum</span> <span class="id" type="var">n</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">APlus</span> <span class="id" type="var">e</span> (<span class="id" type="var">ANum</span> 0)  ⇒ <span class="id" type="var">optimize</span> <span class="id" type="var">e</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">APlus</span> (<span class="id" type="var">ANum</span> 0) <span class="id" type="var">e</span>  ⇒ <span class="id" type="var">optimize</span> <span class="id" type="var">e</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">APlus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <span class="id" type="var">APlus</span> (<span class="id" type="var">optimize</span> <span class="id" type="var">e<sub>1</sub></span>) (<span class="id" type="var">optimize</span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">e</span> (<span class="id" type="var">ANum</span> 0) ⇒ <span class="id" type="var">optimize</span> <span class="id" type="var">e</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <span class="id" type="var">AMinus</span> (<span class="id" type="var">optimize</span> <span class="id" type="var">e<sub>1</sub></span>) (<span class="id" type="var">optimize</span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMult</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <span class="id" type="var">AMult</span> (<span class="id" type="var">optimize</span> <span class="id" type="var">e<sub>1</sub></span>) (<span class="id" type="var">optimize</span> <span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Again, the actual definition in <span class="inlinecode"><span class="id" type="var">Exp.v</span></span> contains again a few more
+    annotations in comments (another section annotation and another
+    mutant). 
+<div class="paragraph"> </div>
+
+ We can now write a simple correctness property for the optimizer,
+    namely that evaluating an optimized expression yields the same
+    number as evaluating the original one. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">optimize_correct_prop</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) := <span class="id" type="var">eval</span> (<span class="id" type="var">optimize</span> <span class="id" type="var">e</span>) = <span class="id" type="var">eval</span> <span class="id" type="var">e</span>?.<br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;QuickChick&nbsp;optimize_correct_prop.&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+ 
+<div class="paragraph"> </div>
+
+<pre>
+    QuickChecking optimize_correct_prop
+    +++ Passed 10000 tests (0 discards)
+</pre>
+ 
+<div class="paragraph"> </div>
+
+<a name="lab102"></a><h1 class="section">QuickChick Test Annotations</h1>
+
+<div class="paragraph"> </div>
+
+ In earlier chapters, we have included <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> commands in
+    comments, with an invitation to the reader to uncomment and
+    execute them. This has been done to avoid executing each and every
+    test when compiling the volume as a whole. If we were to leave the
+    <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> commands uncommented, then for each test we would
+    extract the entire volume up to that point, compile the extracted
+    OCaml, execute the test (up to 10000 tests by default for
+    successes), and report the outcome.  While this process is often
+    adequate for small developments, it quickly becomes intractable
+    for large Coq files, multi-file developments, or large numbers of
+    properties that need to be tested.
+
+<div class="paragraph"> </div>
+
+    One main feature of the command line tool is to gather all
+    QuickChick commands, perform a _single_ extraction and compilation
+    pass, and report the results for all tests. This is achieved with
+    special QuickChick annotations. 
+<div class="paragraph"> </div>
+
+ Notice that this QuickChick comment, just like all
+    QuickChick-specific annotations in the file, begin with an
+    exclamation mark. _Comments that begin with an exclamation mark
+    are special to the QuickChick command-line tool parser and signify
+    a test, a section, or a mutant_.
+
+<div class="paragraph"> </div>
+
+    The annotation above defines a test of the property
+    <span class="inlinecode"><span class="id" type="var">optimize_correct_prop</span></span>. For simplicity, each test annotation
+    requires a _named_ property, like <span class="inlinecode"><span class="id" type="var">optimize_correct_prop</span></span>. That
+    is, while inline one could successfully execute a command like the
+    one below, the command-line tool requires a defined constant in
+    the test annotation.
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">QuickChick</span>&nbsp;(<span class="id" type="keyword">fun</span>&nbsp;<span class="id" type="var">e</span>&nbsp;⇒&nbsp;<span class="id" type="var">eval</span>&nbsp;(<span class="id" type="var">optimize</span>&nbsp;<span class="id" type="var">e</span>)&nbsp;=&nbsp;<span class="id" type="var">eval</span>&nbsp;<span class="id" type="var">e</span>?).
+<div class="paragraph"> </div>
+
+</div>
+<a name="lab103"></a><h1 class="section">Sections</h1>
+
+<div class="paragraph"> </div>
+
+ When in the middle of a large development, it is useful to be able
+    to concentrate your tests in the parts of the development you are
+    actively changing. For example, if you are playing with the
+    optimizer for your high-level language it is not ideal to spend
+    time re-running the (successful) tests of the code generator. This
+    is where QuickChick's sections come in.
+
+<div class="paragraph"> </div>
+
+    Sections are contiguous blocks of code within modules, and are
+    allowed to depend on earlier ones. They contain sets of
+    tests (and later on mutants) that correspond to a single aspect of
+    the development and that are meant to be run together. 
+<div class="paragraph"> </div>
+
+ Thare are two kinds of section declarations in QuickChick.
+    The first section declaration in the <span class="inlinecode"><span class="id" type="var">Exp</span></span> module simply defines 
+    the start of a new block that can be identified by the name 
+    "arithmetic_expressions".
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;Section&nbsp;arithmetic_expressions&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+    The second also includes an <span class="inlinecode"><span class="id" type="var">extends</span></span> clause. 
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;Section&nbsp;optimizations&nbsp;*)</span><span class="comment">(*!&nbsp;extends&nbsp;arithmetic_expressions&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+   This signifies that this new block (until the end of the file, 
+   in this case, since there are no further section headers), also 
+   contains all tests and mutants from the <span class="inlinecode"><span class="id" type="var">arithmetic_expressions</span></span> 
+   section as well. 
+
+<div class="paragraph"> </div>
+
+ To see sectioning in action, execute the following command from
+    the <span class="inlinecode"><span class="id" type="var">stack</span>-<span class="id" type="var">compiler</span></span> directory:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">quickChick</span>&nbsp;-<span class="id" type="var">color</span>&nbsp;-<span class="id" type="var">top</span>&nbsp;<span class="id" type="var">Stack</span>&nbsp;-<span class="id" type="var">s</span>&nbsp;<span class="id" type="var">optimizations</span>
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+<pre>
+    Testing base...
+    make -f Makefile.coq 
+    make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    COQDEP VFILES
+    COQC Exp.v
+    COQC Stack.v
+    COQC QuickChickTop.v
+    make[1]: Leaving directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    Checking Exp.optimize_correct_prop...
+    +++ Passed 10000 tests (0 discards)
+    ... etc ...
+</pre>
+
+<div class="paragraph"> </div>
+
+    In addition to the standard arguments (<span class="inlinecode">-<span class="id" type="var">color</span></span>, <span class="inlinecode">-<span class="id" type="var">top</span></span> <span class="inlinecode"><span class="id" type="var">Stack</span></span>)
+    we also specified that we only care about the <span class="inlinecode"><span class="id" type="var">optimizations</span></span> section
+    with the <span class="inlinecode">-<span class="id" type="var">s</span></span> flag. Therefore this time, when testing the base 
+    development, only the single test in <span class="inlinecode"><span class="id" type="var">optimizations</span></span> was executed.
+
+<div class="paragraph"> </div>
+
+<a name="lab104"></a><h1 class="section">Mutation Testing</h1>
+
+<div class="paragraph"> </div>
+
+ The last major feature of the QuickChick command-line tool is
+    _mutation testing_.
+
+<div class="paragraph"> </div>
+
+    A question that naturally arises when random testing a software
+    artifact is whether the testing is actually good. Does our
+    property succeed for 10000 tests because everything is correct, or
+    because we are not covering enough of the input space? How much
+    testing is enough? Mutation testing can be used to answer such
+    questions, by intentionally introducing bugs in either the
+    artifacts or the properties we are testing and then checking that
+    the tests can detect them. 
+<div class="paragraph"> </div>
+
+ Here is an excerpt of the <span class="inlinecode"><span class="id" type="var">eval</span></span> function with a simple mutant annotation:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">APlus</span>&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;⇒&nbsp;(<span class="id" type="var">eval</span>&nbsp;<span class="id" type="var">e<sub>1</sub></span>)&nbsp;+&nbsp;(<span class="id" type="var">eval</span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!!&nbsp;Plus-copy-paste-error&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;|&nbsp;APlus&nbsp;e<sub>1</sub>&nbsp;e<sub>2</sub>&nbsp;=&gt;&nbsp;(eval&nbsp;e<sub>1</sub>)&nbsp;+&nbsp;(eval&nbsp;e<sub>1</sub>)&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+    Let's break it down into its parts.
+
+<div class="paragraph"> </div>
+
+ QuickChick mutants come in three parts. First, an annotation
+    that signifies the beginning of a mutant. That is always the same:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+    This is followed by the correct code. In our example, by the evaluation
+    of <span class="inlinecode"><span class="id" type="var">APlus</span></span> <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">e<sub>2</sub></span></span>. 
+
+<div class="paragraph"> </div>
+
+    Afterwards, we can include an optional (but recommended) name for 
+    the mutant, which begins with two exclamation marks to help the parser. 
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!!&nbsp;Plus-copy-paste-error&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+    Finally, we include mutations of the original code, each in a QuickChick 
+    single-exclamation-mark annotation. The code of the mutation is meant to be 
+    able to verbatim replace the original code. Here, a copy-paste error 
+    has been made to evaluate <span class="inlinecode"><span class="id" type="var">e<sub>1</sub></span></span> twice as both operands in an addition. 
+<div class="paragraph"> </div>
+
+ Similarly, in the <span class="inlinecode"><span class="id" type="var">optimize</span></span> function we encounter the following mutant.
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">AMinus</span>&nbsp;<span class="id" type="var">e</span>&nbsp;(<span class="id" type="var">ANum</span>&nbsp;0)&nbsp;⇒&nbsp;<span class="id" type="var">optimize</span>&nbsp;<span class="id" type="var">e</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!!&nbsp;Minus-Reverse&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;AMinus&nbsp;(ANum&nbsp;0)&nbsp;e&nbsp;=&gt;&nbsp;optimize&nbsp;e&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+    This bug allows the optimization of <span class="inlinecode">0-<span class="id" type="var">e</span></span> to <span class="inlinecode"><span class="id" type="var">e</span></span> instead of <span class="inlinecode"><span class="id" type="var">e</span>-0</span> to <span class="inlinecode"><span class="id" type="var">e</span></span>. 
+<div class="paragraph"> </div>
+
+ To see these mutants in action, let's look at the rest of the output of the
+    last <span class="inlinecode"><span class="id" type="var">quickChick</span></span> command we ran:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">quickChick</span>&nbsp;-<span class="id" type="var">color</span>&nbsp;-<span class="id" type="var">top</span>&nbsp;<span class="id" type="var">Stack</span>&nbsp;-<span class="id" type="var">s</span>&nbsp;<span class="id" type="var">optimizations</span>
+<div class="paragraph"> </div>
+
+</div>
+<pre>
+    Testing mutant 0 (./Exp.v: line 35): Minus-Reverse
+    make -f Makefile.coq 
+    make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    COQDEP VFILES
+    COQC Exp.v
+    COQC Stack.v
+    COQC QuickChickTop.v
+    make[1]: Leaving directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    AMinus (ANum 0) (ANum 1)
+    Checking Exp.optimize_correct_prop...
+    *** Failed after 13 tests and 4 shrinks. (0 discards)
+     
+    Testing mutant 1 (./Exp.v: line 20): Plus-copy-paste-error
+    make -f Makefile.coq 
+    make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    COQDEP VFILES
+    COQC Exp.v
+    COQC Stack.v
+    COQC QuickChickTop.v
+    make[1]: Leaving directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    APlus (ANum 1) (ANum 0)
+    Checking Exp.optimize_correct_prop...
+    *** Failed after 5 tests and 3 shrinks. (0 discards)
+    All tests produced the expected results
+</pre>
+
+<div class="paragraph"> </div>
+
+    After running all the tests for <span class="inlinecode"><span class="id" type="var">base</span></span> (the unmutated artifact), the
+    <span class="inlinecode"><span class="id" type="var">quickChick</span></span> tool proceeds to run the single test in the <span class="inlinecode"><span class="id" type="var">optimizations</span></span>
+    section for each of the mutants it finds. Since the <span class="inlinecode"><span class="id" type="var">optimizations</span></span> section
+    _extends_ the <span class="inlinecode"><span class="id" type="var">arithmetic_expressions</span></span> section, the mutants from both 
+    sections will be included. As expected, the optimize property fails in 
+    both cases. 
+<div class="paragraph"> </div>
+
+<a name="lab105"></a><h1 class="section">A Low-Level Stack Machine</h1>
+
+<div class="paragraph"> </div>
+
+ The second module of our development is <span class="inlinecode"><span class="id" type="var">Stack.v</span></span>, which describes
+    a low-level stack machine for arithmetic expressions. It contains
+    a single section, <span class="inlinecode"><span class="id" type="var">stack_instructions</span></span> which extends
+    <span class="inlinecode"><span class="id" type="var">arithmetic_expressions</span></span> but not <span class="inlinecode"><span class="id" type="var">optimizations</span></span>. This allows us
+    to independently run tests for the compiler or the optimzer
+    without worrying about extra tests or mutants. 
+<div class="paragraph"> </div>
+
+ We begin by defining a low-level stack machine instruction set,
+    which closely corresponds to the high-level expression language. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">sinstr</span> : <span class="id" type="keyword">Type</span> :=<br/>
+| <span class="id" type="var">SPush</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">sinstr</span><br/>
+| <span class="id" type="var">SPlus</span> : <span class="id" type="var">sinstr</span><br/>
+| <span class="id" type="var">SMinus</span> : <span class="id" type="var">sinstr</span><br/>
+| <span class="id" type="var">SMult</span> : <span class="id" type="var">sinstr</span>.<br/>
+</div>
+
+<div class="doc">
+Then we describe how to execute the stack machine. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">execute</span> (<span class="id" type="var">stack</span> : <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) (<span class="id" type="var">prog</span> : <span class="id" type="var">list</span> <span class="id" type="var">sinstr</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> (<span class="id" type="var">prog</span>, <span class="id" type="var">stack</span>) <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| (<span class="id" type="var">nil</span>,             <span class="id" type="var">_</span>           ) ⇒ <span class="id" type="var">stack</span><br/>
+&nbsp;&nbsp;| (<span class="id" type="var">SPush</span> <span class="id" type="var">n</span>::<span class="id" type="var">prog'</span>,  <span class="id" type="var">_</span>           ) ⇒ <span class="id" type="var">execute</span> (<span class="id" type="var">n</span>::<span class="id" type="var">stack</span>) <span class="id" type="var">prog'</span><br/>
+&nbsp;&nbsp;| (<span class="id" type="var">SPlus</span>::<span class="id" type="var">prog'</span>,    <span class="id" type="var">m</span>::<span class="id" type="var">n</span>::<span class="id" type="var">stack'</span>) ⇒ <span class="id" type="var">execute</span> ((<span class="id" type="var">m</span>+<span class="id" type="var">n</span>)::<span class="id" type="var">stack'</span>) <span class="id" type="var">prog'</span><br/>
+&nbsp;&nbsp;| (<span class="id" type="var">SMinus</span>::<span class="id" type="var">prog'</span>,   <span class="id" type="var">m</span>::<span class="id" type="var">n</span>::<span class="id" type="var">stack'</span>) ⇒ <span class="id" type="var">execute</span> ((<span class="id" type="var">m</span>-<span class="id" type="var">n</span>)::<span class="id" type="var">stack'</span>) <span class="id" type="var">prog'</span><br/>
+&nbsp;&nbsp;| (<span class="id" type="var">SMult</span>::<span class="id" type="var">prog'</span>,    <span class="id" type="var">m</span>::<span class="id" type="var">n</span>::<span class="id" type="var">stack'</span>) ⇒ <span class="id" type="var">execute</span> ((<span class="id" type="var">m</span>*<span class="id" type="var">n</span>)::<span class="id" type="var">stack'</span>) <span class="id" type="var">prog'</span><br/>
+&nbsp;&nbsp;| (<span class="id" type="var">_</span>::<span class="id" type="var">prog'</span>,        <span class="id" type="var">_</span>           ) ⇒ <span class="id" type="var">execute</span> <span class="id" type="var">stack</span> <span class="id" type="var">prog'</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Given the current <span class="inlinecode"><span class="id" type="var">stack</span></span> (a list of natural numbers) and the
+    <span class="inlinecode"><span class="id" type="var">prog</span></span>ram to be executed, we will produce a resulting stack.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If <span class="inlinecode"><span class="id" type="var">prog</span></span> is empty, we return the current <span class="inlinecode"><span class="id" type="var">stack</span></span>. 
+
+</li>
+<li> To <span class="inlinecode"><span class="id" type="var">Push</span></span> an integer, we cons it in the front of the list 
+        and execute the remainder of the program.
+
+</li>
+<li> To perform an arithmetic operation, we expect two integers
+        at the top of the stack, operate, push the result, and execute
+        the remainder of the program.
+
+</li>
+<li> Finally, if such a thing is not possible (i.e. we tried to 
+        perform a binary operation with less than 2 elements on the 
+        stack), we ignore the instruction and proceed to the rest. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ Now we can compile expressions to their corresponding
+    stack-instruction sequences. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">compile</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) : <span class="id" type="var">list</span> <span class="id" type="var">sinstr</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">e</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ANum</span> <span class="id" type="var">n</span> ⇒ [<span class="id" type="var">SPush</span> <span class="id" type="var">n</span>]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">APlus</span>  <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <span class="id" type="var">compile</span> <span class="id" type="var">e<sub>1</sub></span> ++ <span class="id" type="var">compile</span> <span class="id" type="var">e<sub>2</sub></span> ++ [<span class="id" type="var">SPlus</span>]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMinus</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <span class="id" type="var">compile</span> <span class="id" type="var">e<sub>1</sub></span> ++ <span class="id" type="var">compile</span> <span class="id" type="var">e<sub>2</sub></span> ++ [<span class="id" type="var">SMinus</span>]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">AMult</span>  <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="var">e<sub>2</sub></span> ⇒ <span class="id" type="var">compile</span> <span class="id" type="var">e<sub>1</sub></span> ++ <span class="id" type="var">compile</span> <span class="id" type="var">e<sub>2</sub></span> ++ [<span class="id" type="var">SMult</span>]<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+In the compilation above we have made a rookie compiler-writer
+    mistake.  (Can you spot it without running QuickChick?)
+
+<div class="paragraph"> </div>
+
+    The property we would expect to hold is that executing the
+    compiled instruction sequence of a given expression <span class="inlinecode"><span class="id" type="var">e</span></span>, would
+    result in a single element stack with <span class="inlinecode"><span class="id" type="var">eval</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span> as its only
+    element. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">compiles_correctly</span> (<span class="id" type="var">e</span> : <span class="id" type="var">exp</span>) := (<span class="id" type="var">execute</span> [] (<span class="id" type="var">compile</span> <span class="id" type="var">e</span>)) = [<span class="id" type="var">eval</span> <span class="id" type="var">e</span>]?.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*!&nbsp;QuickChick&nbsp;compiles_correctly.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+===&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">QuickChecking</span>&nbsp;<span class="id" type="var">compiles_correctly</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">AMinus</span>&nbsp;(<span class="id" type="var">ANum</span>&nbsp;0)&nbsp;(<span class="id" type="var">ANum</span>&nbsp;1)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;***&nbsp;<span class="id" type="var">Failed</span>&nbsp;<span class="id" type="keyword">after</span>&nbsp;3&nbsp;<span class="id" type="var">tests</span>&nbsp;<span class="id" type="var">and</span>&nbsp;2&nbsp;<span class="id" type="var">shrinks</span>. (0&nbsp;<span class="id" type="var">discards</span>)
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+    The problem is that subtraction is not associative and we have compiled
+    the two operands in the wrong order! We can now log that mutant in our 
+    development as shown in the <span class="inlinecode"><span class="id" type="var">Stack</span></span> module.
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Fixpoint</span>&nbsp;<span class="id" type="var">compile</span>&nbsp;(<span class="id" type="var">e</span>&nbsp;:&nbsp;<span class="id" type="var">exp</span>)&nbsp;:&nbsp;<span class="id" type="var">list</span>&nbsp;<span class="id" type="var">sinstr</span>&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span>&nbsp;<span class="id" type="var">e</span>&nbsp;<span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ANum</span>&nbsp;<span class="id" type="var">n</span>&nbsp;⇒&nbsp;[<span class="id" type="var">SPush</span>&nbsp;<span class="id" type="var">n</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">APlus</span>&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;⇒&nbsp;<span class="id" type="var">compile</span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;++&nbsp;<span class="id" type="var">compile</span>&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;++&nbsp;[<span class="id" type="var">SPlus</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">AMinus</span>&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;⇒&nbsp;<span class="id" type="var">compile</span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;++&nbsp;<span class="id" type="var">compile</span>&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;++&nbsp;[<span class="id" type="var">SMinus</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">AMult</span>&nbsp;&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;⇒&nbsp;<span class="id" type="var">compile</span>&nbsp;<span class="id" type="var">e<sub>2</sub></span>&nbsp;++&nbsp;<span class="id" type="var">compile</span>&nbsp;<span class="id" type="var">e<sub>1</sub></span>&nbsp;++&nbsp;[<span class="id" type="var">SMult</span>]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!!&nbsp;Wrong&nbsp;associativity&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;APlus&nbsp;&nbsp;e<sub>1</sub>&nbsp;e<sub>2</sub>&nbsp;=&gt;&nbsp;compile&nbsp;e<sub>1</sub>&nbsp;++&nbsp;compile&nbsp;e<sub>2</sub>&nbsp;++&nbsp;<span class="inlinecode"><span class="id" type="var">SPlus</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;AMinus&nbsp;e<sub>1</sub>&nbsp;e<sub>2</sub>&nbsp;=&gt;&nbsp;compile&nbsp;e<sub>1</sub>&nbsp;++&nbsp;compile&nbsp;e<sub>2</sub>&nbsp;++&nbsp;<span class="inlinecode"><span class="id" type="var">SMinus</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;AMult&nbsp;&nbsp;e<sub>1</sub>&nbsp;e<sub>2</sub>&nbsp;=&gt;&nbsp;compile&nbsp;e<sub>1</sub>&nbsp;++&nbsp;compile&nbsp;e<sub>2</sub>&nbsp;++&nbsp;<span class="inlinecode"><span class="id" type="var">SMult</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+    We can now run a different command to test <span class="inlinecode"><span class="id" type="var">compiles_correctly</span></span>, using 
+    <span class="inlinecode">-<span class="id" type="var">s</span></span> <span class="inlinecode"><span class="id" type="var">stack</span></span> to only check the <span class="inlinecode"><span class="id" type="var">stack</span></span> section.
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">quickChick</span>&nbsp;-<span class="id" type="var">color</span>&nbsp;-<span class="id" type="var">top</span>&nbsp;<span class="id" type="var">Stack</span>&nbsp;-<span class="id" type="var">s</span>&nbsp;<span class="id" type="var">stack</span>
+<div class="paragraph"> </div>
+
+</div>
+<pre>
+    Testing base...
+    make -f Makefile.coq 
+    make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    COQDEP VFILES
+    COQC Exp.v
+    COQC Stack.v
+    COQC QuickChickTop.v
+    make[1]: Leaving directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    Checking Stack.compiles_correctly...
+    +++ Passed 10000 tests (0 discards)
+     
+    Testing mutant 0 (./Stack.v: line 33): Wrong associativity
+    make -f Makefile.coq 
+    make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    COQDEP VFILES
+    COQC Stack.v
+    COQC QuickChickTop.v
+    make[1]: Leaving directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    AMinus (ANum 0) (ANum 1)
+    Checking Stack.compiles_correctly...
+    *** Failed after 5 tests and 6 shrinks. (0 discards)
+     
+    Testing mutant 1 (./Exp.v: line 20): Plus-copy-paste-error
+    make -f Makefile.coq 
+    make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    COQDEP VFILES
+    COQC Exp.v
+    COQC Stack.v
+    COQC QuickChickTop.v
+    make[1]: Leaving directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
+    APlus (ANum 0) (ANum 1)
+    Checking Stack.compiles_correctly...
+    *** Failed after 5 tests and 2 shrinks. (0 discards)
+    All tests produced the expected results
+</pre>
+    We can see that the main property succeeds, while the two mutants (the one 
+    in <span class="inlinecode"><span class="id" type="var">arithmetic_expressions</span></span> that was included because of the extension
+    and the one in <span class="inlinecode"><span class="id" type="var">stack</span></span>) both fail. 
+<div class="paragraph"> </div>
+
+<a name="lab106"></a><h1 class="section">QuickChick Command-Line Tool Flags</h1>
+
+<div class="paragraph"> </div>
+
+ For more information on the tool's flags, look at the reference manual
+    in <a href="QuickChickInterface.html"><span class="inlineref">QuickChickInterface</span></a>.
+
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Trie.
-Parameter MISSING: Type. 
+From VFA Require Import Trie.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Trie.
+From VFA Require Import Trie.
 Import Check.
 
 Goal True.
@@ -211,4 +212,36 @@ idtac " ".
 
 idtac "Max points - standard: 29".
 idtac "Max points - advanced: 29".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- Integers.succ_correct ---------".
+Print Assumptions Integers.succ_correct.
+idtac "---------- Integers.addc_correct ---------".
+Print Assumptions Integers.addc_correct.
+idtac "---------- Integers.compare_correct ---------".
+Print Assumptions Integers.compare_correct.
+idtac "---------- successor_of_Z_constant_time ---------".
+idtac "MANUAL".
+idtac "---------- look_leaf ---------".
+Print Assumptions look_leaf.
+idtac "---------- look_ins_same ---------".
+Print Assumptions look_ins_same.
+idtac "---------- look_ins_same ---------".
+Print Assumptions look_ins_same.
+idtac "---------- pos2nat_injective ---------".
+Print Assumptions pos2nat_injective.
+idtac "---------- nat2pos_injective ---------".
+Print Assumptions nat2pos_injective.
+idtac "---------- is_trie ---------".
+Print Assumptions is_trie.
+idtac "---------- empty_relate ---------".
+Print Assumptions empty_relate.
+idtac "---------- lookup_relate ---------".
+Print Assumptions lookup_relate.
+idtac "---------- insert_relate ---------".
+Print Assumptions insert_relate.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

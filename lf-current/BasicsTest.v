@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Basics.
-Parameter MISSING: Type. 
+From LF Require Import Basics.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Basics.
+From LF Require Import Basics.
 Import Check.
 
 Goal True.
@@ -67,15 +68,15 @@ Print Assumptions test_factorial2.
 Goal True.
 idtac " ".
 
-idtac "-------------------  blt_nat  --------------------".
+idtac "-------------------  ltb  --------------------".
 idtac " ".
 
-idtac "#> test_blt_nat3".
+idtac "#> test_ltb3".
 idtac "Possible points: 1".
-check_type @test_blt_nat3 ((blt_nat 4 2 = false)).
+check_type @test_ltb3 (((4 <? 2) = false)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions test_blt_nat3.
+Print Assumptions test_ltb3.
 Goal True.
 idtac " ".
 
@@ -120,14 +121,14 @@ idtac " ".
 
 idtac "#> zero_nbeq_plus_1".
 idtac "Possible points: 1".
-check_type @zero_nbeq_plus_1 ((forall n : nat, beq_nat 0 (n + 1) = false)).
+check_type @zero_nbeq_plus_1 ((forall n : nat, (0 =? n + 1) = false)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions zero_nbeq_plus_1.
 Goal True.
 idtac " ".
 
-idtac "-------------------  boolean_functions  --------------------".
+idtac "-------------------  indentity_fn_applied_twice  --------------------".
 idtac " ".
 
 idtac "#> identity_fn_applied_twice".
@@ -139,6 +140,9 @@ idtac "Assumptions:".
 Abort.
 Print Assumptions identity_fn_applied_twice.
 Goal True.
+idtac " ".
+
+idtac "-------------------  negation_fn_applied_twice  --------------------".
 idtac " ".
 
 idtac "#> Manually graded: negation_fn_applied_twice".
@@ -158,4 +162,32 @@ idtac " ".
 
 idtac "Max points - standard: 15".
 idtac "Max points - advanced: 15".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- test_nandb4 ---------".
+Print Assumptions test_nandb4.
+idtac "---------- test_andb34 ---------".
+Print Assumptions test_andb34.
+idtac "---------- test_factorial2 ---------".
+Print Assumptions test_factorial2.
+idtac "---------- test_ltb3 ---------".
+Print Assumptions test_ltb3.
+idtac "---------- plus_id_exercise ---------".
+Print Assumptions plus_id_exercise.
+idtac "---------- mult_S_1 ---------".
+Print Assumptions mult_S_1.
+idtac "---------- andb_true_elim2 ---------".
+Print Assumptions andb_true_elim2.
+idtac "---------- zero_nbeq_plus_1 ---------".
+Print Assumptions zero_nbeq_plus_1.
+idtac "---------- identity_fn_applied_twice ---------".
+Print Assumptions identity_fn_applied_twice.
+idtac "---------- negation_fn_applied_twice ---------".
+idtac "MANUAL".
+idtac "---------- binary ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
 Abort.

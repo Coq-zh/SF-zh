@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Lists.
-Parameter MISSING: Type. 
+From LF Require Import Lists.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Lists.
+From LF Require Import Lists.
 Import Check.
 
 Goal True.
@@ -228,7 +229,7 @@ idtac "-------------------  bag_theorem  --------------------".
 idtac " ".
 
 idtac "#> Manually graded: NatList.bag_theorem".
-idtac "Possible points: 3".
+idtac "Possible points: 2".
 print_manual_grade NatList.manual_grade_for_bag_theorem.
 idtac " ".
 
@@ -291,16 +292,16 @@ Print Assumptions NatList.nonzeros_app.
 Goal True.
 idtac " ".
 
-idtac "-------------------  beq_natlist  --------------------".
+idtac "-------------------  eqblist  --------------------".
 idtac " ".
 
-idtac "#> NatList.beq_natlist_refl".
+idtac "#> NatList.eqblist_refl".
 idtac "Possible points: 2".
-check_type @NatList.beq_natlist_refl (
-(forall l : NatList.natlist, true = NatList.beq_natlist l l)).
+check_type @NatList.eqblist_refl (
+(forall l : NatList.natlist, true = NatList.eqblist l l)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions NatList.beq_natlist_refl.
+Print Assumptions NatList.eqblist_refl.
 Goal True.
 idtac " ".
 
@@ -310,7 +311,7 @@ idtac " ".
 idtac "#> NatList.count_member_nonzero".
 idtac "Possible points: 1".
 check_type @NatList.count_member_nonzero (
-(forall s : NatList.bag, leb 1 (NatList.count 1 (NatList.cons 1 s)) = true)).
+(forall s : NatList.bag, (1 <=? NatList.count 1 (NatList.cons 1 s)) = true)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions NatList.count_member_nonzero.
@@ -325,7 +326,7 @@ idtac "Advanced".
 idtac "Possible points: 3".
 check_type @NatList.remove_does_not_increase_count (
 (forall s : NatList.bag,
- leb (NatList.count 0 (NatList.remove_one 0 s)) (NatList.count 0 s) = true)).
+ (NatList.count 0 (NatList.remove_one 0 s) <=? NatList.count 0 s) = true)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions NatList.remove_does_not_increase_count.
@@ -353,15 +354,15 @@ Print Assumptions NatList.hd_error.
 Goal True.
 idtac " ".
 
-idtac "-------------------  beq_id_refl  --------------------".
+idtac "-------------------  eqb_id_refl  --------------------".
 idtac " ".
 
-idtac "#> beq_id_refl".
+idtac "#> eqb_id_refl".
 idtac "Possible points: 1".
-check_type @beq_id_refl ((forall x : id, true = beq_id x x)).
+check_type @eqb_id_refl ((forall x : id, true = eqb_id x x)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions beq_id_refl.
+Print Assumptions eqb_id_refl.
 Goal True.
 idtac " ".
 
@@ -386,7 +387,7 @@ idtac "#> PartialMap.update_neq".
 idtac "Possible points: 1".
 check_type @PartialMap.update_neq (
 (forall (d : PartialMap.partial_map) (x y : id) (o : nat),
- beq_id x y = false ->
+ eqb_id x y = false ->
  PartialMap.find x (PartialMap.update d y o) = PartialMap.find x d)).
 idtac "Assumptions:".
 Abort.
@@ -404,6 +405,70 @@ idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 22".
-idtac "Max points - advanced: 32".
+idtac "Max points - standard: 21".
+idtac "Max points - advanced: 31".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- NatList.snd_fst_is_swap ---------".
+Print Assumptions NatList.snd_fst_is_swap.
+idtac "---------- NatList.test_nonzeros ---------".
+Print Assumptions NatList.test_nonzeros.
+idtac "---------- NatList.test_oddmembers ---------".
+Print Assumptions NatList.test_oddmembers.
+idtac "---------- NatList.test_countoddmembers2 ---------".
+Print Assumptions NatList.test_countoddmembers2.
+idtac "---------- NatList.test_countoddmembers3 ---------".
+Print Assumptions NatList.test_countoddmembers3.
+idtac "---------- NatList.test_count2 ---------".
+Print Assumptions NatList.test_count2.
+idtac "---------- NatList.test_sum1 ---------".
+Print Assumptions NatList.test_sum1.
+idtac "---------- NatList.test_add1 ---------".
+Print Assumptions NatList.test_add1.
+idtac "---------- NatList.test_add2 ---------".
+Print Assumptions NatList.test_add2.
+idtac "---------- NatList.test_member1 ---------".
+Print Assumptions NatList.test_member1.
+idtac "---------- NatList.test_member2 ---------".
+Print Assumptions NatList.test_member2.
+idtac "---------- bag_theorem ---------".
+idtac "MANUAL".
+idtac "---------- NatList.app_nil_r ---------".
+Print Assumptions NatList.app_nil_r.
+idtac "---------- NatList.rev_app_distr ---------".
+Print Assumptions NatList.rev_app_distr.
+idtac "---------- NatList.rev_involutive ---------".
+Print Assumptions NatList.rev_involutive.
+idtac "---------- NatList.app_assoc4 ---------".
+Print Assumptions NatList.app_assoc4.
+idtac "---------- NatList.nonzeros_app ---------".
+Print Assumptions NatList.nonzeros_app.
+idtac "---------- NatList.eqblist_refl ---------".
+Print Assumptions NatList.eqblist_refl.
+idtac "---------- NatList.count_member_nonzero ---------".
+Print Assumptions NatList.count_member_nonzero.
+idtac "---------- NatList.hd_error ---------".
+Print Assumptions NatList.hd_error.
+idtac "---------- eqb_id_refl ---------".
+Print Assumptions eqb_id_refl.
+idtac "---------- PartialMap.update_eq ---------".
+Print Assumptions PartialMap.update_eq.
+idtac "---------- PartialMap.update_neq ---------".
+Print Assumptions PartialMap.update_neq.
+idtac "---------- baz_num_elts ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- NatList.test_alternate1 ---------".
+Print Assumptions NatList.test_alternate1.
+idtac "---------- NatList.test_alternate2 ---------".
+Print Assumptions NatList.test_alternate2.
+idtac "---------- NatList.test_alternate4 ---------".
+Print Assumptions NatList.test_alternate4.
+idtac "---------- NatList.remove_does_not_increase_count ---------".
+Print Assumptions NatList.remove_does_not_increase_count.
+idtac "---------- rev_injective ---------".
+idtac "MANUAL".
 Abort.

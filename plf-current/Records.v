@@ -1,10 +1,10 @@
 (** * Records: Adding Records to STLC *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
-Require Import Stlc.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
 
 (* ################################################################# *)
 (** * Adding Records *)
@@ -223,9 +223,9 @@ Hint Constructors record_tm.
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar y => if beq_string x y then s else t
+  | tvar y => if eqb_string x y then s else t
   | tabs y T t1 => tabs y T
-                     (if beq_string x y then t1 else (subst x s t1))
+                     (if eqb_string x y then t1 else (subst x s t1))
   | tapp t1 t2 => tapp (subst x s t1) (subst x s t2)
   | tproj t1 i => tproj (subst x s t1) i
   | trnil => trnil
@@ -255,7 +255,7 @@ Hint Constructors value.
 
 Fixpoint tlookup (i:string) (tr:tm) : option tm :=
   match tr with
-  | trcons i' t tr' => if beq_string i i' then Some t else tlookup i tr'
+  | trcons i' t tr' => if eqb_string i i' then Some t else tlookup i tr'
   | _ => None
   end.
 
@@ -324,7 +324,7 @@ Hint Constructors step.
 Fixpoint Tlookup (i:string) (Tr:ty) : option ty :=
   match Tr with
   | TRCons i' T Tr' =>
-      if beq_string i i' then Some T else Tlookup i Tr'
+      if eqb_string i i' then Some T else Tlookup i Tr'
   | _ => None
   end.
 
@@ -426,7 +426,7 @@ Proof with eauto.
   induction T; intros; try solve_by_invert.
   - (* TRCons *)
     inversion H. subst. unfold Tlookup in H0.
-    destruct (beq_string i s)...
+    destruct (eqb_string i s)...
     inversion H0. subst...  Qed.
 
 Lemma step_preserves_record_tm : forall tr tr',
@@ -495,7 +495,7 @@ Proof with eauto.
   remember (@empty ty) as Gamma.
   induction Htyp; subst; try solve_by_invert...
   - (* T_RCons *)
-    simpl in Hget. simpl. destruct (beq_string i i0).
+    simpl in Hget. simpl. destruct (eqb_string i i0).
     + (* i is first *)
       simpl. inversion Hget. subst.
       exists t...
@@ -639,7 +639,7 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros y Hafi.
-    unfold update, t_update. destruct (beq_stringP x y)...
+    unfold update, t_update. destruct (eqb_stringP x y)...
   - (* T_App *)
     apply T_App with T1...
   - (* T_RCons *)
@@ -655,7 +655,7 @@ Proof with eauto.
   - (* T_Abs *)
     destruct IHHtyp as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_string in Hctx...
+    rewrite false_eqb_string in Hctx...
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -689,7 +689,7 @@ Proof with eauto.
 
        There are two cases to consider: either [x=y] or [x<>y]. *)
     unfold update, t_update in H0.
-    destruct (beq_stringP x y) as [Hxy|Hxy].
+    destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
     (* If [x = y], then we know that [U = S], and that 
        [[x:=v]y = v]. So what we really must show is that 
@@ -718,13 +718,13 @@ Proof with eauto.
          [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 S].
 
        We can calculate that
-       [ [x:=v]t = tabs y T11 (if beq_string x y then t0 else [x:=v]t0) ],
+       [ [x:=v]t = tabs y T11 (if eqb_string x y then t0 else [x:=v]t0) ],
        and we must show that [Gamma |- [x:=v]t : T11->T12].  We know
        we will do so using [T_Abs], so it remains to be shown that:
-         [Gamma,y:T11 |- if beq_string x y then t0 else [x:=v]t0 : T12]
+         [Gamma,y:T11 |- if eqb_string x y then t0 else [x:=v]t0 : T12]
        We consider two cases: [x = y] and [x <> y]. *)
     apply T_Abs...
-    destruct (beq_stringP x y) as [Hxy|Hxy].
+    destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
       (* If [x = y], then the substitution has no effect.  Context
          invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
@@ -733,7 +733,7 @@ Proof with eauto.
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_string y x)...
+      destruct (eqb_string y x)...
     + (* x<>y *)
       (* If [x <> y], then the IH and context invariance allow 
          us to show that
@@ -742,8 +742,8 @@ Proof with eauto.
            [Gamma,y:T11 |- [x:=v]t0 : T12] *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y z)...
-      subst. rewrite false_beq_string...
+      destruct (eqb_stringP y z)...
+      subst. rewrite false_eqb_string...
   - (* trcons *)
     apply T_RCons... inversion H7; subst; simpl...
 Qed.

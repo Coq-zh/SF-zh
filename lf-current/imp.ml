@@ -35,11 +35,44 @@ let rec sub n0 m =
       m)
     n0
 
+(** val eqb : int -> int -> bool **)
+
+let rec eqb = ( = )
+
+(** val leb : int -> int -> bool **)
+
+let rec leb n0 m =
+  (fun zero succ n ->
+      if n=0 then zero () else succ (n-1))
+    (fun _ -> true)
+    (fun n' ->
+    (fun zero succ n ->
+      if n=0 then zero () else succ (n-1))
+      (fun _ -> false)
+      (fun m' -> leb n' m')
+      m)
+    n0
+
 module Nat =
  struct
   (** val eqb : int -> int -> bool **)
 
-  let rec eqb = ( = )
+  let rec eqb n0 m =
+    (fun zero succ n ->
+      if n=0 then zero () else succ (n-1))
+      (fun _ ->
+      (fun zero succ n ->
+      if n=0 then zero () else succ (n-1))
+        (fun _ -> true)
+        (fun _ -> false)
+        m)
+      (fun n' ->
+      (fun zero succ n ->
+      if n=0 then zero () else succ (n-1))
+        (fun _ -> false)
+        (fun m' -> eqb n' m')
+        m)
+      n0
 
   (** val leb : int -> int -> bool **)
 
@@ -237,9 +270,9 @@ let rec append s1 s2 =
   | [] -> s2
   | c::s1' -> c::(append s1' s2)
 
-(** val beq_string : char list -> char list -> bool **)
+(** val eqb_string : char list -> char list -> bool **)
 
-let beq_string x y =
+let eqb_string x y =
   if string_dec x y then true else false
 
 type 'a total_map = char list -> 'a
@@ -252,7 +285,7 @@ let t_empty v _ =
 (** val t_update : 'a1 total_map -> char list -> 'a1 -> char list -> 'a1 **)
 
 let t_update m x v x' =
-  if beq_string x x' then v else m x'
+  if eqb_string x x' then v else m x'
 
 type state = int total_map
 
@@ -285,8 +318,8 @@ let rec aeval st = function
 let rec beval st = function
 | BTrue -> true
 | BFalse -> false
-| BEq (a1, a2) -> Nat.eqb (aeval st a1) (aeval st a2)
-| BLe (a1, a2) -> Nat.leb (aeval st a1) (aeval st a2)
+| BEq (a1, a2) -> eqb (aeval st a1) (aeval st a2)
+| BLe (a1, a2) -> leb (aeval st a1) (aeval st a2)
 | BNot b1 -> negb (beval st b1)
 | BAnd (b1, b2) -> (&&) (beval st b1) (beval st b2)
 
@@ -1450,7 +1483,7 @@ let rec many_helper p acc steps xs =
     ('T'::('o'::('o'::(' '::('m'::('a'::('n'::('y'::(' '::('r'::('e'::('c'::('u'::('r'::('s'::('i'::('v'::('e'::(' '::('c'::('a'::('l'::('l'::('s'::[])))))))))))))))))))))))))
     (fun steps' ->
     match p xs with
-    | SomeE p0 -> let (t, xs') = p0 in many_helper p (t :: acc) steps' xs'
+    | SomeE x -> let (t, xs') = x in many_helper p (t :: acc) steps' xs'
     | NoneE _ -> SomeE ((rev acc), xs))
     steps
 
@@ -1523,16 +1556,16 @@ let rec parsePrimaryExp steps xs =
     ('T'::('o'::('o'::(' '::('m'::('a'::('n'::('y'::(' '::('r'::('e'::('c'::('u'::('r'::('s'::('i'::('v'::('e'::(' '::('c'::('a'::('l'::('l'::('s'::[])))))))))))))))))))))))))
     (fun steps' ->
     match parseIdentifier xs with
-    | SomeE p -> let (i, rest) = p in SomeE ((AId i), rest)
+    | SomeE x -> let (i, rest) = x in SomeE ((AId i), rest)
     | NoneE _ ->
       (match parseNumber xs with
-       | SomeE p -> let (n0, rest) = p in SomeE ((ANum n0), rest)
+       | SomeE x -> let (n0, rest) = x in SomeE ((ANum n0), rest)
        | NoneE _ ->
          (match firstExpect ('('::[]) (parseSumExp steps') xs with
-          | SomeE p ->
-            let (e, rest) = p in
+          | SomeE x ->
+            let (e, rest) = x in
             (match expect (')'::[]) rest with
-             | SomeE p0 -> let (_, rest') = p0 in SomeE (e, rest')
+             | SomeE x0 -> let (_, rest') = x0 in SomeE (e, rest')
              | NoneE err -> NoneE err)
           | NoneE err -> NoneE err)))
     steps
@@ -1546,12 +1579,12 @@ and parseProductExp steps xs =
     ('T'::('o'::('o'::(' '::('m'::('a'::('n'::('y'::(' '::('r'::('e'::('c'::('u'::('r'::('s'::('i'::('v'::('e'::(' '::('c'::('a'::('l'::('l'::('s'::[])))))))))))))))))))))))))
     (fun steps' ->
     match parsePrimaryExp steps' xs with
-    | SomeE p ->
-      let (e, rest) = p in
+    | SomeE x ->
+      let (e, rest) = x in
       (match many (firstExpect ('*'::[]) (parsePrimaryExp steps')) steps' rest with
-       | SomeE p0 ->
-         let (es, rest') = p0 in
-         SomeE ((fold_left (fun x x0 -> AMult (x, x0)) es e), rest')
+       | SomeE x0 ->
+         let (es, rest') = x0 in
+         SomeE ((fold_left (fun x1 x2 -> AMult (x1, x2)) es e), rest')
        | NoneE err -> NoneE err)
     | NoneE err -> NoneE err)
     steps
@@ -1565,18 +1598,18 @@ and parseSumExp steps xs =
     ('T'::('o'::('o'::(' '::('m'::('a'::('n'::('y'::(' '::('r'::('e'::('c'::('u'::('r'::('s'::('i'::('v'::('e'::(' '::('c'::('a'::('l'::('l'::('s'::[])))))))))))))))))))))))))
     (fun steps' ->
     match parseProductExp steps' xs with
-    | SomeE p ->
-      let (e, rest) = p in
+    | SomeE x ->
+      let (e, rest) = x in
       (match many (fun xs0 ->
                match firstExpect ('+'::[]) (parseProductExp steps') xs0 with
-               | SomeE p0 -> let (e0, rest') = p0 in SomeE ((true, e0), rest')
+               | SomeE x0 -> let (e0, rest') = x0 in SomeE ((true, e0), rest')
                | NoneE _ ->
                  (match firstExpect ('-'::[]) (parseProductExp steps') xs0 with
-                  | SomeE p0 ->
-                    let (e0, rest') = p0 in SomeE ((false, e0), rest')
+                  | SomeE x0 ->
+                    let (e0, rest') = x0 in SomeE ((false, e0), rest')
                   | NoneE err -> NoneE err)) steps' rest with
-       | SomeE p0 ->
-         let (es, rest') = p0 in
+       | SomeE x0 ->
+         let (es, rest') = x0 in
          SomeE
          ((fold_left (fun e0 term ->
             let (y, e1) = term in
@@ -1599,32 +1632,32 @@ let rec parseAtomicExp steps xs =
     ('T'::('o'::('o'::(' '::('m'::('a'::('n'::('y'::(' '::('r'::('e'::('c'::('u'::('r'::('s'::('i'::('v'::('e'::(' '::('c'::('a'::('l'::('l'::('s'::[])))))))))))))))))))))))))
     (fun steps' ->
     match expect ('t'::('r'::('u'::('e'::[])))) xs with
-    | SomeE p -> let (_, rest) = p in SomeE (BTrue, rest)
+    | SomeE x -> let (_, rest) = x in SomeE (BTrue, rest)
     | NoneE _ ->
       (match expect ('f'::('a'::('l'::('s'::('e'::[]))))) xs with
-       | SomeE p -> let (_, rest) = p in SomeE (BFalse, rest)
+       | SomeE x -> let (_, rest) = x in SomeE (BFalse, rest)
        | NoneE _ ->
          (match firstExpect ('!'::[]) (parseAtomicExp steps') xs with
-          | SomeE p -> let (e, rest) = p in SomeE ((BNot e), rest)
+          | SomeE x -> let (e, rest) = x in SomeE ((BNot e), rest)
           | NoneE _ ->
             (match firstExpect ('('::[]) (parseConjunctionExp steps') xs with
-             | SomeE p ->
-               let (e, rest) = p in
+             | SomeE x ->
+               let (e, rest) = x in
                (match expect (')'::[]) rest with
-                | SomeE p0 -> let (_, rest') = p0 in SomeE (e, rest')
+                | SomeE x0 -> let (_, rest') = x0 in SomeE (e, rest')
                 | NoneE err -> NoneE err)
              | NoneE _ ->
                (match parseProductExp steps' xs with
-                | SomeE p ->
-                  let (e, rest) = p in
+                | SomeE x ->
+                  let (e, rest) = x in
                   (match firstExpect ('='::[]) (parseAExp steps') rest with
-                   | SomeE p0 ->
-                     let (e', rest') = p0 in SomeE ((BEq (e, e')), rest')
+                   | SomeE x0 ->
+                     let (e', rest') = x0 in SomeE ((BEq (e, e')), rest')
                    | NoneE _ ->
                      (match firstExpect ('<'::('='::[])) (parseAExp steps')
                               rest with
-                      | SomeE p0 ->
-                        let (e', rest') = p0 in SomeE ((BLe (e, e')), rest')
+                      | SomeE x0 ->
+                        let (e', rest') = x0 in SomeE ((BLe (e, e')), rest')
                       | NoneE _ ->
                         NoneE
                           ('E'::('x'::('p'::('e'::('c'::('t'::('e'::('d'::(' '::('\''::('='::('\''::(' '::('o'::('r'::(' '::('\''::('<'::('='::('\''::(' '::('a'::('f'::('t'::('e'::('r'::(' '::('a'::('r'::('i'::('t'::('h'::('m'::('e'::('t'::('i'::('c'::(' '::('e'::('x'::('p'::('r'::('e'::('s'::('s'::('i'::('o'::('n'::[]))))))))))))))))))))))))))))))))))))))))))))))))))
@@ -1641,13 +1674,13 @@ and parseConjunctionExp steps xs =
     ('T'::('o'::('o'::(' '::('m'::('a'::('n'::('y'::(' '::('r'::('e'::('c'::('u'::('r'::('s'::('i'::('v'::('e'::(' '::('c'::('a'::('l'::('l'::('s'::[])))))))))))))))))))))))))
     (fun steps' ->
     match parseAtomicExp steps' xs with
-    | SomeE p ->
-      let (e, rest) = p in
+    | SomeE x ->
+      let (e, rest) = x in
       (match many (firstExpect ('&'::('&'::[])) (parseAtomicExp steps'))
                steps' rest with
-       | SomeE p0 ->
-         let (es, rest') = p0 in
-         SomeE ((fold_left (fun x x0 -> BAnd (x, x0)) es e), rest')
+       | SomeE x0 ->
+         let (es, rest') = x0 in
+         SomeE ((fold_left (fun x1 x2 -> BAnd (x1, x2)) es e), rest')
        | NoneE err -> NoneE err)
     | NoneE err -> NoneE err)
     steps
@@ -1667,46 +1700,46 @@ let rec parseSimpleCommand steps xs =
     ('T'::('o'::('o'::(' '::('m'::('a'::('n'::('y'::(' '::('r'::('e'::('c'::('u'::('r'::('s'::('i'::('v'::('e'::(' '::('c'::('a'::('l'::('l'::('s'::[])))))))))))))))))))))))))
     (fun steps' ->
     match expect ('S'::('K'::('I'::('P'::[])))) xs with
-    | SomeE p -> let (_, rest) = p in SomeE (CSkip, rest)
+    | SomeE x -> let (_, rest) = x in SomeE (CSkip, rest)
     | NoneE _ ->
       (match firstExpect ('I'::('F'::('B'::[]))) (parseBExp steps') xs with
-       | SomeE p ->
-         let (e, rest) = p in
+       | SomeE x ->
+         let (e, rest) = x in
          (match firstExpect ('T'::('H'::('E'::('N'::[]))))
                   (parseSequencedCommand steps') rest with
-          | SomeE p0 ->
-            let (c, rest') = p0 in
+          | SomeE x0 ->
+            let (c, rest') = x0 in
             (match firstExpect ('E'::('L'::('S'::('E'::[]))))
                      (parseSequencedCommand steps') rest' with
-             | SomeE p1 ->
-               let (c', rest'') = p1 in
+             | SomeE x1 ->
+               let (c', rest'') = x1 in
                (match expect ('E'::('N'::('D'::[]))) rest'' with
-                | SomeE p2 ->
-                  let (_, rest''') = p2 in SomeE ((CIf (e, c, c')), rest''')
+                | SomeE x2 ->
+                  let (_, rest''') = x2 in SomeE ((CIf (e, c, c')), rest''')
                 | NoneE err -> NoneE err)
              | NoneE err -> NoneE err)
           | NoneE err -> NoneE err)
        | NoneE _ ->
          (match firstExpect ('W'::('H'::('I'::('L'::('E'::[])))))
                   (parseBExp steps') xs with
-          | SomeE p ->
-            let (e, rest) = p in
+          | SomeE x ->
+            let (e, rest) = x in
             (match firstExpect ('D'::('O'::[]))
                      (parseSequencedCommand steps') rest with
-             | SomeE p0 ->
-               let (c, rest') = p0 in
+             | SomeE x0 ->
+               let (c, rest') = x0 in
                (match expect ('E'::('N'::('D'::[]))) rest' with
-                | SomeE p1 ->
-                  let (_, rest'') = p1 in SomeE ((CWhile (e, c)), rest'')
+                | SomeE x1 ->
+                  let (_, rest'') = x1 in SomeE ((CWhile (e, c)), rest'')
                 | NoneE err -> NoneE err)
              | NoneE err -> NoneE err)
           | NoneE _ ->
             (match parseIdentifier xs with
-             | SomeE p ->
-               let (i, rest) = p in
+             | SomeE x ->
+               let (i, rest) = x in
                (match firstExpect (':'::('='::[])) (parseAExp steps') rest with
-                | SomeE p0 ->
-                  let (e, rest') = p0 in SomeE ((CAss (i, e)), rest')
+                | SomeE x0 ->
+                  let (e, rest') = x0 in SomeE ((CAss (i, e)), rest')
                 | NoneE err -> NoneE err)
              | NoneE err -> NoneE err))))
     steps
@@ -1721,10 +1754,10 @@ and parseSequencedCommand steps xs =
     ('T'::('o'::('o'::(' '::('m'::('a'::('n'::('y'::(' '::('r'::('e'::('c'::('u'::('r'::('s'::('i'::('v'::('e'::(' '::('c'::('a'::('l'::('l'::('s'::[])))))))))))))))))))))))))
     (fun steps' ->
     match parseSimpleCommand steps' xs with
-    | SomeE p ->
-      let (c, rest) = p in
+    | SomeE x ->
+      let (c, rest) = x in
       (match firstExpect (';'::(';'::[])) (parseSequencedCommand steps') rest with
-       | SomeE p0 -> let (c', rest') = p0 in SomeE ((CSeq (c, c')), rest')
+       | SomeE x0 -> let (c', rest') = x0 in SomeE ((CSeq (c, c')), rest')
        | NoneE _ -> SomeE (c, rest))
     | NoneE err -> NoneE err)
     steps

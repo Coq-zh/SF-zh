@@ -35,12 +35,16 @@ Import ListNotations.
 (* ################################################################# *)
 (** * 标识符 *)
 
-(** 首先，我们需要知道用来索引映射的键的类型。为此，我们只需使用 [string]。 *)
+(** First, we need a type for the keys that we use to index into our
+    maps.  In [Lists.v] we introduced a fresh type [id] for this
+    purpose; for the rest of _Software Foundations_ we will use the
+    [string] type from Coq's standard library. *)
 
-(** 为比较字符串，我们定义了函数 [beq_string]，它在内部使用了 Coq
-    字符串标准库中的 [string_dec] 函数。接下来我们确定它的基本性质。 *)
+(** To compare strings, we define the function [eqb_string], which
+    internally uses the function [string_dec] from Coq's string
+    library. *)
 
-Definition beq_string x y :=
+Definition eqb_string x y :=
   if string_dec x y then true else false.
 
 (** （函数 [string_dec] 来自于 Coq 的字符串标准库。如果你查看
@@ -51,41 +55,43 @@ Definition beq_string x y :=
     与一个标签一起来指出具体是哪一个。不过就目前来说，你可以把它当做一个
     花哨的 [bool]。） *)
 
-Theorem beq_string_refl : forall s, true = beq_string s s.
-Proof. intros s. unfold beq_string. destruct (string_dec s s) as [|Hs].
+(** Now we need a few basic properties of string equality... *)
+Theorem eqb_string_refl : forall s, true = eqb_string s s.
+Proof. intros s. unfold eqb_string. destruct (string_dec s s) as [|Hs].
   - reflexivity.
   - destruct Hs. reflexivity.
 Qed.
 
-(** 以下 [beq_string] 的有用的性质来自于一个关于字符串的类似引理： *)
+(** The following useful property follows from an analogous
+    lemma about strings: *)
 
-Theorem beq_string_true_iff : forall x y : string,
-  beq_string x y = true <-> x = y.
+Theorem eqb_string_true_iff : forall x y : string,
+  eqb_string x y = true <-> x = y.
 Proof.
    intros x y.
-   unfold beq_string.
+   unfold eqb_string.
    destruct (string_dec x y) as [|Hs].
    - subst. split. reflexivity. reflexivity.
    - split.
-     + intros contra. inversion contra.
-     + intros H. inversion H. subst. destruct Hs. reflexivity.
+     + intros contra. discriminate contra.
+     + intros H. rewrite H in Hs. destruct Hs. reflexivity.
 Qed.
 
 (** 类似地： *)
 
-Theorem beq_string_false_iff : forall x y : string,
-  beq_string x y = false
+Theorem eqb_string_false_iff : forall x y : string,
+  eqb_string x y = false
   <-> x <> y.
 Proof.
-  intros x y. rewrite <- beq_string_true_iff.
+  intros x y. rewrite <- eqb_string_true_iff.
   rewrite not_true_iff_false. reflexivity. Qed.
 
-(** 以下有用的变体只需改写就能得到： *)
+(** This handy variant follows just by rewriting: *)
 
-Theorem false_beq_string : forall x y : string,
-   x <> y -> beq_string x y = false.
+Theorem false_eqb_string : forall x y : string,
+   x <> y -> eqb_string x y = false.
 Proof.
-  intros x y. rewrite beq_string_false_iff.
+  intros x y. rewrite eqb_string_false_iff.
   intros H. apply H. Qed.
 
 (* ################################################################# *)
@@ -119,7 +125,7 @@ Definition t_empty {A:Type} (v : A) : total_map A :=
 
 Definition t_update {A:Type} (m : total_map A)
                     (x : string) (v : A) :=
-  fun x' => if beq_string x x' then v else m x'.
+  fun x' => if eqb_string x x' then v else m x'.
 
 (** 此定义是个高阶编程的好例子：[t_update] 接受一个_'函数'_ [m]
     并产生一个新的函数 [fun x' => ...]，它的表现与所需的映射一致。 *)
@@ -225,23 +231,23 @@ Proof.
 
 (** 对于最后两个全映射的引理而言，用[IndProp]一章中引入的互映法
     （Reflection idioms）来证明会十分方便。我们首先通过证明基本的_'互映引理'_，
-    将 [id] 上的相等性命题与布尔函数 [beq_id] 关联起来。*)
+    将 [id] 上的相等性命题与布尔函数 [eqb_id] 关联起来。*)
 
-(** **** 练习：2 星, optional (beq_stringP)  *)
-(** 请仿照[IndProp]一章中对 [beq_natP] 的证明来证明以下引理： *)
+(** **** 练习：2 星, optional (eqb_stringP)  *)
+(** 请仿照[IndProp]一章中对 [eqb_natP] 的证明来证明以下引理： *)
 
-Lemma beq_stringP : forall x y, reflect (x = y) (beq_string x y).
+Lemma eqb_stringP : forall x y, reflect (x = y) (eqb_string x y).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** 现在，给定 [string] 类型的字符串 [x1] 和 [x2]，我们可以在使用
-    [destruct (beq_stringP x1 x2)] 对 [beq_string x1 x2]
+    [destruct (eqb_stringP x1 x2)] 对 [eqb_string x1 x2]
     的结果进行分类讨论的同时，生成关于 [x1] 和 [x2] （在 [=] 的意义上）
     的相等性前提。 *)
 
 (** **** 练习：2 星 (t_update_same)  *)
-(** 请仿照[IndProp]一章中的示例，用 [beq_stringP] 来证明以下定理，
+(** 请仿照[IndProp]一章中的示例，用 [eqb_stringP] 来证明以下定理，
     它陈述了：如果我们用映射 [m] 中已经与键 [x] 相关联的值更新了 [x]，
     那么其结果与 [m] 相等： *)
 
@@ -252,7 +258,7 @@ Theorem t_update_same : forall X x (m : total_map X),
 (** [] *)
 
 (** **** 练习：3 星, recommended (t_update_permute)  *)
-(** 使用 [beq_stringP] 来证明最后一个 [update] 函数的性质：
+(** 使用 [eqb_stringP] 来证明最后一个 [update] 函数的性质：
     如果我们更新了映射 [m] 中两个不同的键，那么更新的顺序无关紧要。 *)
 
 Theorem t_update_permute : forall (X:Type) v1 v2 x1 x2
@@ -311,7 +317,7 @@ Qed.
 
 Theorem update_neq : forall (X:Type) v x1 x2
                        (m : partial_map X),
-  x2 <> x1 ->
+  x2 <> x1 -> 
   (m & {{ x2 --> v }}) x1 = m x1.
 Proof.
   intros X v x1 x2 m H.

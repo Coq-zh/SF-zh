@@ -3,13 +3,15 @@
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
+Require Import Coq.Init.Nat.
+Require Import Coq.Arith.PeanoNat. Import Nat.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Require Import Coq.Logic.FunctionalExtensionality.
 Import ListNotations.
-Require Import Maps.
-Require Import Imp.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
 
 (** *** Some Advice for Working on Exercises:
 
@@ -160,7 +162,7 @@ Proof.
        used to show [IFB b THEN c1 ELSE c2 FI / st \\ st'], namely
        [E_IfTrue] and [E_IfFalse].
 
-       - Suppose the final rule rule in the derivation of [IFB b THEN
+       - Suppose the final rule in the derivation of [IFB b THEN
          c1 ELSE c2 FI / st \\ st'] was [E_IfTrue].  We then have, by
          the premises of [E_IfTrue], that [c1 / st \\ st'].  This is
          exactly what we set out to prove.
@@ -455,7 +457,7 @@ Definition equiv_classes : list (list com)
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_equiv_classes : option (prod nat string) := None.
+Definition manual_grade_for_equiv_classes : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -788,14 +790,14 @@ Fixpoint fold_constants_bexp (b : bexp) : bexp :=
   | BEq a1 a2  =>
       match (fold_constants_aexp a1, fold_constants_aexp a2) with
       | (ANum n1, ANum n2) =>
-          if beq_nat n1 n2 then BTrue else BFalse
+          if n1 =? n2 then BTrue else BFalse
       | (a1', a2') =>
           BEq a1' a2'
       end
   | BLe a1 a2  =>
       match (fold_constants_aexp a1, fold_constants_aexp a2) with
       | (ANum n1, ANum n2) =>
-          if leb n1 n2 then BTrue else BFalse
+          if n1 <=? n2 then BTrue else BFalse
       | (a1', a2') =>
           BLe a1' a2'
       end
@@ -879,7 +881,7 @@ Example fold_com_ex1 :
      FI;;
      Y ::= 0;;
      WHILE Y = 0 DO
-       X ::= X + 1 
+       X ::= X + 1
      END).
 Proof. reflexivity. Qed.
 
@@ -934,12 +936,12 @@ Proof.
        In this case, we have
 
            fold_constants_bexp (BEq a1 a2)
-         = if beq_nat n1 n2 then BTrue else BFalse
+         = if n1 =? n2 then BTrue else BFalse
 
        and
 
            beval st (BEq a1 a2)
-         = beq_nat (aeval st a1) (aeval st a2).
+         = (aeval st a1) =? (aeval st a2).
 
        By the soundness of constant folding for arithmetic
        expressions (Lemma [fold_constants_aexp_sound]), we know
@@ -959,22 +961,22 @@ Proof.
        so
 
            beval st (BEq a1 a2)
-         = beq_nat (aeval a1) (aeval a2)
-         = beq_nat n1 n2.
+         = (aeval a1) =? (aeval a2)
+         = n1 =? n2.
 
        Also, it is easy to see (by considering the cases [n1 = n2] and
        [n1 <> n2] separately) that
 
-           beval st (if beq_nat n1 n2 then BTrue else BFalse)
-         = if beq_nat n1 n2 then beval st BTrue else beval st BFalse
-         = if beq_nat n1 n2 then true else false
-         = beq_nat n1 n2.
+           beval st (if n1 =? n2 then BTrue else BFalse)
+         = if n1 =? n2 then beval st BTrue else beval st BFalse
+         = if n1 =? n2 then true else false
+         = n1 =? n2.
 
        So
 
            beval st (BEq a1 a2)
-         = beq_nat n1 n2.
-         = beval st (if beq_nat n1 n2 then BTrue else BFalse),
+         = n1 =? n2.
+         = beval st (if n1 =? n2 then BTrue else BFalse),
 
        as required.
 
@@ -988,8 +990,8 @@ Proof.
 
        which, by the definition of [beval], is the same as showing
 
-           beq_nat (aeval st a1) (aeval st a2)
-         = beq_nat (aeval st (fold_constants_aexp a1))
+           (aeval st a1) =? (aeval st a2)
+         = (aeval st (fold_constants_aexp a1)) =?
                    (aeval st (fold_constants_aexp a2)).
 
        But the soundness of constant folding for arithmetic
@@ -1009,7 +1011,7 @@ Proof.
     (* BTrue and BFalse are immediate *)
     try reflexivity.
   - (* BEq *)
-    rename a into a1. rename a0 into a2. simpl.
+    simpl.
 
 (** (Doing induction when there are a lot of constructors makes
     specifying variable names a chore, but Coq doesn't always
@@ -1027,7 +1029,7 @@ Proof.
 
     (* The only interesting case is when both a1 and a2
        become constants after folding *)
-      simpl. destruct (beq_nat n n0); reflexivity.
+      simpl. destruct (n =? n0); reflexivity.
   - (* BLe *)
     (* 请在此处解答 *) admit.
   - (* BNot *)
@@ -1077,8 +1079,8 @@ Proof.
 (** *** Soundness of (0 + n) Elimination, Redux *)
 
 (** **** 练习：4 星, advanced, optional (optimize_0plus)  *)
-(** Recall the definition [optimize_0plus] from the [Imp] chapter of _Logical 
-    Foundations_: 
+(** Recall the definition [optimize_0plus] from the [Imp] chapter of _Logical
+    Foundations_:
 
     Fixpoint optimize_0plus (e:aexp) : aexp :=
       match e with
@@ -1149,7 +1151,7 @@ Fixpoint subst_aexp (i : string) (u : aexp) (a : aexp) : aexp :=
   | ANum n       =>
       ANum n
   | AId i'       =>
-      if beq_string i i' then u else AId i'
+      if eqb_string i i' then u else AId i'
   | APlus a1 a2  =>
       APlus (subst_aexp i u a1) (subst_aexp i u a2)
   | AMinus a1 a2 =>
@@ -1417,7 +1419,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_Check_rule_for_HAVOC : option (prod nat string) := None.
+Definition manual_grade_for_Check_rule_for_HAVOC : option (nat*string) := None.
 (** [] *)
 
 (** Finally, we repeat the definition of command equivalence from above: *)

@@ -9,7 +9,7 @@
 
 Require Import Coq.omega.Omega.
 Require Import Coq.Arith.Arith.
-Require Import Imp Maps.
+From LF Require Import Imp Maps.
 
 (** 在初次为命令编写求值函数时，我们写出了如下忽略了 [WHILE] 的代码： *)
 
@@ -216,7 +216,7 @@ Proof.
   induction i as [| i' ].
 
   - (* i = 0 -- contradictory *)
-    intros c st st' H. inversion H.
+    intros c st st' H. discriminate H.
 
   - (* i = S i' *)
     intros c st st' H.
@@ -232,7 +232,7 @@ Proof.
             apply IHi'. rewrite Heqr1. reflexivity.
             apply IHi'. simpl in H1. assumption.
         * (* Otherwise -- contradiction *)
-          inversion H1.
+          discriminate H1.
 
       + (* IFB *)
         destruct (beval st b) eqn:Heqr.
@@ -251,11 +251,11 @@ Proof.
            reflexivity.
            apply IHi'. rewrite Heqr1. reflexivity.
            apply IHi'. simpl in H1. assumption. }
-         { (* r1 = None *) inversion H1. }
+         { (* r1 = None *) discriminate H1. }
         * (* r = false *)
-          inversion H1.
-          apply E_WhileFalse.
-          rewrite <- Heqr. subst. reflexivity.  Qed.
+          injection H1. intros H2. rewrite <- H2.
+          apply E_WhileFalse. apply Heqr. Qed.
+
 
 (** **** 练习：4 星 (ceval_step__ceval_inf)  *)
 (** 按照通常的模版写出 [ceval_step__ceval] 的非形式化证明，
@@ -266,7 +266,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_ceval_step__ceval_inf : option (prod nat string) := None.
+Definition manual_grade_for_ceval_step__ceval_inf : option (nat*string) := None.
 (** [] *)
 
 Theorem ceval_step_more: forall i1 i2 st st' c,
@@ -276,7 +276,7 @@ Theorem ceval_step_more: forall i1 i2 st st' c,
 Proof.
 induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
   - (* i1 = 0 *)
-    simpl in Hceval. inversion Hceval.
+    simpl in Hceval. discriminate Hceval.
   - (* i1 = S i1' *)
     destruct i2 as [|i2']. inversion Hle.
     assert (Hle': i1' <= i2') by omega.
@@ -295,7 +295,7 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
         rewrite Heqst1'o. simpl. simpl in Hceval.
         apply (IHi1' i2') in Hceval; try assumption.
       * (* st1'o = None *)
-        inversion Hceval.
+        discriminate Hceval.
 
     + (* IFB *)
       simpl in Hceval. simpl.
@@ -311,7 +311,7 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
         rewrite -> Heqst1'o. simpl. simpl in Hceval.
         apply (IHi1' i2') in Hceval; try assumption.
       * (* i1'o = None *)
-        simpl in Hceval. inversion Hceval.  Qed.
+        simpl in Hceval. discriminate Hceval.  Qed.
 
 (** **** 练习：3 星, recommended (ceval__ceval_step)  *)
 (** 请完成以下证明。你会在某些地方用到 [ceval_step_more] 以及一些关于

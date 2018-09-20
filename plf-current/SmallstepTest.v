@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Smallstep.
-Parameter MISSING: Type. 
+From PLF Require Import Smallstep.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Smallstep.
+From PLF Require Import Smallstep.
 Import Check.
 
 Goal True.
@@ -174,4 +175,34 @@ idtac " ".
 
 idtac "Max points - standard: 24".
 idtac "Max points - advanced: 30".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- SimpleArith1.test_step_2 ---------".
+Print Assumptions SimpleArith1.test_step_2.
+idtac "---------- step_deterministic ---------".
+Print Assumptions step_deterministic.
+idtac "---------- smallstep_bools ---------".
+idtac "MANUAL".
+idtac "---------- Temp4.Temp5.bool_step_prop4_holds ---------".
+Print Assumptions Temp4.Temp5.bool_step_prop4_holds.
+idtac "---------- test_multistep_4 ---------".
+Print Assumptions test_multistep_4.
+idtac "---------- multistep_congr_2 ---------".
+Print Assumptions multistep_congr_2.
+idtac "---------- eval__multistep ---------".
+Print Assumptions eval__multistep.
+idtac "---------- step__eval ---------".
+Print Assumptions step__eval.
+idtac "---------- multistep__eval ---------".
+Print Assumptions multistep__eval.
+idtac "---------- combined_properties ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- eval__multistep_inf ---------".
+idtac "MANUAL".
+idtac "---------- compiler_is_correct ---------".
+Print Assumptions compiler_is_correct.
 Abort.

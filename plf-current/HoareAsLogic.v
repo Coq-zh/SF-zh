@@ -11,8 +11,8 @@
     这一章是可选的。在阅读之前，你会想要阅读一下在_'逻辑基础'_（_'软件基础'_的
     第一卷）中的 [ProofObjects] 章节。 *)
 
-Require Import Imp.
-Require Import Hoare.
+From PLF Require Import Imp.
+From PLF Require Import Hoare.
 
 (* ################################################################# *)
 (** * 定义 *)
@@ -59,7 +59,7 @@ Proof.
 (** 作为一个例子，让我们构造一个证明对象，来表示这个霍尔三元组的一个导出式
 
       {{(X=3) [X |-> X + 2] [X |-> X + 1]}}
-      X::=X+1 ;; X::=X+2 
+      X::=X+1 ;; X::=X+2
       {{X=3}}.
 
     我们可以让 Coq 的策略来帮助我们构造这个证明对象。 *)
@@ -80,7 +80,7 @@ Print sample_proof.
   H_Seq
   (((fun st : state => st X = 3) [X |-> X + 2]) [X |-> X + 1])
   (X ::= X + 1)
-  ((fun st : state => st X = 3) [X |-> X + 2]) 
+  ((fun st : state => st X = 3) [X |-> X + 2])
   (X ::= X + 2)
   (fun st : state => st X = 3)
   (H_Asgn

@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Imp.
-Parameter MISSING: Type. 
+From PLF Require Import Imp.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Imp.
+From PLF Require Import Imp.
 Import Check.
 
 Goal True.
@@ -209,4 +210,38 @@ idtac " ".
 
 idtac "Max points - standard: 24".
 idtac "Max points - advanced: 32".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- AExp.optimize_0plus_b_sound ---------".
+Print Assumptions AExp.optimize_0plus_b_sound.
+idtac "---------- AExp.beval_iff_bevalR ---------".
+Print Assumptions AExp.beval_iff_bevalR.
+idtac "---------- ceval_example2 ---------".
+Print Assumptions ceval_example2.
+idtac "---------- XtimesYinZ_spec ---------".
+idtac "MANUAL".
+idtac "---------- loop_never_stops ---------".
+Print Assumptions loop_never_stops.
+idtac "---------- no_whiles_eqv ---------".
+Print Assumptions no_whiles_eqv.
+idtac "---------- no_whiles_terminating ---------".
+idtac "MANUAL".
+idtac "---------- s_execute1 ---------".
+Print Assumptions s_execute1.
+idtac "---------- s_execute2 ---------".
+Print Assumptions s_execute2.
+idtac "---------- s_compile1 ---------".
+Print Assumptions s_compile1.
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- s_compile_correct ---------".
+Print Assumptions s_compile_correct.
+idtac "---------- BreakImp.break_ignore ---------".
+Print Assumptions BreakImp.break_ignore.
+idtac "---------- BreakImp.while_continue ---------".
+Print Assumptions BreakImp.while_continue.
+idtac "---------- BreakImp.while_stops_on_break ---------".
+Print Assumptions BreakImp.while_stops_on_break.
 Abort.

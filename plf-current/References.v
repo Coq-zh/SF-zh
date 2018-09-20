@@ -32,8 +32,8 @@
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
 Require Import Coq.omega.Omega.
-Require Import Maps.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
@@ -217,11 +217,11 @@ Hint Constructors value.
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
   | tvar x'       =>
-      if beq_string x x' then s else t
+      if eqb_string x x' then s else t
   | tapp t1 t2    =>
       tapp (subst x s t1) (subst x s t2)
   | tabs x' T t1  =>
-      if beq_string x x' then t else tabs x' T (subst x s t1)
+      if eqb_string x x' then t else tabs x' T (subst x s t1)
   | tnat n        =>
       t
   | tsucc t1      =>
@@ -443,7 +443,7 @@ would it behave the same? *)
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_compact_update : option (prod nat string) := None.
+Definition manual_grade_for_compact_update : option (nat*string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -499,7 +499,7 @@ Definition manual_grade_for_compact_update : option (prod nat string) := None.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_type_safety_violation : option (prod nat string) := None.
+Definition manual_grade_for_type_safety_violation : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -939,7 +939,7 @@ Definition context := partial_map ty.
     cyclic store? *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_cyclic_store : option (prod nat string) := None.
+Definition manual_grade_for_cyclic_store : option (nat*string) := None.
 (** [] *)
 
 (** These problems arise from the fact that our proposed
@@ -1153,7 +1153,7 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_store_not_unique : option (prod nat string) := None.
+Definition manual_grade_for_store_not_unique : option (nat*string) := None.
 (** [] *)
 
 (** We can now state something closer to the desired preservation
@@ -1357,7 +1357,7 @@ Proof with eauto.
   - (* T_Abs *)
     apply T_Abs. apply IHhas_type; intros.
     unfold update, t_update.
-    destruct (beq_stringP x x0)...
+    destruct (eqb_stringP x x0)...
   - (* T_App *)
     eapply T_App.
       apply IHhas_type1...
@@ -1388,7 +1388,7 @@ Proof with eauto.
     inversion H; subst; simpl...
   - (* tvar *)
     rename s0 into y.
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x = y *)
       subst.
       rewrite update_eq in H3.
@@ -1403,7 +1403,7 @@ Proof with eauto.
       rewrite update_neq in H3...
   - (* tabs *) subst.
     rename s0 into y.
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x = y *)
       subst.
       apply T_Abs. eapply context_invariance...
@@ -1412,9 +1412,9 @@ Proof with eauto.
       apply T_Abs. apply IHt.
       eapply context_invariance...
       intros. unfold update, t_update.
-      destruct (beq_stringP y x0)...
+      destruct (eqb_stringP y x0)...
       subst.
-      rewrite false_beq_string...
+      rewrite false_eqb_string...
 Qed.
 
 (* ================================================================= *)
@@ -1435,12 +1435,12 @@ Proof with auto.
   inversion HST; subst.
   split. rewrite length_replace...
   intros l' Hl'.
-  destruct (beq_nat l' l) eqn: Heqll'.
+  destruct (l' =? l) eqn: Heqll'.
   - (* l' = l *)
-    apply beq_nat_true in Heqll'; subst.
+    apply Nat.eqb_eq in Heqll'; subst.
     rewrite lookup_replace_eq...
   - (* l' <> l *)
-    apply beq_nat_false in Heqll'.
+    apply Nat.eqb_neq in Heqll'.
     rewrite lookup_replace_neq...
     rewrite length_replace in Hl'.
     apply H0...
@@ -1628,7 +1628,7 @@ Qed.
  *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_preservation_informal : option (prod nat string) := None.
+Definition manual_grade_for_preservation_informal : option (nat*string) := None.
 (** [] *)
 
 (* ================================================================= *)

@@ -59,7 +59,7 @@
 Require Import List.
 Require Import FSets.    (* Efficient functional sets *)
 Require Import FMaps.  (* Efficient functional maps *)
-Require Import Perm.   (* to use <? notation and [bdestruct] tactic *)
+From VFA Require Import Perm.   (* to use <? notation and [bdestruct] tactic *)
 
 (** The nodes in our graph will be named by positive numbers.
   [FSets] and [FMaps] are interfaces for sets and maps over an element type.

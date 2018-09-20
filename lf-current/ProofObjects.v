@@ -1,7 +1,7 @@
 (** * ProofObjects: 柯里-霍华德对应 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Export IndProp.
+From LF Require Export IndProp.
 
 (** "_'算法是证明的计算性内容。'_"  --Robert Harper *)
 
@@ -150,7 +150,7 @@ Theorem ev_8 : ev 8.
 Proof.
   (* 请在此处解答 *) Admitted.
 
-Definition ev_8' : ev 8 
+Definition ev_8' : ev 8
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
@@ -196,7 +196,7 @@ Definition ev_plus4'' (n : nat) (H : ev n)
   ev_SS (S (S n)) (ev_SS n H).
 
 Check ev_plus4''.
-(* ===> 
+(* ===>
      : forall n : nat, ev n -> ev (4 + n) *)
 
 (** 当我们将 [ev_plus4] 证明的命题视为一个函数类型时，我们可以发现一个
@@ -208,8 +208,12 @@ Check ev_plus4''.
 
 (** 注意到蕴含式（[->]）和量化（[forall]）都表示证据上的函数。事实上，他们
     是同一个东西：当我们使用[forall]时没有依赖，就可以简写为当[->]。即，我
-    们没有必要给与箭头左边的类型一个名字：[[ forall (x:nat), nat = forall (_:nat),
-    nat = nat -> nat ]] *)
+    们没有必要给与箭头左边的类型一个名字：
+
+           forall (x:nat), nat 
+        =  forall (_:nat), nat 
+        =  nat -> nat
+*)
 
 
 (** 例如，考虑下列命题： *)
@@ -327,7 +331,7 @@ Definition and_comm' P Q : P /\ Q <-> Q /\ P :=
 (** **** 练习：2 星, optional (conj_fact)  *)
 (** 构造一个证明对象来证明下列命题。 *)
 
-Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R 
+Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
@@ -354,7 +358,7 @@ End Or.
 (** 尝试写下[or_commut]的显式证明对象。（不要使用[Print]来偷看我们已经
     定义的版本！） *)
 
-Definition or_comm : forall P Q, P \/ Q -> Q \/ P 
+Definition or_comm : forall P Q, P \/ Q -> Q \/ P
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
@@ -388,7 +392,7 @@ Definition some_nat_is_even : exists n, ev n :=
 (** **** 练习：2 星, optional (ex_ev_Sn)  *)
 (** 完成下列证明对象的定义： *)
 
-Definition ex_ev_Sn : ex (fun n => ev (S n)) 
+Definition ex_ev_Sn : ex (fun n => ev (S n))
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
@@ -425,7 +429,7 @@ Module MyEquality.
 Inductive eq {X:Type} : X -> X -> Prop :=
 | eq_refl : forall x, eq x x.
 
-Notation "x = y" := (eq x y)
+Notation "x == y" := (eq x y)
                     (at level 70, no associativity)
                     : type_scope.
 
@@ -443,7 +447,7 @@ Notation "x = y" := (eq x y)
     这些计算规则，与[Compute]所使用的规则相似，包括函数应用的计算，定
     义的内联，[match]语句的化简。 *)
 
-Lemma four: 2 + 2 = 1 + 3.
+Lemma four: 2 + 2 == 1 + 3.
 Proof.
   apply eq_refl.
 Qed.
@@ -456,13 +460,11 @@ Qed.
 
     而在如下的显式证明对象中，你可以直接看到它们： *)
 
-Definition four' : 2 + 2 = 1 + 3 :=
+Definition four' : 2 + 2 == 1 + 3 :=
   eq_refl 4.
 
-Definition singleton : forall (X:Type) (x:X), []++[x] = x::[]  :=
+Definition singleton : forall (X:Type) (x:X), []++[x] == x::[]  :=
   fun (X:Type) (x:X) => eq_refl [x].
-
-End MyEquality.
 
 
 (** **** 练习：2 星 (equality__leibniz_equality)  *)
@@ -471,7 +473,7 @@ End MyEquality.
     来说也满足。 *)
 
 Lemma equality__leibniz_equality : forall (X : Type) (x y: X),
-  x = y -> forall P:X->Prop, P x -> P y.
+  x == y -> forall P:X->Prop, P x -> P y.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -481,10 +483,14 @@ Proof.
     _'等价的(equivalent)'_。 *)
 
 Lemma leibniz_equality__equality : forall (X : Type) (x y: X),
-  (forall P:X->Prop, P x -> P y) -> x = y.
+  (forall P:X->Prop, P x -> P y) -> x == y.
 Proof.
 (* 请在此处解答 *) Admitted.
+
 (** [] *)
+
+End MyEquality.
+
 
 (* ================================================================= *)
 (** ** 反演, 再一次 *)
@@ -521,7 +527,7 @@ Proof.
     目标的上下文中看到它们。 *)
 
 (** _'例子'_：如果我们反演一个使用[eq]构造的前提，它也只有一个构造子，
-    所以只产生一个子目标。但是，现在[refl_equal]构造子的形式给我们带来
+    所以只产生一个子目标。但是，现在[eq_refl]构造子的形式给我们带来
     的额外的信息：它告诉[eq]的两个参数必须是一样的。于是[inversion]策
     略会将这个事实加入到上下文中。 *)
 

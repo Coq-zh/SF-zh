@@ -23,14 +23,11 @@ val mul : nat -> nat -> nat
 
 val sub : nat -> nat -> nat
 
+val eqb : nat -> nat -> bool
+
+val leb : nat -> nat -> bool
+
 val bool_dec : bool -> bool -> sumbool
-
-module Nat :
- sig
-  val eqb : nat -> nat -> bool
-
-  val leb : nat -> nat -> bool
- end
 
 type ascii =
 | Ascii of bool * bool * bool * bool * bool * bool * bool * bool
@@ -43,7 +40,7 @@ type string =
 
 val string_dec : string -> string -> sumbool
 
-val beq_string : string -> string -> bool
+val eqb_string : string -> string -> bool
 
 type 'a total_map = string -> 'a
 

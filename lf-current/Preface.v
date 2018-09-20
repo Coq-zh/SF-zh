@@ -263,21 +263,22 @@
         present, the Authors of Record are as follows: For Volumes 1
         and 2, known until 2016 as "Software Foundations" and from
         2016 as (respectively) "Logical Foundations" and "Programming
-        Foundations," the Author of Record is Benjamin Pierce.  For
-        Volume 3, "Verified Functional Algorithms", the Author of
+        Foundations," and for Volume 4, "QuickChick: Property-Based
+        Testing in Coq," the Author of Record is Benjamin C. Pierce.
+        For Volume 3, "Verified Functional Algorithms", the Author of
         Record is Andrew W. Appel. For components outside of
-        designated Volumes (e.g., typesetting and grading tools and
+        designated volumes (e.g., typesetting and grading tools and
         other software infrastructure), the Author of Record is
         Benjamin Pierce.
 
-    请您向 Benjamin Pierce 发送一封电子邮件，介绍一下自己，
-    以及您打算如何使用这些课件，内容包括
-       (1) 以上版权转让协议，以及
-       (2) 执行 "htpasswd -s -n NAME" 后产生的结果，
-    其中 NAME 是您喜欢的用户名。
+    To get started, please send an email to Benjamin Pierce,
+    describing yourself and how you plan to use the materials and
+    including (1) the above copyright transfer text and (2) your
+    github username.
 
-    我们为您设置 Git 源码库和开发者邮件列表的访问权限。
-    在仓库中您会找到一个包含更多指引的 [INSTRUCTORS] 文件。 *)
+    We'll set you up with access to the git repository and developers'
+    mailing lists.  In the repository you'll find a file [INSTRUCTORS]
+    with further instructions. *)
 
 (* ################################################################# *)
 (** * 译本 *)

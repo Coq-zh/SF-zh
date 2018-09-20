@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Color.
-Parameter MISSING: Type. 
+From VFA Require Import Color.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Color.
+From VFA Require Import Color.
 Import Check.
 
 Goal True.
@@ -256,4 +257,40 @@ idtac " ".
 
 idtac "Max points - standard: 43".
 idtac "Max points - advanced: 43".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- Sremove_elements ---------".
+Print Assumptions Sremove_elements.
+idtac "---------- InA_map_fst_key ---------".
+Print Assumptions InA_map_fst_key.
+idtac "---------- Sorted_lt_key ---------".
+Print Assumptions Sorted_lt_key.
+idtac "---------- cardinal_map ---------".
+Print Assumptions cardinal_map.
+idtac "---------- Sremove_cardinal_less ---------".
+Print Assumptions Sremove_cardinal_less.
+idtac "---------- Mremove_elements ---------".
+Print Assumptions Mremove_elements.
+idtac "---------- Mremove_cardinal_less ---------".
+Print Assumptions Mremove_cardinal_less.
+idtac "---------- fold_right_rev_left ---------".
+Print Assumptions fold_right_rev_left.
+idtac "---------- Snot_in_empty ---------".
+Print Assumptions Snot_in_empty.
+idtac "---------- Sin_domain ---------".
+Print Assumptions Sin_domain.
+idtac "---------- subset_nodes_sub ---------".
+Print Assumptions subset_nodes_sub.
+idtac "---------- select_terminates ---------".
+Print Assumptions select_terminates.
+idtac "---------- adj_ext ---------".
+Print Assumptions adj_ext.
+idtac "---------- in_colors_of_1 ---------".
+Print Assumptions in_colors_of_1.
+idtac "---------- color_correct ---------".
+Print Assumptions color_correct.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

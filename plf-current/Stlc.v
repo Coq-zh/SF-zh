@@ -9,9 +9,9 @@
     和_'替换（substitution）'_。我们将会费一些功夫来处理他们。*)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Maps.
-Require Import Smallstep.
-Require Import Types.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import Types.
 
 (* ################################################################# *)
 (** * 简介 *)
@@ -301,9 +301,9 @@ Reserved Notation "'[' x ':=' s ']' t" (at level 20).
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
   | tvar x' =>
-      if beq_string x x' then s else t
+      if eqb_string x x' then s else t
   | tabs x' T t1 =>
-      tabs x' T (if beq_string x x' then t1 else ([x:=s] t1))
+      tabs x' T (if eqb_string x x' then t1 else ([x:=s] t1))
   | tapp t1 t2 =>
       tapp ([x:=s] t1) ([x:=s] t2)
   | ttrue =>
@@ -722,12 +722,12 @@ Proof.
 (** **** 练习：3 星, optional (typing_nonexample_3)  *)
 (** 另一个例子：
 
-    ~ (exists S, exists T,
+    ~ (exists S T,
           empty |- \x:S. x x \in T).
 *)
 
 Example typing_nonexample_3 :
-  ~ (exists S, exists T,
+  ~ (exists S T,
         empty |-
           (tabs x S
              (tapp (tvar x) (tvar x))) \in

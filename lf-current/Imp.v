@@ -20,13 +20,14 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
+Require Import Coq.Init.Nat.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Require Import Maps.
+From LF Require Import Maps.
 
 (* ################################################################# *)
 (** * 算术和布尔表达式 *)
@@ -43,18 +44,18 @@ Module AExp.
 (** 以下两个定义指定了算术和布尔表达式的_'抽象语法（Abstract Syntax）'_。 *)
 
 Inductive aexp : Type :=
-  | ANum : nat -> aexp
-  | APlus : aexp -> aexp -> aexp
-  | AMinus : aexp -> aexp -> aexp
-  | AMult : aexp -> aexp -> aexp.
+  | ANum (n : nat)
+  | APlus (a1 a2 : aexp)
+  | AMinus (a1 a2 : aexp)
+  | AMult (a1 a2 : aexp).
 
 Inductive bexp : Type :=
-  | BTrue : bexp
-  | BFalse : bexp
-  | BEq : aexp -> aexp -> bexp
-  | BLe : aexp -> aexp -> bexp
-  | BNot : bexp -> bexp
-  | BAnd : bexp -> bexp -> bexp.
+  | BTrue
+  | BFalse
+  | BEq (a1 a2 : aexp)
+  | BLe (a1 a2 : aexp)
+  | BNot (b : bexp)
+  | BAnd (b1 b2 : bexp).
 
 (** 在本章中，我们省略了大部分从程序员实际编写的具体语法到其抽象语法树的翻译
     -- 例如，它会将字符串 ["1+2*3"] 翻译成如下 AST：
@@ -124,8 +125,8 @@ Fixpoint beval (b : bexp) : bool :=
   match b with
   | BTrue       => true
   | BFalse      => false
-  | BEq a1 a2   => beq_nat (aeval a1) (aeval a2)
-  | BLe a1 a2   => leb (aeval a1) (aeval a2)
+  | BEq a1 a2   => (aeval a1) =? (aeval a2)
+  | BLe a1 a2   => (aeval a1) <=? (aeval a2)
   | BNot b1     => negb (beval b1)
   | BAnd b1 b2  => andb (beval b1) (beval b2)
   end.
@@ -168,8 +169,8 @@ Theorem optimize_0plus_sound: forall a,
 Proof.
   intros a. induction a.
   - (* ANum *) reflexivity.
-  - (* APlus *) destruct a1.
-    + (* a1 = ANum n *) destruct n.
+  - (* APlus *) destruct a1 eqn:Ea1.
+    + (* a1 = ANum n *) destruct n eqn:En.
       * (* n = 0 *)  simpl. apply IHa2.
       * (* n <> 0 *) simpl. rewrite IHa2. reflexivity.
     + (* a1 = APlus a1_1 a1_2 *)
@@ -231,10 +232,10 @@ Qed.
 
 (** 例如，考虑以下平凡的引理： *)
 
-Lemma foo : forall n, leb 0 n = true.
+Lemma foo : forall n, 0 <=? n = true.
 Proof.
   intros.
-  destruct n.
+  destruct n eqn:E.
     (* 会产生两个执行过程相同的子目标...  *)
     - (* n=0 *) simpl. reflexivity.
     - (* n=Sn' *) simpl. reflexivity.
@@ -242,7 +243,7 @@ Qed.
 
 (** 我们可以用 [;] 泛策略来化简它： *)
 
-Lemma foo' : forall n, leb 0 n = true.
+Lemma foo' : forall n, 0 <=? n = true.
 Proof.
   intros.
   (* [destruct] 解构当前子目标 *)
@@ -265,13 +266,13 @@ Proof.
     (* ... 不过剩下的情况 -- ANum 和 APlus -- 则不同： *)
   - (* ANum *) reflexivity.
   - (* APlus *)
-    destruct a1;
+    destruct a1 eqn:Ea1;
       (* 同样，大部分情况后面直接就是 IH： *)
       try (simpl; simpl in IHa1; rewrite IHa1;
            rewrite IHa2; reflexivity).
     (* 当 [e1 = ANum n] 时出现了有趣的情况，其中 [try...] 什么也不做。
        此时，我们需要解构 [n]（来确认优化是否应用）并用归纳假设来改写它。 *)
-    + (* a1 = ANum n *) destruct n;
+    + (* a1 = ANum n *) destruct n eqn:En;
       simpl; rewrite IHa2; reflexivity.   Qed.
 
 (** Coq 专家经常在像 [induction] 这样的策略之后使用这种“[...; try... ]”的习语，
@@ -489,17 +490,17 @@ Qed.
 Module aevalR_first_try.
 
 Inductive aevalR : aexp -> nat -> Prop :=
-  | E_ANum  : forall (n: nat),
+  | E_ANum n :
       aevalR (ANum n) n
-  | E_APlus : forall (e1 e2: aexp) (n1 n2: nat),
+  | E_APlus (e1 e2: aexp) (n1 n2: nat) :
       aevalR e1 n1 ->
       aevalR e2 n2 ->
       aevalR (APlus e1 e2) (n1 + n2)
-  | E_AMinus: forall (e1 e2: aexp) (n1 n2: nat),
+  | E_AMinus (e1 e2: aexp) (n1 n2: nat) :
       aevalR e1 n1 ->
       aevalR e2 n2 ->
       aevalR (AMinus e1 e2) (n1 - n2)
-  | E_AMult : forall (e1 e2: aexp) (n1 n2: nat),
+  | E_AMult (e1 e2: aexp) (n1 n2: nat) :
       aevalR e1 n1 ->
       aevalR e2 n2 ->
       aevalR (AMult e1 e2) (n1 * n2).
@@ -523,13 +524,13 @@ End aevalR_first_try.
 Reserved Notation "e '\\' n" (at level 50, left associativity).
 
 Inductive aevalR : aexp -> nat -> Prop :=
-  | E_ANum : forall (n:nat),
+  | E_ANum n :
       (ANum n) \\ n
-  | E_APlus : forall (e1 e2: aexp) (n1 n2 : nat),
+  | E_APlus e1 e2 n1 n2 :
       (e1 \\ n1) -> (e2 \\ n2) -> (APlus e1 e2) \\ (n1 + n2)
-  | E_AMinus : forall (e1 e2: aexp) (n1 n2 : nat),
+  | E_AMinus e1 e2 n1 n2 :
       (e1 \\ n1) -> (e2 \\ n2) -> (AMinus e1 e2) \\ (n1 - n2)
-  | E_AMult :  forall (e1 e2: aexp) (n1 n2 : nat),
+  | E_AMult e1 e2 n1 n2 :
       (e1 \\ n1) -> (e2 \\ n2) -> (AMult e1 e2) \\ (n1 * n2)
 
   where "e '\\' n" := (aevalR e n) : type_scope.
@@ -670,11 +671,11 @@ Module aevalR_division.
 (** 例如，假设我们想要用除法运算来扩展算术运算： *)
 
 Inductive aexp : Type :=
-  | ANum : nat -> aexp
-  | APlus : aexp -> aexp -> aexp
-  | AMinus : aexp -> aexp -> aexp
-  | AMult : aexp -> aexp -> aexp
-  | ADiv : aexp -> aexp -> aexp.   (* <--- 新增的 *)
+  | ANum (n : nat)
+  | APlus (a1 a2 : aexp)
+  | AMinus (a1 a2 : aexp)
+  | AMult (a1 a2 : aexp)
+  | ADiv (a1 a2 : aexp).   (* <--- 新增 *)
 
 (** 扩展 [aeval] 的定义来处理此讯算并不是很直观（我们要返回什么作为
     [ADiv (ANum 5) (ANum 0)] 的结果？）。然而扩展 [aevalR] 却很直观。*)
@@ -709,11 +710,11 @@ Module aevalR_extended.
 Reserved Notation "e '\\' n" (at level 50, left associativity).
 
 Inductive aexp : Type :=
-  | AAny  : aexp                   (* <--- NEW *)
-  | ANum : nat -> aexp
-  | APlus : aexp -> aexp -> aexp
-  | AMinus : aexp -> aexp -> aexp
-  | AMult : aexp -> aexp -> aexp.
+  | AAny                          (* <--- NEW *)
+  | ANum (n : nat)
+  | APlus (a1 a2 : aexp)
+  | AMinus (a1 a2 : aexp)
+  | AMult (a1 a2 : aexp).
 
 (** 同样，扩展 [aeval] 会很棘手，因为现在的求值_'并不是'_一个从表达式到数值的确定性函数，
     而扩展 [aevalR] 则无此问题... *)
@@ -782,11 +783,11 @@ Definition state := total_map nat.
 (** 我们只需为之前的算术表达式再加一个构造子就能添加变量： *)
 
 Inductive aexp : Type :=
-  | ANum : nat -> aexp
-  | AId : string -> aexp                (* <----- 新增的 *)
-  | APlus : aexp -> aexp -> aexp
-  | AMinus : aexp -> aexp -> aexp
-  | AMult : aexp -> aexp -> aexp.
+  | ANum (n : nat)
+  | AId (x :  string)                   (* <----- 新增 *)
+  | APlus (a1 a2 : aexp)
+  | AMinus (a1 a2 : aexp)
+  | AMult (a1 a2 : aexp).
 
 (** 为几个变量名定义简单记法能让示例更加易读： *)
 
@@ -802,12 +803,12 @@ Definition Z : string := "Z".
 (** [bexp] 的定义现在除了引用了新的 [aexp] 之外并未更改： *)
 
 Inductive bexp : Type :=
-  | BTrue : bexp
-  | BFalse : bexp
-  | BEq : aexp -> aexp -> bexp
-  | BLe : aexp -> aexp -> bexp
-  | BNot : bexp -> bexp
-  | BAnd : bexp -> bexp -> bexp.
+  | BTrue
+  | BFalse
+  | BEq (a1 a2 : aexp)
+  | BLe (a1 a2 : aexp)
+  | BNot (b : bexp)
+  | BAnd (b1 b2 : bexp).
 
 (* ================================================================= *)
 (** ** 记法 *)
@@ -859,8 +860,8 @@ Fixpoint beval (st : state) (b : bexp) : bool :=
   match b with
   | BTrue       => true
   | BFalse      => false
-  | BEq a1 a2   => beq_nat (aeval st a1) (aeval st a2)
-  | BLe a1 a2   => leb (aeval st a1) (aeval st a2)
+  | BEq a1 a2   => (aeval st a1) =? (aeval st a2)
+  | BLe a1 a2   => (aeval st a1) <=? (aeval st a2)
   | BNot b1     => negb (beval st b1)
   | BAnd b1 b2  => andb (beval st b1) (beval st b2)
   end.
@@ -921,11 +922,11 @@ Proof. reflexivity. Qed.
 (** 下面是命令的抽象语法的形式化定义： *)
 
 Inductive com : Type :=
-  | CSkip : com
-  | CAss : string -> aexp -> com
-  | CSeq : com -> com -> com
-  | CIf : bexp -> com -> com -> com
-  | CWhile : bexp -> com -> com.
+  | CSkip
+  | CAss (x : string) (a : aexp)
+  | CSeq (c1 c2 : com)
+  | CIf (b : bexp) (c1 c2 : com)
+  | CWhile (b : bexp) (c : com).
 
 (** 至于表达式，我们可以用一些 [Notation] 声明来让 Imp 程序的读写更加方便。 *)
 
@@ -1206,17 +1207,17 @@ Proof.
   - (* E_IfTrue，b1 求值为 true *)
       apply IHE1. assumption.
   - (* E_IfTrue，b1 求值为 false（矛盾） *)
-      rewrite H in H5. inversion H5.
+      rewrite H in H5. discriminate H5.
   - (* E_IfFalse, b1 求值为 true（矛盾） *)
-    rewrite H in H5. inversion H5.
+    rewrite H in H5. discriminate H5.
   - (* E_IfFalse，b1 求值为 false *)
       apply IHE1. assumption.
   - (* E_WhileFalse，b1 求值为 false *)
     reflexivity.
   - (* E_WhileFalse，b1 求值为 true（矛盾） *)
-    rewrite H in H2. inversion H2.
+    rewrite H in H2. discriminate H2.
   - (* E_WhileTrue, b1 求值为 false（矛盾） *)
-    rewrite H in H4. inversion H4.
+    rewrite H in H4. discriminate H4.
   - (* E_WhileTrue，b1 求值为 true *)
       assert (st' = st'0) as EQ1.
       { (* 对断言的证明 *) apply IHE1_1; assumption. }
@@ -1249,7 +1250,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_XtimesYinZ_spec : option (prod nat string) := None.
+Definition manual_grade_for_XtimesYinZ_spec : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：3 星, recommended (loop_never_stops)  *)
@@ -1260,8 +1261,8 @@ Proof.
   remember (WHILE true DO SKIP END) as loopdef
            eqn:Heqloopdef.
 
-  (** 通过对假设推导的归纳证明了 [loopdef] 会终止。大多数情况是矛盾的。
-      因此可以用 [inversion] 一步解决。 *)
+  (** 归纳讨论假设“[loopdef] 会终止”之构造，其中多数情形的矛盾显而易见，
+      可用 [discriminate] 一步解决。 *)
 
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -1305,7 +1306,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_no_whiles_terminating : option (prod nat string) := None.
+Definition manual_grade_for_no_whiles_terminating : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -1344,11 +1345,11 @@ Definition manual_grade_for_no_whiles_terminating : option (prod nat string) := 
      - [SMult]：  类似，不过执行乘法。 *)
 
 Inductive sinstr : Type :=
-| SPush : nat -> sinstr
-| SLoad : string -> sinstr
-| SPlus : sinstr
-| SMinus : sinstr
-| SMult : sinstr.
+| SPush (n : nat)
+| SLoad (x : string)
+| SPlus
+| SMinus
+| SMult.
 
 (** 请编写一个函数对栈语言程序进行求值。它应当接受一个状态、
     一个表示为数字列表的栈（栈顶项在表头），以及一个表示为指令列表的程序作为输入，
@@ -1422,12 +1423,12 @@ Module BreakImp.
     在本练习中，我们考虑如何为 Imp 加上 [break]。首先，我们需要丰富语言的命令。 *)
 
 Inductive com : Type :=
-  | CSkip : com
-  | CBreak : com               (* <-- 新增 *)
-  | CAss : string -> aexp -> com
-  | CSeq : com -> com -> com
-  | CIf : bexp -> com -> com -> com
-  | CWhile : bexp -> com -> com.
+  | CSkip
+  | CBreak                        (* <-- 新增 *)
+  | CAss (x : string) (a : aexp)
+  | CSeq (c1 c2 : com)
+  | CIf (b : bexp) (c1 c2 : com)
+  | CWhile (b : bexp) (c : com).
 
 Notation "'SKIP'" :=
   CSkip.
@@ -1466,8 +1467,8 @@ Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
     [BREAK] 语句： *)
 
 Inductive result : Type :=
-  | SContinue : result
-  | SBreak : result.
+  | SContinue
+  | SBreak.
 
 Reserved Notation "c1 '/' st '\\' s '/' st'"
                   (at level 40, st, s at level 39).

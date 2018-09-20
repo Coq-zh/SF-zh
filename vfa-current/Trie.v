@@ -69,8 +69,8 @@
 (** * A Simple Program That's Waaaaay Too Slow. *)
 
 Require Import Coq.Strings.String.
-Require Import Perm.
-Require Import Maps.
+From VFA Require Import Perm.
+From VFA Require Import Maps.
 Import FunctionalExtensionality.
 
 Module VerySlow.
@@ -102,11 +102,11 @@ Proof. reflexivity. Qed.
       So far it seems like this is a quadratic-time algorithm, O(N^2).  But
       to compare Coq natural numbers for equality takes O(N) time as well: *)
 
-Print beq_nat.
- (* fix beq_nat (n m : nat) {struct n} : bool :=
+Print eqb.
+ (* fix eqb (n m : nat) {struct n} : bool :=
   match n with
   | 0 => match m with 0 => true | S _ => false end
-  | S n1 => match m with 0 => false | S m1 => beq_nat n1 m1 end
+  | S n1 => match m with 0 => false | S m1 => eqb n1 m1 end
   end *)
 
 (** Remember, [nat] is a unary representation, with a number of [S] constructors
@@ -514,7 +514,7 @@ End FastEnough.
 (* [explain here]
 *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_successor_of_Z_constant_time : option (prod nat string) := None.
+Definition manual_grade_for_successor_of_Z_constant_time : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)

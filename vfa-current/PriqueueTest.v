@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Priqueue.
-Parameter MISSING: Type. 
+From VFA Require Import Priqueue.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Priqueue.
+From VFA Require Import Priqueue.
 Import Check.
 
 Goal True.
@@ -124,4 +125,22 @@ idtac " ".
 
 idtac "Max points - standard: 5".
 idtac "Max points - advanced: 5".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- List_Priqueue.select_perm ---------".
+Print Assumptions List_Priqueue.select_perm.
+idtac "---------- List_Priqueue.select_biggest_aux ---------".
+Print Assumptions List_Priqueue.select_biggest_aux.
+idtac "---------- List_Priqueue.select_biggest ---------".
+Print Assumptions List_Priqueue.select_biggest.
+idtac "---------- List_Priqueue.delete_max_None_relate ---------".
+Print Assumptions List_Priqueue.delete_max_None_relate.
+idtac "---------- List_Priqueue.delete_max_Some_relate ---------".
+Print Assumptions List_Priqueue.delete_max_Some_relate.
+idtac "---------- List_Priqueue.delete_max_Some_relate ---------".
+Print Assumptions List_Priqueue.delete_max_Some_relate.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

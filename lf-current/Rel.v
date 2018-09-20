@@ -7,7 +7,7 @@
     阅读本章也许会对你有所帮助。 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Export IndProp.
+From LF Require Export IndProp.
 
 (* ################################################################# *)
 (** * 关系 *)
@@ -80,7 +80,7 @@ Proof.
     apply Hc with (x := 0).
     - apply le_n.
     - apply le_S. apply le_n. }
-  inversion Nonsense.   Qed.
+  discriminate Nonsense.   Qed.
 
 (** **** 练习：2 星, optional (total_relation_not_partial)  *)
 (** 请证明之前定义的 [total_relation] 不是偏函数。 *)
@@ -272,11 +272,11 @@ Proof.
     在 Coq 标准库的 Relations 模块中，此概念定义如下：*)
 
 Inductive clos_refl_trans {A: Type} (R: relation A) : relation A :=
-    | rt_step : forall x y, R x y -> clos_refl_trans R x y
-    | rt_refl : forall x, clos_refl_trans R x x
-    | rt_trans : forall x y z,
-          clos_refl_trans R x y ->
-          clos_refl_trans R y z ->
+    | rt_step x y (H : R x y) : clos_refl_trans R x y
+    | rt_refl x : clos_refl_trans R x x
+    | rt_trans x y z
+          (Hxy : clos_refl_trans R x y)
+          (Hyz : clos_refl_trans R y z) :
           clos_refl_trans R x z.
 
 (** 例如，[next_nat] 关系的自反传递闭包实际上就是 [le]。 *)
@@ -309,8 +309,8 @@ Inductive clos_refl_trans_1n {A : Type}
                              (R : relation A) (x : A)
                              : A -> Prop :=
   | rt1n_refl : clos_refl_trans_1n R x x
-  | rt1n_trans (y z : A) :
-      R x y -> clos_refl_trans_1n R y z ->
+  | rt1n_trans (y z : A)
+      (Hxy : R x y) (Hrest : clos_refl_trans_1n R y z) :
       clos_refl_trans_1n R x z.
 
 (** 这一新的定义将 [rt_step] 和 [rt_trans] 合并成一条。在此规则的假设中

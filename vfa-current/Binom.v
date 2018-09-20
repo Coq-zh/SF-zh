@@ -23,8 +23,8 @@
 (** * The Program *)
 
 Require Import Coq.Strings.String.
-Require Import Perm.
-Require Import Priqueue.
+From VFA Require Import Perm.
+From VFA Require Import Priqueue.
 
 Module BinomQueue <: PRIQUEUE.
 
@@ -248,7 +248,7 @@ Inductive priqueue_elems: list tree -> list key -> Prop :=
              (* 请在此处解答 *)
 .
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_priqueue_elems : option (prod nat string) := None.
+Definition manual_grade_for_priqueue_elems : option (nat*string) := None.
 (** [] *)
 
 Definition Abs (p: priqueue) (al: list key) := priqueue_elems p al.

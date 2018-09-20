@@ -3,7 +3,7 @@
 (** 理解了柯里-霍华德同构及其 Coq 实现之后，我们可以深入学习归纳原理。 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Export ProofObjects.
+From LF Require Export ProofObjects.
 
 (* ################################################################# *)
 (** * 基础 *)
@@ -70,8 +70,8 @@ Proof.
     让我们看看更多的例子。首先是一个无参数构造子的例子： *)
 
 Inductive yesno : Type :=
-  | yes : yesno
-  | no : yesno.
+  | yes
+  | no.
 
 Check yesno_ind.
 (* ===> yesno_ind : forall P : yesno -> Prop,
@@ -84,17 +84,17 @@ Check yesno_ind.
     然后同 Coq 打印的结果比较。 *)
 
 Inductive rgb : Type :=
-  | red : rgb
-  | green : rgb
-  | blue : rgb.
+  | red
+  | green
+  | blue.
 Check rgb_ind.
 (** [] *)
 
 (** 这是另一个例子，这一次其中一个构造子含有多个参数。*)
 
 Inductive natlist : Type :=
-  | nnil : natlist
-  | ncons : nat -> natlist -> natlist.
+  | nnil
+  | ncons (n : nat) (l : natlist).
 
 Check natlist_ind.
 (* ===> (除了一些变量被重命名了)
@@ -109,8 +109,8 @@ Check natlist_ind.
 (** 假设我们写下的定义和上面的有一些区别： *)
 
 Inductive natlist1 : Type :=
-  | nnil1 : natlist1
-  | nsnoc1 : natlist1 -> nat -> natlist1.
+  | nnil1
+  | nsnoc1 (l : natlist1) (n : nat).
 
 (** 现在归纳原理会是什么呢？ *)
 (** [] *)
@@ -132,9 +132,9 @@ Inductive natlist1 : Type :=
     然后同 Coq 打印的结果比较。） *)
 
 Inductive byntree : Type :=
- | bempty : byntree
- | bleaf  : yesno -> byntree
- | nbranch : yesno -> byntree -> byntree -> byntree.
+ | bempty
+ | bleaf (yn : yesno)
+ | nbranch (yn : yesno) (t1 t2 : byntree).
 (** [] *)
 
 (** **** 练习：1 星, optional (ex_set)  *)
@@ -182,8 +182,8 @@ Inductive ExSet : Type :=
 (** 请写出对这个数据类型 Coq 将会生成的归纳原理。同 Coq 打印的结果比较你的答案。*)
 
 Inductive tree (X:Type) : Type :=
-  | leaf : X -> tree X
-  | node : tree X -> tree X -> tree X.
+  | leaf (x : X)
+  | node (t1 t2 : tree X).
 Check tree_ind.
 (** [] *)
 
@@ -217,8 +217,8 @@ Check tree_ind.
 (** 请考虑以下归纳定义： *)
 
 Inductive foo' (X:Type) : Type :=
-  | C1 : list X -> foo' X -> foo' X
-  | C2 : foo' X.
+  | C1 (l : list X) (f : foo' X)
+  | C2.
 
 (** Coq 会为 [foo'] 生成什么归纳原理？请填写下面的空白，并使用 Coq 检查你的答案。
 
@@ -453,7 +453,7 @@ Qed.
 
 Inductive le (n:nat) : nat -> Prop :=
   | le_n : le n n
-  | le_S : forall m, (le n m) -> (le n (S m)).
+  | le_S m (H : le n m) : le n (S m).
 
 Notation "m <= n" := (le m n).
 

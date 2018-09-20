@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Records.
-Parameter MISSING: Type. 
+From PLF Require Import Records.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Records.
+From PLF Require Import Records.
 Import Check.
 
 Goal True.
@@ -107,4 +108,16 @@ idtac " ".
 
 idtac "Max points - standard: 2".
 idtac "Max points - advanced: 2".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- STLCExtendedRecords.typing_example_2 ---------".
+Print Assumptions STLCExtendedRecords.typing_example_2.
+idtac "---------- STLCExtendedRecords.typing_nonexample ---------".
+Print Assumptions STLCExtendedRecords.typing_nonexample.
+idtac "---------- STLCExtendedRecords.typing_nonexample_2 ---------".
+Print Assumptions STLCExtendedRecords.typing_nonexample_2.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

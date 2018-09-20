@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Sub.
-Parameter MISSING: Type. 
+From PLF Require Import Sub.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Sub.
+From PLF Require Import Sub.
 Import Check.
 
 Goal True.
@@ -159,4 +160,40 @@ idtac " ".
 
 idtac "Max points - standard: 29".
 idtac "Max points - advanced: 29".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- arrow_sub_wrong ---------".
+idtac "MANUAL".
+idtac "---------- subtype_order ---------".
+idtac "MANUAL".
+idtac "---------- subtype_instances_tf_2 ---------".
+idtac "MANUAL".
+idtac "---------- subtype_concepts_tf ---------".
+idtac "MANUAL".
+idtac "---------- proper_subtypes ---------".
+idtac "MANUAL".
+idtac "---------- small_large_1 ---------".
+idtac "MANUAL".
+idtac "---------- small_large_2 ---------".
+idtac "MANUAL".
+idtac "---------- small_large_4 ---------".
+idtac "MANUAL".
+idtac "---------- smallest_1 ---------".
+idtac "MANUAL".
+idtac "---------- smallest_2 ---------".
+idtac "MANUAL".
+idtac "---------- pair_permutation ---------".
+idtac "MANUAL".
+idtac "---------- sub_inversion_arrow ---------".
+Print Assumptions sub_inversion_arrow.
+idtac "---------- variations ---------".
+idtac "MANUAL".
+idtac "---------- progress ---------".
+idtac "MANUAL".
+idtac "---------- preservation ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
 Abort.

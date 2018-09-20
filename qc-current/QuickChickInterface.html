@@ -1,0 +1,1184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>QuickChickInterface: QuickChick Reference Manual</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/qc.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 4: QuickChick: Property-Based Testing in Coq</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">QuickChickInterface<span class="subtitle">QuickChick Reference Manual</span></h1>
+
+
+<div class="code code-tight">
+
+<span class="id" type="var">From</span> <span class="id" type="var">QuickChick</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">QuickChick</span>.<br/>
+<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">ZArith</span> <span class="id" type="var">Strings.Ascii</span> <span class="id" type="var">Strings.String</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">From</span> <span class="id" type="var">ExtLib.Structures</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Functor</span> <span class="id" type="var">Applicative</span>.<br/>
+</div>
+
+<div class="doc">
+QuickChick provides a large collection of combinators and
+    notations for writing property-based random tests.  This file
+    documents the entire public interface (the module type
+    <span class="inlinecode"><span class="id" type="var">QuickChickSig</span></span>). 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">QuickChickSig</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab107"></a><h1 class="section">The <span class="inlinecode"><span class="id" type="keyword">Show</span></span> Typeclass</h1>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="keyword">Show</span></span> typeclass allows the test case to be printed as a string.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="keyword">Show</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">show</span>&nbsp;:&nbsp;<span class="id" type="var">A</span>&nbsp;→&nbsp;<span class="id" type="var">string</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ Here are some <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instances for some basic types: 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">showNat</span>    : <span class="id" type="keyword">Show</span> <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">showBool</span>   : <span class="id" type="keyword">Show</span> <span class="id" type="var">bool</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">showZ</span>      : <span class="id" type="keyword">Show</span> <span class="id" type="var">Z</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">showString</span> : <span class="id" type="keyword">Show</span> <span class="id" type="var">string</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">showList</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>}, <span class="id" type="keyword">Show</span> (<span class="id" type="var">list</span> <span class="id" type="var">A</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">showPair</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">B</span>}, <span class="id" type="keyword">Show</span> (<span class="id" type="var">A</span> * <span class="id" type="var">B</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">showOpt</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>}, <span class="id" type="keyword">Show</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">showEx</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>} <span class="id" type="var">P</span>, <span class="id" type="keyword">Show</span> ({<span class="id" type="var">x</span> : <span class="id" type="var">A</span> | <span class="id" type="var">P</span> <span class="id" type="var">x</span>}).<br/>
+</div>
+
+<div class="doc">
+When defining <span class="inlinecode"><span class="id" type="keyword">Show</span></span> instance for your own datatypes, you sometimes need to
+    start a new line for better printing. <span class="inlinecode"><span class="id" type="var">nl</span></span> is a shorthand for it. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">nl</span> : <span class="id" type="var">string</span> := <span class="id" type="var">String</span> (<span class="id" type="var">ascii_of_nat</span> 10) <span class="id" type="var">EmptyString</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab108"></a><h1 class="section">Generators</h1>
+
+</div>
+<div class="code code-space">
+
+<br/>
+</div>
+
+<div class="doc">
+<a name="lab109"></a><h2 class="section">Fundamental Types</h2>
+
+<div class="paragraph"> </div>
+
+ A <span class="inlinecode"><span class="id" type="var">RandomSeed</span></span> represents a particular starting point in a
+    pseudo-random sequence. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">RandomSeed</span> : <span class="id" type="keyword">Type</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">G</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span> is the type of random generators for type <span class="inlinecode"><span class="id" type="var">A</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">G</span> : <span class="id" type="keyword">Type</span> → <span class="id" type="keyword">Type</span>.<br/>
+</div>
+
+<div class="doc">
+Run a generator with a size parameter (a natural number denoting
+    the maximum depth of the generated A) and a random seed. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">run</span>  : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">G</span> <span class="id" type="var">A</span> → <span class="id" type="var">nat</span> → <span class="id" type="var">RandomSeed</span> → <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+The semantics of a generator is its set of possible outcomes. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">semGen</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">g</span> : <span class="id" type="var">G</span> <span class="id" type="var">A</span>), <span class="id" type="tactic">set</span> <span class="id" type="var">A</span>.<br/>
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">semGenSize</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">g</span> : <span class="id" type="var">G</span> <span class="id" type="var">A</span>) (<span class="id" type="var">size</span> : <span class="id" type="var">nat</span>), <span class="id" type="tactic">set</span> <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab110"></a><h2 class="section">Structural Combinators</h2>
+
+<div class="paragraph"> </div>
+
+ Generators are also instances of several generic typeclasses.
+    Many handy generator combinators can be found in the <span class="inlinecode"><span class="id" type="var">Monad</span></span>,
+    <span class="inlinecode"><span class="id" type="var">Functor</span></span>, <span class="inlinecode"><span class="id" type="var">Applicative</span></span>, <span class="inlinecode"><span class="id" type="var">Foldable</span></span>, and <span class="inlinecode"><span class="id" type="var">Traversable</span></span> modules in
+    the <span class="inlinecode"><span class="id" type="var">ExtLib.Structures</span></span> library from <span class="inlinecode"><span class="id" type="var">coq</span>-<span class="id" type="var">ext</span>-<span class="id" type="var">lib</span></span>. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Monad_G</span> : <span class="id" type="var">Monad</span> <span class="id" type="var">G</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Functor_G</span> : <span class="id" type="var">Functor</span> <span class="id" type="var">G</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Applicative_G</span> : <span class="id" type="var">Applicative</span> <span class="id" type="var">G</span>.<br/>
+</div>
+
+<div class="doc">
+A variant of monadic bind where the continuation also takes a
+    _proof_ that the value received is within the set of outcomes of
+    the first generator. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">bindGen'</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">g</span> : <span class="id" type="var">G</span> <span class="id" type="var">A</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">a</span> : <span class="id" type="var">A</span>), (<span class="id" type="var">a</span> &#x2208; <span class="id" type="var">semGen</span> <span class="id" type="var">g</span>) → <span class="id" type="var">G</span> <span class="id" type="var">B</span>) → <span class="id" type="var">G</span> <span class="id" type="var">B</span>.<br/>
+</div>
+
+<div class="doc">
+A variant of bind for the <span class="inlinecode">(<span class="id" type="var">G</span></span> <span class="inlinecode">(<span class="id" type="var">option</span></span> <span class="inlinecode">--))</span> monad.  Useful for
+    chaining generators that can fail / backtrack. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">bindGenOpt</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>) → (<span class="id" type="var">A</span> → <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">B</span>)) → <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">B</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab111"></a><h2 class="section">Basic Generator Combinators</h2>
+
+<div class="paragraph"> </div>
+
+ The <span class="inlinecode"><span class="id" type="var">listOf</span></span> and <span class="inlinecode"><span class="id" type="var">vectorOf</span></span> combinators construct generators for
+    <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>, provided a generator <span class="inlinecode"><span class="id" type="var">g</span></span> for type <span class="inlinecode"><span class="id" type="var">A</span></span>: <span class="inlinecode"><span class="id" type="var">listOf</span></span> <span class="inlinecode"><span class="id" type="var">g</span></span> yields
+    an arbitrary-sized list (which might be empty), while <span class="inlinecode"><span class="id" type="var">vectorOf</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>
+    <span class="inlinecode"><span class="id" type="var">g</span></span> yields a list of fixed size <span class="inlinecode"><span class="id" type="var">n</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">listOf</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">G</span> <span class="id" type="var">A</span> → <span class="id" type="var">G</span> (<span class="id" type="var">list</span> <span class="id" type="var">A</span>).<br/>
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">vectorOf</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">nat</span> → <span class="id" type="var">G</span> <span class="id" type="var">A</span> → <span class="id" type="var">G</span> (<span class="id" type="var">list</span> <span class="id" type="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">elems_</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> constructs a generator from a list <span class="inlinecode"><span class="id" type="var">l</span></span> and a
+    default element <span class="inlinecode"><span class="id" type="var">a</span></span>. If <span class="inlinecode"><span class="id" type="var">l</span></span> is non-empty, the generator picks an
+    element from <span class="inlinecode"><span class="id" type="var">l</span></span> uniformly; otherwise it always yields <span class="inlinecode"><span class="id" type="var">a</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">elems_</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">A</span> → <span class="id" type="var">list</span> <span class="id" type="var">A</span> → <span class="id" type="var">G</span> <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+Similar to <span class="inlinecode"><span class="id" type="var">elems_</span></span>, instead of choosing from a list of <span class="inlinecode"><span class="id" type="var">A</span></span>s,
+    <span class="inlinecode"><span class="id" type="var">oneOf_</span></span> <span class="inlinecode"><span class="id" type="var">g</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> returns <span class="inlinecode"><span class="id" type="var">g</span></span> if <span class="inlinecode"><span class="id" type="var">l</span></span> is empty; otherwise it uniformly
+    picks a generator for <span class="inlinecode"><span class="id" type="var">A</span></span> in <span class="inlinecode"><span class="id" type="var">l</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">oneOf_</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">G</span> <span class="id" type="var">A</span> → <span class="id" type="var">list</span> (<span class="id" type="var">G</span> <span class="id" type="var">A</span>) → <span class="id" type="var">G</span> <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+We can also choose generators with distributions other than the
+    uniform one. <span class="inlinecode"><span class="id" type="var">freq_</span></span> <span class="inlinecode"><span class="id" type="var">g</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> returns <span class="inlinecode"><span class="id" type="var">g</span></span> if <span class="inlinecode"><span class="id" type="var">l</span></span> is empty;
+    otherwise it chooses a generator from <span class="inlinecode"><span class="id" type="var">l</span></span>, where the first field
+    indicates the chance that the second field is chosen. For example,
+    <span class="inlinecode"><span class="id" type="var">freq_</span></span> <span class="inlinecode"><span class="id" type="var">z</span></span> <span class="inlinecode">[(2,</span> <span class="inlinecode"><span class="id" type="var">x</span>);</span> <span class="inlinecode">(3,</span> <span class="inlinecode"><span class="id" type="var">y</span>)]</span> has 40% probability of choosing
+    <span class="inlinecode"><span class="id" type="var">x</span></span> and 60% probability of choosing <span class="inlinecode"><span class="id" type="var">y</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">freq_</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">G</span> <span class="id" type="var">A</span> → <span class="id" type="var">list</span> (<span class="id" type="var">nat</span> * <span class="id" type="var">G</span> <span class="id" type="var">A</span>) → <span class="id" type="var">G</span> <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+Try all generators until one returns a <span class="inlinecode"><span class="id" type="var">Some</span></span> value or all failed once with
+    <span class="inlinecode"><span class="id" type="var">None</span></span>. The generators are picked at random according to their weights
+    (like <span class="inlinecode"><span class="id" type="var">frequency</span></span>), and each one is run at most once. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">backtrack</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">list</span> (<span class="id" type="var">nat</span> * <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>)) → <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+Internally, the G monad hides a <span class="inlinecode"><span class="id" type="var">size</span></span> parameter that can be accessed by
+    generators. The <span class="inlinecode"><span class="id" type="var">sized</span></span> combinator provides such access. The <span class="inlinecode"><span class="id" type="var">resize</span></span> 
+    combinator sets it. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">sized</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>}, (<span class="id" type="var">nat</span> → <span class="id" type="var">G</span> <span class="id" type="var">A</span>) → <span class="id" type="var">G</span> <span class="id" type="var">A</span>.<br/>
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">resize</span> : <span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>}, <span class="id" type="var">nat</span> → <span class="id" type="var">G</span> <span class="id" type="var">A</span> → <span class="id" type="var">G</span> <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+Generate-and-test approach to generate data with preconditions. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">suchThatMaybe</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">G</span> <span class="id" type="var">A</span> → (<span class="id" type="var">A</span> → <span class="id" type="var">bool</span>) → <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/>
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">suchThatMaybeOpt</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>}, <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>) → (<span class="id" type="var">A</span> → <span class="id" type="var">bool</span>) → <span class="id" type="var">G</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/><hr class='doublespaceincode'/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">elems_</span></span>, <span class="inlinecode"><span class="id" type="var">oneOf_</span></span>, and <span class="inlinecode"><span class="id" type="var">freq_</span></span> combinators all take
+    default values; these are only used if their list arguments are
+    empty, which should not normally happen. The <span class="inlinecode"><span class="id" type="var">QcDefaultNotation</span></span>
+    sub-module exposes notation (without the underscores) to hide this default.
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">QcDefaultNotation</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">elems</span></span> is a shorthand for <span class="inlinecode"><span class="id" type="var">elems_</span></span> without a default argument. 
+</div>
+<div class="code code-tight">
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'elems' [ x ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">elems_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> <span class="id" type="var">nil</span>)) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'elems' [ x ; y ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">elems_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">y</span> <span class="id" type="var">nil</span>))) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'elems' [ x ; y ; .. ; z ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">elems_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">y</span> .. (<span class="id" type="var">cons</span> <span class="id" type="var">z</span> <span class="id" type="var">nil</span>) ..))) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'elems' ( x ;; l ) " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">elems_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>)) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 1, <span class="id" type="var">no</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">qc_scope</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">oneOf</span></span> is a shorthand for <span class="inlinecode"><span class="id" type="var">oneOf_</span></span> without a default argument. 
+</div>
+<div class="code code-tight">
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'oneOf' [ x ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">oneOf_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> <span class="id" type="var">nil</span>)) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'oneOf' [ x ; y ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">oneOf_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">y</span> <span class="id" type="var">nil</span>))) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'oneOf' [ x ; y ; .. ; z ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">oneOf_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">y</span> .. (<span class="id" type="var">cons</span> <span class="id" type="var">z</span> <span class="id" type="var">nil</span>) ..))) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'oneOf' ( x ;; l ) " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">oneOf_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>))  (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 1, <span class="id" type="var">no</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">qc_scope</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">freq</span></span> is a shorthand for <span class="inlinecode"><span class="id" type="var">freq_</span></span> without a default argument. 
+</div>
+<div class="code code-tight">
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'freq' [ x ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">freq_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> <span class="id" type="var">x</span> <span class="id" type="var">nil</span>)) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'freq' [ ( n , x ) ; y ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">freq_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> (<span class="id" type="var">n</span>, <span class="id" type="var">x</span>) (<span class="id" type="var">cons</span> <span class="id" type="var">y</span> <span class="id" type="var">nil</span>))) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'freq' [ ( n , x ) ; y ; .. ; z ] " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">freq_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> (<span class="id" type="var">n</span>, <span class="id" type="var">x</span>) (<span class="id" type="var">cons</span> <span class="id" type="var">y</span> .. (<span class="id" type="var">cons</span> <span class="id" type="var">z</span> <span class="id" type="var">nil</span>) ..))) : <span class="id" type="var">qc_scope</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> " 'freq' ( ( n , x ) ;; l ) " :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">freq_</span> <span class="id" type="var">x</span> (<span class="id" type="var">cons</span> (<span class="id" type="var">n</span>, <span class="id" type="var">x</span>) <span class="id" type="var">l</span>)) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 1, <span class="id" type="var">no</span> <span class="id" type="var">associativity</span>) : <span class="id" type="var">qc_scope</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">QcDefaultNotation</span>.<br/>
+</div>
+
+<div class="doc">
+The original version of QuickChick used <span class="inlinecode"><span class="id" type="var">elements</span></span>, <span class="inlinecode"><span class="id" type="var">oneof</span></span> and <span class="inlinecode"><span class="id" type="var">frequency</span></span>
+    as the default-argument versions of the corresponding combinators.
+    These have since been deprecated in favor of a more consistent 
+    naming scheme.
+
+</div>
+
+<div class="doc">
+<a name="lab112"></a><h2 class="section">Choosing from Intervals</h2>
+
+<div class="paragraph"> </div>
+
+ The combinators above allow us to generate elements by enumeration
+    and lifting. However, for numeric data types, we sometimes hope to
+    choose from an interval without writing down all the possible
+    values.
+
+<div class="paragraph"> </div>
+
+    Such intervals can be defined on ordered data types, instances of
+    <span class="inlinecode"><span class="id" type="var">OrdType</span></span>, whose ordering <span class="inlinecode"><span class="id" type="var">leq</span></span> satisfies reflexive, transitive,
+    and antisymmetric predicates. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Existing</span> <span class="id" type="keyword">Class</span> <span class="id" type="var">OrdType</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">OrdBool</span> : <span class="id" type="var">OrdType</span> <span class="id" type="var">bool</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">OrdNat</span>  : <span class="id" type="var">OrdType</span> <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">OrdZ</span>    : <span class="id" type="var">OrdType</span> <span class="id" type="var">Z</span>.<br/>
+</div>
+
+<div class="doc">
+We also expect the random function to be able to pick every element in any
+    given interval. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Existing</span> <span class="id" type="keyword">Class</span> <span class="id" type="var">ChoosableFromInterval</span>.<br/>
+</div>
+
+<div class="doc">
+QuickChick has provided some instances for ordered data types that are
+    choosable from intervals, including <span class="inlinecode"><span class="id" type="var">bool</span></span>, <span class="inlinecode"><span class="id" type="var">nat</span></span>, and <span class="inlinecode"><span class="id" type="var">Z</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">ChooseBool</span> : <span class="id" type="var">ChoosableFromInterval</span> <span class="id" type="var">bool</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">ChooseNat</span> : <span class="id" type="var">ChoosableFromInterval</span> <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">ChooseZ</span> : <span class="id" type="var">ChoosableFromInterval</span> <span class="id" type="var">Z</span>.<br/>
+</div>
+
+<div class="doc">
+<span class="inlinecode"><span class="id" type="var">choose</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span> <span class="inlinecode"><span class="id" type="var">r</span></span> generates a value between <span class="inlinecode"><span class="id" type="var">l</span></span> and <span class="inlinecode"><span class="id" type="var">r</span></span>, inclusive the two
+    extremes. It causes a runtime error if <span class="inlinecode"><span class="id" type="var">r</span></span> <span class="inlinecode">&lt;</span> <span class="inlinecode"><span class="id" type="var">l</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">choose</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">ChoosableFromInterval</span> <span class="id" type="var">A</span>}, (<span class="id" type="var">A</span> * <span class="id" type="var">A</span>) → <span class="id" type="var">G</span> <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab113"></a><h2 class="section">The <span class="inlinecode"><span class="id" type="var">Gen</span></span> and <span class="inlinecode"><span class="id" type="var">GenSized</span></span> Typeclasses</h2>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">GenSized</span></span> and <span class="inlinecode"><span class="id" type="var">Gen</span></span> are typeclasses whose instances can be generated
+    randomly. More specifically, <span class="inlinecode"><span class="id" type="var">GenSized</span></span> depends on a generator for any given
+    natural number that indicate the size of output.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">GenSized</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;:=&nbsp;{&nbsp;<span class="id" type="var">arbitrarySized</span>&nbsp;:&nbsp;<span class="id" type="var">nat</span>&nbsp;→&nbsp;<span class="id" type="var">G</span>&nbsp;<span class="id" type="var">A</span>&nbsp;}.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">Gen</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;:=&nbsp;{&nbsp;<span class="id" type="var">arbitrary</span>&nbsp;:&nbsp;<span class="id" type="var">G</span>&nbsp;<span class="id" type="var">A</span>&nbsp;}.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ Given an instance of <span class="inlinecode"><span class="id" type="var">GenSized</span></span>, we can convert it to <span class="inlinecode"><span class="id" type="var">Gen</span></span> automatically,
+    using <span class="inlinecode"><span class="id" type="var">sized</span></span> function. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">GenOfGenSized</span> {<span class="id" type="var">A</span>} `{<span class="id" type="var">GenSized</span> <span class="id" type="var">A</span>} : <span class="id" type="var">Gen</span> <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+Here are some basic instances for generators: 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">genBoolSized</span> : <span class="id" type="var">GenSized</span> <span class="id" type="var">bool</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">genNatSized</span>  : <span class="id" type="var">GenSized</span> <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">genZSized</span>    : <span class="id" type="var">GenSized</span> <span class="id" type="var">Z</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">genListSized</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">GenSized</span> <span class="id" type="var">A</span>}, <span class="id" type="var">GenSized</span> (<span class="id" type="var">list</span> <span class="id" type="var">A</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">genList</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Gen</span> <span class="id" type="var">A</span>}, <span class="id" type="var">Gen</span> (<span class="id" type="var">list</span> <span class="id" type="var">A</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">genOption</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Gen</span> <span class="id" type="var">A</span>}, <span class="id" type="var">Gen</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">genPairSized</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">GenSized</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">GenSized</span> <span class="id" type="var">B</span>}, <span class="id" type="var">GenSized</span> (<span class="id" type="var">A</span>*<span class="id" type="var">B</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">genPair</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Gen</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Gen</span> <span class="id" type="var">B</span>}, <span class="id" type="var">Gen</span> (<span class="id" type="var">A</span> * <span class="id" type="var">B</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab114"></a><h2 class="section">Generators for Data Satisfying Inductive Predicates</h2>
+
+<div class="paragraph"> </div>
+
+ Just as QuickChick provides the <span class="inlinecode"><span class="id" type="var">GenSized</span></span> and <span class="inlinecode"><span class="id" type="var">Gen</span></span> typeclasses
+    for generators of type <span class="inlinecode"><span class="id" type="var">A</span></span>, it provides constrained variants for
+    generators of type <span class="inlinecode"><span class="id" type="var">A</span></span> such that <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> holds of all
+    generated values.  Since it is not guaranteed that any such <span class="inlinecode"><span class="id" type="var">A</span></span>
+    exist, these generators are partial.   
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">GenSizedSuchThat</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;(<span class="id" type="var">P</span>&nbsp;:&nbsp;<span class="id" type="var">A</span>&nbsp;→&nbsp;<span class="id" type="keyword">Prop</span>)&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">arbitrarySizeST</span>&nbsp;:&nbsp;<span class="id" type="var">nat</span>&nbsp;→&nbsp;<span class="id" type="var">G</span>&nbsp;(<span class="id" type="var">option</span>&nbsp;<span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">GenSuchThat</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;(<span class="id" type="var">P</span>&nbsp;:&nbsp;<span class="id" type="var">A</span>&nbsp;→&nbsp;<span class="id" type="keyword">Prop</span>)&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">arbitraryST</span>&nbsp;:&nbsp;<span class="id" type="var">G</span>&nbsp;(<span class="id" type="var">option</span>&nbsp;<span class="id" type="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}.
+<div class="paragraph"> </div>
+
+</div>
+ 
+<div class="paragraph"> </div>
+
+ So, for example, if you have a typing relation 
+    <span class="inlinecode"><span class="id" type="var">has_type</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">exp</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">type</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> for some language, you could, 
+    given some type <span class="inlinecode"><span class="id" type="var">T</span></span> as input, write (or derive as we will see later on) 
+    an instance of <span class="inlinecode"><span class="id" type="var">GenSizedSuchThat</span></span> <span class="inlinecode">(<span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">has_type</span></span> <span class="inlinecode"><span class="id" type="var">e</span></span> <span class="inlinecode"><span class="id" type="var">T</span>)</span>, that produces 
+    an expression of with type <span class="inlinecode"><span class="id" type="var">T</span></span>. 
+
+<div class="paragraph"> </div>
+
+    Calling <span class="inlinecode"><span class="id" type="var">arbitraryST</span></span> through such an instance would require 
+    making an explicit application to <span class="inlinecode">@<span class="id" type="var">arbitraryST</span></span> as follows:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;@<span class="id" type="var">arbitraryST</span>&nbsp;<span class="id" type="var">_</span>&nbsp;(<span class="id" type="keyword">fun</span>&nbsp;<span class="id" type="var">e</span>&nbsp;⇒&nbsp;<span class="id" type="var">has_type</span>&nbsp;<span class="id" type="var">e</span>&nbsp;<span class="id" type="var">T</span>)&nbsp;<span class="id" type="var">_</span>
+<div class="paragraph"> </div>
+
+</div>
+    where the first placeholder is the type of expressions <span class="inlinecode"><span class="id" type="var">exp</span></span> 
+    and the second placeholder is the actual instance to be inferred.
+
+<div class="paragraph"> </div>
+
+    To avoid this, QuickChick also provides convenient notation to call 
+    by providing only the predicate <span class="inlinecode"><span class="id" type="var">P</span></span> that constraints the generation.
+    The typeclass constraint is inferred. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Notation</span> "'genST' x" := (@<span class="id" type="var">arbitraryST</span> <span class="id" type="var">_</span> <span class="id" type="var">x</span> <span class="id" type="var">_</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 70).<br/>
+</div>
+
+<div class="doc">
+<a name="lab115"></a><h1 class="section">Shrinking</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab116"></a><h2 class="section">The <span class="inlinecode"><span class="id" type="var">Shrink</span></span> Typeclass</h2>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">Shrink</span></span> is a typeclass whose instances have an operation for
+    shrinking larger elements to smaller ones, allowing QuickChick to
+    search for a minimal counter example when errors occur.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">Shrink</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">shrink</span>&nbsp;:&nbsp;<span class="id" type="var">A</span>&nbsp;→&nbsp;<span class="id" type="var">list</span>&nbsp;<span class="id" type="var">A</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ Default shrinkers for some basic datatypes: 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrinkBool</span> : <span class="id" type="var">Shrink</span> <span class="id" type="var">bool</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrinkNat</span> : <span class="id" type="var">Shrink</span> <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrinkZ</span> : <span class="id" type="var">Shrink</span> <span class="id" type="var">Z</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrinkList</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Shrink</span> <span class="id" type="var">A</span>} : <span class="id" type="var">Shrink</span> (<span class="id" type="var">list</span> <span class="id" type="var">A</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrinkPair</span> {<span class="id" type="var">A</span> <span class="id" type="var">B</span>} `{<span class="id" type="var">Shrink</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Shrink</span> <span class="id" type="var">B</span>} : <span class="id" type="var">Shrink</span> (<span class="id" type="var">A</span> * <span class="id" type="var">B</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">shrinkOption</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Shrink</span> <span class="id" type="var">A</span>} : <span class="id" type="var">Shrink</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab117"></a><h2 class="section">The <span class="inlinecode"><span class="id" type="var">Arbitrary</span></span> Typeclass</h2>
+
+<div class="paragraph"> </div>
+
+ The <span class="inlinecode"><span class="id" type="var">Arbitrary</span></span> typeclass combines generation and shrinking.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">Arbitrary</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;`{<span class="id" type="var">Gen</span>&nbsp;<span class="id" type="var">A</span>}&nbsp;`{<span class="id" type="var">Shrink</span>&nbsp;<span class="id" type="var">A</span>}.
+<div class="paragraph"> </div>
+
+</div>
+
+</div>
+
+<div class="doc">
+<a name="lab118"></a><h2 class="section">The Generator Typeclass Hierarchy</h2>
+
+<div class="paragraph"> </div>
+
+ 
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">GenSized</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gen</span>&nbsp;&nbsp;&nbsp;<span class="id" type="var">Shrink</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\&nbsp;&nbsp;&nbsp;&nbsp;/<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\&nbsp;&nbsp;/<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Arbitrary</span>
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ If a type has a <span class="inlinecode"><span class="id" type="var">Gen</span></span> and a <span class="inlinecode"><span class="id" type="var">Shrink</span></span> instance, it automatically gets
+    an <span class="inlinecode"><span class="id" type="var">Arbitrary</span></span> one. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">ArbitraryOfGenShrink</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span>} `{<span class="id" type="var">Gen</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Shrink</span> <span class="id" type="var">A</span>}, <span class="id" type="var">Arbitrary</span> <span class="id" type="var">A</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab119"></a><h1 class="section">Checkers</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab120"></a><h2 class="section">Basic Definitions</h2>
+
+<div class="paragraph"> </div>
+
+ <span class="inlinecode"><span class="id" type="var">Checker</span></span> is the opaque type of QuickChick properties. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">Checker</span> : <span class="id" type="keyword">Type</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" type="var">Checkable</span></span> class indicates we can check a type A.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">Checkable</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">checker</span>&nbsp;:&nbsp;<span class="id" type="var">A</span>&nbsp;→&nbsp;<span class="id" type="var">Checker</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ Boolean checkers always pass or always fail. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">testBool</span> : <span class="id" type="var">Checkable</span> <span class="id" type="var">bool</span>.<br/>
+</div>
+
+<div class="doc">
+The unit checker is always discarded (that is, it represents a
+    useless test).  It is used, for example, in the implementation of
+    the "implication <span class="inlinecode"><span class="id" type="var">Checker</span></span>" combinator <span class="inlinecode">==&gt;</span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">testUnit</span> : <span class="id" type="var">Checkable</span> <span class="id" type="var">unit</span>.<br/>
+</div>
+
+<div class="doc">
+Given a generator for showable <span class="inlinecode"><span class="id" type="var">A</span></span>s, construct a <span class="inlinecode"><span class="id" type="var">Checker</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">forAll</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">gen</span> : <span class="id" type="var">G</span> <span class="id" type="var">A</span>)  (<span class="id" type="var">pf</span> : <span class="id" type="var">A</span> → <span class="id" type="var">prop</span>), <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+A variant of <span class="inlinecode"><span class="id" type="var">forAll</span></span> that provides evidence that the generated
+    values are members of the semantics of the generator. (Such evidence
+    can be useful when constructing dependently typed data, such as 
+    bounded integers.) 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">forAllProof</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">gen</span> : <span class="id" type="var">G</span> <span class="id" type="var">A</span>)  (<span class="id" type="var">pf</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> : <span class="id" type="var">A</span>), <span class="id" type="var">semGen</span> <span class="id" type="var">gen</span> <span class="id" type="var">x</span> → <span class="id" type="var">prop</span>), <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+Given a generator and a shrinker for showable <span class="inlinecode"><span class="id" type="var">A</span></span>s, construct a
+    <span class="inlinecode"><span class="id" type="var">Checker</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">forAllShrink</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">gen</span> : <span class="id" type="var">G</span> <span class="id" type="var">A</span>) (<span class="id" type="var">shrinker</span> : <span class="id" type="var">A</span> → <span class="id" type="var">list</span> <span class="id" type="var">A</span>) (<span class="id" type="var">pf</span> : <span class="id" type="var">A</span> → <span class="id" type="var">prop</span>), <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+Lift (<span class="inlinecode"><span class="id" type="keyword">Show</span></span>, <span class="inlinecode"><span class="id" type="var">Gen</span></span>, <span class="inlinecode"><span class="id" type="var">Shrink</span></span>) instances for <span class="inlinecode"><span class="id" type="var">A</span></span>
+    to a <span class="inlinecode"><span class="id" type="var">Checker</span></span> for functions <span class="inlinecode"><span class="id" type="var">A</span></span> -&gt; prop.  This is what makes it
+    possible to write (for some example property <span class="inlinecode"><span class="id" type="var">foo</span></span> <span class="inlinecode">:=</span> <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">&gt;?</span>
+    <span class="inlinecode">0</span>, say) <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> <span class="inlinecode"><span class="id" type="var">foo</span></span> instead of <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> <span class="inlinecode">(<span class="id" type="var">forAllShrink</span></span>
+    <span class="inlinecode"><span class="id" type="var">arbitrary</span></span> <span class="inlinecode"><span class="id" type="var">shrink</span></span> <span class="inlinecode"><span class="id" type="var">foo</span>)</span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">testFun</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Arbitrary</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Checkable</span> (<span class="id" type="var">A</span> → <span class="id" type="var">prop</span>).<br/>
+</div>
+
+<div class="doc">
+Lift products similarly. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">testProd</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} {<span class="id" type="var">prop</span> : <span class="id" type="var">A</span> → <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Arbitrary</span> <span class="id" type="var">A</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> : <span class="id" type="var">A</span>, <span class="id" type="var">Checkable</span> (<span class="id" type="var">prop</span> <span class="id" type="var">x</span>)},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Checkable</span> (<span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> : <span class="id" type="var">A</span>), <span class="id" type="var">prop</span> <span class="id" type="var">x</span>).<br/>
+</div>
+
+<div class="doc">
+Lift polymorphic functions by instantiating to 'nat'. :-) 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">testPolyFun</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span> → <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> (<span class="id" type="var">prop</span> <span class="id" type="var">nat</span>)},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Checkable</span> (<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">T</span>, <span class="id" type="var">prop</span> <span class="id" type="var">T</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab121"></a><h2 class="section">Checker Combinators</h2>
+
+<div class="paragraph"> </div>
+
+ Print a specific string if the property fails. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">whenFail</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>} (<span class="id" type="var">str</span> : <span class="id" type="var">string</span>), <span class="id" type="var">prop</span> → <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+Record an expectation that a property should fail, i.e. 
+    the property will fail if all the tests succeed. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">expectFailure</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">prop</span>: <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>} (<span class="id" type="var">p</span>: <span class="id" type="var">prop</span>), <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+Collect statistics across all tests. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">collect</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">A</span> <span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="keyword">Show</span> <span class="id" type="var">A</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>} (<span class="id" type="var">x</span> : <span class="id" type="var">A</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">prop</span> → <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+Set the reason for failure.  Will only count shrinks as valid if
+    they preserve the tag. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">tag</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>} (<span class="id" type="var">t</span> : <span class="id" type="var">string</span>), <span class="id" type="var">prop</span> → <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+Form the conjunction / disjunction of a list of checkers. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">conjoin</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">l</span> : <span class="id" type="var">list</span> <span class="id" type="var">Checker</span>), <span class="id" type="var">Checker</span>.<br/>
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">disjoin</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">l</span> : <span class="id" type="var">list</span> <span class="id" type="var">Checker</span>), <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+Define a checker for a conditional property. Invalid generated
+    inputs (ones for which the antecedent fails) are discarded. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Parameter</span> <span class="id" type="var">implication</span> :<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> {<span class="id" type="var">prop</span> : <span class="id" type="keyword">Type</span>} `{<span class="id" type="var">Checkable</span> <span class="id" type="var">prop</span>} (<span class="id" type="var">b</span> : <span class="id" type="var">bool</span>) (<span class="id" type="var">p</span> : <span class="id" type="var">prop</span>), <span class="id" type="var">Checker</span>.<br/>
+</div>
+
+<div class="doc">
+Notation for implication. Clashes with many other notations in
+    other libraries, so it lives in its own module. Note that this
+    includes the notations for the generator combinators above
+    to avoid needing to import two modules.
+ 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Module</span> <span class="id" type="var">QcNotation</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Export</span> <span class="id" type="var">QcDefaultNotation</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> "x ==&gt; y" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">implication</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 55, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">Checker_scope</span>.<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">QcNotation</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab122"></a><h1 class="section">Decidability</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab123"></a><h2 class="section">The <span class="inlinecode"><span class="id" type="var">Dec</span></span> Typeclass</h2>
+ Decidability typeclass using ssreflect's 'decidable'.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">Dec</span>&nbsp;(<span class="id" type="var">P</span>&nbsp;:&nbsp;<span class="id" type="keyword">Prop</span>)&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>&nbsp;:=&nbsp;{&nbsp;<span class="id" type="var">dec</span>&nbsp;:&nbsp;<span class="id" type="var">decidable</span>&nbsp;<span class="id" type="var">P</span>&nbsp;}.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ Decidable properties are Checkable. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">testDec</span> {<span class="id" type="var">P</span>} `{<span class="id" type="var">H</span> : <span class="id" type="var">Dec</span> <span class="id" type="var">P</span>} : <span class="id" type="var">Checkable</span> <span class="id" type="var">P</span>.<br/>
+</div>
+
+<div class="doc">
+Logic Combinator instances. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_neg</span> {<span class="id" type="var">P</span>} {<span class="id" type="var">H</span> : <span class="id" type="var">Dec</span> <span class="id" type="var">P</span>} : <span class="id" type="var">Dec</span> (¬ <span class="id" type="var">P</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_conj</span> {<span class="id" type="var">P</span> <span class="id" type="var">Q</span>} {<span class="id" type="var">H</span> : <span class="id" type="var">Dec</span> <span class="id" type="var">P</span>} {<span class="id" type="var">I</span> : <span class="id" type="var">Dec</span> <span class="id" type="var">Q</span>} : <span class="id" type="var">Dec</span> (<span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_disj</span> {<span class="id" type="var">P</span> <span class="id" type="var">Q</span>} {<span class="id" type="var">H</span> : <span class="id" type="var">Dec</span> <span class="id" type="var">P</span>} {<span class="id" type="var">I</span> : <span class="id" type="var">Dec</span> <span class="id" type="var">Q</span>} : <span class="id" type="var">Dec</span> (<span class="id" type="var">P</span> ∨ <span class="id" type="var">Q</span>).<br/>
+</div>
+
+<div class="doc">
+A convenient notation for coercing a decidable proposition to a <span class="inlinecode"><span class="id" type="var">bool</span></span>. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Notation</span> "P '?'" := (<span class="id" type="keyword">match</span> (@<span class="id" type="var">dec</span> <span class="id" type="var">P</span> <span class="id" type="var">_</span>) <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">left</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">right</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100).<br/>
+</div>
+
+<div class="doc">
+<a name="lab124"></a><h2 class="section">The <span class="inlinecode"><span class="id" type="var">Dec_Eq</span></span> Typeclass</h2>
+
+<div class="paragraph"> </div>
+
+ 
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Class</span>&nbsp;<span class="id" type="var">Dec_Eq</span>&nbsp;(<span class="id" type="var">A</span>&nbsp;:&nbsp;<span class="id" type="keyword">Type</span>)&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">dec_eq</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">x</span>&nbsp;<span class="id" type="var">y</span>&nbsp;:&nbsp;<span class="id" type="var">A</span>),&nbsp;<span class="id" type="var">decidable</span>&nbsp;(<span class="id" type="var">x</span>&nbsp;=&nbsp;<span class="id" type="var">y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ Automation and conversions for Dec. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Eq__Dec</span> {<span class="id" type="var">A</span>} `{<span class="id" type="var">H</span> : <span class="id" type="var">Dec_Eq</span> <span class="id" type="var">A</span>} (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>).<br/>
+</div>
+
+<div class="doc">
+Since deciding equalities is a very common requirement in testing,
+    QuickChick provides a tactic that can define instances of the form
+    <span class="inlinecode"><span class="id" type="var">Dec</span></span> <span class="inlinecode">(<span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span>)</span>. 
+ 
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Ltac</span>&nbsp;<span class="id" type="var">dec_eq</span>.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ QuickChick also lifts common decidable instances to the <span class="inlinecode"><span class="id" type="var">Dec</span></span> typeclass. 
+</div>
+<div class="code code-tight">
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_eq_bool</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">bool</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_eq_nat</span> (<span class="id" type="var">m</span> <span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">m</span> = <span class="id" type="var">n</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_eq_opt</span> (<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> <span class="id" type="var">n</span> : <span class="id" type="var">option</span> <span class="id" type="var">A</span>)<br/>
+`{<span class="id" type="var">_</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)} : <span class="id" type="var">Dec</span> (<span class="id" type="var">m</span> = <span class="id" type="var">n</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_eq_prod</span> (<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> <span class="id" type="var">n</span> : <span class="id" type="var">A</span> * <span class="id" type="var">B</span>)<br/>
+`{<span class="id" type="var">_</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)}<br/>
+`{<span class="id" type="var">_</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">B</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)}<br/>
+: <span class="id" type="var">Dec</span> (<span class="id" type="var">m</span> = <span class="id" type="var">n</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_eq_list</span> (<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> <span class="id" type="var">n</span> : <span class="id" type="var">list</span> <span class="id" type="var">A</span>)<br/>
+`{<span class="id" type="var">_</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">A</span>), <span class="id" type="var">Dec</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>)} : <span class="id" type="var">Dec</span> (<span class="id" type="var">m</span> = <span class="id" type="var">n</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_ascii</span> (<span class="id" type="var">m</span> <span class="id" type="var">n</span> : <span class="id" type="var">Ascii.ascii</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">m</span> = <span class="id" type="var">n</span>).<br/>
+<span class="id" type="var">Declare</span> <span class="id" type="keyword">Instance</span> <span class="id" type="var">Dec_string</span> (<span class="id" type="var">m</span> <span class="id" type="var">n</span> : <span class="id" type="var">string</span>) : <span class="id" type="var">Dec</span> (<span class="id" type="var">m</span> = <span class="id" type="var">n</span>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab125"></a><h1 class="section">Automatic Instance Derivation</h1>
+
+<div class="paragraph"> </div>
+
+ QuickChick allows the automatic derivation of typeclass instances
+    for simple types:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Derive</span>&nbsp;&lt;<span class="id" type="var">class</span>&gt;&nbsp;<span class="id" type="keyword">for</span>&nbsp;<span class="id" type="var">T</span>.
+<div class="paragraph"> </div>
+
+</div>
+    Here <span class="inlinecode">&lt;<span class="id" type="var">class</span>&gt;</span> must be one of <span class="inlinecode"><span class="id" type="var">GenSized</span></span>, <span class="inlinecode"><span class="id" type="var">Shrink</span></span>, <span class="inlinecode"><span class="id" type="var">Arbitrary</span></span>,
+    or <span class="inlinecode"><span class="id" type="keyword">Show</span></span>, and <span class="inlinecode"><span class="id" type="var">T</span></span> must be an inductive defined datatype (think
+    Haskell/OCaml).
+
+<div class="paragraph"> </div>
+
+    To derive multiple classes at once, write:
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Derive</span>&nbsp;(&lt;<span class="id" type="var">class</span>&gt;,...,&lt;<span class="id" type="var">class</span>&gt;)&nbsp;<span class="id" type="keyword">for</span>&nbsp;<span class="id" type="var">T</span>.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ QuickChick also allows for the automatic derivation of generators
+    satisfying preconditions in the form of inductive relations:
+
+<div class="paragraph"> </div>
+
+     Derive ArbitrarySizedSuchThat for (fun x =&gt; P x<sub>1</sub> ... x .... xn).
+
+<div class="paragraph"> </div>
+
+    &lt;P&gt; must be an inductively defined relation.
+    &lt;x&gt; is the function to be generated.
+    &lt;x<sub>1</sub>...xn&gt; are (implicitly universally quantified) variable names.
+
+<div class="paragraph"> </div>
+
+ QuickChick also allows automatic derivations of proofs of
+    correctness of its derived generators! For more, look
+    at:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> A paper on deriving QuickChick generators for a large class of
+      inductive relations. 
+      <a href="http://www.cis.upenn.edu/~llamp/pdf/GeneratingGoodGenerators.pdf"><span class="inlineref">http://www.cis.upenn.edu/~llamp/pdf/GeneratingGoodGenerators.pdf</span></a>
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Leo's PhD dissertation.
+      <a href="https://lemonidas.github.io/pdf/Leo-PhD-Thesis.pdf"><span class="inlineref">https://lemonidas.github.io/pdf/Leo-PhD-Thesis.pdf</span></a>
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> examples/DependentTest.v
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+
+</div>
+
+<div class="doc">
+<a name="lab126"></a><h1 class="section">Top-level Commands and Settings</h1>
+
+<div class="paragraph"> </div>
+
+ QuickChick provides a series of toplevel commands to sample
+    generators, test properties, and derive useful typeclass
+    instances. 
+<div class="paragraph"> </div>
+
+ The <span class="inlinecode"><span class="id" type="var">Sample</span></span> command samples a generator. The argument <span class="inlinecode"><span class="id" type="var">g</span></span> needs
+    to have type <span class="inlinecode"><span class="id" type="var">G</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span> for some showable type <span class="inlinecode"><span class="id" type="var">A</span></span>.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Sample</span>&nbsp;<span class="id" type="var">g</span>.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ The main testing command, <span class="inlinecode"><span class="id" type="var">QuickChick</span></span>, runs a test. The argument
+    <span class="inlinecode"><span class="id" type="var">prop</span></span> must belong to a type that is an instance of <span class="inlinecode"><span class="id" type="var">Checkable</span></span>.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">QuickChick</span>&nbsp;<span class="id" type="var">prop</span>.
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+ QuickChick uses arguments to customize execution. 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Record</span> <span class="id" type="var">Args</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">MkArgs</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Re-execute&nbsp;a&nbsp;test.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Default:&nbsp;None&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">replay</span>     : <span class="id" type="var">option</span> (<span class="id" type="var">RandomSeed</span> * <span class="id" type="var">nat</span>);<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Maximum&nbsp;number&nbsp;of&nbsp;successful&nbsp;tests&nbsp;to&nbsp;run.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Default:&nbsp;10000&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">maxSuccess</span> : <span class="id" type="var">nat</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Maximum&nbsp;number&nbsp;of&nbsp;discards&nbsp;to&nbsp;accept.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Default:&nbsp;20000&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">maxDiscard</span> : <span class="id" type="var">nat</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Maximum&nbsp;number&nbsp;of&nbsp;shrinks&nbsp;to&nbsp;perform&nbsp;before&nbsp;terminating.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Default&nbsp;:&nbsp;1000&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">maxShrinks</span> : <span class="id" type="var">nat</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Maximum&nbsp;size&nbsp;of&nbsp;terms&nbsp;to&nbsp;generate&nbsp;(depth).&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Default&nbsp;:&nbsp;7&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">maxSize</span>    : <span class="id" type="var">nat</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Verbosity.&nbsp;Note:&nbsp;Doesn't&nbsp;do&nbsp;much...&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Default&nbsp;true.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">chatty</span>     : <span class="id" type="var">bool</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+</div>
+
+<div class="doc">
+Instead of record updates, you should overwrite extraction constants.  
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Extract</span>&nbsp;<span class="id" type="var">Constant</span>&nbsp;<span class="id" type="var">defNumTests</span>&nbsp;&nbsp;&nbsp;&nbsp;⇒&nbsp;"10000".<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Extract</span>&nbsp;<span class="id" type="var">Constant</span>&nbsp;<span class="id" type="var">defNumDiscards</span>&nbsp;⇒&nbsp;"(2 * defNumTests)".<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Extract</span>&nbsp;<span class="id" type="var">Constant</span>&nbsp;<span class="id" type="var">defNumShrinks</span>&nbsp;&nbsp;⇒&nbsp;"1000".<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" type="var">Extract</span>&nbsp;<span class="id" type="var">Constant</span>&nbsp;<span class="id" type="var">defSize</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⇒&nbsp;"7".
+<div class="paragraph"> </div>
+
+</div>
+
+</div>
+
+<div class="doc">
+<a name="lab127"></a><h1 class="section">The <span class="inlinecode"><span class="id" type="var">quickChick</span></span> Command-Line Tool</h1>
+
+<div class="paragraph"> </div>
+
+ QuickChick comes with a command-line tool that supports:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Batch processing, compilation and execution of tests
+
+</li>
+<li> Mutation testing
+
+</li>
+<li> Sectioning of tests and mutants
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+    Comments that begin with an exclamation mark are special to the
+    QuickChick command-line tool parser and signify a test, a section,
+    or a mutant. 
+<div class="paragraph"> </div>
+
+<a name="lab128"></a><h2 class="section">Test Annotations</h2>
+
+<div class="paragraph"> </div>
+
+ A test annotation is just a <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> command wrapped inside 
+    a comment with an exclamation mark. 
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;QuickChick&nbsp;prop.&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+   Only tests that are annotated this way will be processed. Only property
+   names are allowed. 
+<div class="paragraph"> </div>
+
+<a name="lab129"></a><h2 class="section">Mutant Annotations</h2>
+
+<div class="paragraph"> </div>
+
+ A mutant annotation consists of 4 components. First an anottation 
+    that signifies the beginning of the mutant <span class="inlinecode">!&nbsp;*)</span></span>. That is followed
+    by the actual code. Then, we can include an optional annotation 
+    (in a comment with double exclamation marks) that corresponds to 
+    the mutant names. Finally, we can add a list of mutations inside
+    normal annotated comments. Each mutant should be able to be 
+    syntactically substituted in for the normal code. 
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Normal</span>&nbsp;<span class="id" type="var">code</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!!&nbsp;mutant-name&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;mutant&nbsp;1&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;mutant&nbsp;2&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;... <span class="id" type="var">etc</span>&nbsp;...
+<div class="paragraph"> </div>
+
+</div>
+
+<div class="paragraph"> </div>
+
+<a name="lab130"></a><h2 class="section">Section Annotations</h2>
+
+<div class="paragraph"> </div>
+
+ To organize larger developments better, we can group together 
+    different tests and mutants in sections. A section annotation is 
+    a single annotation that defines the beginning of the section 
+    (which lasts until the next section or the end of the file).
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;Section&nbsp;section-name&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+    Optionally, one can include an extends clause
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*!&nbsp;Section&nbsp;section-name&nbsp;*)</span><span class="comment">(*!&nbsp;extends&nbsp;other-section-name&nbsp;*)</span><br/>
+
+<div class="paragraph"> </div>
+
+</div>
+   This signifies that the section being defined also 
+   contains all tests and mutants from <span class="inlinecode"><span class="id" type="var">other</span>-<span class="id" type="var">section</span>-<span class="id" type="var">name</span></span>.
+
+<div class="paragraph"> </div>
+
+<a name="lab131"></a><h2 class="section">Command-Line Tool Flags</h2>
+
+<div class="paragraph"> </div>
+
+ The QuickChick command line tool can be passed the following options:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> <span class="inlinecode">-<span class="id" type="var">s</span></span> <span class="inlinecode">&lt;<span class="id" type="var">section</span>&gt;</span>: Specify which sections properties and mutants to test
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">v</span></span>: Verbose mode for debugging
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">failfast</span></span>: Stop as soon as a problem is detected
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">color</span></span>: Use colors on an ANSI-compatible terminal
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">cmd</span></span> <span class="inlinecode">&lt;<span class="id" type="var">command</span>&gt;</span>: What compile command is used to compile the current directory
+      if it is not <span class="inlinecode"><span class="id" type="var">make</span></span>
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">top</span></span> <span class="inlinecode">&lt;<span class="id" type="var">name</span>&gt;</span>: Specify the name of the top-level logical module. That should
+      be the same as the <span class="inlinecode">-<span class="id" type="var">Q</span></span> or <span class="inlinecode">-<span class="id" type="var">R</span></span> directive in <span class="inlinecode"><span class="id" type="var">_CoqProject</span></span> or <span class="inlinecode"><span class="id" type="var">Top</span></span>
+      which is the default
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">ocamlbuild</span></span> <span class="inlinecode">&lt;<span class="id" type="var">args</span>&gt;</span>: Any arguments necessary to pass to ocamlbuild when
+      compiling the extracted code (e.g. linked libraries)
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">nobase</span></span>: Pass this option to not test the base mutant
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">m</span></span> <span class="inlinecode">&lt;<span class="id" type="var">number</span>&gt;</span>: Pass this to only test a mutant with a specific id number
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">tag</span></span> <span class="inlinecode">&lt;<span class="id" type="var">name</span>&gt;</span>: Pass this to only test a mutant with a specific tag
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">include</span></span> <span class="inlinecode">&lt;<span class="id" type="var">name</span>&gt;</span>: Specify a to include in the compilation
+
+</li>
+<li> <span class="inlinecode">-<span class="id" type="var">exclude</span></span> <span class="inlinecode">&lt;<span class="id" type="var">names</span>&gt;</span>: Specify files to be excluded from compilation. Must be the last argument passed.
+
+</li>
+</ul>
+
+</div>
+
+<div class="doc">
+<a name="lab132"></a><h1 class="section">Deprecated Features</h1>
+
+<div class="paragraph"> </div>
+
+ The following features are retained for backward compatibility,
+    but their use is deprecated. 
+<div class="paragraph"> </div>
+
+ Use the monad notations from <span class="inlinecode"><span class="id" type="var">coq</span>-<span class="id" type="var">ext</span>-<span class="id" type="var">lib</span></span> instead of the
+    <span class="inlinecode"><span class="id" type="var">QcDoNotation</span></span> sub-module: 
+</div>
+<div class="code code-tight">
+<span class="id" type="keyword">Module</span> <span class="id" type="var">QcDoNotation</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> "'do!' X &lt;- A ; B" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">bindGen</span> <span class="id" type="var">A</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">X</span> ⇒ <span class="id" type="var">B</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200, <span class="id" type="var">X</span> <span class="id" type="var">ident</span>, <span class="id" type="var">A</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">B</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200).<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> "'do\'' X &lt;- A ; B" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">bindGen'</span> <span class="id" type="var">A</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">X</span> <span class="id" type="var">H</span> ⇒ <span class="id" type="var">B</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200, <span class="id" type="var">X</span> <span class="id" type="var">ident</span>, <span class="id" type="var">A</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">B</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200).<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Notation</span> "'doM!' X &lt;- A ; B" :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">bindGenOpt</span> <span class="id" type="var">A</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">X</span> ⇒ <span class="id" type="var">B</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200, <span class="id" type="var">X</span> <span class="id" type="var">ident</span>, <span class="id" type="var">A</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">B</span> <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 200).<br/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">QcDoNotation</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">QuickChickSig</span>.<br/>
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

@@ -1,10 +1,10 @@
 (** * StlcProp: Properties of STLC *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Maps.
-Require Import Types.
-Require Import Stlc.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Types.
+From PLF Require Import Stlc.
+From PLF Require Import Smallstep.
 Module STLCProp.
 Import STLC.
 
@@ -246,7 +246,7 @@ Definition closed (t:tm) :=
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_afi : option (prod nat string) := None.
+Definition manual_grade_for_afi : option (nat*string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -380,8 +380,8 @@ Proof with eauto.
     apply IHhas_type. intros x1 Hafi.
     (* the only tricky step... the [Gamma'] we use to
        instantiate is [Gamma & {{x-->T11}}] *)
-    unfold update. unfold t_update. destruct (beq_string x0 x1) eqn: Hx0x1...
-    rewrite beq_string_false_iff in Hx0x1. auto.
+    unfold update. unfold t_update. destruct (eqb_string x0 x1) eqn: Hx0x1...
+    rewrite eqb_string_false_iff in Hx0x1. auto.
   - (* T_App *)
     apply T_App with T11...
 Qed.
@@ -490,7 +490,7 @@ Proof with eauto.
     (* in each case, we'll want to get at the derivation of H *)
     inversion H; subst; simpl...
   - (* tvar *)
-    rename s into y. destruct (beq_stringP x y) as [Hxy|Hxy].
+    rename s into y. destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
       subst.
       rewrite update_eq in H2.
@@ -502,14 +502,14 @@ Proof with eauto.
       apply T_Var. rewrite update_neq in H2...
   - (* tabs *)
     rename s into y. rename t into T. apply T_Abs.
-    destruct (beq_stringP x y) as [Hxy | Hxy].
+    destruct (eqb_stringP x y) as [Hxy | Hxy].
     + (* x=y *)
       subst. rewrite update_shadow in H5. apply H5.
     + (* x<>y *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y z) as [Hyz | Hyz]; subst; trivial.
-      rewrite <- beq_string_false_iff in Hxy.
+      destruct (eqb_stringP y z) as [Hyz | Hyz]; subst; trivial.
+      rewrite <- eqb_string_false_iff in Hxy.
       rewrite Hxy...
 Qed.
 
@@ -587,7 +587,7 @@ Qed.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_subject_expansion_stlc : option (prod nat string) := None.
+Definition manual_grade_for_subject_expansion_stlc : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -623,7 +623,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_types_unique : option (prod nat string) := None.
+Definition manual_grade_for_types_unique : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -637,7 +637,7 @@ Definition manual_grade_for_types_unique : option (prod nat string) := None.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_progress_preservation_statement : option (prod nat string) := None.
+Definition manual_grade_for_progress_preservation_statement : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (stlc_variation1)  *)
@@ -665,7 +665,7 @@ and the following typing rule:
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_stlc_variation1 : option (prod nat string) := None.
+Definition manual_grade_for_stlc_variation1 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (stlc_variation2)  *)
@@ -692,7 +692,7 @@ Definition manual_grade_for_stlc_variation1 : option (prod nat string) := None.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_stlc_variation2 : option (prod nat string) := None.
+Definition manual_grade_for_stlc_variation2 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (stlc_variation3)  *)
@@ -711,7 +711,7 @@ Definition manual_grade_for_stlc_variation2 : option (prod nat string) := None.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_stlc_variation3 : option (prod nat string) := None.
+Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星, optional (stlc_variation4)  *)
@@ -874,7 +874,7 @@ Inductive tm : Type :=
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_stlc_arith : option (prod nat string) := None.
+Definition manual_grade_for_stlc_arith : option (nat*string) := None.
 (** [] *)
 
 End STLCArith.

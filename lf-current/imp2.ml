@@ -35,31 +35,28 @@ let rec sub n m =
       m)
     n
 
+(** val eqb : int -> int -> bool **)
+
+let rec eqb = ( = )
+
+(** val leb : int -> int -> bool **)
+
+let rec leb n m =
+  (fun zero succ n ->
+      if n=0 then zero () else succ (n-1))
+    (fun _ -> true)
+    (fun n' ->
+    (fun zero succ n ->
+      if n=0 then zero () else succ (n-1))
+      (fun _ -> false)
+      (fun m' -> leb n' m')
+      m)
+    n
+
 (** val bool_dec : bool -> bool -> sumbool **)
 
 let bool_dec b1 b2 =
   if b1 then if b2 then Left else Right else if b2 then Right else Left
-
-module Nat =
- struct
-  (** val eqb : int -> int -> bool **)
-
-  let rec eqb = ( = )
-
-  (** val leb : int -> int -> bool **)
-
-  let rec leb n m =
-    (fun zero succ n ->
-      if n=0 then zero () else succ (n-1))
-      (fun _ -> true)
-      (fun n' ->
-      (fun zero succ n ->
-      if n=0 then zero () else succ (n-1))
-        (fun _ -> false)
-        (fun m' -> leb n' m')
-        m)
-      n
- end
 
 type ascii =
 | Ascii of bool * bool * bool * bool * bool * bool * bool * bool
@@ -110,9 +107,9 @@ let rec string_dec s x =
         | Left -> string_dec s0 s1
         | Right -> Right))
 
-(** val beq_string : string -> string -> bool **)
+(** val eqb_string : string -> string -> bool **)
 
-let beq_string x y =
+let eqb_string x y =
   match string_dec x y with
   | Left -> true
   | Right -> false
@@ -122,7 +119,7 @@ type 'a total_map = string -> 'a
 (** val t_update : 'a1 total_map -> string -> 'a1 -> string -> 'a1 **)
 
 let t_update m x v x' =
-  if beq_string x x' then v else m x'
+  if eqb_string x x' then v else m x'
 
 type state = int total_map
 
@@ -155,8 +152,8 @@ let rec aeval st = function
 let rec beval st = function
 | BTrue -> true
 | BFalse -> false
-| BEq (a1, a2) -> Nat.eqb (aeval st a1) (aeval st a2)
-| BLe (a1, a2) -> Nat.leb (aeval st a1) (aeval st a2)
+| BEq (a1, a2) -> eqb (aeval st a1) (aeval st a2)
+| BLe (a1, a2) -> leb (aeval st a1) (aeval st a2)
 | BNot b1 -> negb (beval st b1)
 | BAnd (b1, b2) -> if beval st b1 then beval st b2 else false
 

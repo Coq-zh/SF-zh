@@ -14,19 +14,19 @@ Set Warnings "-notation-overridden,-parsing".
 
 Require Import Coq.Arith.Arith.
 
-Require Import Maps.
-Require Import Imp.
-Require Import Types.
-Require Import Smallstep.
-Require Import LibTactics.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Types.
+From PLF Require Import Smallstep.
+From PLF Require Import LibTactics.
 
-Require Stlc.
-Require Equiv.
-Require Imp.
-Require References.
-Require Smallstep.
-Require Hoare.
-Require Sub.
+From PLF Require Stlc.
+From PLF Require Equiv.
+From PLF Require Imp.
+From PLF Require References.
+From PLF Require Smallstep.
+From PLF Require Hoare.
+From PLF Require Sub.
 
 (** Remark: SSReflect is another package providing powerful tactics.
     The library "LibTactics" differs from "SSReflect" in two respects:
@@ -55,13 +55,11 @@ Require Sub.
 
 
 (* ################################################################# *)
-(** * Tactics for Introduction and Case Analysis *)
+(** * Tactics for Naming and Performing Inversion *)
 
 (** This section presents the following tactics:
     - [introv], for naming hypotheses more efficiently,
-    - [inverts], for improving the [inversion] tactic,
-    - [cases], for performing a case analysis without losing information,
-    - [cases_if], for automating case analysis on the argument of [if]. *)
+    - [inverts], for improving the [inversion] tactic. *)
 
 
 (* ================================================================= *)
@@ -102,7 +100,10 @@ Abort.
     [forall] and [->] are interleaved. *)
 
 Theorem ceval_deterministic': forall c st st1,
-  (c / st \\ st1) -> forall st2, (c / st \\ st2) -> st1 = st2.
+  (c / st \\ st1) ->
+  forall st2,
+  (c / st \\ st2) ->
+  st1 = st2.
 Proof.
   introv E1 E2. (* was [intros c st st1 E1 st2 E2] *)
 Abort.
@@ -111,8 +112,8 @@ Abort.
     can be structured patterns. *)
 
 Theorem exists_impl: forall X (P : X -> Prop) (Q : Prop) (R : Prop),
-      (forall x, P x -> Q) ->
-      ((exists x, P x) -> Q).
+  (forall x, P x -> Q) ->
+  ((exists x, P x) -> Q).
 Proof.
   introv [x H2]. eauto.
   (* same as [intros X P Q R H1 [x H2].], which is itself short
@@ -171,7 +172,7 @@ Proof.
   induction E1; intros st2 E2.
   admit. admit. (* skip some basic cases *)
   dup. (* duplicate the goal for comparison *)
-  (* was: *) 
+  (* was: *)
   - inversion E2. subst. admit.
   (* now: *)
   - inverts E2. admit.
@@ -253,24 +254,23 @@ Proof.
   inversion H5. subst. clear H5.
   inversion H4. subst. clear H4.
   inversion H2. subst. clear H2.
-  inversion H5. subst. clear H5.
   inversion H1.
 
   (* The new proof: *)
   - intros C. destruct C.
   inverts H as H1.
   inverts H1 as H2.
-  inverts H2 as H3.
-  inverts H3 as H4.
-  inverts H4.
+  inverts H2 as H3 H4.
+  inverts H3 as H5.
+  inverts H5.
 
   (* The new proof, alternative: *)
   - intros C. destruct C.
   inverts H as H.
   inverts H as H.
-  inverts H as H.
-  inverts H as H.
-  inverts H.
+  inverts H as H1 H2.
+  inverts H1 as H1.
+  inverts H1.
 Qed.
 
 End InvertsExamples.
@@ -340,13 +340,18 @@ Qed.
 (* ================================================================= *)
 (** ** The Tactic [exists] *)
 
-(** The library "LibTactics" introduces a notation for n-ary
-    existentials. For example, one can write [exists x y z, H]
-    instead of [exists x, exists y, exists z, H]. Similarly,
-    the library provides a n-ary tactic [exists a b c], which is a
-    shorthand for [exists a; exists b; exists c]. The following
-    example illustrates both the notation and the tactic for
-    dealing with n-ary existentials. *)
+(** Coq supports n-ary existentials. For example, instead of
+    writing [exists t', exists st', t / st ==> t' / st'], one
+    may write [exists t' st', t / st ==> t' / st'].
+
+    Coq also supports a n-ary version of the tactic [exists],
+    which is used for providing witnesses. For example
+    [exists a, b, c] is short for [exists a; exists b; exists c].
+
+    Note: for historical reasons, the library "LibTactics" also
+    supports a syntax without comas: [exists a b c].
+
+    The following example illustrates n-ary existentials. *)
 
 Theorem progress : forall ST t T st,
   has_type empty ST t T ->
@@ -363,7 +368,7 @@ Proof with eauto.
       destruct IHHt2 as [Ht2p | Ht2p]...
       (* t2 steps *)
       inversion Ht2p as [t2' [st' Hstep]].
-      exists (tapp (tabs x T t) t2') st'...
+      exists (tapp (tabs x T t) t2'), st'...
       (* was: [exists (tapp (tabs x T t) t2'). exists st'...] *)
 Abort.
 
@@ -455,7 +460,9 @@ Abort.
     such as [x = f x]. *)
 
 Lemma demo_substs : forall x y (f:nat->nat),
-  x = f x -> y = x -> y = f x.
+  x = f x ->
+  y = x ->
+  y = f x.
 Proof.
   intros. substs. (* the tactic [subst] would fail here *)
   assumption.
@@ -471,7 +478,9 @@ Qed.
     between tuples. *)
 
 Lemma demo_fequals : forall (a b c d e : nat) (f : nat->nat->nat->nat->nat),
-  a = 1 -> b = e -> e = 2 ->
+  a = 1 ->
+  b = e ->
+  e = 2 ->
   f a b c d = f 1 2 c 4.
 Proof.
   intros. fequals.
@@ -568,7 +577,8 @@ Module UnfoldsExample.
     name the constant explicitly. *)
 
 Lemma bexp_eval_true : forall b st,
-  beval st b = true -> (bassn b) st.
+  beval st b = true ->
+  (bassn b) st.
 Proof.
   intros b st Hbe. dup.
 
@@ -597,8 +607,9 @@ End UnfoldsExample.
     assumption, such as [False] or [0 = S n], or if it contains
     contradictory assumptions, such as [x = true] and [x = false]. *)
 
-Lemma demo_false :
-  forall n, S n = 1 -> n = 0.
+Lemma demo_false : forall n,
+  S n = 1 ->
+  n = 0.
 Proof.
   intros. destruct n. reflexivity. false.
 Qed.
@@ -607,7 +618,9 @@ Qed.
     the goals with [False] and then applies [H]. *)
 
 Lemma demo_false_arg :
-  (forall n, n < 0 -> False) -> (3 < 0) -> 4 < 0.
+  (forall n, n < 0 -> False) ->
+  3 < 0 ->
+  4 < 0.
 Proof.
   intros H L. false H. apply L.
 Qed.
@@ -616,8 +629,9 @@ Qed.
     it tries to find a contradiction in the goal. The tactic
     [tryfalse] is generally called after a case analysis. *)
 
-Lemma demo_tryfalse :
-  forall n, S n = 1 -> n = 0.
+Lemma demo_tryfalse : forall n,
+  S n = 1 ->
+  n = 0.
 Proof.
   intros. destruct n; tryfalse. reflexivity.
 Qed.
@@ -635,9 +649,9 @@ Module GenExample.
   Import STLC.
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
-     has_type (update Gamma x U) t S ->
-     has_type empty v U ->
-     has_type Gamma ([x:=v]t) S.
+  has_type (update Gamma x U) t S ->
+  has_type empty v U ->
+  has_type Gamma ([x:=v]t) S.
 Proof.
   dup.
 
@@ -843,7 +857,8 @@ Axiom typing_inversion_var : forall (G:context) (x:string) (T:ty),
     [lets K: typing_inversion_var H], as shown next. *)
 
 Lemma demo_lets_1 : forall (G:context) (x:string) (T:ty),
-  has_type G (tvar x) T -> True.
+  has_type G (tvar x) T ->
+  True.
 Proof.
   intros G x T H. dup.
 
@@ -909,7 +924,8 @@ Abort.
     value for [n]. This can be achieved by writting [lets K: H __ 3]. *)
 
 Lemma demo_lets_underscore :
-  (forall n m, n <= m -> n < m+1) -> True.
+  (forall n m, n <= m -> n < m+1) ->
+  True.
 Proof.
   intros H.
 
@@ -975,9 +991,9 @@ Module ExamplesInstantiations.
     need to fill in as an exercise. *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
-     has_type (update Gamma x U) t S ->
-     has_type empty v U ->
-     has_type Gamma ([x:=v]t) S.
+  has_type (update Gamma x U) t S ->
+  has_type empty v U ->
+  has_type Gamma ([x:=v]t) S.
 Proof with eauto.
   intros Gamma x U v t S Htypt Htypv.
   generalize dependent S. generalize dependent Gamma.
@@ -989,7 +1005,7 @@ Proof with eauto.
     (* old: destruct (typing_inversion_var _ _ _ Htypt) as [T [Hctx Hsub]].*)
     (* new: *) lets (T&Hctx&Hsub): typing_inversion_var Htypt.
     unfold update, t_update in Hctx.
-    destruct (beq_stringP x y)...
+    destruct (eqb_stringP x y)...
     + (* x=y *)
       subst.
       inversion Hctx; subst. clear Hctx.
@@ -1020,17 +1036,17 @@ Proof with eauto.
     (* old: apply T_Sub with (TArrow T1 T2)... *)
     (* new: *) applys T_Sub (TArrow T1 T2)...
      apply T_Abs...
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x=y *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_stringP y x)...
+      destruct (eqb_stringP y x)...
     + (* x<>y *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y z)...
-      subst. rewrite false_beq_string...
+      destruct (eqb_stringP y z)...
+      subst. rewrite false_eqb_string...
   - (* ttrue *)
     lets: typing_inversion_true Htypt...
   - (* tfalse *)

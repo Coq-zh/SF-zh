@@ -1,12 +1,15 @@
 (** * Hoare: 霍尔逻辑（第一部分） *)
 
+(**  Remove "Nat." 
+ *)
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
+Require Import Coq.Arith.PeanoNat. Import Nat.
 Require Import Coq.omega.Omega.
-Require Import Imp. 
-Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Maps.
 
 (** 在_'逻辑基础'_（_'软件基础'_ 的第一章) 中，
     我们用课程前面的部分中学习的数学工具研究了一个小型编程语言 Imp 。
@@ -189,7 +192,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
 
    5) {{X = m}}
       c
-      {{Y = real_fact m}}    
+      {{Y = real_fact m}}   
 
    6) {{X = m}}
       c
@@ -422,7 +425,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_hoare_asgn_examples : option (prod nat string) := None.
+Definition manual_grade_for_hoare_asgn_examples : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星, recommended (hoare_asgn_wrong)  *)
@@ -440,7 +443,7 @@ Definition manual_grade_for_hoare_asgn_examples : option (prod nat string) := No
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_hoare_asgn_wrong : option (prod nat string) := None.
+Definition manual_grade_for_hoare_asgn_wrong : option (nat*string) := None.
 (** [] *)
 
 Local Close Scope aexp_scope.
@@ -723,7 +726,7 @@ Qed.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_hoare_asgn_examples_2 : option (prod nat string) := None.
+Definition manual_grade_for_hoare_asgn_examples_2 : option (nat*string) := None.
 (** [] *)
 
 
@@ -793,7 +796,7 @@ Proof.
     apply hoare_skip.
   - (* 组合左侧 *)
     eapply hoare_consequence_pre. apply hoare_asgn.
-    intros st H. subst. reflexivity. 
+    intros st H. subst. reflexivity.
 Qed.
 
 (** 我们一般会将 [hoare_seq] 和
@@ -827,7 +830,7 @@ Proof.
 
      你的证明不应该使用 [unfold hoare_triple]。 *)
 
-Definition swap_program : com 
+Definition swap_program : com
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Theorem swap_exercise :
@@ -850,7 +853,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_hoarestate1 : option (prod nat string) := None.
+Definition manual_grade_for_hoarestate1 : option (nat*string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -953,7 +956,7 @@ Proof.
     eapply hoare_consequence_pre. apply hoare_asgn.
     unfold bassn, assn_sub, t_update, assert_implies.
     simpl. intros st [_ H].
-    apply beq_nat_true in H.
+    apply eqb_eq in H.
     rewrite H. omega.
   - (* Else *)
     eapply hoare_consequence_pre. apply hoare_asgn.
@@ -1081,7 +1084,7 @@ Proof. (* 请在此处解答 *) Admitted.
 End If1.
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_if1_hoare : option (prod nat string) := None.
+Definition manual_grade_for_if1_hoare : option (nat*string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -1154,7 +1157,7 @@ Proof.
   remember (WHILE b DO c END) as wcom eqn:Heqwcom.
   induction He;
     try (inversion Heqwcom); subst; clear Heqwcom.
-  - (* E_WhileFalse *)  
+  - (* E_WhileFalse *) 
     split. assumption. apply bexp_eval_false. assumption.
   - (* E_WhileTrue *)
     apply IHHe2. reflexivity.
@@ -1188,7 +1191,7 @@ Proof.
   unfold bassn, assn_sub, assert_implies, t_update. simpl.
     intros st [H1 H2]. apply leb_complete in H2. omega.
   unfold bassn, assert_implies. intros st [Hle Hb].
-    simpl in Hb. destruct (leb (st X) 2) eqn : Heqle.
+    simpl in Hb. destruct ((st X) <=? 2) eqn : Heqle.
     exfalso. apply Hb; reflexivity.
     apply leb_iff_conv in Heqle. omega.
 Qed.
@@ -1332,7 +1335,7 @@ Proof.
 End RepeatExercise.
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_hoare_repeat : option (prod nat string) := None.
+Definition manual_grade_for_hoare_repeat : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -1440,7 +1443,7 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
 (** 请通过定义 [havoc_pre] 来创建一个关于 [HAVOC] 的证明规则，并
     证明此规则是正确的。*)
 
-Definition havoc_pre (X : string) (Q : Assertion) : Assertion 
+Definition havoc_pre (X : string) (Q : Assertion) : Assertion
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Theorem hoare_havoc : forall (Q : Assertion) (X : string),

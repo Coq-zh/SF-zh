@@ -2,12 +2,13 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.EqNat.
+Require Import Coq.Arith.EqNat. 
+Require Import Coq.Init.Nat. 
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Import ListNotations.
-Require Import Maps.
-Require Import Imp. 
+From PLF Require Import Maps.
+From PLF Require Import Imp. 
 
 (** 我们目前见到的（对 [aexp]，[bexp] 和命令的）求值器是以“大步（big-step）”
     风格构造的：它们以“单一大步（one big-step）”的方式描述了一个表达式如
@@ -637,7 +638,7 @@ Definition bool_step_prop3 :=
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_smallstep_bools : option (prod nat string) := None.
+Definition manual_grade_for_smallstep_bools : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：3 星, optional (progress_bool)  *)
@@ -1039,7 +1040,7 @@ Proof.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_eval__multistep_inf : option (prod nat string) := None.
+Definition manual_grade_for_eval__multistep_inf : option (nat*string) := None.
 (** [] *)
 
 (** 对于另一个方向，我们需要一个引理来对单步归约和大步求值建立联系。*)
@@ -1135,7 +1136,7 @@ Inductive step : tm -> tm -> Prop :=
 End Combined.
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_combined_properties : option (prod nat string) := None.
+Definition manual_grade_for_combined_properties : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -1194,7 +1195,7 @@ Reserved Notation " t '/' st '==>b' t' "
 Inductive bstep : state -> bexp -> bexp -> Prop :=
 | BS_Eq : forall st n1 n2,
     (BEq (ANum n1) (ANum n2)) / st ==>b
-    (if (beq_nat n1 n2) then BTrue else BFalse)
+    (if (n1 =? n2) then BTrue else BFalse)
 | BS_Eq1 : forall st a1 a1' a2,
     a1 / st ==>a a1' ->
     (BEq a1 a2) / st ==>b (BEq a1' a2)
@@ -1204,7 +1205,7 @@ Inductive bstep : state -> bexp -> bexp -> Prop :=
     (BEq v1 a2) / st ==>b (BEq v1 a2')
 | BS_LtEq : forall st n1 n2,
     (BLe (ANum n1) (ANum n2)) / st ==>b
-             (if (leb n1 n2) then BTrue else BFalse)
+             (if (n1 <=? n2) then BTrue else BFalse)
 | BS_LtEq1 : forall st a1 a1' a2,
     a1 / st ==>a a1' ->
     (BLe a1 a2) / st ==>b (BLe a1' a2)

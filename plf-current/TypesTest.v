@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Types.
-Parameter MISSING: Type. 
+From PLF Require Import Types.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Types.
+From PLF Require Import Types.
 Import Check.
 
 Goal True.
@@ -174,4 +175,36 @@ idtac " ".
 
 idtac "Max points - standard: 21".
 idtac "Max points - advanced: 31".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- some_term_is_stuck ---------".
+Print Assumptions some_term_is_stuck.
+idtac "---------- value_is_nf ---------".
+Print Assumptions value_is_nf.
+idtac "---------- progress ---------".
+Print Assumptions progress.
+idtac "---------- preservation ---------".
+Print Assumptions preservation.
+idtac "---------- preservation' ---------".
+Print Assumptions preservation'.
+idtac "---------- NormalizePlayground.normalize_ex ---------".
+Print Assumptions NormalizePlayground.normalize_ex.
+idtac "---------- subject_expansion ---------".
+idtac "MANUAL".
+idtac "---------- variation1 ---------".
+idtac "MANUAL".
+idtac "---------- variation2 ---------".
+idtac "MANUAL".
+idtac "---------- remove_predzero ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- finish_progress_informal ---------".
+idtac "MANUAL".
+idtac "---------- finish_preservation_informal ---------".
+idtac "MANUAL".
+idtac "---------- prog_pres_bigstep ---------".
+idtac "MANUAL".
 Abort.

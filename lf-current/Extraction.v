@@ -15,8 +15,9 @@ Extraction Language OCaml.
     也可以从其它模块中加载。 *)
 
 Require Import Coq.Arith.Arith.
+Require Import Coq.Init.Nat.
 Require Import Coq.Arith.EqNat.
-Require Import ImpCEvalFun.
+From LF Require Import ImpCEvalFun.
 
 (** 最后，我们来指定需要提取的定义，以及用于保存提取结果的文件名。 *)
 
@@ -51,7 +52,7 @@ Extract Inductive nat => "int"
 
 Extract Constant plus => "( + )".
 Extract Constant mult => "( * )".
-Extract Constant beq_nat => "( = )".
+Extract Constant eqb => "( = )".
 
 (** 注意：保证提取结果的合理性是_'你的责任'_。例如，以下指定可能十分自然：
 
@@ -86,10 +87,10 @@ Extract Inductive sumbool => "bool" ["true" "false"].
 
 (** 提取命令是相同的。 *)
 
-Require Import Imp.
-Require Import ImpParser.
+From LF Require Import Imp.
+From LF Require Import ImpParser.
 
-Require Import Maps.
+From LF Require Import Maps.
 Definition empty_state := { --> 0 }.
 Extraction "imp.ml" empty_state ceval_step parse.
 

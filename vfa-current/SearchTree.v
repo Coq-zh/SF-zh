@@ -21,7 +21,7 @@
    of binary search trees. *)
 
 Require Import Coq.Strings.String.
-Require Import Perm.
+From VFA Require Import Perm.
 Require Import FunctionalExtensionality.
 
 (* ################################################################# *)
@@ -32,7 +32,7 @@ Require Import FunctionalExtensionality.
     VFA's [Maps] module is almost exactly the same, except that it
     implements functions from [nat] to some arbitrary type [A]. *)
 
-Require Import Maps.
+From VFA Require Import Maps.
 
 (* ################################################################# *)
 (** * Sections *)
@@ -312,7 +312,7 @@ replace (example_map v2 v4 v5) with m; subst m.
 repeat constructor.
 extensionality x.
 (* HINT:
-  First,    [unfold example_map, t_update, combine, t_empty, beq_id.]
+  First,    [unfold example_map, t_update, combine, t_empty, eqb_id.]
   Then, repeat the following procedure:  If you see something like
   [if 4 =? x then ... else ...],    use the tactic [bdestruct (4 =? x)].
   If the arithmetic facts above the line can't all be true, use [omega].
@@ -389,7 +389,7 @@ Proof.
   (* FILL IN YOUR EXPLANATION HERE *)
 Abort.
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_elements_relate_informal : option (prod nat string) := None.
+Definition manual_grade_for_elements_relate_informal : option (nat*string) := None.
 (** [] *)
 
 (** Instead of doing a _formal_ proof that [elements_relate] is true,

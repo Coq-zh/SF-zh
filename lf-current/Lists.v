@@ -1,24 +1,24 @@
 (** * Lists: 使用结构化的数据 *)
 
-Require Export Induction.
+From LF Require Export Induction.
 Module NatList.
 
 (* ################################################################# *)
 (** * 数值序对 *)
 
 (** 在 [Inductive] 类型定义中，每个构造子（Constructor）可以有任意多个参数
-    —— 可以没有（如 [true] 和 [O]），可以只有一个（如 [S]），也可以更多，如下所示： *)
+    —— 可以没有（如 [true] 和 [O]），可以只有一个（如 [S]），也可以更多
+    （如 [nybble]，以及下文所示）： *)
 
 Inductive natprod : Type :=
-| pair : nat -> nat -> natprod.
+| pair (n1 n2 : nat).
 
 (** 此声明可以读作：“只有一种方式来构造一个数值序对：通过将构造子 [pair]
     应用到两个 [nat] 类型的参数上”。 *)
 
 Check (pair 3 5).
 
-(** 下述函数分别用于提取二元组中的第一个和第二个分量，
-          兼展示如何匹配带有两个参数的构造子。 *)
+(** 下述函数分别用于提取二元组中的第一个和第二个分量。 *)
 
 Definition fst (p : natprod) : nat :=
   match p with
@@ -33,13 +33,13 @@ Definition snd (p : natprod) : nat :=
 Compute (fst (pair 3 5)).
 (* ===> 3 *)
 
-(** 由于序对很常用，因此若能有数学记法 [(x,y)] 来代替 [pair x y]
-    会很方便。我们可以声明一个 [Notation] 来让 Coq 接受这种记法。 *)
+(** 鉴于二元组较为常用，不妨以标准的数学记法 [(x,y)] 取代 [pair x y]。
+    通过 [Notation] 向 Coq 声明该记法： *)
 
 Notation "( x , y )" := (pair x y).
 
-(** 这种新的序对记法在表达式和模式匹配中都能用（其实我们在 [Basics]
-    一章的 [minus] 函数中已经用过了，因为标准库中提供了这种记法）： *)
+(** The new pair notation can be used both in expressions and in
+    pattern matches. *)
 
 Compute (fst (3,5)).
 
@@ -57,6 +57,41 @@ Definition swap_pair (p : natprod) : natprod :=
   match p with
   | (x,y) => (y,x)
   end.
+
+(** Note that pattern-matching on a pair (with parentheses: [(x, y)])
+    is not to be confused with the "multiple pattern" syntax
+    (with no parentheses: [x, y]) that we have seen previously.
+
+    The above examples illustrate pattern matching on a pair with
+    elements [x] and [y], whereas [minus] below (taken from
+    [Basics]) performs pattern matching on the values [n]
+    and [m].
+
+       Fixpoint minus (n m : nat) : nat :=
+         match n, m with
+         | O   , _    => O
+         | S _ , O    => n
+         | S n', S m' => minus n' m'
+         end.
+
+    The distinction is minor, but it is worth knowing that they
+    are not the same. For instance, the following definitions are
+    ill-formed:
+
+        (* Can't match on a pair with multiple patterns: *)
+        Definition bad_fst (p : natprod) : nat :=
+          match p with
+          | x, y => x
+          end.
+
+        (* Can't match on multiple values with pair patterns: *)
+        Definition bad_minus (n m : nat) : nat :=
+          match n, m with
+          | (O   , _   ) => O
+          | (S _ , O   ) => n
+          | (S n', S m') => bad_minus n' m'
+          end.
+*)
 
 (** 我们现在来证明一些有关二元组的简单事实。
 
@@ -85,8 +120,8 @@ Theorem surjective_pairing : forall (p : natprod),
 Proof.
   intros p.  destruct p as [n m].  simpl.  reflexivity.  Qed.
 
-(** 注意，在这里 [destruct] 的行为不同于对 [nat] 的行为，
-    这次它只会生成一个子目标，因为 [natprod] 只能通过一种方式来构造。 *)
+(** 注意：不同于解构自然数产生两个子目标，[destruct] 在此只产生
+    一个子目标。这是因为 [natprod] 只有一种构造方法。 *)
 
 (** **** 练习：1 星 (snd_fst_is_swap)  *)
 Theorem snd_fst_is_swap : forall (p : natprod),
@@ -109,8 +144,8 @@ Proof.
     “一个列表要么是空的，要么就是由一个数和另一个列表组成的序对。” *)
 
 Inductive natlist : Type :=
-  | nil  : natlist
-  | cons : nat -> natlist -> natlist.
+  | nil
+  | cons (n : nat) (l : natlist).
 
 (** 例如，这是一个三元素列表： *)
 
@@ -185,8 +220,7 @@ Fixpoint app (l1 l2 : natlist) : natlist :=
   | h :: t => h :: (app t l2)
   end.
 
-(** 实际上，之后很多地方都会用到 [app]，
-    所以如果我们能为它定义一个中缀操作符的话会很方便。 *)
+(** 鉴于下文中 [app] 随处可见，不妨将其定义为中缀运算符。 *)
 
 Notation "x ++ y" := (app x y)
                      (right associativity, at level 60).
@@ -201,10 +235,9 @@ Proof. reflexivity.  Qed.
 (* ----------------------------------------------------------------- *)
 (** *** Head（带默认值）与 Tail *)
 
-(** 我们来看两个关于列表的小例子。[hd] 函数返回列表的第一个元素
-    （即“头元素”Head）。而 [tl] 返回除了第一个元素以外的所有元素
-    （即“尾元素”Tail）。当然，空列表没有第一个元素，所以我们必须传入一个默认值，
-    让该值成为这种情况下的返回值。 *)
+(** 下面介绍列表上的两种运算：[hd] 函数返回列表的第一个元素（即“表头”）；
+    [tl] 函数返回列表除去第一个元素以外的部分（即“表尾”）。考虑到空表没有表头，
+    传入一个参数作为返回的默认值。 *)
 
 Definition hd (default:nat) (l:natlist) : nat :=
   match l with
@@ -224,7 +257,6 @@ Example test_hd2:             hd 0 [] = 0.
 Proof. reflexivity.  Qed.
 Example test_tl:              tl [1;2;3] = [2;3].
 Proof. reflexivity.  Qed.
-
 
 (* ----------------------------------------------------------------- *)
 (** *** 练习 *)
@@ -267,10 +299,10 @@ Example test_countoddmembers3:
 (** 完成 [alternate] 的定义，它从两个列表中交替地取出元素并合并为一个列表，
     就像把拉链“拉”起来一样。更多具体示例见后面的测试。
 
-    注意：[alternate] 有一种自然而优雅的定义，但是这一定义无法满足 Coq
+    （注意：[alternate] 有一种自然而优雅的定义，但是这一定义无法满足 Coq
     对于 [Fixpoint] 必须“显然会终止”的要求。如果你发现你被这种解法束缚住了，
     可以试着换一种稍微啰嗦一点的解法，比如同时对两个列表中的元素进行操作。
-    （有种可行的解法需要定义新的序对，但这并不是唯一的方法。） *)
+    有种可行的解法需要定义新的序对，但这并不是唯一的方法。） *)
 
 Fixpoint alternate (l1 l2 : natlist) : natlist
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -293,10 +325,10 @@ Example test_alternate4:
 (** [] *)
 
 (* ================================================================= *)
-(** ** 用列表实现袋子（Bag） *)
+(** ** 用列表实现口袋（Bag） *)
 
 (** [bag]（或者叫 [multiset] 多重集）类似于集合，只是其中每个元素都能出现不止一次。
-   袋子的一种可行的实现就是用列表来表示。 *)
+   口袋的一种可行的表示是列表。 *)
 
 Definition bag := natlist.
 
@@ -352,8 +384,9 @@ Example test_member2:             member 2 [1;4;1] = false.
 (** **** 练习：3 星, optional (bag_more_functions)  *)
 (** 你可以把下面这些和 [bag] 有关的函数当作额外的练习 *)
 
-(** 当 [remove_one] 被应用到一个没有数可以移除的背包时，
-    它应该返回原列表而不做任何改变。 *)
+(** 倘若某口袋不包含所要移除的数字，那么将 [remove_one] 作用其上不应改变其内容。
+    （本练习为选做，但高级班的学生为了完成后面的练习，需要写出 [remove_one]
+    的定义。） *)
 
 Fixpoint remove_one (v:nat) (s:bag) : bag
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -393,12 +426,9 @@ Example test_subset1:              subset [1;2] [2;1;4;1] = true.
  (* 请在此处解答 *) Admitted.
 Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
  (* 请在此处解答 *) Admitted.
-
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_bag_theorem : option (prod nat string) := None.
 (** [] *)
 
-(** **** 练习：3 星, recommended (bag_theorem)  *)
+(** **** 练习：2 星, recommended (bag_theorem)  *)
 (** 写一个你认为有趣的关于袋子的定理 [bag_theorem]，然后证明它；
     这个定理需要用到 [count] 和 [add]。注意，这是个开放性问题。
     也许你写下的定理是正确的，但它可能会涉及到你尚未学过的技巧因而无法证明。
@@ -411,6 +441,11 @@ Proof.
 Qed.
 *)
 
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_bag_theorem : option (nat*string) := None.
+(* Note to instructors: For silly technical reasons, in this
+   file (only) you will need to write [Some (Datatypes.pair 3 ""%string)]
+   rather than [Some (3,""%string)] to enter your grade and comments. *)
 (** [] *)
 
 (* ################################################################# *)
@@ -446,8 +481,8 @@ Proof.
 (* ================================================================= *)
 (** ** 一点点说教 *)
 
-(** 只是阅读示例证明的话，你不会获得什么特别有用的东西。搞清楚每一个细节非常重要，
-    你应该在 Coq 中执行这些证明并思考每一步在整个证明中的作用，否则练习题将毫无用处。
+(** 只是阅读证明的话，你不会获得什么特别有用的东西。搞清楚每一个细节非常重要，
+    你应该在 Coq 中单步执行这些证明并思考每一步在整个证明中的作用，否则练习题将毫无用处。
     啰嗦完毕。 *)
 
 (* ================================================================= *)
@@ -536,9 +571,10 @@ Proof. reflexivity.  Qed.
 (* ----------------------------------------------------------------- *)
 (** *** [rev] 的性质 *)
 
-(** 现在我们来证明一些关于 [rev] 性质的定理。
-    与我们所见过的归纳证明相比，此定理的证明更具挑战性：列表反转后长度不变。
-    我们第一次尝试证明它时卡在了第二种情况上（即某个列表的“后继”）： *)
+(** Now, for something a bit more challenging than the proofs
+    we've seen so far, let's prove that reversing a list does not
+    change its length.  Our first attempt gets stuck in the successor
+    case... *)
 
 Theorem rev_length_firsttry : forall l : natlist,
   length (rev l) = length l.
@@ -652,7 +688,6 @@ Proof.
     对于我们现在的目的而言，最好先用更加冗长的方式。 *)
 
 
-
 (** ** [Search] 搜索*)
 
 (** 我们已经见过很多需要使用之前证明过的结论（例如通过 [rewrite]）来证明的定理了。
@@ -707,27 +742,27 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (beq_natlist)  *)
-(** 填写 [beq_natlist] 的定义，它通过比较列表中的数字来判断是否相等。
-    证明对于所有列表 [l]，[beq_natlist l l] 返回 [true]。 *)
+(** **** 练习：2 星 (eqblist)  *)
+(** 填写 [eqblist] 的定义，它通过比较列表中的数字来判断是否相等。
+    证明对于所有列表 [l]，[eqblist l l] 返回 [true]。 *)
 
-Fixpoint beq_natlist (l1 l2 : natlist) : bool
+Fixpoint eqblist (l1 l2 : natlist) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-Example test_beq_natlist1 :
-  (beq_natlist nil nil = true).
+Example test_eqblist1 :
+  (eqblist nil nil = true).
  (* 请在此处解答 *) Admitted.
 
-Example test_beq_natlist2 :
-  beq_natlist [1;2;3] [1;2;3] = true.
+Example test_eqblist2 :
+  eqblist [1;2;3] [1;2;3] = true.
 (* 请在此处解答 *) Admitted.
 
-Example test_beq_natlist3 :
-  beq_natlist [1;2;3] [1;2;4] = false.
+Example test_eqblist3 :
+  eqblist [1;2;3] [1;2;4] = false.
  (* 请在此处解答 *) Admitted.
 
-Theorem beq_natlist_refl : forall l:natlist,
-  true = beq_natlist l l.
+Theorem eqblist_refl : forall l:natlist,
+  true = eqblist l l.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -739,15 +774,15 @@ Proof.
 
 (** **** 练习：1 星 (count_member_nonzero)  *)
 Theorem count_member_nonzero : forall (s : bag),
-  leb 1 (count 1 (1 :: s)) = true.
+  1 <=? (count 1 (1 :: s)) = true.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** 下面这条关于 [ble] 的引理可助你完成下一个证明。 *)
 
-Theorem ble_n_Sn : forall n,
-  leb n (S n) = true.
+Theorem leb_n_Sn : forall n,
+  n <=? (S n) = true.
 Proof.
   intros n. induction n as [| n' IHn'].
   - (* 0 *)
@@ -755,9 +790,11 @@ Proof.
   - (* S n' *)
     simpl.  rewrite IHn'.  reflexivity.  Qed.
 
+(** Before doing the next exercise, make sure you've filled in the
+   definition of [remove_one] above. *)
 (** **** 练习：3 星, advanced (remove_does_not_increase_count)  *)
 Theorem remove_does_not_increase_count: forall (s : bag),
-  leb (count 0 (remove_one 0 s)) (count 0 s) = true.
+  (count 0 (remove_one 0 s)) <=? (count 0 s) = true.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -778,7 +815,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_rev_injective : option (prod nat string) := None.
+Definition manual_grade_for_rev_injective : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -790,7 +827,7 @@ Definition manual_grade_for_rev_injective : option (prod nat string) := None.
 Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
   match l with
   | nil => 42  (* 任意值！ *)
-  | a :: l' => match beq_nat n O with
+  | a :: l' => match n =? O with
                | true => a
                | false => nth_bad l' (pred n)
                end
@@ -803,8 +840,8 @@ Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
     我们将此类型命名为 [natoption]。 *)
 
 Inductive natoption : Type :=
-  | Some : nat -> natoption
-  | None : natoption.
+  | Some (n : nat)
+  | None.
 
 (** 然后我们可以修改前面 [nth_bad] 的定义，使其在列表太短时返回 [None]，
     在列表足够长且 [a] 在 [n] 处时返回 [Some a]。我们将这个新函数称为
@@ -813,7 +850,7 @@ Inductive natoption : Type :=
 Fixpoint nth_error (l:natlist) (n:nat) : natoption :=
   match l with
   | nil => None
-  | a :: l' => match beq_nat n O with
+  | a :: l' => match n =? O with
                | true => Some a
                | false => nth_error l' (pred n)
                end
@@ -834,7 +871,7 @@ Proof. reflexivity. Qed.
 Fixpoint nth_error' (l:natlist) (n:nat) : natoption :=
   match l with
   | nil => None
-  | a :: l' => if beq_nat n O then Some a
+  | a :: l' => if n =? O then Some a
                else nth_error' l' (pred n)
   end.
 
@@ -888,32 +925,32 @@ End NatList.
 (** 首先，我们定义一个新的归纳数据类型 [id] 来用作偏映射的“键”。 *)
 
 Inductive id : Type :=
-  | Id : nat -> id.
+  | Id (n : nat).
 
 (** 本质上来说，[id] 只是一个数。但通过 [Id] 标签封装自然数来引入新的类型，
     能让定义变得更加可读，同时我们也可以灵活地按需修改它的定义。 *)
 
 (** 我们还需要一个 [id] 的相等性测试： *)
 
-Definition beq_id (x1 x2 : id) :=
+Definition eqb_id (x1 x2 : id) :=
   match x1, x2 with
-  | Id n1, Id n2 => beq_nat n1 n2
+  | Id n1, Id n2 => n1 =? n2
   end.
 
-(** **** 练习：1 星 (beq_id_refl)  *)
-Theorem beq_id_refl : forall x, true = beq_id x x.
+(** **** 练习：1 星 (eqb_id_refl)  *)
+Theorem eqb_id_refl : forall x, true = eqb_id x x.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 部分映射定义如下： *)
+(** 现在我们定义偏映射的类型： *)
 
 Module PartialMap.
 Export NatList.
   
 Inductive partial_map : Type :=
-  | empty  : partial_map
-  | record : id -> nat -> partial_map -> partial_map.
+  | empty
+  | record (i : id) (v : nat) (m : partial_map).
 
 (** 此声明可以读作：“有两种方式可以构造一个 [partial_map]：用构造子 [empty]
     表示一个空的偏映射，或通过将构造子 [record] 应用到一个键、一个值和一个既有的
@@ -934,11 +971,10 @@ Definition update (d : partial_map)
 Fixpoint find (x : id) (d : partial_map) : natoption :=
   match d with
   | empty         => None
-  | record y v d' => if beq_id x y
+  | record y v d' => if eqb_id x y
                      then Some v
                      else find x d'
   end.
-
 
 (** **** 练习：1 星 (update_eq)  *)
 Theorem update_eq :
@@ -951,7 +987,7 @@ Proof.
 (** **** 练习：1 星 (update_neq)  *)
 Theorem update_neq :
   forall (d : partial_map) (x y : id) (o: nat),
-    beq_id x y = false -> find x (update d y o) = find x d.
+    eqb_id x y = false -> find x (update d y o) = find x d.
 Proof.
  (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -961,15 +997,14 @@ End PartialMap.
 (** 考虑以下归纳定义： *)
 
 Inductive baz : Type :=
-  | Baz1 : baz -> baz
-  | Baz2 : baz -> bool -> baz.
+  | Baz1 (x : baz)
+  | Baz2 (y : baz) (b : bool).
 
-(** 类型 [baz] 有_'多少'_个元素？（请用汉语或你习惯的自然语言解答。） *)
+(** 有_'多少'_个表达式具备类型 [baz]？（以注释说明。） *)
 
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_baz_num_elts : option (prod nat string) := None.
+Definition manual_grade_for_baz_num_elts : option (nat*string) := None.
 (** [] *)
-
 

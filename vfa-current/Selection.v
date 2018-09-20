@@ -24,7 +24,7 @@
 (** * The Selection-Sort Program  *)
 
 Require Export Coq.Lists.List.
-Require Import Perm.
+From VFA Require Import Perm.
 
 (** Find (and delete) the smallest element in a list. *)
 

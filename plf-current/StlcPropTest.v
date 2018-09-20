@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import StlcProp.
-Parameter MISSING: Type. 
+From PLF Require Import StlcProp.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import StlcProp.
+From PLF Require Import StlcProp.
 Import Check.
 
 Goal True.
@@ -115,4 +116,28 @@ idtac " ".
 
 idtac "Max points - standard: 17".
 idtac "Max points - advanced: 20".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- afi ---------".
+idtac "MANUAL".
+idtac "---------- subject_expansion_stlc ---------".
+idtac "MANUAL".
+idtac "---------- types_unique ---------".
+idtac "MANUAL".
+idtac "---------- progress_preservation_statement ---------".
+idtac "MANUAL".
+idtac "---------- stlc_variation1 ---------".
+idtac "MANUAL".
+idtac "---------- stlc_variation2 ---------".
+idtac "MANUAL".
+idtac "---------- stlc_variation3 ---------".
+idtac "MANUAL".
+idtac "---------- stlc_arith ---------".
+idtac "MANUAL".
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- STLCProp.progress' ---------".
+Print Assumptions STLCProp.progress'.
 Abort.

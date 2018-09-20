@@ -2,8 +2,8 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Lists.List. Import ListNotations.
-Require Import Maps.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
 
 Hint Constructors multi.
 
@@ -55,7 +55,7 @@ Hint Constructors multi.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_norm_fail : option (prod nat string) := None.
+Definition manual_grade_for_norm_fail : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：5 星, recommended (norm)  *)
@@ -66,7 +66,7 @@ Definition manual_grade_for_norm_fail : option (prod nat string) := None.
     in. *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_norm : option (prod nat string) := None.
+Definition manual_grade_for_norm : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -107,9 +107,9 @@ Inductive tm : Type :=
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar y => if beq_string x y then s else t
+  | tvar y => if eqb_string x y then s else t
   | tabs y T t1 =>
-      tabs y T (if beq_string x y then t1 else (subst x s t1))
+      tabs y T (if eqb_string x y then t1 else (subst x s t1))
   | tapp t1 t2 => tapp (subst x s t1) (subst x s t2)
   | tpair t1 t2 => tpair (subst x s t1) (subst x s t2)
   | tfst t1 => tfst (subst x s t1)
@@ -297,7 +297,7 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros y Hafi.
-    unfold update, t_update. destruct (beq_stringP x y)...
+    unfold update, t_update. destruct (eqb_stringP x y)...
   - (* T_Pair *)
     apply T_Pair...
   - (* T_If *)
@@ -314,7 +314,7 @@ Proof with eauto.
   - (* T_Abs *)
     destruct IHHtyp as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_string in Hctx...
+    rewrite false_eqb_string in Hctx...
 Qed.
 
 Corollary typable_empty__closed : forall t T,
@@ -353,7 +353,7 @@ Proof with eauto.
 
        There are two cases to consider: either [x=y] or [x<>y]. *)
     unfold update, t_update in H1.
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x=y *)
     (* If [x = y], then we know that [U = S], and that [[x:=v]y = v].
        So what we really must show is that if [empty |- v : U] then
@@ -379,14 +379,14 @@ Proof with eauto.
          [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 S].
 
        We can calculate that
-         [x:=v]t = tabs y T11 (if beq_string x y then t0 else [x:=v]t0)
+         [x:=v]t = tabs y T11 (if eqb_string x y then t0 else [x:=v]t0)
        And we must show that [Gamma |- [x:=v]t : T11->T12].  We know
        we will do so using [T_Abs], so it remains to be shown that:
-         [Gamma,y:T11 |- if beq_string x y then t0 else [x:=v]t0 : T12]
+         [Gamma,y:T11 |- if eqb_string x y then t0 else [x:=v]t0 : T12]
        We consider two cases: [x = y] and [x <> y].
     *)
     apply T_Abs...
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x=y *)
     (* If [x = y], then the substitution has no effect.  Context
        invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
@@ -395,7 +395,7 @@ Proof with eauto.
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_string y x)...
+      destruct (eqb_string y x)...
     + (* x<>y *)
     (* If [x <> y], then the IH and context invariance allow us to show that
          [Gamma,x:U,y:T11 |- t0 : T12]       =>
@@ -403,8 +403,8 @@ Proof with eauto.
          [Gamma,y:T11 |- [x:=v]t0 : T12] *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y z)...
-      subst. rewrite false_beq_string...
+      destruct (eqb_stringP y z)...
+      subst. rewrite false_eqb_string...
 Qed.
 
 Theorem preservation : forall t t' T,
@@ -806,7 +806,7 @@ Fixpoint lookup {X:Set} (k : string) (l : list (string * X)) {struct l}
   match l with
     | nil => None
     | (j,x) :: l' =>
-      if beq_string j k then Some x else lookup k l'
+      if eqb_string j k then Some x else lookup k l'
   end.
 
 Fixpoint drop {X:Set} (n:string) (nxs:list (string * X)) {struct nxs}
@@ -814,7 +814,7 @@ Fixpoint drop {X:Set} (n:string) (nxs:list (string * X)) {struct nxs}
   match nxs with
     | nil => nil
     | ((n',x)::nxs') =>
-        if beq_string n' n then drop n nxs'
+        if eqb_string n' n then drop n nxs'
         else (n',x)::(drop n nxs')
   end.
 
@@ -855,12 +855,12 @@ Proof with eauto.  (* rather slow this way *)
   unfold closed, not.
   induction t; intros x v P A; simpl in A.
     - (* tvar *)
-     destruct (beq_stringP x s)...
+     destruct (eqb_stringP x s)...
      inversion A; subst. auto.
     - (* tapp *)
      inversion A; subst...
     - (* tabs *)
-     destruct (beq_stringP x s)...
+     destruct (eqb_stringP x s)...
      + inversion A; subst...
      + inversion A; subst...
     - (* tpair *)
@@ -890,11 +890,11 @@ Lemma swap_subst : forall t x x1 v v1,
 Proof with eauto.
  induction t; intros; simpl.
   - (* tvar *)
-   destruct (beq_stringP x s); destruct (beq_stringP x1 s).
+   destruct (eqb_stringP x s); destruct (eqb_stringP x1 s).
    + subst. exfalso...
-   + subst. simpl. rewrite <- beq_string_refl. apply subst_closed...
-   + subst. simpl. rewrite <- beq_string_refl. rewrite subst_closed...
-   + simpl. rewrite false_beq_string... rewrite false_beq_string...
+   + subst. simpl. rewrite <- eqb_string_refl. apply subst_closed...
+   + subst. simpl. rewrite <- eqb_string_refl. rewrite subst_closed...
+   + simpl. rewrite false_eqb_string... rewrite false_eqb_string...
   (* 请在此处解答 *) Admitted.
 
 (* ----------------------------------------------------------------- *)
@@ -924,7 +924,7 @@ Proof.
   induction env0; intros; auto.
   destruct a. simpl.
   inversion H0. fold closed_env in H2.
-  destruct (beq_stringP s x).
+  destruct (eqb_stringP s x).
   - subst. rewrite duplicate_subst; auto.
   - simpl. rewrite swap_subst; eauto.
 Qed.
@@ -939,7 +939,7 @@ Proof.
   induction ss; intros.
     reflexivity.
     destruct a.
-     simpl. destruct (beq_string s x).
+     simpl. destruct (eqb_string s x).
       apply msubst_closed. inversion H; auto.
       apply IHss. inversion H; auto.
 Qed.
@@ -950,7 +950,7 @@ Proof.
   induction ss; intros.
     reflexivity.
     destruct a.
-      simpl. destruct (beq_string s x); simpl; auto.
+      simpl. destruct (eqb_string s x); simpl; auto.
 Qed.
 
 Lemma msubst_app : forall ss t1 t2, msubst ss (tapp t1 t2) = tapp (msubst ss t1) (msubst ss t2).
@@ -976,21 +976,21 @@ Lemma mupdate_lookup : forall (c : tass) (x:string),
 Proof.
   induction c; intros.
     auto.
-    destruct a. unfold lookup, mupdate, update, t_update. destruct (beq_string s x); auto.
+    destruct a. unfold lookup, mupdate, update, t_update. destruct (eqb_string s x); auto.
 Qed.
 
 Lemma mupdate_drop : forall (c: tass) Gamma x x',
       mupdate Gamma (drop x c) x'
-    = if beq_string x x' then Gamma x' else mupdate Gamma c x'.
+    = if eqb_string x x' then Gamma x' else mupdate Gamma c x'.
 Proof.
   induction c; intros.
-  - destruct (beq_stringP x x'); auto.
+  - destruct (eqb_stringP x x'); auto.
   - destruct a. simpl.
-    destruct (beq_stringP s x).
+    destruct (eqb_stringP s x).
     + subst. rewrite IHc.
-      unfold update, t_update. destruct (beq_stringP x x'); auto.
-    + simpl. unfold update, t_update. destruct (beq_stringP s x'); auto.
-      subst. rewrite false_beq_string; congruence.
+      unfold update, t_update. destruct (eqb_stringP x x'); auto.
+    + simpl. unfold update, t_update. destruct (eqb_stringP s x'); auto.
+      subst. rewrite false_eqb_string; congruence.
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -1006,7 +1006,7 @@ Proof.
   intros c e V. induction V; intros x0 T0 C.
     solve_by_invert.
     simpl in *.
-    destruct (beq_string x x0); eauto.
+    destruct (eqb_string x x0); eauto.
 Qed.
 
 Lemma instantiation_env_closed : forall c e,
@@ -1027,7 +1027,7 @@ Lemma instantiation_R : forall c e,
 Proof.
   intros c e V. induction V; intros x' t' T' G E.
     solve_by_invert.
-    unfold lookup in *.  destruct (beq_string x x').
+    unfold lookup in *.  destruct (eqb_string x x').
       inversion G; inversion E; subst.  auto.
       eauto.
 Qed.
@@ -1038,7 +1038,7 @@ Lemma instantiation_drop : forall c env,
 Proof.
   intros c e V. induction V.
     intros.  simpl.  constructor.
-    intros. unfold drop. destruct (beq_string x x0); auto. constructor; eauto.
+    intros. unfold drop. destruct (eqb_string x x0); auto. constructor; eauto.
 Qed.
 
 
@@ -1111,13 +1111,13 @@ Proof.
       eapply context_invariance.
       { apply HT. }
       intros.
-      unfold update, t_update. rewrite mupdate_drop. destruct (beq_stringP x x0).
+      unfold update, t_update. rewrite mupdate_drop. destruct (eqb_stringP x x0).
       + auto.
       + rewrite H.
         clear - c n. induction c.
-        simpl.  rewrite false_beq_string; auto.
+        simpl.  rewrite false_eqb_string; auto.
         simpl. destruct a.  unfold update, t_update.
-        destruct (beq_string s x0); auto. }
+        destruct (eqb_string s x0); auto. }
     unfold R. fold R. split.
        auto.
      split. apply value_halts. apply v_abs.
@@ -1135,7 +1135,7 @@ Proof.
        apply (R_typable_empty H1).
        eapply instantiation_env_closed; eauto.
        eapply (IHHT ((x,T11)::c)).
-          intros. unfold update, t_update, lookup. destruct (beq_string x x0); auto.
+          intros. unfold update, t_update, lookup. destruct (eqb_string x x0); auto.
        constructor; auto.
 
   - (* T_App *)

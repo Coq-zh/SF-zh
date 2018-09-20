@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Multiset.
-Parameter MISSING: Type. 
+From VFA Require Import Multiset.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Multiset.
+From VFA Require Import Multiset.
 Import Check.
 
 Goal True.
@@ -178,4 +179,32 @@ idtac " ".
 
 idtac "Max points - standard: 25".
 idtac "Max points - advanced: 25".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- union_assoc ---------".
+Print Assumptions union_assoc.
+idtac "---------- union_comm ---------".
+Print Assumptions union_comm.
+idtac "---------- insert_contents ---------".
+Print Assumptions insert_contents.
+idtac "---------- sort_contents ---------".
+Print Assumptions sort_contents.
+idtac "---------- permutations_vs_multiset ---------".
+idtac "MANUAL".
+idtac "---------- perm_contents ---------".
+Print Assumptions perm_contents.
+idtac "---------- delete_contents ---------".
+Print Assumptions delete_contents.
+idtac "---------- contents_perm_aux ---------".
+Print Assumptions contents_perm_aux.
+idtac "---------- contents_in ---------".
+Print Assumptions contents_in.
+idtac "---------- in_perm_delete ---------".
+Print Assumptions in_perm_delete.
+idtac "---------- contents_perm ---------".
+Print Assumptions contents_perm.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

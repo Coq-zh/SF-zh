@@ -1,10 +1,10 @@
 (** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Maps.
-Require Import Types.
-Require Import Smallstep.
-Require Import Stlc.
+From PLF Require Import Maps.
+From PLF Require Import Types.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
 
 (* ################################################################# *)
 (** * Simple Extensions to STLC *)
@@ -996,9 +996,9 @@ Inductive tm : Type :=
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
   | tvar y =>
-      if beq_string x y then s else t
+      if eqb_string x y then s else t
   | tabs y T t1 =>
-      tabs y T (if beq_string x y then t1 else (subst x s t1))
+      tabs y T (if eqb_string x y then t1 else (subst x s t1))
   | tapp t1 t2 =>
       tapp (subst x s t1) (subst x s t2)
   | tnat n =>
@@ -1020,17 +1020,17 @@ Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
       tinr T (subst x s t1)
   | tcase t0 y1 t1 y2 t2 =>
       tcase (subst x s t0)
-         y1 (if beq_string x y1 then t1 else (subst x s t1))
-         y2 (if beq_string x y2 then t2 else (subst x s t2))
+         y1 (if eqb_string x y1 then t1 else (subst x s t1))
+         y2 (if eqb_string x y2 then t2 else (subst x s t2))
   | tnil T =>
       tnil T
   | tcons t1 t2 =>
       tcons (subst x s t1) (subst x s t2)
   | tlcase t1 t2 y1 y2 t3 =>
       tlcase (subst x s t1) (subst x s t2) y1 y2
-        (if beq_string x y1 then
+        (if eqb_string x y1 then
            t3
-         else if beq_string x y2 then t3
+         else if eqb_string x y2 then t3
               else (subst x s t3))
   (* 请在此处解答 *)
   | _ => t  (* ... and delete this line *)
@@ -1899,7 +1899,7 @@ Proof with eauto.
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros y Hafi.
     unfold update, t_update.
-    destruct (beq_stringP x y)...
+    destruct (eqb_stringP x y)...
   - (* T_Mult *)
     apply T_Mult...
   - (* T_If0 *)
@@ -1912,17 +1912,17 @@ Proof with eauto.
     eapply T_Case...
     + apply IHhas_type2. intros y Hafi.
       unfold update, t_update.
-      destruct (beq_stringP x1 y)...
+      destruct (eqb_stringP x1 y)...
     + apply IHhas_type3. intros y Hafi.
       unfold update, t_update.
-      destruct (beq_stringP x2 y)...
+      destruct (eqb_stringP x2 y)...
   - (* T_Cons *)
     apply T_Cons...
   - (* T_Lcase *)
     eapply T_Lcase... apply IHhas_type3. intros y Hafi.
     unfold update, t_update.
-    destruct (beq_stringP x1 y)...
-    destruct (beq_stringP x2 y)...
+    destruct (eqb_stringP x1 y)...
+    destruct (eqb_stringP x2 y)...
 Qed.
 
 Lemma free_in_context : forall x t T Gamma,
@@ -1935,24 +1935,24 @@ Proof with eauto.
   - (* T_Abs *)
     destruct IHHtyp as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_string in Hctx...
+    rewrite false_eqb_string in Hctx...
   (* let *)
   (* 请在此处解答 *)
   (* T_Case *)
   - (* left *)
     destruct IHHtyp2 as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_string in Hctx...
+    rewrite false_eqb_string in Hctx...
   - (* right *)
     destruct IHHtyp3 as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_string in Hctx...
+    rewrite false_eqb_string in Hctx...
   - (* T_Lcase *)
     clear Htyp1 IHHtyp1 Htyp2 IHHtyp2.
     destruct IHHtyp3 as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_string in Hctx...
-    rewrite false_beq_string in Hctx...
+    rewrite false_eqb_string in Hctx...
+    rewrite false_eqb_string in Hctx...
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -1983,7 +1983,7 @@ Proof with eauto.
 
        There are two cases to consider: either [x=y] or [x<>y]. *)
     unfold update, t_update in H1.
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x=y *)
       (* If [x = y], then we know that [U = S], and that
          [[x:=v]y = v].  So what we really must show is
@@ -2011,14 +2011,14 @@ Proof with eauto.
          [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 : S].
 
        We can calculate that
-         [x:=v]t = tabs y T11 (if beq_string x y then t0 else [x:=v]t0)
+         [x:=v]t = tabs y T11 (if eqb_string x y then t0 else [x:=v]t0)
        And we must show that [Gamma |- [x:=v]t : T11->T12].  We know
        we will do so using [T_Abs], so it remains to be shown that:
-         [Gamma,y:T11 |- if beq_string x y then t0 else [x:=v]t0 : T12]
+         [Gamma,y:T11 |- if eqb_string x y then t0 else [x:=v]t0 : T12]
        We consider two cases: [x = y] and [x <> y].
     *)
     apply T_Abs...
-    destruct (beq_stringP x y) as [Hxy|Hxy].
+    destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
     (* If [x = y], then the substitution has no effect.  Context
        invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
@@ -2027,7 +2027,7 @@ Proof with eauto.
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_string y x)...
+      destruct (eqb_string y x)...
     + (* x<>y *)
       (* If [x <> y], then the IH and context invariance allow
          us to show that
@@ -2036,62 +2036,62 @@ Proof with eauto.
            [Gamma,y:T11 |- [x:=v]t0 : T12] *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y z) as [Hyz|Hyz]...
+      destruct (eqb_stringP y z) as [Hyz|Hyz]...
       subst.
-      rewrite false_beq_string...
+      rewrite false_eqb_string...
   (* let *)
   (* 请在此处解答 *)
   - (* tcase *)
     rename s into x1. rename s0 into x2.
     eapply T_Case...
     + (* left arm *)
-      destruct (beq_stringP x x1) as [Hxx1|Hxx1].
+      destruct (eqb_stringP x x1) as [Hxx1|Hxx1].
       * (* x = x1 *)
         eapply context_invariance...
         subst.
         intros z Hafi. unfold update, t_update.
-        destruct (beq_string x1 z)...
+        destruct (eqb_string x1 z)...
       * (* x <> x1 *)
         apply IHt2. eapply context_invariance...
         intros z Hafi.  unfold update, t_update.
-        destruct (beq_stringP x1 z) as [Hx1z|Hx1z]...
-        subst. rewrite false_beq_string...
+        destruct (eqb_stringP x1 z) as [Hx1z|Hx1z]...
+        subst. rewrite false_eqb_string...
     + (* right arm *)
-      destruct (beq_stringP x x2) as [Hxx2|Hxx2].
+      destruct (eqb_stringP x x2) as [Hxx2|Hxx2].
       * (* x = x2 *)
         eapply context_invariance...
         subst.
         intros z Hafi. unfold update, t_update.
-        destruct (beq_string x2 z)...
+        destruct (eqb_string x2 z)...
       * (* x <> x2 *)
         apply IHt3. eapply context_invariance...
         intros z Hafi.  unfold update, t_update.
-        destruct (beq_stringP x2 z)...
-        subst. rewrite false_beq_string...
+        destruct (eqb_stringP x2 z)...
+        subst. rewrite false_eqb_string...
   - (* tlcase *)
     rename s into y1. rename s0 into y2.
     eapply T_Lcase...
-    destruct (beq_stringP x y1).
+    destruct (eqb_stringP x y1).
     + (* x=y1 *)
       simpl.
       eapply context_invariance...
       subst.
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y1 z)...
+      destruct (eqb_stringP y1 z)...
     + (* x<>y1 *)
-      destruct (beq_stringP x y2).
+      destruct (eqb_stringP x y2).
       * (* x=y2 *)
         eapply context_invariance...
         subst.
         intros z Hafi. unfold update, t_update.
-        destruct (beq_stringP y2 z)...
+        destruct (eqb_stringP y2 z)...
       * (* x<>y2 *)
         apply IHt3. eapply context_invariance...
         intros z Hafi. unfold update, t_update.
-        destruct (beq_stringP y1 z)...
-        subst. rewrite false_beq_string...
-        destruct (beq_stringP y2 z)...
-        subst. rewrite false_beq_string...
+        destruct (eqb_stringP y1 z)...
+        subst. rewrite false_eqb_string...
+        destruct (eqb_stringP y2 z)...
+        subst. rewrite false_eqb_string...
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -2157,7 +2157,7 @@ Qed.
 End STLCExtended.
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_STLC_extensions : option (prod nat string) := None.
+Definition manual_grade_for_STLC_extensions : option (nat*string) := None.
 (** [] *)
 
 (** $Date$ *)

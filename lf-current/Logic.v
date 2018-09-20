@@ -3,7 +3,7 @@
 (* TODO(OlingCat): 需要统一 claim、statement 的译法。 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Export Tactics.
+From LF Require Export Tactics.
 
 (**
     在前面的章节中，我们已经见过很多对事实的断言（即_'命题'_）
@@ -79,7 +79,7 @@ Definition injective {A B} (f : A -> B) :=
 
 Lemma succ_inj : injective S.
 Proof.
-  intros n m H. inversion H. reflexivity.
+  intros n m H. injection H as H1. apply H1.
 Qed.
 
 (** 相等性运算符 [=] 也是一个返回 [Prop] 的函数。
@@ -324,7 +324,7 @@ Check not.
 End MyNot.
 
 (** 由于 [False] 是个矛盾性命题，因此爆炸原理对它也适用。如果我们让 [False]
-    进入到了证明的上下文中，可以对它使用 [destruct]（或 [inversion]）
+    进入到了证明的上下文中，可以对它使用 [destruct]（或 [discriminate]）
     来完成任何待证目标。 *)
 
 Theorem ex_falso_quodlibet : forall (P:Prop),
@@ -350,7 +350,7 @@ Proof.
 
 Theorem zero_not_one : ~(0 = 1).
 Proof.
-  intros contra. inversion contra.
+  intros contra. discriminate contra.
 Qed.
 
 (** 这样的不等性表述频繁出现，足以让我们为其定义一种特殊的记法 [x <> y]： *)
@@ -360,7 +360,7 @@ Check (0 <> 1).
 
 Theorem zero_not_one' : 0 <> 1.
 Proof.
-  intros H. inversion H.
+  intros H. discriminate H.
 Qed.
 
 (** 为了习惯用 Coq 处理否定命题，我们需要一些练习。
@@ -385,7 +385,7 @@ Proof.
   (* 课上已完成 *)
   intros P H. unfold not. intros G. apply G. apply H.  Qed.
 
-(** **** 练习：2 星, advanced, recommended (double_neg_inf)  *)
+(** **** 练习：2 星, advanced (double_neg_inf)  *)
 (** 请写出 [double_neg] 的非形式化证明：
 
    _'定理'_：对于任何命题 [P] 而言，[P] 蕴含 [~~P]。 *)
@@ -393,7 +393,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_double_neg_inf : option (prod nat string) := None.
+Definition manual_grade_for_double_neg_inf : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星, recommended (contrapositive)  *)
@@ -416,7 +416,7 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_informal_not_PNP : option (prod nat string) := None.
+Definition manual_grade_for_informal_not_PNP : option (nat*string) := None.
 (** [] *)
 
 (** 类似地，由于不等性包含一个否定，因此在能够熟练地使用它前也需要一些练习。
@@ -497,7 +497,7 @@ Proof.
   intros b. split.
   - (* -> *) apply not_true_is_false.
   - (* <- *)
-    intros H. rewrite H. intros H'. inversion H'.
+    intros H. rewrite H. intros H'. discriminate H'.
 Qed.
 
 (** **** 练习：1 星, optional (iff_properties)  *)
@@ -987,22 +987,23 @@ Qed.
 (** 此定理说明，逻辑命题 [exists k, n = double k] 的真伪对应布尔计算 [evenb n]
     的真值。 *)
 
-(** 我们可以用类似的方式陈述 [n] 和 [m] 的相等性，即 (1) [beq_nat n m] 返回 [true]
-    或 (2) [n = m]。同样，二者是等价的。 *)
+(** 类似地，以下两种描述 [n] 与 [m] 相等的表达方式等价：
+    （一）[n =? m] 值为 [true]；
+    （二）[n = m]。 *)
 
-Theorem beq_nat_true_iff : forall n1 n2 : nat,
-  beq_nat n1 n2 = true <-> n1 = n2.
+Theorem eqb_eq : forall n1 n2 : nat,
+  n1 =? n2 = true <-> n1 = n2.
 Proof.
   intros n1 n2. split.
-  - apply beq_nat_true.
-  - intros H. rewrite H. rewrite <- beq_nat_refl. reflexivity.
+  - apply eqb_true.
+  - intros H. rewrite H. rewrite <- eqb_refl. reflexivity.
 Qed.
 
 (** 然而，即便布尔值和某个断言的命题式在逻辑上是等价的，但它们在_'操作上'_
     并不一样。
 
     相等性就是一个极端的例子：就涉及 [n] 和 [m] 的证明的中间步骤而言，
-    知道 [beq_nat n m = true] 通常没什么帮助。然而，如果我们可以将此陈述
+    知道 [n =? m = true] 通常没什么帮助。然而，如果我们可以将此陈述
     转换成 [n = m] 的形式，就能用它来改写证明。 *)
 
 (** 偶数也是个有趣的例子。回想一下，在证明 [even_bool_prop]
@@ -1074,30 +1075,30 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (beq_nat_false_iff)  *)
-(** 以下定理为等价式 [beq_nat_true_iff] 的“否定”版本，
+(** **** 练习：1 星 (eqb_neq)  *)
+(** 以下定理为等价式 [eqb_eq] 的“否定”版本，
     在某些场景中使用它会更方便些（后面的章节中会讲到这方面的例子）。 *)
 
-Theorem beq_nat_false_iff : forall x y : nat,
-  beq_nat x y = false <-> x <> y.
+Theorem eqb_neq : forall x y : nat,
+  x =? y = false <-> x <> y.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (beq_list)  *)
-(** 给定一个用于测试类型为 [A] 的元素相等性的布尔操作符 [beq]，
-    我们可以定义函数 [beq_list] 来测试元素类型为 [A] 的列表的相等性。
-    请完成以下 [beq_list] 函数的定义。要确定你的定义是否正确，请证明引理
-    [beq_list_true_iff]。 *)
+(** **** 练习：3 星 (eqb_list)  *)
+(** 给定一个用于测试类型为 [A] 的元素相等性的布尔操作符 [eqb]，
+    我们可以定义函数 [eqb_list] 来测试元素类型为 [A] 的列表的相等性。
+    请完成以下 [eqb_list] 函数的定义。要确定你的定义是否正确，请证明引理
+    [eqb_list_true_iff]。 *)
 
-Fixpoint beq_list {A : Type} (beq : A -> A -> bool)
+Fixpoint eqb_list {A : Type} (eqb : A -> A -> bool)
                   (l1 l2 : list A) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-Lemma beq_list_true_iff :
-  forall A (beq : A -> A -> bool),
-    (forall a1 a2, beq a1 a2 = true <-> a1 = a2) ->
-    forall l1 l2, beq_list beq l1 l2 = true <-> l1 = l2.
+Lemma eqb_list_true_iff :
+  forall A (eqb : A -> A -> bool),
+    (forall a1 a2, eqb a1 a2 = true <-> a1 = a2) ->
+    forall l1 l2, eqb_list eqb l1 l2 = true <-> l1 = l2.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -1148,7 +1149,7 @@ Theorem restricted_excluded_middle : forall P b,
 Proof.
   intros P [] H.
   - left. rewrite H. reflexivity.
-  - right. rewrite H. intros contra. inversion contra.
+  - right. rewrite H. intros contra. discriminate contra.
 Qed.
 
 (** 特别来说，对于自然数 [n] 和 [m] 的 [n = m] 而言，排中律是成立的。 *)
@@ -1157,9 +1158,9 @@ Theorem restricted_excluded_middle_eq : forall (n m : nat),
   n = m \/ n <> m.
 Proof.
   intros n m.
-  apply (restricted_excluded_middle (n = m) (beq_nat n m)).
+  apply (restricted_excluded_middle (n = m) (n =? m)).
   symmetry.
-  apply beq_nat_true_iff.
+  apply eqb_eq.
 Qed.
 
 (** 通用的排中律默认在 Coq 中并不可用，这一点或许很奇怪，毕竟，

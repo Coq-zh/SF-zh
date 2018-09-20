@@ -8,9 +8,9 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
 
 Hint Constructors multi.
 
@@ -371,7 +371,7 @@ Proof with auto.
       - (* 请在此处解答 *)
  *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_finish_progress_informal : option (prod nat string) := None.
+Definition manual_grade_for_finish_progress_informal : option (nat*string) := None.
 (** [] *)
 
 (** 这个定理要比 [Smallstep] 一章中的强可进性定理更有趣一些，在强可进性定理
@@ -435,7 +435,7 @@ Proof with auto.
       - (* 请在此处解答 *)
 *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_finish_preservation_informal : option (prod nat string) := None.
+Definition manual_grade_for_finish_preservation_informal : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：3 星 (preservation_alternate_proof)  *)
@@ -587,7 +587,7 @@ Tactic Notation "normalize" :=
     (* 请在此处解答 *)
 *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_subject_expansion : option (prod nat string) := None.
+Definition manual_grade_for_subject_expansion : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (variation1)  *)
@@ -607,7 +607,7 @@ Definition manual_grade_for_subject_expansion : option (prod nat string) := None
 
 *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_variation1 : option (prod nat string) := None.
+Definition manual_grade_for_variation1 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (variation2)  *)
@@ -620,7 +620,7 @@ Definition manual_grade_for_variation1 : option (prod nat string) := None.
 
 *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_variation2 : option (prod nat string) := None.
+Definition manual_grade_for_variation2 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星, optional (variation3)  *)
@@ -682,7 +682,7 @@ Definition manual_grade_for_variation2 : option (prod nat string) := None.
 (* 请在此处解答 *)
 *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_remove_predzero : option (prod nat string) := None.
+Definition manual_grade_for_remove_predzero : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：4 星, advanced (prog_pres_bigstep)  *)
@@ -695,7 +695,7 @@ Definition manual_grade_for_remove_predzero : option (prod nat string) := None.
 (* 请在此处解答 *)
 *)
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_prog_pres_bigstep : option (prod nat string) := None.
+Definition manual_grade_for_prog_pres_bigstep : option (nat*string) := None.
 (** [] *)
 
 (** $Date$ *)

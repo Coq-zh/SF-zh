@@ -1,9 +1,9 @@
 (** * Sub: Subtyping *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Maps.
-Require Import Types.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Types.
+From PLF Require Import Smallstep.
 
 (* ################################################################# *)
 (** * Concepts *)
@@ -348,7 +348,7 @@ Require Import Smallstep.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_arrow_sub_wrong : option (prod nat string) := None.
+Definition manual_grade_for_arrow_sub_wrong : option (nat*string) := None.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
@@ -458,7 +458,7 @@ of the five types above. It may be unrelated to some of them.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_subtype_order : option (prod nat string) := None.
+Definition manual_grade_for_subtype_order : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：1 星 (subtype_instances_tf_2)  *)
@@ -492,7 +492,7 @@ Definition manual_grade_for_subtype_order : option (prod nat string) := None.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_subtype_instances_tf_2 : option (prod nat string) := None.
+Definition manual_grade_for_subtype_instances_tf_2 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：1 星 (subtype_concepts_tf)  *)
@@ -526,7 +526,7 @@ Definition manual_grade_for_subtype_instances_tf_2 : option (prod nat string) :=
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_subtype_concepts_tf : option (prod nat string) := None.
+Definition manual_grade_for_subtype_concepts_tf : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (proper_subtypes)  *)
@@ -542,7 +542,7 @@ Definition manual_grade_for_subtype_concepts_tf : option (prod nat string) := No
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_proper_subtypes : option (prod nat string) := None.
+Definition manual_grade_for_proper_subtypes : option (nat*string) := None.
 (** [] *)
 
 
@@ -561,7 +561,7 @@ Definition manual_grade_for_proper_subtypes : option (prod nat string) := None.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_small_large_1 : option (prod nat string) := None.
+Definition manual_grade_for_small_large_1 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (small_large_2)  *)
@@ -577,7 +577,7 @@ Definition manual_grade_for_small_large_1 : option (prod nat string) := None.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_small_large_2 : option (prod nat string) := None.
+Definition manual_grade_for_small_large_2 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星, optional (small_large_3)  *)
@@ -608,19 +608,19 @@ Definition manual_grade_for_small_large_2 : option (prod nat string) := None.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_small_large_4 : option (prod nat string) := None.
+Definition manual_grade_for_small_large_4 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (smallest_1)  *)
 (** What is the _smallest_ type [T] that makes the following
     assertion true?
 
-      exists S, exists t,
+      exists S t,
         empty |- (\x:T. x x) t : S
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_smallest_1 : option (prod nat string) := None.
+Definition manual_grade_for_smallest_1 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星 (smallest_2)  *)
@@ -631,7 +631,7 @@ Definition manual_grade_for_smallest_1 : option (prod nat string) := None.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_smallest_2 : option (prod nat string) := None.
+Definition manual_grade_for_smallest_2 : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：3 星, optional (count_supertypes)  *)
@@ -662,7 +662,7 @@ Definition manual_grade_for_smallest_2 : option (prod nat string) := None.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_pair_permutation : option (prod nat string) := None.
+Definition manual_grade_for_pair_permutation : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -716,9 +716,9 @@ Inductive tm : Type :=
 Fixpoint subst (x:string) (s:tm)  (t:tm) : tm :=
   match t with
   | tvar y =>
-      if beq_string x y then s else t
+      if eqb_string x y then s else t
   | tabs y T t1 =>
-      tabs y T (if beq_string x y then t1 else (subst x s t1))
+      tabs y T (if eqb_string x y then t1 else (subst x s t1))
   | tapp t1 t2 =>
       tapp (subst x s t1) (subst x s t2)
   | ttrue =>
@@ -1005,7 +1005,7 @@ Proof with auto.
 (** **** 练习：3 星 (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
      U <: TArrow V1 V2 ->
-     exists U1, exists U2,
+     exists U1 U2,
        U = TArrow U1 U2 /\ V1 <: U1 /\ U2 <: V2.
 Proof with eauto.
   intros U V1 V2 Hs.
@@ -1045,7 +1045,7 @@ Proof with eauto.
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
   Gamma |- s \in TArrow T1 T2 ->
   value s ->
-  exists x, exists S1, exists s2,
+  exists x S1 s2,
      s = tabs x S1 s2.
 Proof with eauto.
   (* 请在此处解答 *) Admitted.
@@ -1349,7 +1349,7 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros x0 Hafi.
-    unfold update, t_update. destruct (beq_stringP x x0)...
+    unfold update, t_update. destruct (eqb_stringP x x0)...
   - (* T_If *)
     apply T_If... 
 Qed.
@@ -1365,7 +1365,7 @@ Proof with eauto.
   - (* T_Abs *)
     destruct (IHHtyp H4) as [T Hctx]. exists T.
     unfold update, t_update in Hctx.
-    rewrite <- beq_string_false_iff in H2.
+    rewrite <- eqb_string_false_iff in H2.
     rewrite H2 in Hctx... Qed.
 
 (* ================================================================= *)
@@ -1391,7 +1391,7 @@ Proof with eauto.
     destruct (typing_inversion_var _ _ _ Htypt)
         as [T [Hctx Hsub]].
     unfold update, t_update in Hctx.
-    destruct (beq_stringP x y) as [Hxy|Hxy]; eauto;
+    destruct (eqb_stringP x y) as [Hxy|Hxy]; eauto;
     subst.
     inversion Hctx; subst. clear Hctx.
     apply context_invariance with empty...
@@ -1408,18 +1408,18 @@ Proof with eauto.
     destruct (typing_inversion_abs _ _ _ _ _ Htypt)
       as [T2 [Hsub Htypt2]].
     apply T_Sub with (TArrow T1 T2)... apply T_Abs...
-    destruct (beq_stringP x y) as [Hxy|Hxy].
+    destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_string y x)...
+      destruct (eqb_string y x)...
     + (* x<>y *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y z)...
+      destruct (eqb_stringP y z)...
       subst.
-      rewrite <- beq_string_false_iff in Hxy. rewrite Hxy...
+      rewrite <- eqb_string_false_iff in Hxy. rewrite Hxy...
   - (* ttrue *)
       assert (TBool <: S)
         by apply (typing_inversion_true _ _  Htypt)...
@@ -1604,7 +1604,7 @@ Qed.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_variations : option (prod nat string) := None.
+Definition manual_grade_for_variations : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -1678,9 +1678,9 @@ Proof.
 
 End ProductExtension.
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_progress : option (prod nat string) := None.
+Definition manual_grade_for_progress : option (nat*string) := None.
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_preservation : option (prod nat string) := None.
+Definition manual_grade_for_preservation : option (nat*string) := None.
 (** [] *)
 
 (** $Date$ *)

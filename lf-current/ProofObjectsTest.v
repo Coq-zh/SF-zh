@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import ProofObjects.
-Parameter MISSING: Type. 
+From LF Require Import ProofObjects.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import ProofObjects.
+From LF Require Import ProofObjects.
 Import Check.
 
 Goal True.
@@ -55,13 +56,14 @@ idtac " ".
 idtac "-------------------  equality__leibniz_equality  --------------------".
 idtac " ".
 
-idtac "#> equality__leibniz_equality".
+idtac "#> MyEquality.equality__leibniz_equality".
 idtac "Possible points: 2".
-check_type @equality__leibniz_equality (
-(forall (X : Type) (x y : X), x = y -> forall P : X -> Prop, P x -> P y)).
+check_type @MyEquality.equality__leibniz_equality (
+(forall (X : Type) (x y : X),
+ @MyEquality.eq X x y -> forall P : X -> Prop, P x -> P y)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions equality__leibniz_equality.
+Print Assumptions MyEquality.equality__leibniz_equality.
 Goal True.
 idtac " ".
 
@@ -69,4 +71,16 @@ idtac " ".
 
 idtac "Max points - standard: 4".
 idtac "Max points - advanced: 4".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- ev_8 ---------".
+Print Assumptions ev_8.
+idtac "---------- ev_8' ---------".
+Print Assumptions ev_8'.
+idtac "---------- MyEquality.equality__leibniz_equality ---------".
+Print Assumptions MyEquality.equality__leibniz_equality.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

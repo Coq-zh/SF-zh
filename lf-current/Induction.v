@@ -2,25 +2,62 @@
 
 (** 在开始之前，我们需要把上一章中所有的定义都导入进来： *)
 
-Require Export Basics.
+From LF Require Export Basics.
 
-(** 为了让 [Require Export] 起效，首先你需要用 [coqc] 将 [Basics.v] 编译成
-    [Basics.vo]，这类似于将 .java 文件编译成 .class 文件，或将 .c 文件编译成 .o
-    文件。我们有两种方法：
+(** For the [Require Export] to work, Coq needs to be able to
+    find a compiled version of [Basics.v], called [Basics.vo], in a directory
+    associated with the prefix [LF].  This file is analogous to the [.class]
+    files compiled from [.java] source files and the [.o] files compiled from
+    [.c] files.
 
-     - 在 CoqIDE 中：
+    First create a file named [_CoqProject] containing the following line
+    (if you obtained the whole volume "Logical Foundations" as a single
+    archive, a [_CoqProject] should already exist and you can skip this step):
 
-         打开 [Basics.v]。在“Compile”菜单中点击“Compile Buffer”。
+      [-Q . LF]
 
-     - 在命令行中：执行
+    This maps the current directory ("[.]", which contains [Basics.v],
+    [Induction.v], etc.) to the prefix (or "logical directory") "[LF]".
+    PG and CoqIDE read [_CoqProject] automatically, so they know to where to
+    look for the file [Basics.vo] corresponding to the library [LF.Basics].
+
+    Once [_CoqProject] is thus created, there are various ways to build
+    [Basics.vo]:
+
+     - In Proof General: The compilation can be made to happen automatically
+       when you submit the [Require] line above to PG, by setting the emacs
+       variable [coq-compile-before-require] to [t].
+
+     - In CoqIDE: Open [Basics.v]; then, in the "Compile" menu, click
+       on "Compile Buffer".
+
+     - From the command line: Generate a [Makefile] using the [coq_makefile]
+       utility, that comes installed with Coq (if you obtained the whole
+       volume as a single archive, a [Makefile] should already exist
+       and you can skip this step):
+
+         [coq_makefile -f _CoqProject *.v -o Makefile]
+
+       Note: You should rerun that command whenever you add or remove Coq files
+       to the directory.
+
+       Then you can compile [Basics.v] by running [make] with the corresponding
+       [.vo] file as a target:
 
          [make Basics.vo]
 
-       （假设你下载了完整的 [LF] 目录并拥有可用的 [make] 命令），或执行
+       All files in the directory can be compiled by giving no arguments:
 
-         [coqc Basics.v]
+         [make]
 
-       （它应该在任何场景下均可用）
+       Under the hood, [make] uses the Coq compiler, [coqc].  You can also
+       run [coqc] directly:
+
+         [coqc -Q . LF Basics.v]
+
+       But [make] also calculates dependencies between source files to compile
+       them in the right order, so [make] should generally be prefered over
+       explicit [coqc].
 
     如果你遇到了问题（例如，稍后你可能会在本文件中遇到缺少标识符的提示），
     那可能是因为没有正确设置 Coq 的“加载路径”。命令 [Print LoadPath.]
@@ -29,10 +66,17 @@ Require Export Basics.
     特别是，如果你看到了像这样的信息：
 
         [Compiled library Foo makes inconsistent assumptions over
-        library Coq.Init.Bar]
+        library Bar]
 
-    应当检查机器上是否安装了多个 Coq 。若确实如此，那么你在终端执行的命令
-    （如 [coqc]）可会与 Proof General 或 CoqIDE 执行的版本不同。
+    check whether you have multiple installations of Coq on your machine.
+    It may be that commands (like [coqc]) that you execute in a terminal
+    window are getting a different version of Coq than commands executed by
+    Proof General or CoqIDE.
+
+    - Another common reason is that the library [Bar] was modified and
+      recompiled without also recompiling [Foo] which depends on it.  Recompile
+      [Foo], or everything if too many files are affected.  (Using the third
+      solution above: [make clean; make].)
 
     再给 CoqIDE 用户一点技巧：如果你看到了 [Error: Unable to locate
     library Basics]，那么可能的原因是用 _'CoqIDE'_ 编译的代码和在命令行用
@@ -63,7 +107,7 @@ Abort.
 Theorem plus_n_O_secondtry : forall n:nat,
   n = n + 0.
 Proof.
-  intros n. destruct n as [| n'].
+  intros n. destruct n as [| n'] eqn:E.
   - (* n = 0 *)
     reflexivity. (* 虽然目前还没啥问题... *)
   - (* n = S n' *)
@@ -134,7 +178,6 @@ Theorem plus_n_Sm : forall n m : nat,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
@@ -180,7 +223,7 @@ Proof.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_destruct_induction : option (prod nat string) := None.
+Definition manual_grade_for_destruct_induction : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -338,16 +381,16 @@ Proof.
 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_plus_comm_informal : option (prod nat string) := None.
+Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, optional (beq_nat_refl_informal)  *)
+(** **** 练习：2 星, optional (eqb_refl_informal)  *)
 (** 以 [plus_assoc] 的非形式化证明为范本，写出以下定理的非形式化证明。
     不要只是用中文来解释 Coq 策略！
 
-    定理：对于任何 [n]，均有 [true = beq_nat n n]。
+    定理：对于任何 [n]，均有 [true = n =? n]。
 
-    Proof: (* 请在此处解答 *)
+    证明： (* 请在此处解答 *)
 *)
 (** [] *)
 
@@ -379,12 +422,12 @@ Proof.
 Check leb.
 
 Theorem leb_refl : forall n:nat,
-  true = leb n n.
+  true = (n <=? n).
 Proof.
   (* 请在此处解答 *) Admitted.
 
 Theorem zero_nbeq_S : forall n:nat,
-  beq_nat 0 (S n) = false.
+  0 =? (S n) = false.
 Proof.
   (* 请在此处解答 *) Admitted.
 
@@ -394,12 +437,12 @@ Proof.
   (* 请在此处解答 *) Admitted.
 
 Theorem plus_ble_compat_l : forall n m p : nat,
-  leb n m = true -> leb (p + n) (p + m) = true.
+  n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
   (* 请在此处解答 *) Admitted.
 
 Theorem S_nbeq_0 : forall n:nat,
-  beq_nat (S n) 0 = false.
+  (S n) =? 0 = false.
 Proof.
   (* 请在此处解答 *) Admitted.
 
@@ -427,13 +470,13 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (beq_nat_refl)  *)
+(** **** 练习：2 星, optional (eqb_refl)  *)
 (** 证明以下定理。（把 [true] 放在等式左边可能看起来有点奇怪，不过 Coq 标准库中
     就是这样表示的，我们照做就是。无论按哪个方向改写都一样好用，所以无论我们如何
     表示定理，用起来都没问题。） *)
 
-Theorem beq_nat_refl : forall n : nat,
-  true = beq_nat n n.
+Theorem eqb_refl : forall n : nat,
+  true = (n =? n).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -477,29 +520,64 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_binary_commute : option (prod nat string) := None.
+Definition manual_grade_for_binary_commute : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：5 星, advanced (binary_inverse)  *)
-(** 本练习是前一个关于二进制数的练习的延续，你需要使用其中的定义和定理来完成它。
-    请将它们复制到本文件使其完整以便评分。
+(** This is a further continuation of the previous exercises about
+    binary numbers.  You may find you need to go back and change your
+    earlier definitions to get things to work here.
 
-    (a) 首先，写一个将自然数转换为二进制数的的函数。然后证明对于所有自然数，
-        用此函数将其转换为二进制数后，再转换回自然数会得到和原来一样的自然数。
+    (a) First, write a function to convert natural numbers to binary
+        numbers. *)
 
-    (b) 你也许会自然而然地想到，将一个二进制数转换为自然数再转换为二进制数之后
-        应该得到与原二进制数相同的结果。然而，这并不是真的！解释问题出在哪。
+Fixpoint nat_to_bin (n:nat) : bin
+  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-    (c) 定义一个“直接的”规范化函数——即，一个从二进制数到二进制数的函数
-        [normalize]，使得对于任何二进制数 b，将其转换为自然数后再转换二进制数
-        会产生 [(normalize b)]。证明它。（警告：这部分有点棘手！）
+(** Prove that, if we start with any [nat], convert it to binary, and
+    convert it back, we get the same [nat] we started with.  (Hint: If
+    your definition of [nat_to_bin] involved any extra functions, you
+    may need to prove a subsidiary lemma showing how such functions
+    relate to [nat_to_bin].) *)
 
-    再次说明，如果对此有帮助的话，请随意更改你之前的定义。 *)
+Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
+Proof.
+  (* 请在此处解答 *) Admitted.
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_binary_inverse_a : option (nat*string) := None.
+
+(** (b) One might naturally expect that we should also prove the
+        opposite direction -- that starting with a binary number,
+        converting to a natural, and then back to binary should yield
+        the same number we started with.  However, this is not the
+        case!  Explain (in a comment) what the problem is. *)
 
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_binary_inverse : option (prod nat string) := None.
+Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
+
+(** (c) Define a normalization function -- i.e., a function
+        [normalize] going directly from [bin] to [bin] (i.e., _not_ by
+        converting to [nat] and back) such that, for any binary number
+        [b], converting [b] to a natural and then back to binary yields
+        [(normalize b)].  Prove it.  (Warning: This part is a bit
+        tricky -- you may end up defining several auxiliary lemmas.
+        One good way to find out what you need is to start by trying
+        to prove the main statement, see where you get stuck, and see
+        if you can find a lemma -- perhaps requiring its own inductive
+        proof -- that will allow the main proof to make progress.) Don't
+        define thi using nat_to_bin and bin_to_nat! *)
+
+(* 请在此处解答 *)
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
 (** [] *)
 
 
+(* NEW NAME *)
+Notation zero_neqb_S := zero_nbeq_S (only parsing).
+Notation S_neqb_0 := S_nbeq_0 (only parsing).
+Notation plus_leb_compat_l := plus_ble_compat_l (only parsing).

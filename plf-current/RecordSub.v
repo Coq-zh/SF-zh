@@ -8,9 +8,9 @@
     are nonstandard. *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Maps.
-Require Import Smallstep.
-Require Import MoreStlc.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import MoreStlc.
 
 (* ################################################################# *)
 (** * Core Definitions *)
@@ -94,8 +94,8 @@ Hint Constructors record_ty record_tm well_formed_ty.
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar y => if beq_string x y then s else t
-  | tabs y T t1 =>  tabs y T (if beq_string x y then t1
+  | tvar y => if eqb_string x y then s else t
+  | tabs y T t1 =>  tabs y T (if eqb_string x y then t1
                              else (subst x s t1))
   | tapp t1 t2 => tapp (subst x s t1) (subst x s t2)
   | tproj t1 i => tproj (subst x s t1) i
@@ -122,14 +122,14 @@ Hint Constructors value.
 Fixpoint Tlookup (i:string) (Tr:ty) : option ty :=
   match Tr with
   | TRCons i' T Tr' =>
-      if beq_string i i' then Some T else Tlookup i Tr'
+      if eqb_string i i' then Some T else Tlookup i Tr'
   | _ => None
   end.
 
 Fixpoint tlookup (i:string) (tr:tm) : option tm :=
   match tr with
   | trcons i' t tr' =>
-      if beq_string i i' then Some t else tlookup i tr'
+      if eqb_string i i' then Some t else tlookup i tr'
   | _ => None
   end.
 
@@ -324,7 +324,7 @@ Proof with eauto.
   induction T; intros; try solve_by_invert.
   - (* TRCons *)
     inversion H. subst. unfold Tlookup in H0.
-    destruct (beq_string i s)...  inversion H0; subst...  Qed.
+    destruct (eqb_string i s)...  inversion H0; subst...  Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** Field Lookup *)
@@ -353,16 +353,16 @@ Proof with (eauto using wf_rcd_lookup).
   - (* S_RcdDepth *)
     rename i0 into k.
     unfold Tlookup. unfold Tlookup in Hget.
-    destruct (beq_string i k)...
+    destruct (eqb_string i k)...
     + (* i = k -- we're looking up the first field *)
       inversion Hget. subst. exists S1...
   - (* S_RcdPerm *)
     exists Ti. split.
     + (* lookup *)
       unfold Tlookup. unfold Tlookup in Hget.
-      destruct (beq_stringP i i1)...
+      destruct (eqb_stringP i i1)...
       * (* i = i1 -- we're looking up the first field *)
-        destruct (beq_stringP i i2)...
+        destruct (eqb_stringP i i2)...
         (* i = i2 -- contradictory *)
         destruct H0.
         subst...
@@ -376,7 +376,7 @@ Proof with (eauto using wf_rcd_lookup).
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_rcd_types_match_informal : option (prod nat string) := None.
+Definition manual_grade_for_rcd_types_match_informal : option (nat*string) := None.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
@@ -385,7 +385,7 @@ Definition manual_grade_for_rcd_types_match_informal : option (prod nat string) 
 (** **** 练习：3 星, optional (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
      subtype U (TArrow V1 V2) ->
-     exists U1, exists U2,
+     exists U1 U2,
        (U=(TArrow U1 U2)) /\ (subtype V1 U1) /\ (subtype U2 V2).
 Proof with eauto.
   intros U V1 V2 Hs.
@@ -538,7 +538,7 @@ Proof with eauto.
     destruct (IHHtyp Si) as [vi [Hget Htyvi]]...
   - (* T_RCons *)
     simpl in H0. simpl. simpl in H1.
-    destruct (beq_string i i0).
+    destruct (eqb_string i i0).
     + (* i is first *)
       inversion H1. subst. exists t...
     + (* i in tail *)
@@ -552,7 +552,7 @@ Proof with eauto.
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
      has_type Gamma s (TArrow T1 T2) ->
      value s ->
-     exists x, exists S1, exists s2,
+     exists x S1 s2,
         s = tabs x S1 s2.
 Proof with eauto.
   (* 请在此处解答 *) Admitted.
@@ -724,7 +724,7 @@ Proof with eauto.
 
 Lemma typing_inversion_proj : forall Gamma i t1 Ti,
   has_type Gamma (tproj t1 i) Ti ->
-  exists T, exists Si,
+  exists T Si,
     Tlookup i T = Some Si /\ subtype Si Ti /\ has_type Gamma t1 T.
 Proof with eauto.
   intros Gamma i t1 Ti H.
@@ -743,7 +743,7 @@ Proof with eauto.
 
 Lemma typing_inversion_rcons : forall Gamma i ti tr T,
   has_type Gamma (trcons i ti tr) T ->
-  exists Si, exists Sr,
+  exists Si Sr,
     subtype (TRCons i Si Sr) T /\ has_type Gamma ti Si /\
     record_tm tr /\ has_type Gamma tr Sr.
 Proof with eauto.
@@ -812,7 +812,7 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros x0 Hafi.
-    unfold update, t_update. destruct (beq_stringP x x0)...
+    unfold update, t_update. destruct (eqb_stringP x x0)...
   - (* T_App *)
     apply T_App with T1...
   - (* T_RCons *)
@@ -828,7 +828,7 @@ Proof with eauto.
   - (* T_Abs *)
     destruct (IHHtyp H5) as [T Hctx]. exists T.
     unfold update, t_update in Hctx.
-    rewrite false_beq_string in Hctx...  Qed.
+    rewrite false_eqb_string in Hctx...  Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** Preservation *)
@@ -845,7 +845,7 @@ Proof with eauto.
     rename s into y.
     destruct (typing_inversion_var _ _ _ Htypt) as [T [Hctx Hsub]].
     unfold update, t_update in Hctx.
-    destruct (beq_stringP x y)...
+    destruct (eqb_stringP x y)...
     + (* x=y *)
       subst.
       inversion Hctx; subst. clear Hctx.
@@ -866,17 +866,17 @@ Proof with eauto.
     destruct (subtype__wf _ _ Hsub) as [Hwf1 Hwf2].
     inversion Hwf2. subst.
     apply T_Sub with (TArrow T1 T2)... apply T_Abs...
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x=y *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_string y x)...
+      destruct (eqb_string y x)...
     + (* x<>y *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y z)...
-      subst.  rewrite false_beq_string...
+      destruct (eqb_stringP y z)...
+      subst.  rewrite false_eqb_string...
   - (* tproj *)
     destruct (typing_inversion_proj _ _ _ _ Htypt)
       as [T [Ti [Hget [Hsub Htypt1]]]]...

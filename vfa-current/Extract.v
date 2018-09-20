@@ -12,7 +12,7 @@ Require Extraction.
     chapter, we'll take a deeper look. *)
 
 Set Warnings "-extraction-inside-module".  (* turn off a warning message *)
-Require Import Perm.
+From VFA Require Import Perm.
 
 Module Sort1.
 Fixpoint insert (i:nat) (l: list nat) := 
@@ -154,7 +154,7 @@ Axiom ltb_lt : forall n m : int, ltb n m = true <-> int2Z n < int2Z m.
 
 (** Just like in Perm.v, but for [int] and [Z] instead of [nat]. *)
 
-Lemma int_blt_reflect : forall x y, reflect (int2Z x < int2Z y) (ltb x y).
+Lemma int_ltb_reflect : forall x y, reflect (int2Z x < int2Z y) (ltb x y).
 Proof.
   intros x y.
   apply iff_reflect. symmetry. apply ltb_lt.
@@ -174,7 +174,7 @@ Qed.
 
 (* Add these three lemmas to the Hint database for [bdestruct],
   so the [bdestruct] tactic will work with them. *)
-Hint Resolve int_blt_reflect Z_eqb_reflect Z_ltb_reflect : bdestruct.
+Hint Resolve int_ltb_reflect Z_eqb_reflect Z_ltb_reflect : bdestruct.
 
 (* ################################################################# *)
 (** * SearchTrees, Extracted *)
@@ -387,7 +387,7 @@ Insert and lookup 20000 consecutive integers in 0.374 seconds.
    So instead, we'll use the SearchTree module, 
    where everything runs inside Coq. *)
 
-Require SearchTree.
+From VFA Require SearchTree.
 Module Experiments.
 Open Scope nat_scope.
 Definition empty_tree := SearchTree.empty_tree nat.

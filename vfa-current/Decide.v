@@ -1,7 +1,7 @@
 (** * Decide: Programming with Decision Procedures *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Perm.
+From VFA Require Import Perm.
 
 (* ################################################################# *)
 (** * Using [reflect] to characterize decision procedures *)
@@ -16,14 +16,14 @@ Check Nat.ltb.  (* : nat -> nat -> bool *)
 (** The [Perm] chapter defined a tactic called [bdestruct] that
     does case analysis on (x <? y) while giving you hypotheses (above
     the line) of the form (x<y).   This tactic is built using the [reflect] 
-    type and the [blt_reflect] theorem. *)
+    type and the [ltb_reflect] theorem. *)
 
 Print reflect.
 (* Inductive reflect (P : Prop) : bool -> Set :=
     | ReflectT : P -> reflect P true 
     | ReflectF : ~ P -> reflect P false  *)
 
-Check blt_reflect.  (* : forall x y, reflect (x<y) (x <? y) *)
+Check ltb_reflect.  (* : forall x y, reflect (x<y) (x <? y) *)
 
 (** The name [reflect] for this type is a reference to _computational
    reflection_,  a technique in logic.  One takes a logical formula, or 
@@ -65,14 +65,14 @@ Goal (3<?7 = true). Proof. reflexivity. Qed.
 (** So [v] cannot be [ReflectF Q (3<?7)] for any [Q], because that would
    not type-check.  Now, the next question:  must there exist a value
    of type [reflect (3<7) (3<?7)]  ?  The answer is yes; that is the
-   [blt_reflect] theorem.  The result of [Check blt_reflect], above, says that
-   for any [x,y], there does exist a value (blt_reflect x y) whose type
+   [ltb_reflect] theorem.  The result of [Check ltb_reflect], above, says that
+   for any [x,y], there does exist a value (ltb_reflect x y) whose type
    is exactly [reflect (x<y)(x<?y)].     So let's look at that value!  That is,
    examine what [H], and [P], and [Q] are equal to at "Case 1" and "Case 2": *)
 
 Theorem three_less_seven_1: 3<7.
 Proof.
-assert (H := blt_reflect 3 7).
+assert (H := ltb_reflect 3 7).
 remember (3<?7) as b.
 destruct H as [P|Q] eqn:?.
 * (* Case 1: H = ReflectT (3<7) P *)
@@ -88,7 +88,7 @@ Qed.
 
 Theorem three_less_seven_2: 3<7.
 Proof.
-assert (H := blt_reflect 3 7).
+assert (H := ltb_reflect 3 7).
 inversion H as [P|Q].
 apply P.
 Qed.
@@ -96,7 +96,7 @@ Qed.
 (** The [reflect] inductive data type is a way of relating a _decision
    procedure_ (a function from X to [bool]) with a predicate (a function
    from X to [Prop]).   The convenience of [reflect], in the verification
-   of functional programs, is that we can do [destruct (blt_reflect a b)],
+   of functional programs, is that we can do [destruct (ltb_reflect a b)],
    which relates [a<?b] (in the program) to the [a<b] (in the proof).
    That's just how the [bdestruct] tactic works; you can go back
    to [Perm.v] and examine how it is implemented in the [Ltac]
@@ -183,14 +183,14 @@ Print t4.  (* = forall a b : nat, {a < b} + {~ a < b} *)
   Let's go ahead and implement [lt_dec].  We can base it on the function
   [ltb: nat -> nat -> bool] which calculates whether [a] is less than [b],
   as a boolean.  We already have a theorem that this function on booleans
-  is related to the proposition [a<b]; that theorem is called [blt_reflect]. *)
+  is related to the proposition [a<b]; that theorem is called [ltb_reflect]. *)
 
-Check blt_reflect.  (* : forall x y, reflect (x<y) (x<?y) *)
+Check ltb_reflect.  (* : forall x y, reflect (x<y) (x<?y) *)
 
-(** It's not too hard to use [blt_reflect] to define [lt_dec] *)
+(** It's not too hard to use [ltb_reflect] to define [lt_dec] *)
 
 Definition lt_dec (a: nat) (b: nat) : {a<b}+{~(a<b)} :=
-match blt_reflect a b with
+match ltb_reflect a b with
 | ReflectT _ P => left (a < b) (~ a < b) P
 | ReflectF _ Q => right (a < b) (~ a < b) Q
 end.
@@ -199,7 +199,7 @@ end.
      definition-by-tactic: *)
 
 Definition lt_dec' (a: nat) (b: nat) : {a<b}+{~(a<b)}.
-  destruct (blt_reflect a b) as [P|Q]. left. apply P.  right. apply Q.
+  destruct (ltb_reflect a b) as [P|Q]. left. apply P.  right. apply Q.
 Defined.
 
 Print lt_dec.
@@ -230,13 +230,13 @@ Print sumbool.
    [left] has only one explicit argument [P]:  *)
 
 Definition lt_dec (a: nat) (b: nat) : {a<b}+{~(a<b)} :=
-match blt_reflect a b with
+match ltb_reflect a b with
 | ReflectT _ P => left P
 | ReflectF _ Q => right Q
 end.
 
 Definition le_dec (a: nat) (b: nat) : {a<=b}+{~(a<=b)} :=
-match ble_reflect a b with
+match leb_reflect a b with
 | ReflectT _ P => left P
 | ReflectF _ Q => right Q
 end.
@@ -315,7 +315,7 @@ Proof.
    For most purposes its unnecessary to add the axiom [P \/ ~P] to Coq,
    because for specific predicates there's a specific way to prove [P \/ ~P]
    as a theorem.  For example,  less-than on natural numbers is decidable,
-   and the existence of [blt_reflect] or [lt_dec] (as a theorem, not as an axiom)
+   and the existence of [ltb_reflect] or [lt_dec] (as a theorem, not as an axiom)
    is a demonstration of that.
 
    Furthermore, in this "book" we are interested in _algorithms_.  An axiom
@@ -390,16 +390,16 @@ Lemma compute_with_lt_dec:  (if ScratchPad2.lt_dec 3 7 then 7 else 3) = 7.
 Proof.
 compute.
 (* uncomment this line and try it:
-   unfold blt_reflect.
+   unfold ltb_reflect.
 *)
 Abort.
 
-(** Unfortunately, even though [blt_reflect] was proved without any axioms, it
+(** Unfortunately, even though [ltb_reflect] was proved without any axioms, it
     is an _opaque theorem_  (proved with [Qed] instead of with [Defined]), and
     one cannot compute with opaque theorems.  Not only that, but it is proved with
     other opaque theorems such as [iff_sym] and [Nat.ltb_lt].  If we want to
-    compute with an implementation of [lt_dec] built from [blt_reflect], then
-    we will have to rebuild [blt_reflect] without using [Qed] anywhere, only [Defined].
+    compute with an implementation of [lt_dec] built from [ltb_reflect], then
+    we will have to rebuild [ltb_reflect] without using [Qed] anywhere, only [Defined].
 
     Instead, let's use the version of [lt_dec] from the Coq standard library,
     which _is_ carefully built without any opaque ([Qed]) theorems.

@@ -15,10 +15,11 @@ Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Strings.String.
 Require Import Coq.Strings.Ascii.
 Require Import Coq.Arith.Arith.
+Require Import Coq.Init.Nat.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.Lists.List.
 Import ListNotations.
-Require Import Maps Imp.
+From LF Require Import Maps Imp.
 
 (* ################################################################# *)
 (** * 内部结构 *)
@@ -28,12 +29,12 @@ Require Import Maps Imp.
 
 Definition isWhite (c : ascii) : bool :=
   let n := nat_of_ascii c in
-  orb (orb (beq_nat n 32)   (* space *)
-           (beq_nat n 9))   (* tab *)
-      (orb (beq_nat n 10)   (* linefeed *)
-           (beq_nat n 13)). (* Carriage return. *)
+  orb (orb (n =? 32)   (* space *)
+           (n =? 9))   (* tab *)
+      (orb (n =? 10)   (* linefeed *)
+           (n =? 13)). (* Carriage return. *)
 
-Notation "x '<=?' y" := (leb x y)
+Notation "x '<=?' y" := (x <=? y)
   (at level 70, no associativity) : nat_scope.
 
 Definition isLowerAlpha (c : ascii) : bool :=
@@ -115,8 +116,8 @@ Proof. reflexivity. Qed.
 (** 一个附带出错信息的 [option] 类型: *)
 
 Inductive optionE (X:Type) : Type :=
-  | SomeE : X -> optionE X
-  | NoneE : string -> optionE X.
+  | SomeE (x : X)
+  | NoneE (s : string).
 
 Arguments SomeE {X}.
 Arguments NoneE {X}.

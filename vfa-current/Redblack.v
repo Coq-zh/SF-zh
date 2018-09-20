@@ -45,8 +45,8 @@ _Journal of Functional Programming_, 9(4):471-477, July 1999.
    integers. We don't repeat the [Extract] commands, because they are
    imported implicitly from Extract.v *)
 
-Require Import Perm.
-Require Import Extract.
+From VFA Require Import Perm.
+From VFA Require Import Extract.
 Require Import Coq.Lists.List. 
 Export ListNotations.
 Require Import Coq.Logic.FunctionalExtensionality.

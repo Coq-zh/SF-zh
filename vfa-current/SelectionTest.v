@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Selection.
-Parameter MISSING: Type. 
+From VFA Require Import Selection.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Selection.
+From VFA Require Import Selection.
 Import Check.
 
 Goal True.
@@ -102,4 +103,20 @@ idtac " ".
 
 idtac "Max points - standard: 15".
 idtac "Max points - advanced: 15".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- select_perm ---------".
+Print Assumptions select_perm.
+idtac "---------- selection_sort_perm ---------".
+Print Assumptions selection_sort_perm.
+idtac "---------- select_smallest ---------".
+Print Assumptions select_smallest.
+idtac "---------- selection_sort_sorted ---------".
+Print Assumptions selection_sort_sorted.
+idtac "---------- selsort'_perm ---------".
+Print Assumptions selsort'_perm.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

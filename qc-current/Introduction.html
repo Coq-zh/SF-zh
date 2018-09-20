@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<title>Introduction</title>
+</head>
+<link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script src="common/jquery-ui/external/jquery/jquery.js"></script>
+<script src="common/jquery-ui/jquery-ui.js"></script>
+<script src="common/toggleproofs.js"></script>
+<link href="common/css/qc.css" rel="stylesheet" type="text/css"/>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+<a href='https://www.cis.upenn.edu/~bcpierce/sf/current/index.html'>
+<img src='common/media/image/sf_logo_sm.png'></a>
+</br><a href='index.html'>  <span class='booktitleinheader'>Volume 4: QuickChick: Property-Based Testing in Coq</span><br></br>
+<ul id='menu'>
+   <a href='toc.html'><li class='section_name'>目录</li></a>
+   <a href='coqindex.html'><li class='section_name'>索引</li></a>
+</ul>
+</a></div>
+
+<div id="main">
+
+<h1 class="libtitle">Introduction</h1>
+
+
+
+<div class="doc">
+<a name="lab3"></a><h1 class="section">A First Taste of Testing</h1>
+
+<div class="paragraph"> </div>
+
+ Consider the following definition of a function <span class="inlinecode"><span class="id" type="var">remove</span></span>, which
+    takes a natural number <span class="inlinecode"><span class="id" type="var">x</span></span> and a list of nats <span class="inlinecode"><span class="id" type="var">l</span></span> and removes <span class="inlinecode"><span class="id" type="var">x</span></span>
+    from the list. 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">remove</span> (<span class="id" type="var">x</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">l</span> : <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| []   ⇒ []<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">h</span> =? <span class="id" type="var">x</span> <span class="id" type="keyword">then</span> <span class="id" type="var">t</span> <span class="id" type="keyword">else</span> <span class="id" type="var">h</span> :: <span class="id" type="var">remove</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+One possible specification for <span class="inlinecode"><span class="id" type="var">remove</span></span> might be this property... 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="var">Conjecture</span> <span class="id" type="var">removeP</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>,  ¬ (<span class="id" type="var">In</span> <span class="id" type="var">x</span> (<span class="id" type="var">remove</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>)).<br/>
+</div>
+
+<div class="doc">
+...which says that <span class="inlinecode"><span class="id" type="var">x</span></span> never occurs in the result of <span class="inlinecode"><span class="id" type="var">remove</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">l</span></span>
+    for any <span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">l</span></span>.  (<span class="inlinecode"><span class="id" type="var">Conjecture</span></span> <span class="inlinecode"><span class="id" type="var">foo</span>...</span> means the same as
+    <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> <span class="inlinecode"><span class="id" type="var">foo</span>...</span> <span class="inlinecode"><span class="id" type="var">Admitted</span>.</span>  Formally, <span class="inlinecode"><span class="id" type="var">foo</span></span> is treated as an
+    axiom.) 
+<div class="paragraph"> </div>
+
+ Sadly, this property is false, as we would (eventually) discover
+    if we were to try to prove it. 
+<div class="paragraph"> </div>
+
+ A different &mdash; perhaps much more efficient &mdash; way to discover
+    the discrepancy between the definition and specification is
+    to _test_ it: 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;QuickChick&nbsp;removeP.&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+(Try uncommenting and evaluating the previous line.) 
+<div class="paragraph"> </div>
+
+ The <span class="inlinecode"><span class="id" type="var">QuickChick</span></span> command takes an "executable" property (we'll see
+    later exactly what this means) and attempts to falsify it by
+    running it on many randomly generated inputs, resulting in output
+    like this:
+<pre>
+       0 
+       [0, 0] 
+       Failed! After 17 tests and 12 shrinks
+</pre>
+    This means that, if we run <span class="inlinecode"><span class="id" type="var">remove</span></span> with <span class="inlinecode"><span class="id" type="var">x</span></span> being <span class="inlinecode">0</span> and <span class="inlinecode"><span class="id" type="var">l</span></span> 
+    being the two-element list containing two zeros, then the property 
+    <span class="inlinecode"><span class="id" type="var">removeP</span></span> fails. 
+<div class="paragraph"> </div>
+
+ With this example in hand, we can see that the <span class="inlinecode"><span class="id" type="keyword">then</span></span> branch
+    of <span class="inlinecode"><span class="id" type="var">remove</span></span> fails to make a recursive call, which means that only
+    one occurence of <span class="inlinecode"><span class="id" type="var">x</span></span> will be deleted. The last line of the output
+    records that it took 17 tests to identify some fault-inducing
+    input and 12 "shrinks" to reduce it to a minimal
+    counterexample. 
+<div class="paragraph"> </div>
+
+<a name="lab4"></a><h4 class="section">练习：1 星 (insertP)</h4>
+ Here is a somewhat mangled definition of a function for inserting a
+   new element into a sorted list of numbers: 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| [] ⇒ [<span class="id" type="var">x</span>]<br/>
+&nbsp;&nbsp;| <span class="id" type="var">y</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">y</span> &lt;? <span class="id" type="var">x</span> <span class="id" type="keyword">then</span> <span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span> <span class="id" type="keyword">else</span> <span class="id" type="var">y</span>::<span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Write a property that says "inserting a number <span class="inlinecode"><span class="id" type="var">x</span></span> into a list <span class="inlinecode"><span class="id" type="var">l</span></span>
+    always yields a list containing <span class="inlinecode"><span class="id" type="var">x</span></span>."  Make sure QuickChick finds
+    a counterexample. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab5"></a><h4 class="section">练习：2 星 (insertP2)</h4>
+ Translate the following claim into a <span class="inlinecode"><span class="id" type="var">Conjecture</span></span> (using <span class="inlinecode"><span class="id" type="var">In</span></span> for
+    list membership): "For all numbers <span class="inlinecode"><span class="id" type="var">x</span></span> and <span class="inlinecode"><span class="id" type="var">y</span></span> and lists <span class="inlinecode"><span class="id" type="var">l</span></span>, if
+    <span class="inlinecode"><span class="id" type="var">y</span></span> is in <span class="inlinecode"><span class="id" type="var">l</span></span> then it is also in the list that results from
+    inserting <span class="inlinecode"><span class="id" type="var">x</span></span> into <span class="inlinecode"><span class="id" type="var">l</span></span>" (i.e., <span class="inlinecode"><span class="id" type="var">insert</span></span> preserves all the elements
+    already in <span class="inlinecode"><span class="id" type="var">l</span></span>). Make sure QuickChick finds a counterexample. 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
+
+<a name="lab6"></a><h1 class="section">Overview</h1>
+
+<div class="paragraph"> </div>
+
+ Property-based random testing involves four basic ingredients:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> an _executable property_ like <span class="inlinecode"><span class="id" type="var">removeP</span></span>,
+
+</li>
+<li> _generators_ for random elements of the types of the inputs to
+      the property (here, numbers and lists of numbers),
+
+</li>
+<li> _printers_ for converting data structures like numbers and lists
+      to strings when reporting counterexamples, and
+
+</li>
+<li> _shrinkers_, which are used to minimize counterexamples. 
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ We will delve into each of these in detail later on, but first we
+    need to make a digression to explain Coq's support for
+    _typeclasses_, which QuickChick uses extensively both internally
+    and in its programmatic interface to users.  This is the
+    <a href="Typeclasses.html"><span class="inlineref">Typeclasses</span></a> chapter.
+
+<div class="paragraph"> </div>
+
+    In the <a href="QC.html"><span class="inlineref">QC</span></a> chapter we'll cover the core concepts and
+    features of QuickChick itself.
+
+<div class="paragraph"> </div>
+
+    The <a href="TImp.html"><span class="inlineref">TImp</span></a> chapter develops a small case study around a typed
+    variant of the Imp language.
+
+<div class="paragraph"> </div>
+
+    The <a href="QuickChickTool.html"><span class="inlineref">QuickChickTool</span></a> chapter presents a command line tool,
+    _quickChick_, that supports larger-scale projects and mutation
+    testing.
+
+<div class="paragraph"> </div>
+
+    The <a href="QuickChickInterface.html"><span class="inlineref">QuickChickInterface</span></a> chapter is a complete reference
+    manual for QuickChick.
+
+<div class="paragraph"> </div>
+
+    Finally, the <a href="Postscript.html"><span class="inlineref">Postscript</span></a> chapter gives some suggestions for
+    further reading. 
+</div>
+</div>
+
+
+
+</div>
+
+</body>
+</html>

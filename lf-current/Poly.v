@@ -4,13 +4,13 @@
 
 (* Suppress some annoying warnings from Coq: *)
 Set Warnings "-notation-overridden,-parsing".
-Require Export Lists.
+From LF Require Export Lists.
 
 (* ################################################################# *)
 (** * 多态 *)
 
-(** 本章进一步讨论函数式编程中重要的基本概念：
-    将数据类型进行抽象而得的_'多态'_函数、取函数为数据的_'高阶函数'_。 *)
+(** 在本章中，我们会继续发展函数式编程的基本概念，其中最关键的新概念就是
+    _'多态'_（在所处理的数据类型上抽象出函数）和_'高阶函数'_（函数作为数据）。 *)
 
 (* ================================================================= *)
 (** ** 多态列表 *)
@@ -20,8 +20,8 @@ Require Export Lists.
     列表的列表等等。我们_'可以'_分别为它们定义新的归纳数据类型，例如... *)
 
 Inductive boollist : Type :=
-  | bool_nil : boollist
-  | bool_cons : bool -> boollist -> boollist.
+  | bool_nil
+  | bool_cons (b : bool) (l : boollist).
 
 (** ...不过这样很快就会变得乏味。
     部分原因在于我们必须为每种数据类型都定义不同的构造子，
@@ -32,8 +32,8 @@ Inductive boollist : Type :=
     例如，以下就是_'多态列表'_数据类型。 *)
 
 Inductive list (X:Type) : Type :=
-  | nil : list X
-  | cons : X -> list X -> list X.
+  | nil
+  | cons (x : X) (l : list X).
 
 (** 这和上一章中 [natlist] 的定义基本一样，只是将 [cons] 构造子的
     [nat] 参数换成了任意的类型 [X]，定义的头部添加了 [X] 的绑定，
@@ -48,9 +48,12 @@ Inductive list (X:Type) : Type :=
 Check list.
 (* ===> list : Type -> Type *)
 
-(** [list] 定义中的形参 [X] 会作为构造子 [nil] 和 [cons] 的形参，
-    即，现在的 [nil] 和 [cons] 是多态构造子，它们需要 [X]
-    来提供所构造的列表的类型。例如，[nil nat] 会构造出类型为 [nat] 的空列表。 *)
+(** The parameter [X] in the definition of [list] automatically
+    becomes a parameter to the constructors [nil] and [cons] -- that
+    is, [nil] and [cons] are now polymorphic constructors; when we use
+    them, we must now provide a first argument that is the type of the
+    list they are building. For example, [nil nat] constructs the
+    empty list of type [nat]. *)
 
 Check (nil nat).
 (* ===> nil nat : list nat *)
@@ -119,15 +122,16 @@ Proof. reflexivity.  Qed.
 Module MumbleGrumble.
 
 Inductive mumble : Type :=
-  | a : mumble
-  | b : mumble -> nat -> mumble
-  | c : mumble.
+  | a
+  | b (x : mumble) (y : nat)
+  | c.
 
 Inductive grumble (X:Type) : Type :=
-  | d : mumble -> grumble X
-  | e : X -> grumble X.
+  | d (m : mumble)
+  | e (x : X).
 
 (** 对于某个类型 [X]，以下哪些是 [grumble X] 良定义的元素？
+    （在各选项后填“是”或“否”。）
       - [d (b a 5)]
       - [d mumble (b a 5)]
       - [d bool (b a 5)]
@@ -139,7 +143,7 @@ Inductive grumble (X:Type) : Type :=
 End MumbleGrumble.
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_mumble_grumble : option (prod nat string) := None.
+Definition manual_grade_for_mumble_grumble : option (nat*string) := None.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
@@ -180,11 +184,14 @@ Check repeat.
     [repeat] 的第二个参数为 [X] 类型的元素，第一个参数明显只能是 [X]，
     既然如此，我们何必显式地写出它呢？
 
-    幸运的是，Coq 允许我们避免这种冗余。在任何我们可以将类型参数写为
-    “隐式参数”[_] 的地方，都可以看做“请 Coq 自行找出这里应该填什么。”
-    更确切地说，当 Coq 遇到 [_] 时，它会尝试_'统一'_所有的局部变量信息，
-    包括函数应当应用到的类型，其它参数的类型，以及应用函数的上下文中期望的类型，
-    以此来确定 [_] 处应当填入的具体类型。
+    Fortunately, Coq permits us to avoid this kind of redundancy.  In
+    place of any type argument we can write a "hole" [_], which can be
+    read as "Please try to figure out for yourself what belongs here."
+    More precisely, when Coq encounters a [_], it will attempt to
+    _unify_ all locally available information -- the type of the
+    function being applied, the types of the other arguments, and the
+    type expected by the context in which the application appears --
+    to determine what concrete type should replace the [_].
 
     这听起来很像类型标注推断。实际上，这两种个过程依赖于同样的底层机制。
     除了简单地忽略函数中某些参数的类型：
@@ -197,7 +204,7 @@ Check repeat.
 
     以此来告诉 Coq 要尝试推断出缺少的信息。
 
-    使用隐式参数，[repeat] 可写成如下形式： *)
+    Using holes, the [repeat] function can be written like this: *)
 
 Fixpoint repeat'' X x count : list X :=
   match count with
@@ -212,7 +219,7 @@ Fixpoint repeat'' X x count : list X :=
 Definition list123 :=
   cons nat 1 (cons nat 2 (cons nat 3 (nil nat))).
 
-(** 我们可以使用参数推断写成这样： *)
+(** ...we can use holes to write this: *)
 
 Definition list123' :=
   cons _ 1 (cons _ 2 (cons _ 3 (nil _))).
@@ -252,8 +259,8 @@ Fixpoint repeat''' {X : Type} (x : X) (count : nat) : list X :=
     考虑以下 [list] 类型的另一种定义： *)
 
 Inductive list' {X:Type} : Type :=
-  | nil' : list'
-  | cons' : X -> list' -> list'.
+  | nil'
+  | cons' (x : X) (l : list').
 
 (** 由于 [X] 在包括 [list'] 本身的_'整个'_归纳定义中都是隐式声明的，
     因此当我们讨论数值、布尔值或其它任何类型的列表时，都只能写 [list']，
@@ -375,7 +382,7 @@ Proof.
     _'多态序对（Polymorphic Pairs）'_，它通常叫做_'积（Products）'_： *)
 
 Inductive prod (X Y : Type) : Type :=
-| pair : X -> Y -> prod X Y.
+| pair (x : X) (y : Y).
 
 Arguments pair {X} {Y} _ _.
 
@@ -461,8 +468,8 @@ Proof.
 Module OptionPlayground.
 
 Inductive option (X:Type) : Type :=
-  | Some : X -> option X
-  | None : option X.
+  | Some (x : X)
+  | None.
 
 Arguments Some {X} _.
 Arguments None {X}.
@@ -475,7 +482,7 @@ Fixpoint nth_error {X : Type} (l : list X) (n : nat)
                    : option X :=
   match l with
   | [] => None
-  | a :: l' => if beq_nat n O then Some a else nth_error l' (pred n)
+  | a :: l' => if n =? O then Some a else nth_error l' (pred n)
   end.
 
 Example test_nth_error1 : nth_error [4;5;6;7] 0 = Some 4.
@@ -550,7 +557,7 @@ Example test_filter1: filter evenb [1;2;3;4] = [2;4].
 Proof. reflexivity.  Qed.
 
 Definition length_is_1 {X : Type} (l : list X) : bool :=
-  beq_nat (length l) 1.
+  (length l) =? 1.
 
 Example test_filter2:
     filter length_is_1
@@ -558,8 +565,8 @@ Example test_filter2:
   = [ [3]; [4]; [8] ].
 Proof. reflexivity.  Qed.
 
-(** 我们可以使用 [filter] 来简化 [Lists] 中 [countoddmembers]
-    函数的定义。 *)
+(** 我们可以使用 [filter] 给出 [Lists] 中 [countoddmembers]
+    函数的简洁的版本。 *)
 
 Definition countoddmembers' (l:list nat) : nat :=
   length (filter oddb l).
@@ -591,7 +598,7 @@ Proof. reflexivity.  Qed.
 (** 下面是一个使用匿名函数重写的 [filter]：*)
 
 Example test_filter2':
-    filter (fun l => beq_nat (length l) 1)
+    filter (fun l => (length l) =? 1)
            [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
   = [ [3]; [4]; [8] ].
 Proof. reflexivity.  Qed.
@@ -670,7 +677,7 @@ Example test_map3:
 Proof. reflexivity.  Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** 练习 *)
+(** *** 习题 *)
 
 (** **** 练习：3 星 (map_rev)  *)
 (** 请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引力 *)
@@ -701,8 +708,8 @@ Example test_flat_map1:
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 列表并不是唯一我们可以为它写出 [map] 函数的归纳类型。
-    以下是 [option] 类型的 [map] 定义： *)
+(** Lists are not the only inductive type for which [map] makes sense.
+    Here is a [map] for the [option] type: *)
 
 Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
                       : option Y :=
@@ -768,7 +775,7 @@ Proof. reflexivity. Qed.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_fold_types_different : option (prod nat string) := None.
+Definition manual_grade_for_fold_types_different : option (nat*string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -848,7 +855,7 @@ Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_fold_map : option (prod nat string) := None.
+Definition manual_grade_for_fold_map : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星, advanced (currying)  *)
@@ -905,7 +912,7 @@ Proof.
    Fixpoint nth_error {X : Type} (l : list X) (n : nat) : option X :=
      match l with
      | [] => None
-     | a :: l' => if beq_nat n O then Some a else nth_error l' (pred n)
+     | a :: l' => if n =? O then Some a else nth_error l' (pred n)
      end.
 
    请写出以下定理的非形式化证明：
@@ -915,45 +922,49 @@ Proof.
 (* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
-Definition manual_grade_for_informal_proof : option (prod nat string) := None.
+Definition manual_grade_for_informal_proof : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：4 星, advanced (church_numerals)  *)
-(** 本练习使用_'邱奇数（Church numerals）'_探讨了另一种定义自然数的方式，
-    它以数学家 Alonzo Church 命名。我们可以将自然数 [n] 表示为一个函数，
-    它接受一个函数 [f] 作为参数并返回迭代了 [n] 次的 [f]。 *)
+(** The following exercises explore an alternative way of defining
+    natural numbers, using the so-called _Church numerals_, named
+    after mathematician Alonzo Church.  We can represent a natural
+    number [n] as a function that takes a function [f] as a parameter
+    and returns [f] iterated [n] times. *)
 
 Module Church.
-Definition nat := forall X : Type, (X -> X) -> X -> X.
+Definition cnat := forall X : Type, (X -> X) -> X -> X.
 
 (** 我们来看看如何用这种记法写数。将函数迭代一次应当与将它应用一次相同。
     因此： *)
 
-Definition one : nat :=
+Definition one : cnat :=
   fun (X : Type) (f : X -> X) (x : X) => f x.
 
 (** 与此类似，[two] 应当对其参数应用两次 [f]： *)
 
-Definition two : nat :=
+Definition two : cnat :=
   fun (X : Type) (f : X -> X) (x : X) => f (f x).
 
 (** 定义 [zero] 有点刁钻：我们如何“将函数应用零次”？答案很简单：
     把参数原样返回就好。 *)
 
-Definition zero : nat :=
+Definition zero : cnat :=
   fun (X : Type) (f : X -> X) (x : X) => x.
 
 (** 更一般地说，数 [n] 可以写作 [fun X f x => f (f
     ... (f x) ...)]，其中 [f] 出现了 [n] 次。要特别注意我们之前定义
     [doit3times] 函数的方式就是 [3] 的邱奇数表示。 *)
 
-Definition three : nat := @doit3times.
+Definition three : cnat := @doit3times.
 
 (** 完成以下函数的定义。请用 [reflexivity] 证明来确认它们能够通过对应的单元测试。 *)
 
-(** 自然数的后继： *)
+(** **** 练习：1 星, advanced (church_succ)  *)
 
-Definition succ (n : nat) : nat
+(** Successor of a natural number: given a Church numeral [n],
+    the successor [succ n] is a function that iterates its
+    argument once more than [n]. *)
+Definition succ (n : cnat) : cnat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Example succ_1 : succ zero = one.
@@ -965,9 +976,12 @@ Proof. (* 请在此处解答 *) Admitted.
 Example succ_3 : succ two = three.
 Proof. (* 请在此处解答 *) Admitted.
 
-(** 两个自然数的加法： *)
+(** [] *)
 
-Definition plus (n m : nat) : nat
+(** **** 练习：1 星, advanced (church_plus)  *)
+
+(** Addition of two natural numbers: *)
+Definition plus (n m : cnat) : cnat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Example plus_1 : plus zero one = one.
@@ -980,9 +994,12 @@ Example plus_3 :
   plus (plus two two) three = plus one (plus three three).
 Proof. (* 请在此处解答 *) Admitted.
 
-(** 乘法： *)
+(** [] *)
 
-Definition mult (n m : nat) : nat
+(** **** 练习：2 星, advanced (church_mult)  *)
+
+(** Multiplication: *)
+Definition mult (n m : cnat) : cnat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Example mult_1 : mult one one = one.
@@ -994,29 +1011,32 @@ Proof. (* 请在此处解答 *) Admitted.
 Example mult_3 : mult two three = plus three three.
 Proof. (* 请在此处解答 *) Admitted.
 
-(** 指数： *)
+(** [] *)
 
-(** （_'提示'_：多态在这里起到了关键的作用。然而，选择正确的类型来迭代会很棘手。
-    如果你遇到了“Universe inconsistency，全域不一致”错误，请在不同的类型上迭代。
-    [nat] 本身通常会有问题。） *)
+(** **** 练习：2 星, advanced (church_exp)  *)
 
-Definition exp (n m : nat) : nat
+(** Exponentiation: *)
+
+(** (_Hint_: Polymorphism plays a crucial role here.  However,
+    choosing the right type to iterate over can be tricky.  If you hit
+    a "Universe inconsistency" error, try iterating over a different
+    type.  Iterating over [cnat] itself is usually problematic.) *)
+
+Definition exp (n m : cnat) : cnat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Example exp_1 : exp two two = plus two two.
 Proof. (* 请在此处解答 *) Admitted.
 
-Example exp_2 : exp three two = plus (mult two (mult two two)) one.
+Example exp_2 : exp three zero = one.
 Proof. (* 请在此处解答 *) Admitted.
 
-Example exp_3 : exp three zero = one.
+Example exp_3 : exp three two = plus (mult two (mult two two)) one.
 Proof. (* 请在此处解答 *) Admitted.
+
+(** [] *)
 
 End Church.
-
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_succ_plus_mult_exp : option (prod nat string) := None.
-(** [] *)
 
 End Exercises.
 

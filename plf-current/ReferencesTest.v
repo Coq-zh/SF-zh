@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import References.
-Parameter MISSING: Type. 
+From PLF Require Import References.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import References.
+From PLF Require Import References.
 Import Check.
 
 Goal True.
@@ -99,4 +100,24 @@ idtac " ".
 
 idtac "Max points - standard: 15".
 idtac "Max points - advanced: 15".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- compact_update ---------".
+idtac "MANUAL".
+idtac "---------- type_safety_violation ---------".
+idtac "MANUAL".
+idtac "---------- cyclic_store ---------".
+idtac "MANUAL".
+idtac "---------- store_not_unique ---------".
+idtac "MANUAL".
+idtac "---------- preservation_informal ---------".
+idtac "MANUAL".
+idtac "---------- STLCRef.RefsAndNontermination.factorial ---------".
+Print Assumptions STLCRef.RefsAndNontermination.factorial.
+idtac "---------- STLCRef.RefsAndNontermination.factorial_type ---------".
+Print Assumptions STLCRef.RefsAndNontermination.factorial_type.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

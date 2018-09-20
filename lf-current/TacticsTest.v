@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Tactics.
-Parameter MISSING: Type. 
+From LF Require Import Tactics.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Tactics.
+From LF Require Import Tactics.
 Import Check.
 
 Goal True.
@@ -43,31 +44,31 @@ Print Assumptions rev_exercise1.
 Goal True.
 idtac " ".
 
-idtac "-------------------  inversion_ex3  --------------------".
+idtac "-------------------  injection_ex3  --------------------".
 idtac " ".
 
-idtac "#> inversion_ex3".
+idtac "#> injection_ex3".
 idtac "Possible points: 1".
-check_type @inversion_ex3 (
-(forall (X : Type) (x y z w : X) (l j : list X),
- x :: y :: l = w :: z :: j -> x :: l = z :: j -> x = y)).
+check_type @injection_ex3 (
+(forall (X : Type) (x y z : X) (l j : list X),
+ x :: y :: l = z :: j -> y :: l = x :: j -> x = y)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions inversion_ex3.
+Print Assumptions injection_ex3.
 Goal True.
 idtac " ".
 
-idtac "-------------------  inversion_ex6  --------------------".
+idtac "-------------------  discriminate_ex3  --------------------".
 idtac " ".
 
-idtac "#> inversion_ex6".
+idtac "#> discriminate_ex3".
 idtac "Possible points: 1".
-check_type @inversion_ex6 (
-(forall (X : Type) (x y z : X) (l j : list X),
- x :: y :: l = [ ] -> y :: l = z :: j -> x = z)).
+check_type @discriminate_ex3 (
+(forall (X : Type) (x y z : X) (l : list X),
+ list X -> x :: y :: l = [ ] -> x = z)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions inversion_ex6.
+Print Assumptions discriminate_ex3.
 Goal True.
 idtac " ".
 
@@ -83,19 +84,19 @@ Print Assumptions plus_n_n_injective.
 Goal True.
 idtac " ".
 
-idtac "-------------------  beq_nat_true  --------------------".
+idtac "-------------------  eqb_true  --------------------".
 idtac " ".
 
-idtac "#> beq_nat_true".
+idtac "#> eqb_true".
 idtac "Possible points: 2".
-check_type @beq_nat_true ((forall n m : nat, beq_nat n m = true -> n = m)).
+check_type @eqb_true ((forall n m : nat, (n =? m) = true -> n = m)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions beq_nat_true.
+Print Assumptions eqb_true.
 Goal True.
 idtac " ".
 
-idtac "-------------------  beq_nat_true_informal  --------------------".
+idtac "-------------------  eqb_true_informal  --------------------".
 idtac " ".
 
 idtac "#> Manually graded: informal_proof".
@@ -131,15 +132,15 @@ Print Assumptions bool_fn_applied_thrice.
 Goal True.
 idtac " ".
 
-idtac "-------------------  beq_nat_sym  --------------------".
+idtac "-------------------  eqb_sym  --------------------".
 idtac " ".
 
-idtac "#> beq_nat_sym".
+idtac "#> eqb_sym".
 idtac "Possible points: 3".
-check_type @beq_nat_sym ((forall n m : nat, beq_nat n m = beq_nat m n)).
+check_type @eqb_sym ((forall n m : nat, (n =? m) = (m =? n))).
 idtac "Assumptions:".
 Abort.
-Print Assumptions beq_nat_sym.
+Print Assumptions eqb_sym.
 Goal True.
 idtac " ".
 
@@ -170,14 +171,50 @@ idtac " ".
 idtac "-------------------  forall_exists_challenge  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: forall_exists_challenge".
+idtac "#> existsb_existsb'".
 idtac "Advanced".
 idtac "Possible points: 4".
-print_manual_grade manual_grade_for_forall_exists_challenge.
+check_type @existsb_existsb' (
+(forall (X : Type) (test : X -> bool) (l : list X),
+ @existsb X test l = @existsb' X test l)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions existsb_existsb'.
+Goal True.
 idtac " ".
 
 idtac " ".
 
 idtac "Max points - standard: 18".
 idtac "Max points - advanced: 30".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- rev_exercise1 ---------".
+Print Assumptions rev_exercise1.
+idtac "---------- injection_ex3 ---------".
+Print Assumptions injection_ex3.
+idtac "---------- discriminate_ex3 ---------".
+Print Assumptions discriminate_ex3.
+idtac "---------- plus_n_n_injective ---------".
+Print Assumptions plus_n_n_injective.
+idtac "---------- eqb_true ---------".
+Print Assumptions eqb_true.
+idtac "---------- nth_error_after_last ---------".
+Print Assumptions nth_error_after_last.
+idtac "---------- bool_fn_applied_thrice ---------".
+Print Assumptions bool_fn_applied_thrice.
+idtac "---------- eqb_sym ---------".
+Print Assumptions eqb_sym.
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- informal_proof ---------".
+idtac "MANUAL".
+idtac "---------- split_combine ---------".
+idtac "MANUAL".
+idtac "---------- filter_exercise ---------".
+Print Assumptions filter_exercise.
+idtac "---------- existsb_existsb' ---------".
+Print Assumptions existsb_existsb'.
 Abort.

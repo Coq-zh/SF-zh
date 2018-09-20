@@ -44,6 +44,26 @@ let rec sub n m =
             | O -> n
             | S l -> sub k l)
 
+(** val eqb : nat -> nat -> bool **)
+
+let rec eqb n m =
+  match n with
+  | O -> (match m with
+          | O -> True
+          | S _ -> False)
+  | S n' -> (match m with
+             | O -> False
+             | S m' -> eqb n' m')
+
+(** val leb : nat -> nat -> bool **)
+
+let rec leb n m =
+  match n with
+  | O -> True
+  | S n' -> (match m with
+             | O -> False
+             | S m' -> leb n' m')
+
 (** val bool_dec : bool -> bool -> sumbool **)
 
 let bool_dec b1 b2 =
@@ -54,29 +74,6 @@ let bool_dec b1 b2 =
   | False -> (match b2 with
               | True -> Right
               | False -> Left)
-
-module Nat =
- struct
-  (** val eqb : nat -> nat -> bool **)
-
-  let rec eqb n m =
-    match n with
-    | O -> (match m with
-            | O -> True
-            | S _ -> False)
-    | S n' -> (match m with
-               | O -> False
-               | S m' -> eqb n' m')
-
-  (** val leb : nat -> nat -> bool **)
-
-  let rec leb n m =
-    match n with
-    | O -> True
-    | S n' -> (match m with
-               | O -> False
-               | S m' -> leb n' m')
- end
 
 type ascii =
 | Ascii of bool * bool * bool * bool * bool * bool * bool * bool
@@ -127,9 +124,9 @@ let rec string_dec s x =
         | Left -> string_dec s0 s1
         | Right -> Right))
 
-(** val beq_string : string -> string -> bool **)
+(** val eqb_string : string -> string -> bool **)
 
-let beq_string x y =
+let eqb_string x y =
   match string_dec x y with
   | Left -> True
   | Right -> False
@@ -139,7 +136,7 @@ type 'a total_map = string -> 'a
 (** val t_update : 'a1 total_map -> string -> 'a1 -> string -> 'a1 **)
 
 let t_update m x v x' =
-  match beq_string x x' with
+  match eqb_string x x' with
   | True -> v
   | False -> m x'
 
@@ -174,8 +171,8 @@ let rec aeval st = function
 let rec beval st = function
 | BTrue -> True
 | BFalse -> False
-| BEq (a1, a2) -> Nat.eqb (aeval st a1) (aeval st a2)
-| BLe (a1, a2) -> Nat.leb (aeval st a1) (aeval st a2)
+| BEq (a1, a2) -> eqb (aeval st a1) (aeval st a2)
+| BLe (a1, a2) -> leb (aeval st a1) (aeval st a2)
 | BNot b1 -> negb (beval st b1)
 | BAnd (b1, b2) ->
   (match beval st b1 with

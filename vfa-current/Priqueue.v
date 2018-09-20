@@ -61,7 +61,7 @@
  (and the [Binom] chapter) we simply won't worry about the
  time per comparison. *)
 
-Require Import Perm.
+From VFA Require Import Perm.
 
 Module Type PRIQUEUE.
   Parameter priqueue: Type.

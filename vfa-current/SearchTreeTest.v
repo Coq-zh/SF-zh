@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import SearchTree.
-Parameter MISSING: Type. 
+From VFA Require Import SearchTree.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import SearchTree.
+From VFA Require Import SearchTree.
 Import Check.
 
 Goal True.
@@ -171,4 +172,30 @@ idtac " ".
 
 idtac "Max points - standard: 27".
 idtac "Max points - advanced: 27".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- example_map ---------".
+Print Assumptions example_map.
+idtac "---------- check_example_map ---------".
+Print Assumptions check_example_map.
+idtac "---------- lookup_relate ---------".
+Print Assumptions lookup_relate.
+idtac "---------- insert_relate ---------".
+Print Assumptions insert_relate.
+idtac "---------- elements_relate_informal ---------".
+idtac "MANUAL".
+idtac "---------- not_elements_relate ---------".
+Print Assumptions not_elements_relate.
+idtac "---------- empty_tree_SearchTree ---------".
+Print Assumptions empty_tree_SearchTree.
+idtac "---------- insert_SearchTree ---------".
+Print Assumptions insert_SearchTree.
+idtac "---------- can_relate ---------".
+Print Assumptions can_relate.
+idtac "---------- unrealistically_strong_can_relate ---------".
+Print Assumptions unrealistically_strong_can_relate.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

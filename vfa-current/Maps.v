@@ -81,7 +81,7 @@ Definition t_empty {A:Type} (v : A) : total_map A :=
 
 Definition t_update {A:Type} (m : total_map A)
                     (x : nat) (v : A) :=
-  fun x' => if beq_nat x x' then v else m x'.
+  fun x' => if x =? x' then v else m x'.
 
 (** This definition is a nice example of higher-order programming.
     The [t_update] function takes a _function_ [m] and yields a new
@@ -165,25 +165,25 @@ Proof.
 (** For the final two lemmas about total maps, it's convenient to use
     the reflection idioms introduced in chapter [IndProp].  We begin
     by proving a fundamental _reflection lemma_ relating the equality
-    proposition on [id]s with the boolean function [beq_id]. *)
+    proposition on [id]s with the boolean function [eqb_id]. *)
 
-(** **** 练习：2 星 (beq_idP)  *)
-(** Use the proof of [beq_natP] in chapter [IndProp] as a template to
+(** **** 练习：2 星 (eqb_idP)  *)
+(** Use the proof of [eqb_natP] in chapter [IndProp] as a template to
     prove the following: *)
 
-Lemma beq_idP : forall x y, reflect (x = y) (beq_nat x y).
+Lemma eqb_idP : forall x y, reflect (x = y) (x =? y).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Now, given [id]s [x1] and [x2], we can use the [destruct (beq_idP
+(** Now, given [id]s [x1] and [x2], we can use the [destruct (eqb_idP
     x1 x2)] to simultaneously perform case analysis on the result of
-    [beq_id x1 x2] and generate hypotheses about the equality (in the
+    [eqb_id x1 x2] and generate hypotheses about the equality (in the
     sense of [=]) of [x1] and [x2]. *)
 
 (** **** 练习：2 星 (t_update_same)  *)
 (** Using the example in chapter [IndProp] as a template, use
-    [beq_idP] to prove the following theorem, which states that if we
+    [eqb_idP] to prove the following theorem, which states that if we
     update a map to assign key [x] the same value as it already has in
     [m], then the result is equal to [m]: *)
 
@@ -194,7 +194,7 @@ Proof.
 (** [] *)
 
 (** **** 练习：3 星, recommended (t_update_permute)  *)
-(** Use [beq_idP] to prove one final property of the [update]
+(** Use [eqb_idP] to prove one final property of the [update]
     function: If we update a map [m] at two distinct keys, it doesn't
     matter in which order we do the updates. *)
 

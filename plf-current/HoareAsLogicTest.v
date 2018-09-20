@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import HoareAsLogic.
-Parameter MISSING: Type. 
+From PLF Require Import HoareAsLogic.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import HoareAsLogic.
+From PLF Require Import HoareAsLogic.
 Import Check.
 
 Goal True.
@@ -90,4 +91,18 @@ idtac " ".
 
 idtac "Max points - standard: 9".
 idtac "Max points - advanced: 9".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- hoare_proof_sound ---------".
+Print Assumptions hoare_proof_sound.
+idtac "---------- wp_is_precondition ---------".
+Print Assumptions wp_is_precondition.
+idtac "---------- wp_is_weakest ---------".
+Print Assumptions wp_is_weakest.
+idtac "---------- hoare_proof_complete ---------".
+Print Assumptions hoare_proof_complete.
+idtac "".
+idtac "********** Advanced **********".
 Abort.

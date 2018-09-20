@@ -1,32 +1,33 @@
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Export String.
-Require Import Hoare.
-Parameter MISSING: Type. 
+From PLF Require Import Hoare.
 
-Module Check. 
+Parameter MISSING: Type.
 
-Ltac check_type A B := 
-match type of A with 
-| context[MISSING] => idtac "Missing:" A  
-| ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"] 
-end. 
+Module Check.
 
-Ltac print_manual_grade A := 
-match eval compute in A with 
-| Some (pair ?S ?C) => 
-idtac "Score:"  S; 
-match eval compute in C with  
-| ""%string => idtac "Comment: None"  
-| _ => idtac "Comment:" C 
-end 
-| None => 
-idtac "Score: Ungraded"; 
-idtac "Comment: None" 
-end. 
+Ltac check_type A B :=
+    match type of A with
+    | context[MISSING] => idtac "Missing:" A
+    | ?T => first [unify T B; idtac "Type: ok" | idtac "Type: wrong - should be (" B ")"]
+    end.
+
+Ltac print_manual_grade A :=
+    match eval compute in A with
+    | Some (_ ?S ?C) =>
+        idtac "Score:"  S;
+        match eval compute in C with
+          | ""%string => idtac "Comment: None"
+          | _ => idtac "Comment:" C
+        end
+    | None =>
+        idtac "Score: Ungraded";
+        idtac "Comment: None"
+    end.
 
 End Check.
 
-Require Import Hoare.
+From PLF Require Import Hoare.
 Import Check.
 
 Goal True.
@@ -162,4 +163,32 @@ idtac " ".
 
 idtac "Max points - standard: 23".
 idtac "Max points - advanced: 30".
+idtac "".
+idtac "********** Summary **********".
+idtac "".
+idtac "********** Standard **********".
+idtac "---------- hoare_asgn_examples ---------".
+idtac "MANUAL".
+idtac "---------- hoare_asgn_wrong ---------".
+idtac "MANUAL".
+idtac "---------- hoare_asgn_examples_2 ---------".
+idtac "MANUAL".
+idtac "---------- hoare_asgn_example4 ---------".
+Print Assumptions hoare_asgn_example4.
+idtac "---------- swap_exercise ---------".
+Print Assumptions swap_exercise.
+idtac "---------- hoarestate1 ---------".
+idtac "MANUAL".
+idtac "---------- if_minus_plus ---------".
+Print Assumptions if_minus_plus.
+idtac "---------- if1_hoare ---------".
+idtac "MANUAL".
+idtac "---------- Himp.hoare_havoc ---------".
+Print Assumptions Himp.hoare_havoc.
+idtac "".
+idtac "********** Advanced **********".
+idtac "---------- hoare_asgn_fwd ---------".
+Print Assumptions hoare_asgn_fwd.
+idtac "---------- hoare_repeat ---------".
+idtac "MANUAL".
 Abort.
