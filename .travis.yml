@@ -15,6 +15,7 @@ addons:
 env:
   global:
   - OPAMYES=true
+  - COMPILER=4.04.0
   matrix:
   - COQ="coq.8.8.0"
   - COQ="coq.8.8.1"
@@ -25,14 +26,17 @@ matrix:
 os:
 - linux
 - osx
-before_install: if [ $TRAVIS_OS_NAME = osx ]; then brew update; brew install --ignore-dependencies
-  ocaml opam; fi
+before_install: if [ $TRAVIS_OS_NAME = osx ]; then brew update; brew install opam;
+  fi
 install:
-- opam init
+- opam init --compiler=${COMPILER} -n
 - eval $(opam config env)
 - opam config var root
 - ocamlc -v
-- travis_wait opam install $COQ
+- opam repo add coq-released https://coq.inria.fr/opam/released || true
+- opam repo add coq-extra-dev https://coq.inria.fr/opam/extra-dev || true
+- opam update
+- travis_wait opam install $COQ coq-quickchick.8.8.dev
 - opam list
 script:
 - set -e
@@ -42,7 +46,9 @@ script:
   -en 'travis_fold:end:plf'
 - echo '编译《函数式算法验证》'; echo -en 'travis_fold:start:vfa'; make -C vfa-current -j; echo
   -en 'travis_fold:end:vfa'
-- echo '检查压缩包'; echo -en 'travis_fold:start:tar'; for v in lf plf vfa; do tar -xf
+- echo '编译《QuickChick：软件特性测试》'; echo -en 'travis_fold:start:qc'; make -C qc-current
+  -j; echo -en 'travis_fold:end:qc'
+- echo '检查压缩包'; echo -en 'travis_fold:start:tar'; for v in lf plf vfa qc; do tar -xf
   $v-current/$v.tgz; make -C $v -j; done; echo -en 'travis_fold:end:tar'
 notifications:
   slack:
