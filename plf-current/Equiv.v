@@ -1,4 +1,4 @@
-(** * Equiv: Program Equivalence *)
+(** * Equiv: 程序的等价关系 *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
@@ -13,49 +13,39 @@ Import ListNotations.
 From PLF Require Import Maps.
 From PLF Require Import Imp.
 
-(** *** Some Advice for Working on Exercises:
+(** *** 一些关于习题的建议：
 
-    - Most of the Coq proofs we ask you to do are similar to proofs
-      that we've provided.  Before starting to work on exercises
-      problems, take the time to work through our proofs (both
-      informally and in Coq) and make sure you understand them in
-      detail.  This will save you a lot of time.
+    - 这里要进行的大多数 Coq 证明都与我们之前提供的类似。在做作业之前，
+      请先花点时间，非形式化地在纸上以及在 Coq 中思考我们的证明，
+      确保你完全理解了其中的每个细节。这会节省你大量的时间。
 
-    - The Coq proofs we're doing now are sufficiently complicated that
-      it is more or less impossible to complete them by random
-      experimentation or "following your nose."  You need to start
-      with an idea about why the property is true and how the proof is
-      going to go.  The best way to do this is to write out at least a
-      sketch of an informal proof on paper -- one that intuitively
-      convinces you of the truth of the theorem -- before starting to
-      work on the formal one.  Alternately, grab a friend and try to
-      convince them that the theorem is true; then try to formalize
-      your explanation.
+    - 我们现在进行的 Coq 证明已经足够复杂，几乎不可能再单靠“感觉”
+      或乱撞的方式来完成证明了。你需要以“为何某个属性为真”以及“如何进行证明”
+      的想法开始。完成此任务的最佳方式是在开始形式化证明前，至少先在纸上写出
+      非形式化证明的梗概，即以直观的方式说服自己相信该定理成立，
+      然后再进行形式化证明。或者，你也可以拉一个好友，尝试说服他此定理成立，
+      然后形式化你的解释。
 
-    - Use automation to save work!  The proofs in this chapter can get
-      pretty long if you try to write out all the cases explicitly. *)
+    - 请使用自动化工具来减少工作量！如果你全部显式地写出证明中的所有情况，
+      那么本章中的证明会非常长。  *)
 
 (* ################################################################# *)
-(** * Behavioral Equivalence *)
+(** * 行为的等价关系 *)
 
-(** In an earlier chapter, we investigated the correctness of a very
-    simple program transformation: the [optimize_0plus] function.  The
-    programming language we were considering was the first version of
-    the language of arithmetic expressions -- with no variables -- so
-    in that setting it was very easy to define what it means for a
-    program transformation to be correct: it should always yield a
-    program that evaluates to the same number as the original.
+(** 在前面的章节中，我们探讨了一个非常简单的程序变换，即 [optimize_0plus]
+    函数的正确性。我们考虑的编程语言为算术表达式语言的第一版，它没有变量，
+    因此在该环境下，程序变换正确的意义非常容易定义：它产生的程序的求值结果
+    应当总是与原始程序产生的数字相等。
 
-    To talk about the correctness of program transformations for the
-    full Imp language, in particular assignment, we need to consider
-    the role of variables and state. *)
+    为了讨论整个 Imp 语言中程序变换，特别是赋值的正确性，
+    我们需要考虑变量和状态的作用。 *)
 
 (* ================================================================= *)
-(** ** Definitions *)
+(** ** 定义 *)
 
-(** For [aexp]s and [bexp]s with variables, the definition we want is
-    clear.  We say that two [aexp]s or [bexp]s are _behaviorally
-    equivalent_ if they evaluate to the same result in every state. *)
+(** 对于包含变量的 [aexp] 和 [bexp] 而言，我们所需的定义简单明了。
+    只要在所有状态下，两个 [aexp] 或 [bexp] 的求值结果相同，
+    我们就说他们的_'行为等价（behaviorally equivalent）'_。 *)
 
 Definition aequiv (a1 a2 : aexp) : Prop :=
   forall (st:state),
@@ -65,8 +55,7 @@ Definition bequiv (b1 b2 : bexp) : Prop :=
   forall (st:state),
     beval st b1 = beval st b2.
 
-(** Here are some simple examples of equivalences of arithmetic
-    and boolean expressions. *)
+(** 下面是一些算术和布尔表达式等价的简单例子。 *)
 
 Theorem aequiv_example:
   aequiv (X - X) 0.
@@ -81,26 +70,21 @@ Proof.
   rewrite aequiv_example. reflexivity.
 Qed.
 
-(** For commands, the situation is a little more subtle.  We can't
-    simply say "two commands are behaviorally equivalent if they
-    evaluate to the same ending state whenever they are started in the
-    same initial state," because some commands, when run in some
-    starting states, don't terminate in any final state at all!  What
-    we need instead is this: two commands are behaviorally equivalent
-    if, for any given starting state, they either (1) both diverge
-    or (2) both terminate in the same final state.  A compact way to
-    express this is "if the first one terminates in a particular state
-    then so does the second, and vice versa." *)
+(** 对指令而言，情况则有些微妙。我们无法简单地说“如果在相同的初始状态下，
+    两个指令求值的停机状态相同，那么这两个指令等价”，
+    因为有些指令在某些初始状态下运行时根本不会在任何状态下停机！
+    我们实际上需要的是：“若两个指令在任何给定的初始状态下，要么发散，
+    要么在相同的状态下停机，则二者行为等价。”简单来说，就是：
+    “若其中一个指令在某状态下停机，那么另一个也在该状态下停机，反之亦然。” *)
 
 Definition cequiv (c1 c2 : com) : Prop :=
   forall (st st' : state),
     (c1 / st \\ st') <-> (c2 / st \\ st').
 
 (* ================================================================= *)
-(** ** Simple Examples *)
+(** ** 简单示例 *)
 
-(** For examples of command equivalence, let's start by looking at
-    some trivial program transformations involving [SKIP]: *)
+(** 下面是一些指令等价的例子，我们首先从包含 [SKIP] 的简单程序变换开始： *)
 
 Theorem skip_left: forall c,
   cequiv
@@ -121,8 +105,7 @@ Proof.
 Qed.
 
 (** **** 练习：2 星 (skip_right)  *)
-(** Prove that adding a [SKIP] after a command results in an
-    equivalent program *)
+(** 请证明在某条指令之后添加 [SKIP] 后，两程序会等价 *)
 
 Theorem skip_right: forall c,
   cequiv
@@ -132,8 +115,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Similarly, here is a simple transformation that optimizes [IFB]
-    commands: *)
+(** 同样，下面是一个优化 [IFB] 的简单程序变换： *)
 
 Theorem IFB_true_simple: forall c1 c2,
   cequiv
@@ -147,46 +129,38 @@ Proof.
   - (* <- *)
     apply E_IfTrue. reflexivity. assumption.  Qed.
 
-(** Of course, no human programmer would write a conditional whose
-    guard is literally [BTrue].  The interesting case is when the
-    guard is _equivalent_ to true: *)
-(** _Theorem_: If [b] is equivalent to [BTrue], then [IFB b THEN c1
-    ELSE c2 FI] is equivalent to [c1]. *)
+(** 当然，人类程序员是不会写把断言（guard）直接写成 [BTrue] 的条件分支的。
+    有趣的是当断言_'等价于'_真的情况： *)
+(** _'定理'_：若 [b] 等价于 [BTrue]，则 [IFB b THEN c1 ELSE c2 FI] 等价于 [c1]。 *)
 (**
-   _Proof_:
+   _'证明'_：
 
-     - ([->]) We must show, for all [st] and [st'], that if [IFB b
-       THEN c1 ELSE c2 FI / st \\ st'] then [c1 / st \\ st'].
+     - ([->]) 我们必须证明，对于所有的 [st] 和 [st']，若 [IFB b
+       THEN c1 ELSE c2 FI / st \\ st'] 则 [c1 / st \\ st']。
 
-       Proceed by cases on the rules that could possibly have been
-       used to show [IFB b THEN c1 ELSE c2 FI / st \\ st'], namely
-       [E_IfTrue] and [E_IfFalse].
+       能够应用于 [IFB b THEN c1 ELSE c2 FI / st \\ st'] 的证明规则只有两条：
+       [E_IfTrue] 和 [E_IfFalse]。
 
-       - Suppose the final rule in the derivation of [IFB b THEN
-         c1 ELSE c2 FI / st \\ st'] was [E_IfTrue].  We then have, by
-         the premises of [E_IfTrue], that [c1 / st \\ st'].  This is
-         exactly what we set out to prove.
+       - 假设 [IFB b THEN c1 ELSE c2 FI / st \\ st'] 证明自 [E_IfTrue]
+         这条证明规则。若使用证明规则 [E_IfTrue] 其必备的前提条件 [c1 / st \\ st']
+         必为真，而这正好是我们的证明所需要的条件。
 
-       - On the other hand, suppose the final rule in the derivation
-         of [IFB b THEN c1 ELSE c2 FI / st \\ st'] was [E_IfFalse].
-         We then know that [beval st b = false] and [c2 / st \\ st'].
+       - 另一方面, 假设 [IFB b THEN c1 ELSE c2 FI / st \\ st'] 证明自
+         [E_IfFalse]。我们能得知 [beval st b = false] 和 [c2 / st \\ st']。
 
-         Recall that [b] is equivalent to [BTrue], i.e., forall [st],
-         [beval st b = beval st BTrue].  In particular, this means
-         that [beval st b = true], since [beval st BTrue = true].  But
-         this is a contradiction, since [E_IfFalse] requires that
-         [beval st b = false].  Thus, the final rule could not have
-         been [E_IfFalse].
+         之前提到 [b] 等价于 [BTrue], 即对于所有 [st]，有 [beval st b = beval st
+         BTrue]。具体来说就是 [beval st b = true] 成立，因而 [beval st BTrue =
+         true] 成立。然而，之前假设 [E_IfFalse] 必备的前提条件 [beval st b = false]
+         也成立，这就构成了一组矛盾，因此不可能使用了 [E_IfFalse] 这条证明规则。
 
-     - ([<-]) We must show, for all [st] and [st'], that if [c1 / st
-       \\ st'] then [IFB b THEN c1 ELSE c2 FI / st \\ st'].
+     - ([<-]) 我们必须证明，对于所有 [st] 和 [st']，若 [c1 / st \\ st']
+       则 [IFB b THEN c1 ELSE c2 FI / st \\ st']。
 
-       Since [b] is equivalent to [BTrue], we know that [beval st b] =
-       [beval st BTrue] = [true].  Together with the assumption that
-       [c1 / st \\ st'], we can apply [E_IfTrue] to derive [IFB b THEN
-       c1 ELSE c2 FI / st \\ st'].  []
+       已知 [b] 等价于 [BTrue]，我们知道 [beval st b] = [beval st BTrue] = [true]。
+       结合 [c1 / st \\ st'] 这条假设，我们能应用 [E_IfTrue] 来证明出 [IFB b THEN
+       c1 ELSE c2 FI / st \\ st']。 []
 
-   Here is the formal version of this proof: *)
+   下面是这个证明的形式化版本： *)
 
 Theorem IFB_true: forall b c1 c2,
      bequiv b BTrue  ->
@@ -198,9 +172,9 @@ Proof.
   split; intros H.
   - (* -> *)
     inversion H; subst.
-    + (* b evaluates to true *)
+    + (* b 求值为 true *)
       assumption.
-    + (* b evaluates to false (contradiction) *)
+    + (* b 求值为 false（矛盾） *)
       unfold bequiv in Hb. simpl in Hb.
       rewrite Hb in H5.
       inversion H5.
@@ -220,8 +194,7 @@ Proof.
 (** [] *)
 
 (** **** 练习：3 星 (swap_if_branches)  *)
-(** Show that we can swap the branches of an IF if we also negate its
-    guard. *)
+(** 证明我们可以通过对断言取反来交换 IF 的两个分支 *)
 
 Theorem swap_if_branches: forall b e1 e2,
   cequiv
@@ -231,11 +204,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** For [WHILE] loops, we can give a similar pair of theorems.  A loop
-    whose guard is equivalent to [BFalse] is equivalent to [SKIP],
-    while a loop whose guard is equivalent to [BTrue] is equivalent to
-    [WHILE BTrue DO SKIP END] (or any other non-terminating program).
-    The first of these facts is easy. *)
+(** 对于 [WHILE] 循环，我们能够给出一组相似的定理：当循环的断言等价于 [BFalse]
+    时它等价于 [SKIP]；当循环的断言等价于 [BTrue] 时它等价于 [WHILE BTrue DO
+    SKIP END]（或任意不停机的程序）。前者比较简单。 *)
 
 Theorem WHILE_false : forall b c,
   bequiv b BFalse ->
@@ -257,36 +228,30 @@ Proof.
     reflexivity.  Qed.
 
 (** **** 练习：2 星, advanced, optional (WHILE_false_informal)  *)
-(** Write an informal proof of [WHILE_false].
+(** 写出 [WHILE_false] 的非形式化证明。
 
 (* 请在此处解答 *)
 *)
 (** [] *)
 
-(** To prove the second fact, we need an auxiliary lemma stating that
-    [WHILE] loops whose guards are equivalent to [BTrue] never
-    terminate. *)
+(** 为了证明第二个定理，我们需要一个辅助引理：[WHILE] 循环在其断言等价于 [BTrue]
+    时不会停机。 *)
 
-(** _Lemma_: If [b] is equivalent to [BTrue], then it cannot be the
-    case that [(WHILE b DO c END) / st \\ st'].
+(** _'引理'_：若 [b] 等价于 [BTrue]，则无法出现 [(WHILE b DO c END) /
+    st \\ st'] 的情况。
 
-    _Proof_: Suppose that [(WHILE b DO c END) / st \\ st'].  We show,
-    by induction on a derivation of [(WHILE b DO c END) / st \\ st'],
-    that this assumption leads to a contradiction.
+    _'证明'_：假设 [(WHILE b DO c END) / st \\ st']。我们将证明通过对
+    [(WHILE b DO c END) / st \\ st'] 使用归纳法会导出矛盾。
 
-      - Suppose [(WHILE b DO c END) / st \\ st'] is proved using rule
-        [E_WhileFalse].  Then by assumption [beval st b = false].  But
-        this contradicts the assumption that [b] is equivalent to
-        [BTrue].
+      - 假设 [(WHILE b DO c END) / st \\ st'] 使用规则 [E_WhileFalse] 证明。
+        那么根据假设得出 [beval st b = false]。但它与 [b] 等价于 [BTrue] 矛盾。
 
-      - Suppose [(WHILE b DO c END) / st \\ st'] is proved using rule
-        [E_WhileTrue].  Then we are given the induction hypothesis
-        that [(WHILE b DO c END) / st \\ st'] is contradictory, which
-        is exactly what we are trying to prove!
+      - 假设 [(WHILE b DO c END) / st \\ st'] 使用规则 [E_WhileTrue]证明。
+        那么我们就给出了一个和 [(WHILE b DO c END) / st \\ st'] 矛盾的假设，
+        它刚好就是我们要证明的那个！
 
-      - Since these are the only rules that could have been used to
-        prove [(WHILE b DO c END) / st \\ st'], the other cases of
-        the induction are immediately contradictory. [] *)
+      - 由于只有以上几条规则可用于证明 [(WHILE b DO c END) / st \\ st']，
+        因此归纳时的其它情况可直接得出矛盾。 [] *)
 
 Lemma WHILE_true_nonterm : forall b c st st',
   bequiv b BTrue ->
@@ -297,26 +262,25 @@ Proof.
   intros H.
   remember (WHILE b DO c END) as cw eqn:Heqcw.
   induction H;
-  (* Most rules don't apply; we rule them out by inversion: *)
+  (* 大多数证明规则无法应用，我们可通过反演（inversion）来去除它们： *)
   inversion Heqcw; subst; clear Heqcw.
-  (* The two interesting cases are the ones for WHILE loops: *)
-  - (* E_WhileFalse *) (* contradictory -- b is always true! *)
+  (* 我们只关心这两个关于 WHILE 循环的证明规则： *)
+  - (* E_WhileFalse *) (* 矛盾 -- b 总为真！ *)
     unfold bequiv in Hb.
-    (* [rewrite] is able to instantiate the quantifier in [st] *)
+    (* [rewrite] 能实例化 [st] 中的量词 *)
     rewrite Hb in H. inversion H.
-  - (* E_WhileTrue *) (* immediate from the IH *)
+  - (* E_WhileTrue *) (* 直接使用 IH *)
     apply IHceval2. reflexivity.  Qed.
 
 (** **** 练习：2 星, optional (WHILE_true_nonterm_informal)  *)
-(** Explain what the lemma [WHILE_true_nonterm] means in English.
+(** 试解释 [WHILE_true_nonterm] 的含义。
 
 (* 请在此处解答 *)
 *)
 (** [] *)
 
 (** **** 练习：2 星, recommended (WHILE_true)  *)
-(** Prove the following theorem. _Hint_: You'll want to use
-    [WHILE_true_nonterm] here. *)
+(** 请证明以下定理。_'提示'_：你可能需要使用 [WHILE_true_nonterm] 。 *)
 
 Theorem WHILE_true: forall b c,
   bequiv b true  ->
@@ -327,9 +291,8 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** A more interesting fact about [WHILE] commands is that any number
-    of copies of the body can be "unrolled" without changing meaning.
-    Loop unrolling is a common transformation in real compilers. *)
+(** 关于 [WHILE] 指令的更有趣的事实是，任何数量的循环体的副本在不改变意义
+    的情况下均无法被“展开”。循环展开在实际的编译器中是种常见的变换。 *)
 
 Theorem loop_unrolling: forall b c,
   cequiv
@@ -341,18 +304,18 @@ Proof.
   split; intros Hce.
   - (* -> *)
     inversion Hce; subst.
-    + (* loop doesn't run *)
+    + (* 不执行循环 *)
       apply E_IfFalse. assumption. apply E_Skip.
-    + (* loop runs *)
+    + (* 执行循环 *)
       apply E_IfTrue. assumption.
       apply E_Seq with (st' := st'0). assumption. assumption.
   - (* <- *)
     inversion Hce; subst.
-    + (* loop runs *)
+    + (* 执行循环 *)
       inversion H5; subst.
       apply E_WhileTrue with (st' := st'0).
       assumption. assumption. assumption.
-    + (* loop doesn't run *)
+    + (* 不执行循环 *)
       inversion H5; subst. apply E_WhileFalse. assumption.  Qed.
 
 (** **** 练习：2 星, optional (seq_assoc)  *)
@@ -362,8 +325,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Proving program properties involving assignments is one place
-    where the Functional Extensionality axiom often comes in handy. *)
+(** 证明涉及赋值的程序属性经常会用到函数的外延公理。 *)
 
 Theorem identity_assignment : forall (X:string),
   cequiv
@@ -394,17 +356,14 @@ Proof.
 
 (** **** 练习：2 星 (equiv_classes)  *)
 
-(** Given the following programs, group together those that are
-    equivalent in Imp. Your answer should be given as a list of lists,
-    where each sub-list represents a group of equivalent programs. For
-    example, if you think programs (a) through (h) are all equivalent
-    to each other, but not to (i), your answer should look like this:
+(** 给定下列程序，请按照它们在 [Imp] 中是否等价将这些程序分组。
+    你的答案应该是一个列表的列表，其中每个子列表都表示一组等价的程序。
+    例如，如果你认为程序 (a) 至 (h) 都互相等价，但不等价于 (i)，那么答案应当如下：
 
        [ [prog_a;prog_b;prog_c;prog_d;prog_e;prog_f;prog_g;prog_h] ;
          [prog_i] ]
 
-    Write down your answer below in the definition of
-    [equiv_classes]. *)
+    请在 [equiv_classes] 的定义下方写出你的答案。 *)
 
 Definition prog_a : com :=
   WHILE ! (X <= 0) DO
@@ -461,17 +420,16 @@ Definition manual_grade_for_equiv_classes : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
-(** * Properties of Behavioral Equivalence *)
+(** * 行为等价的性质 *)
 
-(** We next consider some fundamental properties of program
-    equivalence. *)
+(** 接下来我们考虑程序等价的一些基本性质。 *)
 
 (* ================================================================= *)
-(** ** Behavioral Equivalence Is an Equivalence *)
+(** ** 行为等价是一种等价关系 *)
 
-(** First, we verify that the equivalences on [aexps], [bexps], and
-    [com]s really are _equivalences_ -- i.e., that they are reflexive,
-    symmetric, and transitive.  The proofs are all easy. *)
+(** 首先, 我们验证 [aexps]、[bexps] 和 [com] 的确满足_'等价关系（equivalences）'_
+    -- 也就是说，它同时满足自反性（reflexive）、对称性（symmetric）和传递性
+      （transitive）。这些证明都很容易。*)
 
 Lemma refl_aequiv : forall (a : aexp), aequiv a a.
 Proof.
@@ -532,11 +490,11 @@ Proof.
   apply iff_trans with (c2 / st \\ st'). apply H12. apply H23.  Qed.
 
 (* ================================================================= *)
-(** ** Behavioral Equivalence Is a Congruence *)
+(** ** 行为等价是一种一致性 *)
 
-(** Less obviously, behavioral equivalence is also a _congruence_.
-    That is, the equivalence of two subprograms implies the
-    equivalence of the larger programs in which they are embedded:
+(** 虽然不太明显，但行为等价也满足_'一致性（congruence）'_。
+    即，如果两个子程序等价，那么当二者所在的更大的程序中只有二者不同时，
+    这两个更大的程序也等价：
 
               aequiv a1 a1'
       -----------------------------
@@ -547,21 +505,16 @@ Proof.
          ------------------------
          cequiv (c1;;c2) (c1';;c2')
 
-    ...and so on for the other forms of commands. *)
+    ...以及这些指令的更多其它形式。 *)
 
-(** (Note that we are using the inference rule notation here not
-    as part of a definition, but simply to write down some valid
-    implications in a readable format. We prove these implications
-    below.) *)
+(** （注意这里使用的推理规则的记法并不是定义的成部分，只是将一些
+    合法的蕴含式用易读的方式写下而已。接下来我们将证明这些蕴含式。） *)
 
-(** We will see a concrete example of why these congruence
-    properties are important in the following section (in the proof of
-    [fold_constants_com_sound]), but the main idea is that they allow
-    us to replace a small part of a large program with an equivalent
-    small part and know that the whole large programs are equivalent
-    _without_ doing an explicit proof about the non-varying parts --
-    i.e., the "proof burden" of a small change to a large program is
-    proportional to the size of the change, not the program. *)
+(** 在接下来的章节（[fold_constants_com_sound] 的证明）中，我们会用
+    具体例子来说明这种一致性多么重要。不过它最主要意义在于，当我们在用
+    一小部分程序替换大程序中等价的部分并证明替换前后程序的等价关系时，
+    _'无需'_进行与不变的部分相关的证明。也就是说，程序的改变所产生的证明的工作量
+    与改变的大小而非整个程序的大小成比例。 *)
 
 Theorem CAss_congruence : forall i a1 a1',
   aequiv a1 a1' ->
@@ -576,43 +529,34 @@ Proof.
     inversion Hceval. subst. apply E_Ass.
     rewrite Heqv. reflexivity.  Qed.
 
-(** The congruence property for loops is a little more interesting,
-    since it requires induction.
+(** 循环的一致性更有趣, 因为它需要使用归纳法。
 
-    _Theorem_: Equivalence is a congruence for [WHILE] -- that is, if
-    [b1] is equivalent to [b1'] and [c1] is equivalent to [c1'], then
-    [WHILE b1 DO c1 END] is equivalent to [WHILE b1' DO c1' END].
+    _'定理'_: 对于 [WHILE]，等价关系是一种一致性 -- 即，若 [b1] 等价于 [b1'] 且 [c1]
+    等价于 [c1']，那么 [WHILE b1 DO c1 END] 等价于 [WHILE b1' DO c1' END]。
 
-    _Proof_: Suppose [b1] is equivalent to [b1'] and [c1] is
-    equivalent to [c1'].  We must show, for every [st] and [st'], that
-    [WHILE b1 DO c1 END / st \\ st'] iff [WHILE b1' DO c1' END / st
-    \\ st'].  We consider the two directions separately.
+    _'证明'_: 假设 [b1] 等价于 [b1'] 且 [c1] 等价于 [c1']。我们必须证明，
+    对于每个 [st] 和 [st']，[WHILE b1 DO c1 END / st \\ st'] 当且仅当
+    [WHILE b1' DO c1' END / st \\ st']。我们把两个方向分开考虑。
 
-      - ([->]) We show that [WHILE b1 DO c1 END / st \\ st'] implies
-        [WHILE b1' DO c1' END / st \\ st'], by induction on a
-        derivation of [WHILE b1 DO c1 END / st \\ st'].  The only
-        nontrivial cases are when the final rule in the derivation is
-        [E_WhileFalse] or [E_WhileTrue].
+      - ([->]) 我们通过对 [WHILE b1 DO c1 END / st \\ st'] 使用归纳法证明
+        [WHILE b1 DO c1 END / st \\ st'] 蕴含 [WHILE b1' DO c1' END / st \\ st']。
+        只有推导的最后所使用的规则为 [E_WhileFalse] 或 [E_WhileTrue]
+        时才需要进行特别讨论。
 
-          - [E_WhileFalse]: In this case, the form of the rule gives us
-            [beval st b1 = false] and [st = st'].  But then, since
-            [b1] and [b1'] are equivalent, we have [beval st b1' =
-            false], and [E-WhileFalse] applies, giving us [WHILE b1' DO
-            c1' END / st \\ st'], as required.
+          - [E_WhileFalse]：此时我们拥有假设的必备条件 [beval st b1 = false]
+            和 [st = st']。但是，由于 [b1] 和 [b1'] 等价，我们有
+            [beval st b1' = false]，然后应用 [E-WhileFalse] 得出我们需要的
+            [WHILE b1' DO c1' END / st \\ st']。
 
-          - [E_WhileTrue]: The form of the rule now gives us [beval st
-            b1 = true], with [c1 / st \\ st'0] and [WHILE b1 DO c1
-            END / st'0 \\ st'] for some state [st'0], with the
-            induction hypothesis [WHILE b1' DO c1' END / st'0 \\
-            st'].
+          - [E_WhileTrue]：此时我们拥有假设的必备条件 [beval st b1 = true]，以及
+            对于某些状态 [st'0] 的 [c1 / st \\ st'0] 和 [WHILE b1 DO c1 END / st'0
+            \\ st']，还有归纳假设 [WHILE b1' DO c1' END / st'0 \\ st']。
 
-            Since [c1] and [c1'] are equivalent, we know that [c1' /
-            st \\ st'0].  And since [b1] and [b1'] are equivalent, we
-            have [beval st b1' = true].  Now [E-WhileTrue] applies,
-            giving us [WHILE b1' DO c1' END / st \\ st'], as
-            required.
+            由于 [c1] 和 [c1'] 等价，我们有 [c1' / st \\ st'0]；
+            由于 [b1] 和 [b1'] 等价，我们有 [beval st b1' = true]。现在应用
+            [E-WhileTrue]，得出我们所需的 [WHILE b1' DO c1' END / st \\ st']。
 
-      - ([<-]) Similar. [] *)
+      - ([<-]) 反之亦然。 [] *)
 
 Theorem CWhile_congruence : forall b1 b1' c1 c1',
   bequiv b1 b1' -> cequiv c1 c1' ->
@@ -630,10 +574,10 @@ Proof.
       apply E_WhileFalse. rewrite <- Hb1e. apply H.
     + (* E_WhileTrue *)
       apply E_WhileTrue with (st' := st').
-      * (* show loop runs *) rewrite <- Hb1e. apply H.
-      * (* body execution *)
+      * (* 执行展示循环 *) rewrite <- Hb1e. apply H.
+      * (* 执行主体 *)
         apply (Hc1e st st').  apply Hce1.
-      * (* subsequent loop execution *)
+      * (* 执行之后的循环 *)
         apply IHHce2. reflexivity.
   - (* <- *)
     remember (WHILE b1' DO c1' END) as c'while
@@ -643,10 +587,10 @@ Proof.
       apply E_WhileFalse. rewrite -> Hb1e. apply H.
     + (* E_WhileTrue *)
       apply E_WhileTrue with (st' := st').
-      * (* show loop runs *) rewrite -> Hb1e. apply H.
-      * (* body execution *)
+      * (* 执行展示循环 *) rewrite -> Hb1e. apply H.
+      * (* 执行主体 *)
         apply (Hc1e st st').  apply Hce1.
-      * (* subsequent loop execution *)
+      * (* 执行之后的循环 *)
         apply IHHce2. reflexivity.  Qed.
 
 (** **** 练习：3 星, optional (CSeq_congruence)  *)
@@ -666,12 +610,11 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** For example, here are two equivalent programs and a proof of their
-    equivalence... *)
+(** 例如，下面是两个等价的程序和它们等价关系的证明... *)
 
 Example congruence_example:
   cequiv
-    (* Program 1: *)
+    (* 程序 1： *)
     (X ::= 0;;
      IFB X = 0
      THEN
@@ -679,11 +622,11 @@ Example congruence_example:
      ELSE
        Y ::= 42
      FI)
-    (* Program 2: *)
+    (* 程序 1： *)
     (X ::= 0;;
      IFB X = 0
      THEN
-       Y ::= X - X   (* <--- changed here *)
+       Y ::= X - X   (* <--- 这里不同 *)
      ELSE
        Y ::= 42
      FI).
@@ -698,23 +641,20 @@ Proof.
 Qed.
 
 (** **** 练习：3 星, advanced, optional (not_congr)  *)
-(** We've shown that the [cequiv] relation is both an equivalence and
-    a congruence on commands.  Can you think of a relation on commands
-    that is an equivalence but _not_ a congruence? *)
+(** 我们已经证明了 [cequiv] 关系对指令同时满足等价关系和一致性。
+    你能想出一个对于指令满足等价关系但_'不满足'_一致性的关系吗？ *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (* ################################################################# *)
-(** * Program Transformations *)
+(** * 程序变换 *)
 
-(** A _program transformation_ is a function that takes a program as
-    input and produces some variant of the program as output.
-    Compiler optimizations such as constant folding are a canonical
-    example, but there are many others. *)
+(** _'程序变换（program transformation）'_是一种以某个程序作为输入，
+    产生该程序的某种变体作为输出的函数。编译器优化中的常量折叠就是个经典的例子，
+    然而程序变换并不仅限如此。 *)
 
-(** A program transformation is _sound_ if it preserves the
-    behavior of the original program. *)
+(** 如果一个程序变换保留了其原始行为，那么它就是_'可靠（sound）'_的。 *)
 
 Definition atrans_sound (atrans : aexp -> aexp) : Prop :=
   forall (a : aexp),
@@ -729,13 +669,11 @@ Definition ctrans_sound (ctrans : com -> com) : Prop :=
     cequiv c (ctrans c).
 
 (* ================================================================= *)
-(** ** The Constant-Folding Transformation *)
+(** ** 常量折叠变换 *)
 
-(** An expression is _constant_ when it contains no variable
-    references.
+(** 不引用变量的表达式为_'常量（constant）'_。
 
-    Constant folding is an optimization that finds constant
-    expressions and replaces them by their values. *)
+    常量折叠是一种找到常量表达式并把它们替换为其值的优化方法。 *)
 
 Fixpoint fold_constants_aexp (a : aexp) : aexp :=
   match a with
@@ -761,7 +699,7 @@ Fixpoint fold_constants_aexp (a : aexp) : aexp :=
     end
   end.
 
-(* needed for parsing the examples below *)
+(* 解析下面的示例时要用 *)
 Local Open Scope aexp_scope.
 Local Open Scope bexp_scope.
 
@@ -769,19 +707,16 @@ Example fold_aexp_ex1 :
     fold_constants_aexp ((1 + 2) * X) = (3 * X).
 Proof. reflexivity. Qed.
 
-(** Note that this version of constant folding doesn't eliminate
-    trivial additions, etc. -- we are focusing attention on a single
-    optimization for the sake of simplicity.  It is not hard to
-    incorporate other ways of simplifying expressions; the definitions
-    and proofs just get longer. *)
+(** 注意此版本的常量折叠不包括优化平凡的加法等 -- 为简单起见，
+    我们把注意力集中到单个优化上来。将其它简化表达式的方法加进来也不难，
+    只是定义和证明会更长。 *)
 
 Example fold_aexp_ex2 :
   fold_constants_aexp (X - ((0 * 6) + Y)) = (X - (0 + Y)).
 Proof. reflexivity. Qed.
 
-(** Not only can we lift [fold_constants_aexp] to [bexp]s (in the
-    [BEq] and [BLe] cases); we can also look for constant _boolean_
-    expressions and evaluate them in-place. *)
+(** 我们不仅可以将 [fold_constants_aexp] 优化成 [bexp]（如在 [BEq] 和 [BLe]
+    的情况下），还可以查找常量_'布尔'_表达式并原地求值。 *)
 
 Fixpoint fold_constants_bexp (b : bexp) : bexp :=
   match b with
@@ -826,8 +761,7 @@ Example fold_bexp_ex2 :
   ((X = Y) && true).
 Proof. reflexivity. Qed.
 
-(** To fold constants in a command, we apply the appropriate folding
-    functions on all embedded expressions. *)
+(** 为了折叠指令中的常量，我们需要对所有内嵌的表达式应用适当的折叠函数。 *)
 
 Fixpoint fold_constants_com (c : com) : com :=
   match c with
@@ -854,7 +788,7 @@ Fixpoint fold_constants_com (c : com) : com :=
 
 Example fold_com_ex1 :
   fold_constants_com
-    (* Original program: *)
+    (* 原程序： *)
     (X ::= 4 + 5;;
      Y ::= X - 3;;
      IFB (X - Y) = (2 + 4) THEN
@@ -871,7 +805,7 @@ Example fold_com_ex1 :
      WHILE Y = 0 DO
        X ::= X + 1
      END)
-  = (* After constant folding: *)
+  = (* 常量折叠后： *)
     (X ::= 9;;
      Y ::= X - 3;;
      IFB (X - Y) = 6 THEN
@@ -886,121 +820,113 @@ Example fold_com_ex1 :
 Proof. reflexivity. Qed.
 
 (* ================================================================= *)
-(** ** Soundness of Constant Folding *)
+(** ** 常量折叠的可靠性 *)
 
-(** Now we need to show that what we've done is correct. *)
+(** 现在我们需要证明之前所做事情的正确性。 *)
 
-(** Here's the proof for arithmetic expressions: *)
+(** 下面是对算术表达式的证明： *)
 
 Theorem fold_constants_aexp_sound :
   atrans_sound fold_constants_aexp.
 Proof.
   unfold atrans_sound. intros a. unfold aequiv. intros st.
   induction a; simpl;
-    (* ANum and AId follow immediately *)
+    (* ANum 和 AId 很显然 *)
     try reflexivity;
-    (* APlus, AMinus, and AMult follow from the IH
-       and the observation that
+    (* 从 IH 和下面的观察出发很容易完成对 APlus、AMinus 和 AMult 情况的证明：
               aeval st (APlus a1 a2)
             = ANum ((aeval st a1) + (aeval st a2))
             = aeval st (ANum ((aeval st a1) + (aeval st a2)))
-       (and similarly for AMinus/minus and AMult/mult) *)
+       （AMinus/minus 和 AMult/mult 同理） *)
     try (destruct (fold_constants_aexp a1);
          destruct (fold_constants_aexp a2);
          rewrite IHa1; rewrite IHa2; reflexivity). Qed.
 
 (** **** 练习：3 星, optional (fold_bexp_Eq_informal)  *)
-(** Here is an informal proof of the [BEq] case of the soundness
-    argument for boolean expression constant folding.  Read it
-    carefully and compare it to the formal proof that follows.  Then
-    fill in the [BLe] case of the formal proof (without looking at the
-    [BEq] case, if possible).
+(** 下面是布尔表达式常量折叠中 [BEq] 情况的可靠性的证明。
+    请认真读完它再和之后的形式化证明作比较，然后补充完 [BLe] 情况的形式化证明
+    （尽量不看之前 [BEq] 情况的证明）。
 
-   _Theorem_: The constant folding function for booleans,
-   [fold_constants_bexp], is sound.
+   _'定理'_：布尔值的常量折叠函数 [fold_constants_bexp] 是可靠的。
 
-   _Proof_: We must show that [b] is equivalent to [fold_constants_bexp],
-   for all boolean expressions [b].  Proceed by induction on [b].  We
-   show just the case where [b] has the form [BEq a1 a2].
+   _'证明'_：我们必须证明对于所有的布尔表达式 [b]，[b] 都等价于
+   [fold_constants_bexp]。我们对 [b] 使用归纳法。这里只给出了 [b]
+   形如 [BEq a1 a2] 的情况。
 
-   In this case, we must show
+   在本情况中，我们必须证明
 
        beval st (BEq a1 a2)
      = beval st (fold_constants_bexp (BEq a1 a2)).
 
-   There are two cases to consider:
+   有两种情况需要考虑：
 
-     - First, suppose [fold_constants_aexp a1 = ANum n1] and
-       [fold_constants_aexp a2 = ANum n2] for some [n1] and [n2].
+     - 首先，假设对于某些 [n1] 和 [n2] 而言有 [fold_constants_aexp a1 = ANum n1]
+       和 [fold_constants_aexp a2 = ANum n2]。
 
-       In this case, we have
+       在此情况下，我们有
 
            fold_constants_bexp (BEq a1 a2)
          = if n1 =? n2 then BTrue else BFalse
 
-       and
+       和
 
            beval st (BEq a1 a2)
          = (aeval st a1) =? (aeval st a2).
 
-       By the soundness of constant folding for arithmetic
-       expressions (Lemma [fold_constants_aexp_sound]), we know
+       根据算术表达式常量折叠的健全性（引理 [fold_constants_aexp_sound]）可得
 
            aeval st a1
          = aeval st (fold_constants_aexp a1)
          = aeval st (ANum n1)
          = n1
 
-       and
+       和
 
            aeval st a2
          = aeval st (fold_constants_aexp a2)
          = aeval st (ANum n2)
          = n2,
 
-       so
+       因此
 
            beval st (BEq a1 a2)
          = (aeval a1) =? (aeval a2)
          = n1 =? n2.
 
-       Also, it is easy to see (by considering the cases [n1 = n2] and
-       [n1 <> n2] separately) that
+       此外，在分别考虑 [n1 = n2] 和 [n1 <> n2] 的情况后，容易看出
 
            beval st (if n1 =? n2 then BTrue else BFalse)
          = if n1 =? n2 then beval st BTrue else beval st BFalse
          = if n1 =? n2 then true else false
          = n1 =? n2.
 
-       So
+       因此
 
            beval st (BEq a1 a2)
          = n1 =? n2.
          = beval st (if n1 =? n2 then BTrue else BFalse),
 
-       as required.
+       正是所需的假设。
 
-     - Otherwise, one of [fold_constants_aexp a1] and
-       [fold_constants_aexp a2] is not a constant.  In this case, we
-       must show
+     - 另一方面，假设 [fold_constants_aexp a1] 和 [fold_constants_aexp a2]
+       之一并非常量。此时，我们必须证明
 
            beval st (BEq a1 a2)
          = beval st (BEq (fold_constants_aexp a1)
                          (fold_constants_aexp a2)),
 
-       which, by the definition of [beval], is the same as showing
+       根据 [beval] 的定义，它等同于证明
 
            (aeval st a1) =? (aeval st a2)
          = (aeval st (fold_constants_aexp a1)) =?
                    (aeval st (fold_constants_aexp a2)).
 
-       But the soundness of constant folding for arithmetic
-       expressions ([fold_constants_aexp_sound]) gives us
+       但是，由于算术表达式的可靠性（定理 [fold_constants_aexp_sound]）可得出
 
          aeval st a1 = aeval st (fold_constants_aexp a1)
          aeval st a2 = aeval st (fold_constants_aexp a2),
 
-       completing the case.  []
+       本例证毕。  []
 *)
 
 Theorem fold_constants_bexp_sound:
@@ -1008,16 +934,14 @@ Theorem fold_constants_bexp_sound:
 Proof.
   unfold btrans_sound. intros b. unfold bequiv. intros st.
   induction b;
-    (* BTrue and BFalse are immediate *)
+    (* BTrue 和 BFalse 是显然的 *)
     try reflexivity.
   - (* BEq *)
     simpl.
 
-(** (Doing induction when there are a lot of constructors makes
-    specifying variable names a chore, but Coq doesn't always
-    choose nice variable names.  We can rename entries in the
-    context with the [rename] tactic: [rename a into a1] will
-    change [a] to [a1] in the current goal and context.) *)
+(** （当存在许多构造子时，使用归纳法会让给变量取名编程一件琐事，
+    然而 Coq 并不总是能够选择足够好的变量名。我们可以使用 [rename] 重命名：
+    策略 [rename a into a1] 会将当前目标和上下文中的 [a] 重命名为 [a1]。） *)
 
     remember (fold_constants_aexp a1) as a1' eqn:Heqa1'.
     remember (fold_constants_aexp a2) as a2' eqn:Heqa2'.
@@ -1027,8 +951,7 @@ Proof.
        (subst a2'; rewrite <- fold_constants_aexp_sound; reflexivity).
     destruct a1'; destruct a2'; try reflexivity.
 
-    (* The only interesting case is when both a1 and a2
-       become constants after folding *)
+    (* 唯一有趣的是 a1 和 a2 在折叠后同时变为常量 *)
       simpl. destruct (n =? n0); reflexivity.
   - (* BLe *)
     (* 请在此处解答 *) admit.
@@ -1046,7 +969,7 @@ Proof.
 (** [] *)
 
 (** **** 练习：3 星 (fold_constants_com_sound)  *)
-(** Complete the [WHILE] case of the following proof. *)
+(** 完成以下证明的 [WHILE] 情况。 *)
 
 Theorem fold_constants_com_sound :
   ctrans_sound fold_constants_com.
@@ -1062,13 +985,12 @@ Proof.
       apply fold_constants_bexp_sound. }
     destruct (fold_constants_bexp b) eqn:Heqb;
       try (apply CIf_congruence; assumption).
-      (* (If the optimization doesn't eliminate the if, then the
-          result is easy to prove from the IH and
-          [fold_constants_bexp_sound].) *)
-    + (* b always true *)
+      (* （如果 if 没有被优化掉，那么我们很容易使用 IH 和
+         [fold_constants_bexp_sound] 来得出证明。） *)
+    + (* b 总为真 *)
       apply trans_cequiv with c1; try assumption.
       apply IFB_true; assumption.
-    + (* b always false *)
+    + (* b 总为假 *)
       apply trans_cequiv with c2; try assumption.
       apply IFB_false; assumption.
   - (* WHILE *)
@@ -1076,11 +998,10 @@ Proof.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Soundness of (0 + n) Elimination, Redux *)
+(** *** 再论 (0 + n) 优化的可靠性 *)
 
 (** **** 练习：4 星, advanced, optional (optimize_0plus)  *)
-(** Recall the definition [optimize_0plus] from the [Imp] chapter of _Logical
-    Foundations_:
+(** 回顾_'逻辑基础'_ [Imp] 一章中 [optimize_0plus] 的定义：
 
     Fixpoint optimize_0plus (e:aexp) : aexp :=
       match e with
@@ -1096,55 +1017,47 @@ Proof.
           AMult (optimize_0plus e1) (optimize_0plus e2)
       end.
 
-   Note that this function is defined over the old [aexp]s,
-   without states.
+   注意此函数是针对无状态的 [aexp] 编写的。
 
-   Write a new version of this function that accounts for variables,
-   plus analogous ones for [bexp]s and commands:
+   请为 [aexp] [bexp] 和 [com] 都写一个带状态的新版本：
 
      optimize_0plus_aexp
      optimize_0plus_bexp
      optimize_0plus_com
 
-   Prove that these three functions are sound, as we did for
-   [fold_constants_*].  Make sure you use the congruence lemmas in
-   the proof of [optimize_0plus_com] -- otherwise it will be _long_!
+   请证明这三个函数都具有可靠性，就像之前证明 [fold_constants_*] 那样。在
+   [optimize_0plus_com] 的证明中你需要一致性引理 -- 否则证明过程会_'很长‘_！
 
-   Then define an optimizer on commands that first folds
-   constants (using [fold_constants_com]) and then eliminates [0 + n]
-   terms (using [optimize_0plus_com]).
+   接下来为指令定义一个优化器，它首先使用常量折叠（[fold_constants_com]）然后优化掉
+   [0 + n] 项（使用 [optimize_0plus_com]）。
 
-   - Give a meaningful example of this optimizer's output.
+   - 请为此优化器写一个有意义的测试用例。
 
-   - Prove that the optimizer is sound.  (This part should be _very_
-     easy.)  *)
+   - 证明此优化程序有可靠性。（这部分应该会_'很简单'_ 。）  *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (* ################################################################# *)
-(** * Proving Inequivalence *)
+(** * 证明程序不等价 *)
 
-(** Suppose that [c1] is a command of the form [X ::= a1;; Y ::= a2]
-    and [c2] is the command [X ::= a1;; Y ::= a2'], where [a2'] is
-    formed by substituting [a1] for all occurrences of [X] in [a2].
-    For example, [c1] and [c2] might be:
+(** 假设 [c1] 是形如 [X ::= a1;; Y ::= a2] 的指令，并且 [c2] 是形如
+    [X ::= a1;; Y ::= a2'] 的指令，[a2'] 是把 [a2] 中所有 [X] 都替换为 [a1]
+    后的结果。比如，[c1] 和 [c2] 可以像这样：
 
        c1  =  (X ::= 42 + 53;;
                Y ::= Y + X)
        c2  =  (X ::= 42 + 53;;
                Y ::= Y + (42 + 53))
 
-    Clearly, this _particular_ [c1] and [c2] are equivalent.  Is this
-    true in general? *)
+    很明显，在这个_'特定的例子中'_ [c1] 和 [c2] 是等价的。但是对一般程序而言，
+    此结果是否成立？ *)
 
-(** We will see in a moment that it is not, but it is worthwhile
-    to pause, now, and see if you can find a counter-example on your
-    own. *)
+(** 我们马上就会发现这是不行的。不过且慢，现在，
+    看你自己能否找出一个反例来。 *)
 
-(** More formally, here is the function that substitutes an arithmetic
-    expression for each occurrence of a given variable in another
-    expression: *)
+(** 以下形式化的定义描述了如何在算术表达式中，
+    将某个变量的所有引用都替换成另一个表达式： *)
 
 Fixpoint subst_aexp (i : string) (u : aexp) (a : aexp) : aexp :=
   match a with
@@ -1165,56 +1078,55 @@ Example subst_aexp_ex :
   = (Y + (42 + 53)).
 Proof. reflexivity.  Qed.
 
-(** And here is the property we are interested in, expressing the
-    claim that commands [c1] and [c2] as described above are
-    always equivalent.  *)
+(** 而这里是一个我们感兴趣的性质：它断言类似上述形式的 [c1] 和 [c2]
+    总是等价的。  *)
 
 Definition subst_equiv_property := forall i1 i2 a1 a2,
   cequiv (i1 ::= a1;; i2 ::= a2)
          (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
 
-(** Sadly, the property does _not_ always hold -- i.e., it is not the
-    case that, for all [i1], [i2], [a1], and [a2],
+(** 遗憾的是, 这个性质_'并不'_总是成立 -- 即，它并不是对所有的
+    [i1]、[i2]、[a1] 和 [a2] 都成立。
 
       cequiv (i1 ::= a1;; i2 ::= a2)
              (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
 
-    To see this, suppose (for a contradiction) that for all [i1], [i2],
-    [a1], and [a2], we have
+    我们使用反证法来证明这一点。假设对于所有的 [i1]、[i2]、[a1]
+    和 [a2]，我们有
 
       cequiv (i1 ::= a1;; i2 ::= a2)
              (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
 
-    Consider the following program:
+    考虑以下程序：
 
        X ::= X + 1;; Y ::= X
 
-    Note that
+    注意
 
        (X ::= X + 1;; Y ::= X)
        / { --> 0 } \\ st1,
 
-    where [st1 = { X --> 1; Y --> 1 }].
+    其中 [st1 = { X --> 1; Y --> 1 }]。
 
-    By assumption, we know that
+    根据假设，我们知道
 
       cequiv (X ::= X + 1;;
               Y ::= X)
              (X ::= X + 1;;
               Y ::= X + 1)
 
-    so, by the definition of [cequiv], we have
+    同时，根据 [cequiv] 的定义，我们有
 
       (X ::= X + 1;; Y ::= X + 1
       / { --> 0 } \\ st1.
 
-    But we can also derive
+    但是我们也能推导出
 
       (X ::= X + 1;; Y ::= X + 1)
       / { --> 0 } \\ st2,
 
-    where [st2 = { X --> 1; Y --> 2 }].  But [st1 <> st2], which is a
-    contradiction, since [ceval] is deterministic!  [] *)
+    其中 [st2 = { X --> 1; Y --> 2 }]。但由于 [ceval] 是确定性的，而
+    [st1 <> st2] ，这就造成了矛盾！ [] *)
 
 
 Theorem subst_inequiv :
@@ -1223,9 +1135,8 @@ Proof.
   unfold subst_equiv_property.
   intros Contra.
 
-  (* Here is the counterexample: assuming that [subst_equiv_property]
-     holds allows us to prove that these two programs are
-     equivalent... *)
+  (* 这里有个反例：假设 [subst_equiv_property]
+     成立能够让我们证明以下两个程序等价... *)
   remember (X ::= X + 1;;
             Y ::= X)
       as c1.
@@ -1234,8 +1145,7 @@ Proof.
       as c2.
   assert (cequiv c1 c2) by (subst; apply Contra).
 
-  (* ... allows us to show that the command [c2] can terminate
-     in two different final states:
+  (* ...让我们证明 [c2] 能够在两个不同的状态下停机：
         st1 = {X --> 1; Y --> 1}
         st2 = {X --> 1; Y --> 2}. *)
   remember {X --> 1 ; Y --> 1} as st1.
@@ -1247,8 +1157,7 @@ Proof.
        apply E_Ass; reflexivity).
   apply H in H1.
 
-  (* Finally, we use the fact that evaluation is deterministic
-     to obtain a contradiction. *)
+  (* 最后，因为程序求值的确定性而产生矛盾。 *)
   assert (Hcontra: st1 = st2)
     by (apply (ceval_deterministic c2 { --> 0 }); assumption).
   assert (Hcontra': st1 Y = st2 Y)
@@ -1256,10 +1165,8 @@ Proof.
   subst. inversion Hcontra'.  Qed.
 
 (** **** 练习：4 星, optional (better_subst_equiv)  *)
-(** The equivalence we had in mind above was not complete nonsense --
-    it was actually almost right.  To make it correct, we just need to
-    exclude the case where the variable [X] occurs in the
-    right-hand-side of the first assignment statement. *)
+(** 之前我们思考的等价关系也不全是妄言 -- 只要再增加一个条件，
+    即变量 [X] 不在第一个赋值语句的右边出现，它就是正确的了。 *)
 
 Inductive var_not_used_in_aexp (X:string) : aexp -> Prop :=
   | VNUNum: forall n, var_not_used_in_aexp X (ANum n)
@@ -1283,14 +1190,13 @@ Lemma aeval_weakening : forall i st a ni,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** Using [var_not_used_in_aexp], formalize and prove a correct verson
-    of [subst_equiv_property]. *)
+(** 使用 [var_not_used_in_aexp]，形式化并证明正确版本的 [subst_equiv_property]。 *)
 
 (* 请在此处解答 *)
 (** [] *)
 
 (** **** 练习：3 星 (inequiv_exercise)  *)
-(** Prove that an infinite loop is not equivalent to [SKIP] *)
+(** 证明无限循环不等价于 [SKIP] *)
 
 Theorem inequiv_exercise:
   ~ cequiv (WHILE true DO SKIP END) SKIP.
@@ -1299,54 +1205,41 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
-(** * Extended Exercise: Nondeterministic Imp *)
+(** * 扩展练习：非确定性 Imp *)
 
-(** As we have seen (in theorem [ceval_deterministic] in the [Imp]
-    chapter), Imp's evaluation relation is deterministic.  However,
-    _non_-determinism is an important part of the definition of many
-    real programming languages. For example, in many imperative
-    languages (such as C and its relatives), the order in which
-    function arguments are evaluated is unspecified.  The program
-    fragment
+(** 正如之前所见（[Imp] 一章中的 [ceval_deterministic]），Imp
+    的求值关系是确定性的。然而在一些实际的编程语言定义中，_'非确定性'_
+    也是十分重要的一部分。例如，在很多指令式语言中（如 C 系的语言），
+    函数参数的求值顺序是未指定的。程序片段
 
       x = 0;;
       f(++x, x)
 
-    might call [f] with arguments [(1, 0)] or [(1, 1)], depending how
-    the compiler chooses to order things.  This can be a little
-    confusing for programmers, but it gives the compiler writer useful
-    freedom.
+    调用 [f] 时所用的参数可能是 [(1, 0)] 或者 [(1, 1)]，取决于编译器的选择。
+    这可能会让程序员感到困惑，但给了编译器作者选择实现的自由。
 
-    In this exercise, we will extend Imp with a simple
-    nondeterministic command and study how this change affects
-    program equivalence.  The new command has the syntax [HAVOC X],
-    where [X] is an identifier. The effect of executing [HAVOC X] is
-    to assign an _arbitrary_ number to the variable [X],
-    nondeterministically. For example, after executing the program:
+    在此练习中，我们会用一个简单的非确定性指令来扩展 Imp，
+    研究这种改变会对程序等价关系产生何种影响。新指令的语法为 [HAVOC X]，
+    其中 [X] 是一个标识符。执行 [HAVOC X] 会为变量 [X] 赋予一个不确定的
+    _'任意'_ 数值。例如，在执行完程序
 
       HAVOC Y;;
       Z ::= Y * 2
 
-    the value of [Y] can be any number, while the value of [Z] is
-    twice that of [Y] (so [Z] is always even). Note that we are not
-    saying anything about the _probabilities_ of the outcomes -- just
-    that there are (infinitely) many different outcomes that can
-    possibly happen after executing this nondeterministic code.
+    后，[Y] 的值可以是任何数，而 [Z] 的值是 [Y] 的两倍（因此 [Z] 总是偶数）。
+    注意，我们并未讨论输出值的_'概率'_，在执行完此非确定性代码后，
+    会有无穷多可能的不同输出。
 
-    In a sense, a variable on which we do [HAVOC] roughly corresponds
-    to an unitialized variable in a low-level language like C.  After
-    the [HAVOC], the variable holds a fixed but arbitrary number.  Most
-    sources of nondeterminism in language definitions are there
-    precisely because programmers don't care which choice is made (and
-    so it is good to leave it open to the compiler to choose whichever
-    will run faster).
+    某种意义上来说，[HAVOC] 所作用的变量大致相当于 C 之类的低级语言中的
+    未初始化变量。经过了 [HAVOC] 的变量会保存一个固定但任意的数值。
+    语言定义中的大部分非确定性来源于程序员对语言所做的选择不那么关心
+    （好处是能让编译器选择更快的运行方式）。
 
-    We call this new language _Himp_ (``Imp extended with [HAVOC]''). *)
+    我们称这个心语言为_'Himp'_（“用 [HAVOC] 扩展的 Imp”）。 *)
 
 Module Himp.
 
-(** To formalize Himp, we first add a clause to the definition of
-    commands. *)
+(** 为了形式化 Himp，我们首先在指令定义中增加一条从句。 *)
 
 Inductive com : Type :=
   | CSkip : com
@@ -1354,7 +1247,7 @@ Inductive com : Type :=
   | CSeq : com -> com -> com
   | CIf : bexp -> com -> com -> com
   | CWhile : bexp -> com -> com
-  | CHavoc : string -> com.                (* <---- new *)
+  | CHavoc : string -> com.                (* <---- 新增的 *)
 
 Notation "'SKIP'" :=
   CSkip.
@@ -1369,10 +1262,9 @@ Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
 Notation "'HAVOC' l" := (CHavoc l) (at level 60).
 
 (** **** 练习：2 星 (himp_ceval)  *)
-(** Now, we must extend the operational semantics. We have provided
-   a template for the [ceval] relation below, specifying the big-step
-   semantics. What rule(s) must be added to the definition of [ceval]
-   to formalize the behavior of the [HAVOC] command? *)
+(** 现在，我们必须扩展操作语义。前面我们已经提过了 [ceval] 关系的模版，
+    指定了大步语义。为了形式化 [HAVOC] 指令的行为，我们还需要在 [ceval]
+    的定义中添加哪些规则？ *)
 
 Reserved Notation "c1 '/' st '\\' st'"
                   (at level 40, st at level 39).
@@ -1406,8 +1298,7 @@ Inductive ceval : com -> state -> state -> Prop :=
 
   where "c1 '/' st '\\' st'" := (ceval c1 st st').
 
-(** As a sanity check, the following claims should be provable for
-    your definition: *)
+(** 作为合理性检查，以下断言对于你的定义来说应该是可证的： *)
 
 Example havoc_example1 : (HAVOC X) / { --> 0 } \\ { X --> 0 }.
 Proof.
@@ -1422,16 +1313,15 @@ Proof.
 Definition manual_grade_for_Check_rule_for_HAVOC : option (nat*string) := None.
 (** [] *)
 
-(** Finally, we repeat the definition of command equivalence from above: *)
+(** 最后，我们重新定义和之前等价的指令： *)
 
 Definition cequiv (c1 c2 : com) : Prop := forall st st' : state,
   c1 / st \\ st' <-> c2 / st \\ st'.
 
-(** Let's apply this definition to prove some nondeterministic
-    programs equivalent / inequivalent. *)
+(** 我们应用此定义来证明一些非确定性程序是否等价。 *)
 
 (** **** 练习：3 星 (havoc_swap)  *)
-(** Are the following two programs equivalent? *)
+(** 以下两个程序是否等价？ *)
 
 Definition pXY :=
   HAVOC X;; HAVOC Y.
@@ -1439,8 +1329,7 @@ Definition pXY :=
 Definition pYX :=
   HAVOC Y;; HAVOC X.
 
-(** If you think they are equivalent, prove it. If you think they are
-    not, prove that. *)
+(** 请证明你的想法。 *)
 
 
 Theorem pXY_cequiv_pYX :
@@ -1449,7 +1338,7 @@ Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** 练习：4 星, optional (havoc_copy)  *)
-(** Are the following two programs equivalent? *)
+(** 以下两个程序是否等价？ *)
 
 Definition ptwice :=
   HAVOC X;; HAVOC Y.
@@ -1457,28 +1346,22 @@ Definition ptwice :=
 Definition pcopy :=
   HAVOC X;; Y ::= X.
 
-(** If you think they are equivalent, then prove it. If you think they
-    are not, then prove that.  (Hint: You may find the [assert] tactic
-    useful.) *)
+(** 请证明你的想法。（提示：你可能会用到 [assert] 的略。） *)
 
 Theorem ptwice_cequiv_pcopy :
   cequiv ptwice pcopy \/ ~cequiv ptwice pcopy.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** The definition of program equivalence we are using here has some
-    subtle consequences on programs that may loop forever.  What
-    [cequiv] says is that the set of possible _terminating_ outcomes
-    of two equivalent programs is the same. However, in a language
-    with nondeterminism, like Himp, some programs always terminate,
-    some programs always diverge, and some programs can
-    nondeterministically terminate in some runs and diverge in
-    others. The final part of the following exercise illustrates this
-    phenomenon.
+(** 我们在这里使用的程序等价关系的定义对无限循环的程序来说有点复杂。因为
+    [cequiv] 描述的是两个等价的程序在_'停机'_时输出的集合是相同的。然而，
+    在像 Himp 这类带有非确定的语言中，有些程序总会停机，有些程序总会发散，
+    还有些程序会非确定地在某些时候停机而在其它时候发散。
+    以下练习的最后一部分展示了这种现象。
 *)
 
 (** **** 练习：4 星, advanced (p1_p2_term)  *)
-(** Consider the following commands: *)
+(** 考虑一下指令： *)
 
 Definition p1 : com :=
   WHILE ! (X = 0) DO
@@ -1491,10 +1374,8 @@ Definition p2 : com :=
     SKIP
   END.
 
-(** Intuitively, [p1] and [p2] have the same termination behavior:
-    either they loop forever, or they terminate in the same state they
-    started in.  We can capture the termination behavior of [p1] and
-    [p2] individually with these lemmas: *)
+(** 直觉上来说，[p1] 和 [p2] 的停机行为相同：要么无限循环，要么以相同的状态开始，
+    就在相同的状态下停机。我们可以用以下引理分别刻画 [p1] 和 [p2] 的停机行为： *)
 
 Lemma p1_may_diverge : forall st st', st X <> 0 ->
   ~ p1 / st \\ st'.
@@ -1507,17 +1388,15 @@ Proof.
 (** [] *)
 
 (** **** 练习：4 星, advanced (p1_p2_equiv)  *)
-(** Use these two lemmas to prove that [p1] and [p2] are actually
-    equivalent. *)
+(** 使用这两个引理来证明 [p1] 和 [p2] 确实等价。 *)
 
 Theorem p1_p2_equiv : cequiv p1 p2.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** 练习：4 星, advanced (p3_p4_inequiv)  *)
-(** Prove that the following programs are _not_ equivalent.  (Hint:
-    What should the value of [Z] be when [p3] terminates?  What about
-    [p4]?) *)
+(** 证明以下程序_'不等价'_（提示：当 [p3] 停机时 [Z] 的值是什么？当
+    [p4] 停机时呢？） *)
 
 Definition p3 : com :=
   Z ::= 1;;
@@ -1536,13 +1415,10 @@ Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** 练习：5 星, advanced, optional (p5_p6_equiv)  *)
-(** Prove that the following commands are equivalent.  (Hint: As
-    mentioned above, our definition of [cequiv] for Himp only takes
-    into account the sets of possible terminating configurations: two
-    programs are equivalent if and only if when given a same starting
-    state [st], the set of possible terminating states is the same for
-    both programs. If [p5] terminates, what should the final state be?
-    Conversely, is it always possible to make [p5] terminate?) *)
+(** 证明以下指令等价。（提示：正如我们之前提到的，我们为 Himp 定义的
+    [cequiv] 只考虑了可能的停机配置的集合：对于两个程序而言，
+    当且仅当给定了相同的起始状态 [st]，且可能的停机状态的集合相同时，二者才等价。
+    若 [p5] 停机，那么最终状态应当是什么？反过来说，[p5] 总是会停机吗？） *)
 
 Definition p5 : com :=
   WHILE ! (X = 1) DO
@@ -1560,18 +1436,17 @@ Proof. (* 请在此处解答 *) Admitted.
 End Himp.
 
 (* ################################################################# *)
-(** * Additional Exercises *)
+(** * 附加练习 *)
 
 (** **** 练习：4 星, optional (for_while_equiv)  *)
-(** This exercise extends the optional [add_for_loop] exercise from
-    the [Imp] chapter, where you were asked to extend the language
-    of commands with C-style [for] loops.  Prove that the command:
+(** 此练习是 [Imp] 一章中可选练习 [add_for_loop] 的扩展，
+    就是那个让你扩展出类似 C 风格的 [for] 循环指令的练习。请证明指令：
 
       for (c1 ; b ; c2) {
           c3
       }
 
-    is equivalent to:
+    等价于：
 
        c1 ;
        WHILE b DO
@@ -1583,7 +1458,7 @@ End Himp.
 (** [] *)
 
 (** **** 练习：3 星, optional (swap_noninterfering_assignments)  *)
-(** (Hint: You'll need [functional_extensionality] for this one.) *)
+(** （提示：这里你需要 [functional_extensionality]。） *)
 
 Theorem swap_noninterfering_assignments: forall l1 l2 a1 a2,
   l1 <> l2 ->
@@ -1597,24 +1472,19 @@ Proof.
 (** [] *)
 
 (** **** 练习：4 星, advanced, optional (capprox)  *)
-(** In this exercise we define an asymmetric variant of program
-    equivalence we call _program approximation_. We say that a
-    program [c1] _approximates_ a program [c2] when, for each of
-    the initial states for which [c1] terminates, [c2] also terminates
-    and produces the same final state. Formally, program approximation
-    is defined as follows: *)
+(** 在这个练习中我们定义了一个非对称的程序等价变形, 叫做
+    _'程序近似（program approximation）'_。 当每个能让 [c1]
+    停机的初始状态也能让 [c2] 在相同的状态下停机时，我们就说程序 [c1]
+    _'近似与'_ 程序 [c2] 。下面是程序近似的形式化定义： *)
 
 Definition capprox (c1 c2 : com) : Prop := forall (st st' : state),
   c1 / st \\ st' -> c2 / st \\ st'.
 
-(** For example, the program [c1 = WHILE !(X = 1) DO X ::= X - 1 END]
-    approximates [c2 = X ::= 1], but [c2] does not approximate [c1]
-    since [c1] does not terminate when [X = 0] but [c2] does.  If two
-    programs approximate each other in both directions, then they are
-    equivalent. *)
+(** 例如，程序 [c1 = WHILE !(X = 1) DO X ::= X - 1 END]
+    近似于 [c2 = X ::= 1]，但是 [c2] 不近似于 [c1]，因为 [c1]
+    不会在 [X = 0] 时停机，而 [c2] 会。如果两个程序互相近似，那么它们等价。 *)
 
-(** Find two programs [c3] and [c4] such that neither approximates
-    the other. *)
+(** 请找出两个程序 [c3] 和 [c4]，它们互不近似。 *)
 
 Definition c3 : com (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 Definition c4 : com (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1622,7 +1492,7 @@ Definition c4 : com (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 Theorem c3_c4_different : ~ capprox c3 c4 /\ ~ capprox c4 c3.
 Proof. (* 请在此处解答 *) Admitted.
 
-(** Find a program [cmin] that approximates every other program. *)
+(** 找出一个程序 [cmin] 近似于所有别的程序。 *)
 
 Definition cmin : com
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1630,8 +1500,7 @@ Definition cmin : com
 Theorem cmin_minimal : forall c, capprox cmin c.
 Proof. (* 请在此处解答 *) Admitted.
 
-(** Finally, find a non-trivial property which is preserved by
-    program approximation (when going from left to right). *)
+(** 最后，再找出程序近似的一个非平凡的属性（当从左到右时）。 *)
 
 Definition zprop (c : com) : Prop
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.

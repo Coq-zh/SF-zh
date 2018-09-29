@@ -660,8 +660,7 @@ Proof.
   rewrite H. rewrite mult_assoc. reflexivity.
 Qed.
 
-(** At this point, some discussion of unfolding and simplification is
-    in order.
+(** 现在，是时候讨论下展开和化简了。
 
     你可能已经观察到了像 [simpl]、[reflexivity] 和 [apply] 这样的策略，
     通常总会在需要时自动展开函数的定义。例如，若我们将 [foo m] 定义为常量 [5]... *)
@@ -834,12 +833,12 @@ Theorem sillyfun1_odd : forall (n : nat),
 Proof.
   intros n eq. unfold sillyfun1 in eq.
   destruct (n =? 3) eqn:Heqe3.
-  (* 现在我们的状态和前面卡住的地方一样了，除了上下文中包含了额外的相等性假设，
+  (* 现在我们的状态和前面卡住的地方一样了，除了上下文中包含了额外的相等关系假设，
      它就是我们继续推进所需要的。 *)
     - (* e3 = true *) apply eqb_true in Heqe3.
       rewrite -> Heqe3. reflexivity.
     - (* e3 = false *)
-     (* 当我们到达正在推理的函数体中第二个相等性测试时，我们可以再次使用
+     (* 当我们到达正在推理的函数体中第二个相等关系测试时，我们可以再次使用
         [eqn:]，以便结束此证明。 *)
       destruct (n =? 5) eqn:Heqe5.
         + (* e5 = true *)
@@ -878,9 +877,9 @@ Proof.
 
       - [simpl in H]：化简前提中的计算
 
-      - [rewrite]：使用相等性假设（或引理）来改写目标
+      - [rewrite]：使用相等关系假设（或引理）来改写目标
 
-      - [rewrite ... in H]：使用相等性假设（或引理）来改写前提
+      - [rewrite ... in H]：使用相等关系假设（或引理）来改写前提
 
       - [symmetry]：将形如 [t=u] 的目标改为 [u=t]
 

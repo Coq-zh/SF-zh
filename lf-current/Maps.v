@@ -30,7 +30,7 @@ Import ListNotations.
 (** 标准库的文档见
     http://coq.inria.fr/library/。
 
-    [Search] 命令可用于查找涉及具体类型对象的定理。我们花点时间来熟悉一下它。 *)
+    [Search] 指令可用于查找涉及具体类型对象的定理。我们花点时间来熟悉一下它。 *)
 
 (* ################################################################# *)
 (** * 标识符 *)
@@ -231,7 +231,7 @@ Proof.
 
 (** 对于最后两个全映射的引理而言，用[IndProp]一章中引入的互映法
     （Reflection idioms）来证明会十分方便。我们首先通过证明基本的_'互映引理'_，
-    将 [id] 上的相等性命题与布尔函数 [eqb_id] 关联起来。*)
+    将 [id] 上的相等关系命题与布尔函数 [eqb_id] 关联起来。*)
 
 (** **** 练习：2 星, optional (eqb_stringP)  *)
 (** 请仿照[IndProp]一章中对 [eqb_natP] 的证明来证明以下引理： *)
@@ -244,7 +244,7 @@ Proof.
 (** 现在，给定 [string] 类型的字符串 [x1] 和 [x2]，我们可以在使用
     [destruct (eqb_stringP x1 x2)] 对 [eqb_string x1 x2]
     的结果进行分类讨论的同时，生成关于 [x1] 和 [x2] （在 [=] 的意义上）
-    的相等性前提。 *)
+    的相等关系前提。 *)
 
 (** **** 练习：2 星 (t_update_same)  *)
 (** 请仿照[IndProp]一章中的示例，用 [eqb_stringP] 来证明以下定理，
@@ -317,7 +317,7 @@ Qed.
 
 Theorem update_neq : forall (X:Type) v x1 x2
                        (m : partial_map X),
-  x2 <> x1 -> 
+  x2 <> x1 ->
   (m & {{ x2 --> v }}) x1 = m x1.
 Proof.
   intros X v x1 x2 m H.

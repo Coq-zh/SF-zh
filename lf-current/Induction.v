@@ -60,7 +60,7 @@ From LF Require Export Basics.
        explicit [coqc].
 
     如果你遇到了问题（例如，稍后你可能会在本文件中遇到缺少标识符的提示），
-    那可能是因为没有正确设置 Coq 的“加载路径”。命令 [Print LoadPath.]
+    那可能是因为没有正确设置 Coq 的“加载路径”。指令 [Print LoadPath.]
     能帮你理清这类问题。
 
     特别是，如果你看到了像这样的信息：
@@ -79,9 +79,9 @@ From LF Require Export Basics.
       solution above: [make clean; make].)
 
     再给 CoqIDE 用户一点技巧：如果你看到了 [Error: Unable to locate
-    library Basics]，那么可能的原因是用 _'CoqIDE'_ 编译的代码和在命令行用
+    library Basics]，那么可能的原因是用 _'CoqIDE'_ 编译的代码和在指令行用
     _'coqc'_ 编译的不一致。这通常在系统中安装了两个不兼容的 [coqc] 时发生
-    （一个与 CoqIDE 关联，另一个与命令行的 [coqc] 关联）。这种情况的变通方法
+    （一个与 CoqIDE 关联，另一个与指令行的 [coqc] 关联）。这种情况的变通方法
     就是只使用 CoqIDE 来编译（即从菜单中选择“make”）并完全避免使用 [coqc]。 *)
 
 (* ################################################################# *)

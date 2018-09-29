@@ -11,7 +11,7 @@ Require Import Coq.omega.Omega.
 Require Import Coq.Arith.Arith.
 From LF Require Import Imp Maps.
 
-(** 在初次为命令编写求值函数时，我们写出了如下忽略了 [WHILE] 的代码： *)
+(** 在初次为指令编写求值函数时，我们写出了如下忽略了 [WHILE] 的代码： *)
 
 Fixpoint ceval_step1 (st : state) (c : com) : state :=
   match c with
@@ -31,7 +31,7 @@ Fixpoint ceval_step1 (st : state) (c : com) : state :=
   end.
 
 (** 如[Imp]一章中所言，在 ML 或 Haskell 这类传统的函数式语言中，
-  我们可以这样处理 [WHILE] 命令：
+  我们可以这样处理 [WHILE] 指令：
 
     | WHILE b1 DO c1 END => if (beval st b1) then ceval_step1 st (c1;;
         WHILE b1 DO c1 END) else st

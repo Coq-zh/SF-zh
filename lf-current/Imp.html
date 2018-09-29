@@ -58,7 +58,7 @@
 
  本章关注于如何定义 Imp 的<b>语法</b>和<b>语义</b>；<b>《编程语言基础》
     （Programming Language Foundations）</b>（<b>《软件基础》</b>第二卷）
-    中的章节则发展了<b>程序等价性（Program Equivalence）</b>并引入了
+    中的章节则发展了<b>程序等价关系（Program Equivalence）</b>并引入了
     <b>霍尔逻辑（Hoare Logic）</b>，它是一种广泛用于推理指令式程序的逻辑。 
 </div>
 <div class="code code-tight">
@@ -81,7 +81,7 @@
 
  我们会分三部分来展示 Imp：首先是<b>算术和布尔表达式</b>的核心语言，
     之后是用<b>变量</b>对表达式的扩展，最后是一个包括赋值、条件、串连和循环的
-    <b>命令</b>语言。 
+    <b>指令</b>语言。 
 </div>
 
 <div class="doc">
@@ -624,7 +624,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 
 <ul class="doclist">
 <li> 下面展示的 <span class="inlinecode"><span class="id" type="keyword">Tactic</span></span> <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> 习语给出了定义“简写策略”的简便方式，
-      它将多个策略封装成单条命令。
+      它将多个策略封装成单条指令。
 
 <div class="paragraph"> </div>
 
@@ -683,7 +683,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 
 
 </li>
-<li> 相等性（<span class="inlinecode">=</span> 和 <span class="inlinecode">≠</span>）和序（<span class="inlinecode">≤</span>）
+<li> 相等关系（<span class="inlinecode">=</span> 和 <span class="inlinecode">≠</span>）和序（<span class="inlinecode">≤</span>）
 
 <div class="paragraph"> </div>
 
@@ -967,7 +967,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 </div>
 
 <div class="doc">
-<a name="lab334"></a><h2 class="section">定义的等价性</h2>
+<a name="lab334"></a><h2 class="section">定义的等价关系</h2>
 
 <div class="paragraph"> </div>
 
@@ -1371,11 +1371,11 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 </div>
 
 <div class="doc">
-<a name="lab342"></a><h1 class="section">命令</h1>
+<a name="lab342"></a><h1 class="section">指令</h1>
 
 <div class="paragraph"> </div>
 
- 现在我们可以定义 Imp <b>命令（Command）</b>（有时称作<b>语句（Statement）</b>）
+ 现在我们可以定义 Imp <b>指令（Command）</b>（有时称作<b>语句（Statement）</b>）
     的语法和行为了。 
 </div>
 
@@ -1384,7 +1384,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 
 <div class="paragraph"> </div>
 
- 命令 <span class="inlinecode"><span class="id" type="var">c</span></span> 可以用以下 BNF 文法非形式化地描述。（为了能够使用 Coq
+ 指令 <span class="inlinecode"><span class="id" type="var">c</span></span> 可以用以下 BNF 文法非形式化地描述。（为了能够使用 Coq
     的记法机制来定义 Imp 语法，我们选择了这种略尴尬的具体语法。具体来说，
     我们使用了 <span class="inlinecode"><span class="id" type="var">IFB</span></span> 来避免与表中库中的 <span class="inlinecode"><span class="id" type="keyword">if</span></span> 记法相冲突。)
 
@@ -1413,10 +1413,10 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 <div class="paragraph"> </div>
 
 </div>
-   当此命令终止后，<span class="inlinecode"><span class="id" type="var">Y</span></span> 会保存初始值 <span class="inlinecode"><span class="id" type="var">X</span></span> 的阶乘。 
+   当此指令终止后，<span class="inlinecode"><span class="id" type="var">Y</span></span> 会保存初始值 <span class="inlinecode"><span class="id" type="var">X</span></span> 的阶乘。 
 <div class="paragraph"> </div>
 
- 下面是命令的抽象语法的形式化定义： 
+ 下面是指令的抽象语法的形式化定义： 
 </div>
 <div class="code code-tight">
 
@@ -1516,11 +1516,11 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 </div>
 
 <div class="doc">
-<a name="lab347"></a><h1 class="section">求值命令</h1>
+<a name="lab347"></a><h1 class="section">求值指令</h1>
 
 <div class="paragraph"> </div>
 
- 接下来我们要定义对 Imp 命令进行求值是什么意思。
+ 接下来我们要定义对 Imp 指令进行求值是什么意思。
     <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 未必会终止的事实让定义它的求值函数有点棘手... 
 </div>
 
@@ -1529,7 +1529,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 
 <div class="paragraph"> </div>
 
- 下面是一次为命令定义求值函数的尝试，我们忽略了 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 的情况。 
+ 下面是一次为指令定义求值函数的尝试，我们忽略了 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 的情况。 
 </div>
 <div class="code code-tight">
 
@@ -1775,9 +1775,9 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;我们必须提供中间状态&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_Seq</span> <span class="id" type="keyword">with</span> { <span class="id" type="var">X</span> <span style="font-size: 80%;"><span style="letter-spacing:-.1em;">-</span><span style="letter-spacing:-.1em;">-</span>&gt;</span> 2 }.<br/>
-&nbsp;&nbsp;- <span class="comment">(*&nbsp;赋值命令&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;赋值指令&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_Ass</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;- <span class="comment">(*&nbsp;if&nbsp;命令&nbsp;*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;if&nbsp;指令&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_IfFalse</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_Ass</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
@@ -1824,7 +1824,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
  将求值从计算式定义换成关系式定义是个不错的改变，
     因为它将我们从求值必须是全函数的人工需求中解放了出来。不过这仍然引发了一个问题：
     求值的第二种定义真的是一个偏函数吗？从同样的 <span class="inlinecode"><span class="id" type="var">st</span></span>
-    开始, 我们是否有可能按照不同的方式对某个命令 <span class="inlinecode"><span class="id" type="var">c</span></span> 进行求值，
+    开始, 我们是否有可能按照不同的方式对某个指令 <span class="inlinecode"><span class="id" type="var">c</span></span> 进行求值，
     从而到达两个不同的输出状态 <span class="inlinecode"><span class="id" type="var">st'</span></span> 和 <span class="inlinecode"><span class="id" type="var">st''</span></span>?
 
 <div class="paragraph"> </div>
@@ -2161,7 +2161,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 <div class="doc">
 <a name="lab363"></a><h4 class="section">练习：4 星, advanced (break_imp)</h4>
  像 C 和 Java 这样的指令式语言通常会包含 <span class="inlinecode"><span class="id" type="var">break</span></span> 或类似地语句来中断循环的执行。
-    在本练习中，我们考虑如何为 Imp 加上 <span class="inlinecode"><span class="id" type="var">break</span></span>。首先，我们需要丰富语言的命令。 
+    在本练习中，我们考虑如何为 Imp 加上 <span class="inlinecode"><span class="id" type="var">break</span></span>。首先，我们需要丰富语言的指令。 
 </div>
 <div class="code code-tight">
 
@@ -2188,14 +2188,14 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 
 <div class="doc">
 接着，我们需要定义 <span class="inlinecode"><span class="id" type="var">BREAK</span></span> 的行为。非形式化地说，只要 <span class="inlinecode"><span class="id" type="var">BREAK</span></span>
-    在命令序列中执行，它就会终止该序列的执行并发出最内层围绕它的循环应当终止的信号。
+    在指令序列中执行，它就会终止该序列的执行并发出最内层围绕它的循环应当终止的信号。
     （如果没有任何围绕它的循环，那么就终止整个程序。）最终状态应当与
     <span class="inlinecode"><span class="id" type="var">BREAK</span></span> 语句执行后的状态相同。
 
 <div class="paragraph"> </div>
 
     其要点之一在于当一个给定的 <span class="inlinecode"><span class="id" type="var">BREAK</span></span> 位于多个循环中时应该做什么。
-    此时，<span class="inlinecode"><span class="id" type="var">BREAK</span></span> 应当只终止<b>最内层</b>的循环。因此，在执行完以下命令之后...
+    此时，<span class="inlinecode"><span class="id" type="var">BREAK</span></span> 应当只终止<b>最内层</b>的循环。因此，在执行完以下指令之后...
 
 <div class="paragraph"> </div>
 
@@ -2216,7 +2216,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 
 <div class="paragraph"> </div>
 
-    表达这种行为的一种方式求值为求值关系添加一个形参，指定某个命令是否会执行
+    表达这种行为的一种方式求值为求值关系添加一个形参，指定某个指令是否会执行
     <span class="inlinecode"><span class="id" type="var">BREAK</span></span> 语句： 
 </div>
 <div class="code code-tight">
@@ -2241,32 +2241,32 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 若命令为 <span class="inlinecode"><span class="id" type="var">SKIP</span></span>，则状态不变，任何围绕它的循环继续正常执行。
+<li> 若指令为 <span class="inlinecode"><span class="id" type="var">SKIP</span></span>，则状态不变，任何围绕它的循环继续正常执行。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 若命令为 <span class="inlinecode"><span class="id" type="var">BREAK</span></span>，则状态保持不变但发出 <span class="inlinecode"><span class="id" type="var">SBreak</span></span> 的信号。
+<li> 若指令为 <span class="inlinecode"><span class="id" type="var">BREAK</span></span>，则状态保持不变但发出 <span class="inlinecode"><span class="id" type="var">SBreak</span></span> 的信号。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 若命令为赋值，则根据状态更新该变量绑定的值，并发出继续正常执行的信号。
+<li> 若指令为赋值，则根据状态更新该变量绑定的值，并发出继续正常执行的信号。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 若命令为 <span class="inlinecode"><span class="id" type="var">IFB</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">THEN</span></span> <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">ELSE</span></span> <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="var">FI</span></span> 的形式，则按照 Imp 的原始语义更新状态，
+<li> 若指令为 <span class="inlinecode"><span class="id" type="var">IFB</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">THEN</span></span> <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">ELSE</span></span> <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="var">FI</span></span> 的形式，则按照 Imp 的原始语义更新状态，
       除此之外我们还要从被选择执行的分支中传播信号。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 若命令为一系列 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> <span class="inlinecode">;;</span> <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span>，我们首先执行 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span>。如果它产生了
+<li> 若指令为一系列 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> <span class="inlinecode">;;</span> <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span>，我们首先执行 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span>。如果它产生了
       <span class="inlinecode"><span class="id" type="var">SBreak</span></span>，我们就跳过 <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> 的执行并将 <span class="inlinecode"><span class="id" type="var">SBreak</span></span> 的信号传给其外围的上下文中;
       结果状态与执行 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> 后获得的相同。否则，我们在执行完 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> 后的状态下执行
       <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> 并继续传递它产生的信号。
@@ -2359,7 +2359,7 @@ Coq 专家经常在像 <span class="inlinecode"><span class="id" type="tactic">i
 
 <div class="doc">
 <a name="lab366"></a><h4 class="section">练习：4 星, optional (add_for_loop)</h4>
- 为该语言添加 C 风格的 <span class="inlinecode"><span class="id" type="keyword">for</span></span> 循环命令，更新 <span class="inlinecode"><span class="id" type="var">ceval</span></span> 的定义来定义
+ 为该语言添加 C 风格的 <span class="inlinecode"><span class="id" type="keyword">for</span></span> 循环指令，更新 <span class="inlinecode"><span class="id" type="var">ceval</span></span> 的定义来定义
     <span class="inlinecode"><span class="id" type="keyword">for</span></span> 循环，按需添加 <span class="inlinecode"><span class="id" type="keyword">for</span></span> 循环的情况使得本文件中的所有证明都被
     Coq 所接受。
 

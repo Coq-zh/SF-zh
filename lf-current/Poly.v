@@ -307,8 +307,8 @@ Proof. reflexivity.  Qed.
 
 Fail Definition mynil := nil.
 
-(** （[Definition] 前面的 [Fail] 限定符可用于_'任何'_命令，
-    它的作用是确保该命令在执行时确实会失败。如果该命令失败了，Coq
+(** （[Definition] 前面的 [Fail] 限定符可用于_'任何'_指令，
+    它的作用是确保该指令在执行时确实会失败。如果该指令失败了，Coq
     就会打印出相应的错误信息，不过之后会继续处理文件中剩下的部分。）
 
     在这里，Coq 给出了一条错误信息，因为它不知道应该为 [nil] 提供何种类型。
@@ -431,7 +431,7 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
 (** **** 练习：1 星, optional (combine_checks)  *)
 (** 请尝试在纸上回答以下问题并在 Coq 中检验你的解答：
     - [combine] 的类型是什么？（即 [Check @combine] 会打印出什么？）
-    - 以下命令会打印出什么？
+    - 以下指令会打印出什么？
 
         Compute (combine [1;2] [false;false;true;true]).
 *)
@@ -887,7 +887,7 @@ Definition prod_uncurry {X Y Z : Type}
 Example test_map1': map (plus 3) [2;0;2] = [5;3;5].
 Proof. reflexivity.  Qed.
 
-(** 思考练习：在运行以下命令之前，你能计算出 [prod_curry] 和 [prod_uncurry] 的类型吗？ *)
+(** 思考练习：在运行以下指令之前，你能计算出 [prod_curry] 和 [prod_uncurry] 的类型吗？ *)
 
 Check @prod_curry.
 Check @prod_uncurry.

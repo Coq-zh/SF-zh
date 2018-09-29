@@ -342,7 +342,7 @@ Eval compute in
   testParsing parseConjunctionExp "not((x=x||x*x<=(x*x)*x)&&x=x".
 *)
 
-(** 解析命令： *)
+(** 解析指令： *)
 
 Fixpoint parseSimpleCommand (steps:nat)
                             (xs : list token) :=

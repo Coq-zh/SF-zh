@@ -23,7 +23,7 @@ From LF Require Import ImpCEvalFun.
 
 Extraction "imp1.ml" ceval_step.
 
-(** Coq 在处理此命令时会生成一个名为 [imp1.ml] 的文件，其中包含了提取后的
+(** Coq 在处理此指令时会生成一个名为 [imp1.ml] 的文件，其中包含了提取后的
     [ceval_step] 以及所有递归依赖的文件。编译本章对应的 [.v]
     文件，然后看看生成的 [imp1.ml] 吧！ *)
 
@@ -85,7 +85,7 @@ Require Import ExtrOcamlString.
 
 Extract Inductive sumbool => "bool" ["true" "false"].
 
-(** 提取命令是相同的。 *)
+(** 提取指令是相同的。 *)
 
 From LF Require Import Imp.
 From LF Require Import ImpParser.
@@ -97,7 +97,7 @@ Extraction "imp.ml" empty_state ceval_step parse.
 (** 现在我们来运行一下生成的 Imp 求值器。首先你应该阅览一下
     [impdriver.ml]（这并非从某个 Coq 源码提取而来，它是手写的。）
 
-    然后用下面的命令将求值器与驱动程序一同编译成可执行文件：
+    然后用下面的指令将求值器与驱动程序一同编译成可执行文件：
 
         ocamlc -w -20 -w -26 -o impdriver imp.mli imp.ml impdriver.ml
         ./impdriver

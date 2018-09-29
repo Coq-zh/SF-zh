@@ -13,7 +13,7 @@
 
       X ::= 3;; Y ::= 4
 
-    因为当其运行到 [Y] 的时候并不知道 [X] 是 [3]。  
+    因为当其运行到 [Y] 的时候并不知道 [X] 是 [3]。
 
     我们自然想要改进常量折叠，使其可以传播已知的常量并使用他们化简程序。
     这样做便得到了_'部分求值（partial evaluation）'_的初级形式。我们将会看到，
@@ -52,7 +52,7 @@ From PLF Require Import Smallstep.
 (** 从概念上讲，我们可以认为部分状态（partial state）的类型是 [string -> option nat]
     (相反全状态的类型是 [string -> nat]）。然而，除了对部分状态中的变量进行查询和更新以外，
     我们还想要比较两个部分状态，得到其不同的之处，并处理条件控制流。
-    由于无法对两个任意的函数进行比较，因此我们更具体地把部分状态表示为由 
+    由于无法对两个任意的函数进行比较，因此我们更具体地把部分状态表示为由
     [string * nat] 序对构成的列表。*)
 
 Definition pe_state := list (string * nat).
@@ -74,7 +74,7 @@ Definition empty_pe_state : pe_state := [].
 
 (** 更一般地，如果这个 [list] 表示的 [pe_state] 不含有某个标识符，那么此 [pe_state]
     必将这个标识符映射到 [None]。在证明这一点之前，我们首先定义一个策略来帮助我们对
-    字符串的等价性进行推理。策略
+    字符串的等价关系进行推理。策略
 
       compare V V'
 
@@ -109,7 +109,7 @@ Check filter_In.
 (* ===> filter_In : forall (A : Type) (f : A -> bool) (x : A) (l : list A),
             In x (filter f l) <-> In x l /\ f x = true  *)
 
-(** 如果类型 [A] 有操作符 [eqb] 用于测试其元素的相等性，我们可以计算一个布尔值 [inb eqb a l]
+(** 如果类型 [A] 有操作符 [eqb] 用于测试其元素的相等关系，我们可以计算一个布尔值 [inb eqb a l]
     用于测试 [In a l] 是否成立。 *)
 
 Fixpoint inb {A : Type} (eqb : A -> A -> bool) (a : A) (l : list A) :=
@@ -181,7 +181,7 @@ Proof. reflexivity. Qed.
 
 (** 现在，[pe_aexp] 在什么意义上是正确的呢？可以合理地将 [pe_aexp] 的正确性
     定义为：若一个全状态 [st:state] 与部分状态 [pe_st:pe_state] 是相容的
-    （换句话说，[pe_st] 中每个变量的值同 [st] 中这个变量的值相同），那么在 [st] 
+    （换句话说，[pe_st] 中每个变量的值同 [st] 中这个变量的值相同），那么在 [st]
     状态中对 [a] 求值和对 [pe_aexp pe_st a] 求值会产生相同结果。这个陈述确实是真的。*)
 
 Definition pe_consistent (st:state) (pe_st:pe_state) :=
@@ -225,9 +225,9 @@ Qed.
     就不仅仅是低效的，而是不正确的结果了，尽管结果表达式 [3 - Y] 和 [X - Y]
     都满足我们上面证明的正确性条件。确实，如果我们只是定义 [pe_aexp pt_st a = a]
     那么定理 [pe_aexp_correct_weak] 也会直接成立。
-    
+
     但是，我们想要证明关于 [pe_aexp] 更强的正确性：对部分求值产生的表达式进行求值
-    （[aeval st (pe_aexp pe_st a)]） 必须不依赖全状态 [st] 中已经被部分状态 
+    （[aeval st (pe_aexp pe_st a)]） 必须不依赖全状态 [st] 中已经被部分状态
     [pe_st] 所指明的部分。为了精确地表达，让我们定义一个函数 [pe_override]，
     它使用 [pe_st] 中的内容更新 [st]。换句话说，[pe_override] 将 [pe_st]
     中的赋值语句置于 [st] 之上。 *)
@@ -418,7 +418,7 @@ Proof. intros pe_st V V0. induction pe_st as [| [V' n'] pe_st].
   - (* [] *) destruct (eqb_string V V0); reflexivity.
   - (* :: *) simpl. compare V V'.
     + (* 相等 *) rewrite IHpe_st.
-      destruct (eqb_stringP V V0).  reflexivity.  
+      destruct (eqb_stringP V V0).  reflexivity.
       rewrite false_eqb_string; auto.
     + (* 不相等 *) simpl. compare V0 V'.
       * (* 相等 *) rewrite false_eqb_string; auto.
@@ -434,7 +434,7 @@ Theorem pe_add_correct: forall pe_st V n V0,
 Proof. intros pe_st V n V0. unfold pe_add. simpl.
   compare V V0.
   - (* 相等 *) rewrite <- eqb_string_refl; auto.
-  - (* 不相等 *) rewrite pe_remove_correct. 
+  - (* 不相等 *) rewrite pe_remove_correct.
     repeat rewrite false_eqb_string; auto.
 Qed.
 
@@ -443,7 +443,7 @@ Qed.
 Theorem pe_update_update_remove: forall st pe_st V n,
   t_update (pe_update st pe_st) V n =
   pe_update (t_update st V n) (pe_remove pe_st V).
-Proof. intros st pe_st V n. apply functional_extensionality. 
+Proof. intros st pe_st V n. apply functional_extensionality.
   intros V0. unfold t_update. rewrite !pe_update_correct.
   rewrite pe_remove_correct. destruct (eqb_string V V0); reflexivity.
   Qed.
@@ -472,11 +472,11 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
       ELSE SKIP FI
 
     假设初始的部分状态为空状态。静态来说，我们不知道 [Y] 和 [4] 比较的结果，
-    因此必须对（外层的）条件语句的两个分支都进行部分求值。在其 [THEN] 
+    因此必须对（外层的）条件语句的两个分支都进行部分求值。在其 [THEN]
     分支中，我们知道 [Y] 被赋值为 [4]，并且可以利用这一点来化简一部分代码。
     在 [ELSE] 分支中，到最后我们仍然不知道 [Y] 的值会是什么。最终部分状态
     和剩余程序应该是什么呢？
-    
+
     一种处理动态的条件语句的方法是取两个分支上最终部分状态的交。在上面的例子中，
     我们取 [(Y,4),(X,3)] 和 [(X,3)] 的交，因此最终的部分状态为 [(X,3)]。
     为了抵消丢失掉的对 [Y] 的赋值 [4]，我们需要在 [THEN] 分支的最后添加赋值语句
@@ -573,7 +573,7 @@ Proof. intros pe_st1 pe_st2 V.
     rewrite negb_false_iff in Hagree.
     apply eqb_eq in Hagree. subst. reflexivity. Qed.
 
-(** 两个部分状态的交是从其中一个状态中移除所有值不同的变量。我们用上面的 
+(** 两个部分状态的交是从其中一个状态中移除所有值不同的变量。我们用上面的
     [pe_remove] 来定义函数 [pe_removes]，用于一次性地移除一个列表中的变量。
 
     定理 [pe_compare_removes] 证明了无论我们从哪个状态中移除变量，最终得到
@@ -1341,7 +1341,7 @@ End Loop.
 (** ** 基本块 *)
 
 (** 一个流程图程序由_'基本块（basic blocks）'_构成，我们用归纳类型 [block]
-    来表示它。一个基本块是一个赋值语句（[Assign] 构造子）序列，并以条件跳转（[If] 
+    来表示它。一个基本块是一个赋值语句（[Assign] 构造子）序列，并以条件跳转（[If]
     构造子）或者无条件跳转（[Goto] 构造子）结束。跳转的目标由_'标签（labels）'_所指明，
     其可为任意类型。因此，我们用标签的类型来参数化 [block] 类型。*)
 
@@ -1391,7 +1391,7 @@ Proof. reflexivity. Qed.
 
 (** 一个流程图程序是一个查找函数将标签映射到基本块。事实上，有的标签是
     _'停机状态（halting state）'_并且不被映射到任何基本块。因此准确地说，一个
-    流程图程序 [program] 是一个将 [L] 映射到到 [option (block L)] 
+    流程图程序 [program] 是一个将 [L] 映射到到 [option (block L)]
     的函数，其中 [L] 是标签的类型。 *)
 
 Definition program (L:Type) : Type := L -> option (block L).

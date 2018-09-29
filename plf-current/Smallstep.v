@@ -2,13 +2,13 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.EqNat. 
-Require Import Coq.Init.Nat. 
+Require Import Coq.Arith.EqNat.
+Require Import Coq.Init.Nat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Import ListNotations.
 From PLF Require Import Maps.
-From PLF Require Import Imp. 
+From PLF Require Import Imp.
 
 (** 我们目前见到的（对 [aexp]，[bexp] 和命令的）求值器是以“大步（big-step）”
     风格构造的：它们以“单一大步（one big-step）”的方式描述了一个表达式如
@@ -224,15 +224,15 @@ Proof.
       + (* ST_Plus1 *) inversion H2.
       + (* ST_Plus2 *) inversion H2.
     - (* ST_Plus1 *) inversion Hy2.
-      + (* ST_PlusConstConst *) 
+      + (* ST_PlusConstConst *)
         rewrite <- H0 in Hy1. inversion Hy1.
       + (* ST_Plus1 *)
         rewrite <- (IHHy1 t1'0).
         reflexivity. assumption.
-      + (* ST_Plus2 *) 
+      + (* ST_Plus2 *)
         rewrite <- H in Hy1. inversion Hy1.
     - (* ST_Plus2 *) inversion Hy2.
-      + (* ST_PlusConstConst *) 
+      + (* ST_PlusConstConst *)
         rewrite <- H1 in Hy1. inversion Hy1.
       + (* ST_Plus1 *) inversion H2.
       + (* ST_Plus2 *)
@@ -251,16 +251,16 @@ End SimpleArith2.
     否则，它会失败。 *)
 
 Ltac solve_by_inverts n :=
-  match goal with | H : ?T |- _ => 
+  match goal with | H : ?T |- _ =>
   match type of T with Prop =>
-    solve [ 
-      inversion H; 
+    solve [
+      inversion H;
       match n with S (S (?n')) => subst; solve_by_inverts (S n') end ]
   end end.
 
-(** 关于它是如何工作的细节目前不那么重要，但是它展示了 Coq 中 [Ltac] 
+(** 关于它是如何工作的细节目前不那么重要，但是它展示了 Coq 中 [Ltac]
     语言的能力以及如何编写特殊目标的策略。它会在当前证明状态中找到一个具有类型
-    [Prop] （第二个 [match]）的假设 [H]（第一个 [match]），然后对 [H] 
+    [Prop] （第二个 [match]）的假设 [H]（第一个 [match]），然后对 [H]
     进行反演（如果参数 [n] 大于一，那么它会继续递归地调用这个策略）来完成当前目标。
     如果这样的假设不存在，这个策略会失败。
 
@@ -309,7 +309,7 @@ End SimpleArith3.
 
       - 重复使用 [==>] 关系来找到一个以 [t] 开始的机器状态序列，序列中每个状态
         会转移到下一个。
-      
+
       - 当无法继续进行规约时，_'输出（read out）'_最终的机器状态作为执行的结果。  *)
 
 (** 直观地来说，可以看到机器的最终状态总是形如 [C n] 的项。
@@ -318,7 +318,7 @@ End SimpleArith3.
 Inductive value : tm -> Prop :=
   | v_const : forall n, value (C n).
 
-(** 在引入了值的概念后，我们可以使用它来更简洁地定义 [==>] 
+(** 在引入了值的概念后，我们可以使用它来更简洁地定义 [==>]
     关系中的 [ST_Plus2] 规则： *)
 
 (** 
@@ -397,7 +397,7 @@ Proof.
 
 (** _'证明'_：对 [t] 进行归纳。
 
-    - 假设 [t = C n]。那么 [t] 是值。 
+    - 假设 [t = C n]。那么 [t] 是值。
 
     - 假设 Suppose [t = P t1 t2]，其中 [t1] 或是值，或可前进到某个 [t1']；
       [t2] 或是值，或可前进到某个 [t2']（根据 [IH]）。我们需要证明 [P t1 t2] 要么是值，
@@ -407,7 +407,7 @@ Proof.
 
       - 如果 [t1] 是值且 [t2] 可前进一步，那么根据 [ST_Plus2] 得 [t] 可前进一步。
 
-      - 如果 [t1] 可前进一步，那么根据 [ST_Plus1] 得 [t] 可前进一步。 [] 
+      - 如果 [t1] 可前进一步，那么根据 [ST_Plus1] 得 [t] 可前进一步。 []
 
    或者，形式化地说： *)
 
@@ -545,7 +545,7 @@ End Temp2.
 (** [] *)
 
 (** **** 练习：3 星, optional (value_not_same_as_normal_form3)  *)
-(** 最后，我们还可能通过 [value] 和 [step] 定义了某些不是值但已无法继续由 
+(** 最后，我们还可能通过 [value] 和 [step] 定义了某些不是值但已无法继续由
     [step] 关系进行归约的项。这些项被称作_'卡住了（stuck）'_。在这种情况是由语义
     中的错误导致的，但我们也会看到一些情况，即使是正确的语言定义中也会允许一些项卡住。 *)
 
@@ -739,7 +739,7 @@ End Temp4.
     我们可以使用同一个机器来归约程序直到结束——得到它最后的结果。我们这样形式化它：
 
     - 首先，我们定义一个_'多步归约关系（multi-step reduction relation）'_
-      [==>*]，如果项 [t] 可在任意多的单步（包括零步）内到达 [t']，那么它关联起 
+      [==>*]，如果项 [t] 可在任意多的单步（包括零步）内到达 [t']，那么它关联起
       [t] 和 [t']。
 
     - 接着我们定义 [t] 的“结果（result）”是一个 [t] 可用多步达到的正规式。*)
@@ -762,12 +762,12 @@ Inductive multi {X:Type} (R: relation X) : relation X :=
 (** 这个定义的作用是 [multi R] 关联起两个元素 [x] 和 [y]，如果
 
        - [x = y]，或
-       - [R x y]，或 
+       - [R x y]，或
        - 存在某个非空序列 [z1],[z2], ..., [zn] 使得
 
-           R x z1 
-           R z1 z2 
-           ...  
+           R x z1
+           R z1 z2
+           ...
            R zn y.
 
     因此，如果 [R] 刻画了单步计算，那么 [z1]...[zn] 则是 [x] 和 [y]
@@ -919,7 +919,7 @@ Definition normalizing {X:Type} (R:relation X) :=
 (** 为了证明 [step] 的正规性，我们需要几个引理。
 
     首先，我们观察到如果 [t] 以多步归约到 [t']，那么当 [t] 出现为 [P] 节点的左子节点时，
-    可以使用同一个 [t] 的归约序列。同理，当 [P] 的左子节点为值时，若 [t] 出现为 [P] 
+    可以使用同一个 [t] 的归约序列。同理，当 [P] 的左子节点为值时，若 [t] 出现为 [P]
     的右子节点也适用。 *)
 
 Lemma multistep_congr_1 : forall t1 t1' t2,
@@ -992,7 +992,7 @@ Proof.
           rewrite nf_same_as_value. apply v_const.  Qed.
 
 (* ================================================================= *)
-(** ** 大步语义和小步语义的等价性 *)
+(** ** 大步语义和小步语义的等价关系 *)
 
 (** 在使用两种不同的方式（大步和小步式）定义了这个小小语言的操作语义后，你可能会
     好奇这两种定义是否是等价的！他们确实是，尽管需要一点工作来证明它。
@@ -1016,12 +1016,12 @@ Theorem eval__multistep : forall t n,
        C (n1 + n2)
 
     也即，一个形如 [P t1 t2] 的项的多步归约关系以如下三步的方式进行：
-       - 首先，使用 [ST_Plus1] 数次来归约 [t1] 到正规式，也即必须是一个形如 [C n1] 
+       - 首先，使用 [ST_Plus1] 数次来归约 [t1] 到正规式，也即必须是一个形如 [C n1]
          的项（由 [nf_same_as_value]），其中 [n1] 为某个数字。
-       
+
        - 接着，使用 [ST_Plus2] 数次来归约 [t2] 到正规式，也即必须是一个形如 [C n2]
          的项，其中 [n2] 为某个数字。
-      
+
        - 最后，使用 [ST_PlusConstConst] 一次把 [P (C n1) (C n2)] 归约到
          [C (n1 + n2)]。*)
 
@@ -1057,7 +1057,7 @@ Proof.
 
 (** 一旦正确地表述了小步归约蕴含了大步求值的事实，它会很容易被证明。
 
-    证明是对多步归约序列的归纳，这个序列被假设 [normal_form_of t t'] 
+    证明是对多步归约序列的归纳，这个序列被假设 [normal_form_of t t']
     所隐藏了起来。*)
 
 (**请确保在开始证明前首先理解了命题。 *)
@@ -1270,7 +1270,7 @@ Inductive cstep : (com * state) -> (com * state) -> Prop :=
       IFB BFalse THEN c1 ELSE c2 FI / st ==> c2 / st
   | CS_IfStep : forall st b b' c1 c2,
       b / st ==>b b' ->
-          IFB b THEN c1 ELSE c2 FI / st 
+          IFB b THEN c1 ELSE c2 FI / st
       ==> (IFB b' THEN c1 ELSE c2 FI) / st
   | CS_While : forall st b c1,
           (WHILE b DO c1 END) / st
@@ -1327,10 +1327,10 @@ Inductive cstep : (com * state)  -> (com * state) -> Prop :=
       (IFB BFalse THEN c1 ELSE c2 FI) / st ==> c2 / st
   | CS_IfStep : forall st b b' c1 c2,
       b /st ==>b b' ->
-          (IFB b THEN c1 ELSE c2 FI) / st 
+          (IFB b THEN c1 ELSE c2 FI) / st
       ==> (IFB b' THEN c1 ELSE c2 FI) / st
   | CS_While : forall st b c1,
-          (WHILE b DO c1 END) / st 
+          (WHILE b DO c1 END) / st
       ==> (IFB b THEN (c1;; (WHILE b DO c1 END)) ELSE SKIP FI) / st
     (* New part: *)
   | CS_Par1 : forall st c1 c1' c2 st',
@@ -1512,7 +1512,7 @@ Definition stack_multistep st := multi (stack_step st).
 
     请根据堆栈机的小步语义陈述编译器正确性的定义，并证明它。 *)
 
-Definition compiler_is_correct_statement : Prop 
+Definition compiler_is_correct_statement : Prop
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Theorem compiler_is_correct : compiler_is_correct_statement.

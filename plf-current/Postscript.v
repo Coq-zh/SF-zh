@@ -41,7 +41,7 @@
                     - 小步风格
                 - 类型系统
 
-           - 程序等价性
+           - 程序等价关系
 
            - 霍尔逻辑
 
@@ -63,7 +63,7 @@
 (** *** CompCert *)
 (** _'CompCert'_ 是一个经过了完全形式化验证的 ISO C90 / ANSI C 优化编译器，
     可以为 x86，ARM 和 PowerPC 处理器生成代码。CompCert 完全使用 Gallina
-    编写，并使用 Coq 的提取机制生成高效的 OCaml 程序。 
+    编写，并使用 Coq 的提取机制生成高效的 OCaml 程序。
 
     “CompCert 项目研究了如何对至关重要的嵌入式程序的编译器进行形式化验证。
     形式化验证的编译器提供了一个数学化的、机器检查过的证明，用于展示生成的
@@ -77,7 +77,7 @@
         中都不存在。在 2011 年早期，仍在开发中的 CompCert 是我们测试中唯一
         一个 CSmith 找不到错误代码缺陷的编译器。这并不是因为我们不够努力：我们花费了
         六个 CPU-年来做这件事。
-        在证明框架中，安全检查是显式的和机器验证过的，而坚若磐石的 CompCert 
+        在证明框架中，安全检查是显式的和机器验证过的，而坚若磐石的 CompCert
         强有力地支持了在这样一个证明框架中开发编译器优化会为用户带来切实的好处。
 
     http://compcert.inria.fr *)
@@ -133,7 +133,7 @@
     “Verdi 支持了从现实化的到理想化的多种故障模型。Verdi 的验证系统变换器
     （Verified System Transformers, VSTs）封装了常见的容错技术。
     开发者可以首先在理想模型下验证一个应用，接着使用 VST 来获得在更恶劣的环境
-    中仍然保证了类似性质的应用。Verdi 使用 Coq 证明辅助工具开发，并提取到 OCaml 
+    中仍然保证了类似性质的应用。Verdi 使用 Coq 证明辅助工具开发，并提取到 OCaml
     程序以供执行。Verdi 系统，包括其容错键值存储系统，相比于其他未验证的类似系统
     具有同等的性能。”
 
@@ -141,7 +141,7 @@
 
 (* ----------------------------------------------------------------- *)
 (** *** DeepSpec *)
-(** _'深度规范的科学（The Science of Deep Specification）'_ 是一项 NSF 
+(** _'深度规范的科学（The Science of Deep Specification）'_ 是一项 NSF
     资助的“远征”研究项目（2016 至 2020 年），目标是为软硬件系统提供完整的功能
     正确性规范和验证。项目同时赞助了讲习班和暑期学校。
       - 网站：http://deepspec.org/
@@ -151,7 +151,7 @@
 
 (* ----------------------------------------------------------------- *)
 (** *** REMS *)
-(** _'REMS'_ 是一个欧洲项目，关注对主流系统使用严谨的工程方法（Rigorous 
+(** _'REMS'_ 是一个欧洲项目，关注对主流系统使用严谨的工程方法（Rigorous
     Engineering of Mainstream Systems）。它为广泛使用的重要接口、协议和
     API 提供了精细的形式化规格，这些系统包括 C 语言, ELF 链接器的格式，
     ARM、Power、MIPS、CHERI 和 RISC-V 指令集，ARM 和 Power 处理器的弱内存模型，
@@ -173,7 +173,7 @@
       - Zach Tatlock 的形式化可信浏览器
       - Tobias Nipkow 对大部分 Java 的形式化工作
       - CakeML 形式化验证的 ML 编译器
-      - Greg Morrisett 对 x86 指令集进行的形式化规范，以及 RockSalt 
+      - Greg Morrisett 对 x86 指令集进行的形式化规范，以及 RockSalt
         软件错误分离（Software Fault Isolation）工具（可以称作是一个更快和更安全的
         Google Native Client）
       - Ur/Web 一个用于在 Coq 中嵌入形式化验证的 Web 应用的程序语言
@@ -219,7 +219,7 @@
             - Certified Programs and Proofs (CPP)
             - SPLASH/OOPSLA conferences
             - Principles in Practice workshop (PiP)
-            - CoqPL workshop 
+            - CoqPL workshop
 *)
 
 (** $Date$ *)

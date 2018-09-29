@@ -66,7 +66,7 @@ Inductive ev : nat -> Prop :=
     它的结果并不是一个 [Type] ，而是一个将 [nat] 映射到 [Prop] 的函数——即关于数的性质。
     注意我们曾见过结果也为函数的归纳定义，比如 [list]，其类型是 [Type -> Type] 。
     值得注意的是，由于 [ev] 中出现在冒号_'右侧'_的 [nat] 参数是 _'未命名'_ 的，
-    这允许在不同的构造子类型中使用不同的值：例如 [ev_0] 类型中的 [0] 以及 [ev_SS] 
+    这允许在不同的构造子类型中使用不同的值：例如 [ev_0] 类型中的 [0] 以及 [ev_SS]
     类型中的 [S (S n)]。
 
     相反，[list] 的定义以_'全局方式'_命名了冒号_'左侧'_的参数 [X]，
@@ -119,7 +119,7 @@ Proof.
 
 (** 除了_'构造'_证据（evidence）来表示某个数是偶数，我们还可以对这些证据进行_'推理'_。
 
-    对 [ev] 而言，使用 [Inductive] 声明来引入 [ev] 不仅仅表示在 Coq 
+    对 [ev] 而言，使用 [Inductive] 声明来引入 [ev] 不仅仅表示在 Coq
     中 [ev_0] 和 [ev_SS] 这样的构造子是合法的方式来构造偶数证明的证据，
     他们也是_'仅有的'_方式。 *)
 
@@ -130,8 +130,8 @@ Proof.
       - [E] 是 [ev_SS n' E']（且 [n] 为 [S (S n')], [E'] 为
         [ev n'] 的证据）. *)
 
-(** 这样的形式暗示着，我们可以像分析归纳定义的数据结构一样分析形如 [ev n] 
-    的假设；特别地，对于这类证据使用_'归纳（induction）'_和_'分类讨论（case 
+(** 这样的形式暗示着，我们可以像分析归纳定义的数据结构一样分析形如 [ev n]
+    的假设；特别地，对于这类证据使用_'归纳（induction）'_和_'分类讨论（case
     analysis）'_来进行论证也是可行的。让我们通过一些例子来学习实践中如何使用他们。 *)
 
 (* ================================================================= *)
@@ -364,7 +364,7 @@ Qed.
     [ev] 命题。 由于 [E'] 中涉及到 [n']，这个归纳假设是关于 [n'] 的，
     而非关于 [n] 或其他数字的。  *)
 
-(** 关于偶数性质的第二个和第三个定义的等价性如下： *)
+(** 关于偶数性质的第二个和第三个定义的等价关系如下： *)
 
 Theorem ev_even_iff : forall n,
   ev n <-> exists k, n = double k.
@@ -441,7 +441,7 @@ Notation "m <= n" := (le m n).
 
 (** 类似于证明 [ev] 这样的性质，使用 [le_n] 和 [le_S] 构造子来证明关于 [<=]
     的事实遵循了同样的模式。我们可以对构造子使用 [apply] 策略来证明 [<=] 目标
-    （比如证明 [3<=3] 或 [3<=6]），也可以使用 [inversion] 策略来从上下文中 [<=] 
+    （比如证明 [3<=3] 或 [3<=6]），也可以使用 [inversion] 策略来从上下文中 [<=]
     的假设里抽取信息（比如证明 [(2<=1) -> 2+2=5]）。 *)
 
 (** 这里提供一些完备性检查。（请注意，尽管这同我们在开始课程时编写的
@@ -504,7 +504,7 @@ Inductive next_even : nat -> nat -> Prop :=
     will generate two cases. In the first case, [e1 = e2], and it
     will replace instances of [e2] with [e1] in the goal and context.
     In the second case, [e2 = S n'] for some [n'] for which [le e1 n']
-    holds, and it will replace instances of [e2] with [S n']. 
+    holds, and it will replace instances of [e2] with [S n'].
     Doing [inversion H] will remove impossible cases and add generated
     equalities to the context for further use. Doing [induction H] will,
     in the second case, add the inductive hypothesis that the goal holds
@@ -779,7 +779,7 @@ Notation "s =~ re" := (exp_match s re) (at level 80).
 
     其次，非形式化定义中的 [Union] 和 [Star] 各自对应了两个构造子：
     [MUnionL] / [MUnionR]，和 [MStar0] / [MStarApp]。这在逻辑上等价于
-    原始的定义，但在 Coq 中这样更加方便，因为递归出现的 [exp_match] 
+    原始的定义，但在 Coq 中这样更加方便，因为递归出现的 [exp_match]
     是作为构造子的直接参数给定的，这在对证据进行归纳时更简单。
     （练习 [exp_match_ex1] 和 [exp_match_ex2] 会要求你证明归纳定义中的构造子
     和从非形式化规则的表述中提炼的规则确实是等价的。）
@@ -1024,7 +1024,7 @@ Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp),
 Abort.
 
 (** 在 Coq 中使用 [remember e as x] 策略会（1）替换所有表达式 [e] 为变量 [x]，
-    （2）在当前上下文中添加一个等式 [x = e]。我们可以这样使用 [remember] 
+    （2）在当前上下文中添加一个等式 [x = e]。我们可以这样使用 [remember]
     来证明上面的结果： *)
 
 Lemma star_app: forall T (s1 s2 : list T) (re : reg_exp),
@@ -1052,7 +1052,7 @@ Proof.
   - (* MUnionR *) discriminate.
 
 (** 值得注意的分类是 [Star]。请注意 [MStarApp] 分类的归纳假设 [IH2]
-    包含到一个额外的前提 [Star re'' = Star re']，这是由 [remember] 
+    包含到一个额外的前提 [Star re'' = Star re']，这是由 [remember]
     所添加的等式所产生的。*)
 
   - (* MStar0 *)
@@ -1070,7 +1070,7 @@ Qed.
 
 (** **** 练习：4 星, optional (exp_match_ex2)  *)
 
-(** 下面的引理 [MStar''](以及它的逆，之前的练习题中的 [MStar']）显示 
+(** 下面的引理 [MStar''](以及它的逆，之前的练习题中的 [MStar']）显示
     [exp_match] 中 [Star] 的定义等价于前面给出的非形式化定义。*)
 
 Lemma MStar'' : forall T (s : list T) (re : reg_exp),
@@ -1179,7 +1179,7 @@ Qed.
 
 (** 在 [destruct] 后的第一个分支中，我们解构 [n =? m]
     后生成的等式显式地使用了 [eqb_eq] 引理，以此将假设
-    [n =? m] 转换为假设 [n = m]；接着使用 [rewrite] 
+    [n =? m] 转换为假设 [n = m]；接着使用 [rewrite]
     策略和这个假设来完成此分支的证明。*)
 
 (** 为了简化这样的证明，我们可定义一个归纳命题，用于对 [n =? m]
@@ -1217,7 +1217,7 @@ Proof.
 
 (** 使用 [reflect] 而非“当且仅当”连词的好处是，通过解构一个形如
     [reflect P b] 的假设或引理，我们可以对 [b]
-    进行分类讨论，同时为两个分支（第一个子目标中的 [P] 
+    进行分类讨论，同时为两个分支（第一个子目标中的 [P]
     和第二个中的 [~ P]）生成适当的假设。 *)
 
 
@@ -1441,7 +1441,7 @@ Lemma in_split : forall (X:Type) (x:X) (l:list X),
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** 现在请定一个性质 [repeats]，使 [repeats X l] 断言 [l] 
+(** 现在请定一个性质 [repeats]，使 [repeats X l] 断言 [l]
     包含至少一个（类型为 [X] 的）重复的元素。*)
 
 Inductive repeats {X:Type} : list X -> Prop :=
@@ -1497,7 +1497,7 @@ Definition string := list ascii.
 
     我们也可以定义工作在多态列表上的正则表达式匹配器，而非特定于 ASCII 字符列表。
     我们将要实现的匹配算法需要知道如何对列表中的元素判断相等，因此需要给定一个
-    相等性测试函数。一般化我们给出的定义、定理和证明有一点枯燥，但是可行的。 *)
+    相等关系测试函数。一般化我们给出的定义、定理和证明有一点枯燥，但是可行的。 *)
 
 (** 正则表达式匹配器的正确性证明会由匹配函数的性质和 [match] 关系的性质组成，
     [match] 关系并不依赖匹配函数。我们将会首先证明后一类性质。他们中的多数
@@ -1672,7 +1672,7 @@ Fixpoint derive (a : ascii) (re : @reg_exp ascii) : @reg_exp ascii
 (** [] *)
 
 (** [derive] 函数应当通过以下测试。每个测试都在将被匹配器所求值的表达式和
-    最终被匹配器返回的结果之间确立一种相等性。
+    最终被匹配器返回的结果之间确立一种相等关系。
     每个测试也被添加了它所反映的匹配事实的注解。*)
 Example c := ascii_of_nat 99.
 Example d := ascii_of_nat 100.
