@@ -26,8 +26,8 @@ matrix:
 os:
 - linux
 - osx
-before_install: if [ $TRAVIS_OS_NAME = osx ]; then brew update; brew install opam;
-  fi
+before_install: if [ $TRAVIS_OS_NAME = osx ]; then travis_wait brew update; brew install
+  opam; fi
 install:
 - opam init --compiler=${COMPILER} -n
 - eval $(opam config env)
@@ -36,7 +36,7 @@ install:
 - opam repo add coq-released https://coq.inria.fr/opam/released || true
 - opam repo add coq-extra-dev https://coq.inria.fr/opam/extra-dev || true
 - opam update
-- travis_wait opam install $COQ coq-quickchick.8.8.dev
+- travis_wait 30 opam install $COQ coq-quickchick.8.8.dev
 - opam list
 script:
 - set -e
