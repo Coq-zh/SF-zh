@@ -92,488 +92,716 @@
 
 <div class="paragraph"> </div>
 
-<pre>命题 ~ 类型证明 ~ 数据值&gt;&gt; <a href="Bib.html#Wadler 2015"><span class="inlineref">[Wadler 2015]</span></a> 里有简单的历史和最新的详细介绍可
-                 供参考。 *)
+<pre>
+                 命题           ~  类型
+                 证明           ~  数据值
+</pre>
+    <a href="Bib.html#Wadler 2015"><span class="inlineref">[Wadler 2015]</span></a> 里有简单的历史和最新的详细介绍可供参考。 
+<div class="paragraph"> </div>
 
-(** 该同构启发很多看问题的新方法。首先，对 [ev_SS] 构造子的理解变得更加自然： *)
+ 该同构启发很多看问题的新方法。首先，对 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 构造子的理解变得更加自然： 
+</div>
+<div class="code code-tight">
 
-Check ev_SS.
-(* ===&gt; ev_SS : forall n,
-                  ev n -&gt;
-                  ev (S (S n)) *)
+<span class="id" type="keyword">Check</span> <span class="id" type="var">ev_SS</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_SS&nbsp;:&nbsp;forall&nbsp;n,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev&nbsp;n&nbsp;-&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev&nbsp;(S&nbsp;(S&nbsp;n))&nbsp;*)</span><br/>
+</div>
 
-(** 可以将其读作“[ev_SS] 构造子接受两个参数——数字 [n] 以及命题 [ev n] 的证明——并
-    产生 [ev (S (S n))] 的证明。” *)
+<div class="doc">
+可以将其读作“<span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 构造子接受两个参数——数字 <span class="inlinecode"><span class="id" type="var">n</span></span> 以及命题 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 的证明——并
+    产生 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span> 的证明。” 
+<div class="paragraph"> </div>
 
-(** 现在让我们回顾一下之前有关 [ev] 的一个证明。 *)
+ 现在让我们回顾一下之前有关 <span class="inlinecode"><span class="id" type="var">ev</span></span> 的一个证明。 
+</div>
+<div class="code code-tight">
 
-Theorem ev_4 : ev 4.
-Proof.
-  apply ev_SS. apply ev_SS. apply ev_0. Qed.
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4</span> : <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ev_0</span>. <span class="id" type="keyword">Qed</span>.<br/>
+</div>
 
-(** 就像是处理普通的数据值和函数一样，我们可以使用 [Print] 指令来查看
-    这个证明脚本所产生的_'证据对象 (proof object)'_ *)
+<div class="doc">
+就像是处理普通的数据值和函数一样，我们可以使用 <span class="inlinecode"><span class="id" type="keyword">Print</span></span> 指令来查看
+    这个证明脚本所产生的<b>证据对象 (proof object)</b> 
+</div>
+<div class="code code-tight">
 
-Print ev_4.
-(* ===&gt; ev_4 = ev_SS 2 (ev_SS 0 ev_0)
-     : ev 4  *)
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4&nbsp;=&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ev&nbsp;4&nbsp;&nbsp;*)</span><br/>
+</div>
 
-(** 实际上，我们也可以不借助脚本_'直接'_写出表达式作为证明。 *)
+<div class="doc">
+实际上，我们也可以不借助脚本<b>直接</b>写出表达式作为证明。 
+</div>
+<div class="code code-tight">
 
-Check (ev_SS 2 (ev_SS 0 ev_0)).
-(* ===&gt; ev 4 *)
+<span class="id" type="keyword">Check</span> (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+</div>
 
-(** 表达式 [ev_SS 2 (ev_SS 0 ev_0)] 可视为向构造子 [ev_SS] 传入参数 2 和 0
-    等参数，以及对应的 [ev 2] 与 [ev 0] 之依据所构造的证明。或言之，视 [ev_SS]
+<div class="doc">
+表达式 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> <span class="inlinecode">2</span> <span class="inlinecode">(<span class="id" type="var">ev_SS</span></span> <span class="inlinecode">0</span> <span class="inlinecode"><span class="id" type="var">ev_0</span>)</span> 可视为向构造子 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 传入参数 2 和 0
+    等参数，以及对应的 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">2</span> 与 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span> 之依据所构造的证明。或言之，视 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span>
     为“构造证明”之原语，需要给定一个数字，并进一步提供该数为偶数之依据以构造证明。
-    其类型表明了它的功能：[[ forall n, ev n -&gt; ev (S (S n)) ]]；类似地，多态类型 [forall X,
-    list X] 表明可以将 [nil] 视为从某类型到由该类型元素组成的空列表的函数。 *)
+    其类型表明了它的功能：<span class="inlinecode">[</span> <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span> <span class="inlinecode">]</span>；类似地，多态类型 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span>,</span>
+    <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 表明可以将 <span class="inlinecode"><span class="id" type="var">nil</span></span> 视为从某类型到由该类型元素组成的空列表的函数。 
+<div class="paragraph"> </div>
 
-(** 我们在 <a href="Logic.html"><span class="inlineref">Logic</span></a> 这一章中已经了解到，我们可以使用函数应用
+ 我们在 <a href="Logic.html"><span class="inlineref">Logic</span></a> 这一章中已经了解到，我们可以使用函数应用
     的语法来实例化引理中的全称量化变量，也可以使用该语法提供引理所要求
-    的假设。例如： *)
+    的假设。例如： 
+</div>
+<div class="code code-tight">
 
-Theorem ev_4': ev 4.
-Proof.
-  apply (ev_SS 2 (ev_SS 0 ev_0)).
-Qed.
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4'</span>: <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
 
-(* ##################################################### *)
-(** * 证明脚本 *)
+<div class="doc">
+<a name="lab262"></a><h1 class="section">证明脚本</h1>
 
-(** 我们一直在讨论的_'证明对象 (proof objects)'_是Coq如何运作的核心。
+<div class="paragraph"> </div>
+
+ 我们一直在讨论的<b>证明对象 (proof objects)</b>是Coq如何运作的核心。
     当Coq执行一个证明脚本的时候，在内部，Coq逐渐构造出一个证明对象——
-    一个类型是想要证明的命题的项。在 [Proof] 和 [Qed] 之间的策略告诉
+    一个类型是想要证明的命题的项。在 <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> 和 <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> 之间的策略告诉
     Coq如何构造该项。为了了解这个过程是如何进行的，在下面的策略证明里，
-    我们在多个地方使用 [Show Proof] 指令来显示当前证明树的状态。 *)
+    我们在多个地方使用 <span class="inlinecode"><span class="id" type="keyword">Show</span></span> <span class="inlinecode"><span class="id" type="keyword">Proof</span></span> 指令来显示当前证明树的状态。 
+</div>
+<div class="code code-tight">
 
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4''</span> : <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_0</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
 
-Theorem ev_4'' : ev 4.
-Proof.
-  Show Proof.
-  apply ev_SS.
-  Show Proof.
-  apply ev_SS.
-  Show Proof.
-  apply ev_0.
-  Show Proof.
-Qed.
+<div class="doc">
+在任意的给定时刻，Coq已经构造了一个包含一个“洞(hole)”（即
+    <span class="inlinecode">?<span class="id" type="keyword">Goal</span></span> ）的项，并且Coq知道该洞需要什么类型的证据来填补。
 
-(** 在任意的给定时刻，Coq已经构造了一个包含一个“洞(hole)”（即
-    [?Goal] ）的项，并且Coq知道该洞需要什么类型的证据来填补。
+<div class="paragraph"> </div>
 
     每一个洞对应一个子目标。当没有子目标时，代表证明已经完成。此时，我
-    们构造的证明将会以我们在 [Theorem] 里给定的名字被存储在全局环境中。 *)
+    们构造的证明将会以我们在 <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> 里给定的名字被存储在全局环境中。 
+<div class="paragraph"> </div>
 
-(** 策略证明非常有用且方便，但是它们并不是必要的：原则上，我们总是能够
-    手动构造想要的证据，如下所示。此处我们可以通过 [Definition] （而不
-    是 [Theorem]）来直接给这个证据一个全局名称。 *)
+ 策略证明非常有用且方便，但是它们并不是必要的：原则上，我们总是能够
+    手动构造想要的证据，如下所示。此处我们可以通过 <span class="inlinecode"><span class="id" type="keyword">Definition</span></span> （而不
+    是 <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span>）来直接给这个证据一个全局名称。 
+</div>
+<div class="code code-tight">
 
-Definition ev_4''' : ev 4 :=
-  ev_SS 2 (ev_SS 0 ev_0).
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_4'''</span> : <span class="id" type="var">ev</span> 4 :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>).<br/>
+</div>
 
-(** 所有这些构造证明的不同方式，对应的存储在全局环境中的证明是完全一样的。 *)
+<div class="doc">
+所有这些构造证明的不同方式，对应的存储在全局环境中的证明是完全一样的。 
+</div>
+<div class="code code-tight">
 
-Print ev_4.
-(* ===&gt; ev_4    =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
-Print ev_4'.
-(* ===&gt; ev_4'   =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
-Print ev_4''.
-(* ===&gt; ev_4''  =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
-Print ev_4'''.
-(* ===&gt; ev_4''' =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4'</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4'&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4''</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4''&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4'''</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4'''&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+</div>
 
-(** **** 练习：2 星 (eight_is_even)  *)
-(** 写出对应 [ev 8] 的策略证明和证明对象。 *)
+<div class="doc">
+<a name="lab263"></a><h4 class="section">练习：2 星 (eight_is_even)</h4>
+ 写出对应 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">8</span> 的策略证明和证明对象。 
+</div>
+<div class="code code-tight">
 
-Theorem ev_8 : ev 8.
-Proof.
-  (* 请在此处解答 *) Admitted.
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_8</span> : <span class="id" type="var">ev</span> 8.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_8'</span> : <span class="id" type="var">ev</span> 8<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
 
-Definition ev_8' : ev 8
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
-(** [] *)
+<span class="proofbox">&#9744;</span> 
 
-(* ##################################################### *)
-(** * 量词，蕴含式，函数 *)
+<div class="doc">
+<a name="lab264"></a><h1 class="section">量词，蕴含式，函数</h1>
 
-(** 在Coq的计算世界里（即所有的数据结构和程序存在的地方），有两种值的
-    类型里拥有箭头：_'构造子(Constructors)'_，通过归纳地定义数据类型
-    引入，和_'函数(Functions)'_。
+<div class="paragraph"> </div>
+
+ 在Coq的计算世界里（即所有的数据结构和程序存在的地方），有两种值的
+    类型里拥有箭头：<b>构造子(Constructors)</b>，通过归纳地定义数据类型
+    引入，和<b>函数(Functions)</b>。
+
+<div class="paragraph"> </div>
 
     类似地，在Coq的逻辑世界里（即我们运用证明的地方），有两种方式来给
     与蕴含式需要的证据：构造子，通过归纳地定义命题引入，和...函数！
-    *)
+    
+<div class="paragraph"> </div>
 
-(** 例如，考虑下列陈述： *)
+ 例如，考虑下列陈述： 
+</div>
+<div class="code code-tight">
 
-Theorem ev_plus4 : forall n, ev n -&gt; ev (4 + n).
-Proof.
-  intros n H. simpl.
-  apply ev_SS.
-  apply ev_SS.
-  apply H.
-Qed.
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_plus4</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>).<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
 
-(** 对应 [ev_plus4] 的证明对象是什么？
+<div class="doc">
+对应 <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span> 的证明对象是什么？
 
-    我们在寻找一个_'类型(Type)'_是 [forall n, ev n -&gt; ev (4 + n)] 的表达式——也
+<div class="paragraph"> </div>
+
+    我们在寻找一个<b>类型(Type)</b>是 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> 的表达式——也
     就是说，一个接受两个参数（一个数字和一个证据）并返回一个证据的
-    _'函数(Function)'_!
+    <b>函数(Function)</b>!
 
-    它的证据对象： *)
+<div class="paragraph"> </div>
 
-Definition ev_plus4' : forall n, ev n -&gt; ev (4 + n) :=
-  fun (n : nat) =&gt; fun (H : ev n) =&gt;
-    ev_SS (S (S n)) (ev_SS n H).
+    它的证据对象： 
+</div>
+<div class="code code-tight">
 
-(** 回顾 [fun n =&gt; blah] 意味着“一个函数，给定 [n]，产生 [blah]”，
-    并且Coq认为 [4 + n] 和 [S (S (S (S n)))] 是同义词，所以另一种写出
-    这个定义的方式是： *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus4'</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) ⇒ <span class="id" type="keyword">fun</span> (<span class="id" type="var">H</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>) ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ev_SS</span> (<span class="id" type="var">S</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>)) (<span class="id" type="var">ev_SS</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>).<br/>
+</div>
 
-Definition ev_plus4'' (n : nat) (H : ev n)
-                    : ev (4 + n) :=
-  ev_SS (S (S n)) (ev_SS n H).
+<div class="doc">
+回顾 <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode"><span class="id" type="var">blah</span></span> 意味着“一个函数，给定 <span class="inlinecode"><span class="id" type="var">n</span></span>，产生 <span class="inlinecode"><span class="id" type="var">blah</span></span>”，
+    并且Coq认为 <span class="inlinecode">4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span></span> 和 <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)))</span> 是同义词，所以另一种写出
+    这个定义的方式是： 
+</div>
+<div class="code code-tight">
 
-Check ev_plus4''.
-(* ===&gt;
-     : forall n : nat, ev n -&gt; ev (4 + n) *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus4''</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">H</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">ev_SS</span> (<span class="id" type="var">S</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>)) (<span class="id" type="var">ev_SS</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">ev_plus4''</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;n&nbsp;:&nbsp;nat,&nbsp;ev&nbsp;n&nbsp;-&gt;&nbsp;ev&nbsp;(4&nbsp;+&nbsp;n)&nbsp;*)</span><br/>
+</div>
 
-(** 当我们将 [ev_plus4] 证明的命题视为一个函数类型时，我们可以发现一个
-    有趣的现象：第二个参数的类型，[ev n]，依赖于第一个参数 [n] 的_'值'_。
+<div class="doc">
+当我们将 <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span> 证明的命题视为一个函数类型时，我们可以发现一个
+    有趣的现象：第二个参数的类型，<span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>，依赖于第一个参数 <span class="inlinecode"><span class="id" type="var">n</span></span> 的<b>值</b>。
 
-    虽然这样的_'依赖类型 (Dependent types)'_在传统的编程语言中并不存在，
+<div class="paragraph"> </div>
+
+    虽然这样的<b>依赖类型 (Dependent types)</b>在传统的编程语言中并不存在，
     但是它们对于编程来说有时候非常有用。最近它们在函数式编程社区里的活
-    跃很好地表明了这一点。 *)
+    跃很好地表明了这一点。 
+<div class="paragraph"> </div>
 
-(** 注意到蕴含式（[-&gt;]）和量化（[forall]）都表示证据上的函数。事实上，他们
-    是同一个东西：当我们使用[forall]时没有依赖，就可以简写为当[-&gt;]。即，我
+ 注意到蕴含式（<span class="inlinecode">→</span>）和量化（<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>）都表示证据上的函数。事实上，他们
+    是同一个东西：当我们使用<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span>时没有依赖，就可以简写为当<span class="inlinecode">→</span>。即，我
     们没有必要给与箭头左边的类型一个名字：
-[[
-           forall (x:nat), nat
-        =  forall (_:nat), nat
-        =  nat -&gt; nat
-]]
-*)
 
+<div class="paragraph"> </div>
 
-(** 例如，考虑下列命题： *)
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">x</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">_</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span class="id" type="var">nat</span>&nbsp;→&nbsp;<span class="id" type="var">nat</span>
+<div class="paragraph"> </div>
 
-Definition ev_plus2 : Prop :=
-  forall n, forall (E : ev n), ev (n + 2).
+</div>
 
-(** 这个命题的一个证明项会是一个拥有两个参数的函数：一个数字[n]
-    和一个表明[n]是偶数的证据[E]。但是对于这个证据来说，名字[E]并没有
-    在[ev_plus2]剩余的陈述里面被使用，所以还专门为它取一个名字并没有意
-    义。因此我们可以使用虚拟标志符[_]来替换真实的名字： *)
+<div class="paragraph"> </div>
 
-Definition ev_plus2' : Prop :=
-  forall n, forall (_ : ev n), ev (n + 2).
+ 例如，考虑下列命题： 
+</div>
+<div class="code code-tight">
 
-(** 或者，等同地，我们可以使用更加熟悉的记号： *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">E</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>), <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+</div>
 
-Definition ev_plus2'' : Prop :=
-  forall n, ev n -&gt; ev (n + 2).
+<div class="doc">
+这个命题的一个证明项会是一个拥有两个参数的函数：一个数字<span class="inlinecode"><span class="id" type="var">n</span></span>
+    和一个表明<span class="inlinecode"><span class="id" type="var">n</span></span>是偶数的证据<span class="inlinecode"><span class="id" type="var">E</span></span>。但是对于这个证据来说，名字<span class="inlinecode"><span class="id" type="var">E</span></span>并没有
+    在<span class="inlinecode"><span class="id" type="var">ev_plus2</span></span>剩余的陈述里面被使用，所以还专门为它取一个名字并没有意
+    义。因此我们可以使用虚拟标志符<span class="inlinecode"><span class="id" type="var">_</span></span>来替换真实的名字： 
+</div>
+<div class="code code-tight">
 
-(** 总的来说，"[P -&gt; Q]"只是 "[forall (_:P), Q]"的语法糖。 *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2'</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">_</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>), <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+</div>
 
-(* ##################################################### *)
-(** * 使用策略编程 *)
+<div class="doc">
+或者，等同地，我们可以使用更加熟悉的记号： 
+</div>
+<div class="code code-tight">
 
-(** 如果我们可以通过显式地给出项，而不是执行策略脚本，来构造证明，你可
-    能会好奇我们是否可以通过_'策略'_，而不是显式地给出项，来构造_'程序'_。
-    自然地，答案是可以！*)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2''</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+</div>
 
-Definition add1 : nat -&gt; nat.
-intro n.
-Show Proof.
-apply S.
-Show Proof.
-apply n. Defined.
+<div class="doc">
+总的来说，"<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>"只是 "<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode">(<span class="id" type="var">_</span>:<span class="id" type="var">P</span>),</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>"的语法糖。 
+</div>
 
-Print add1.
-(* ==&gt;
-    add1 = fun n : nat =&gt; S n
-         : nat -&gt; nat
-*)
+<div class="doc">
+<a name="lab265"></a><h1 class="section">使用策略编程</h1>
 
-Compute add1 2.
-(* ==&gt; 3 : nat *)
+<div class="paragraph"> </div>
 
-(** 注意到我们通过使用[.]终止了[Definition]，而不是使用[:=]和一个项来
-    定义它。这个记号会告诉Coq进入_'证明脚本模式(Proof Scripting
-    Mode)'_来构造类型是[nat -&gt; nat]的项。并且，我们通过使用[Defined]而不是
-    [Qed]来终止证明；这使得这个定义是_'透明的(Transparent)'_，所以它可
-    以在计算中就像正常定义的函数一样被使用。（通过[Qed]定义的对象在计
+ 如果我们可以通过显式地给出项，而不是执行策略脚本，来构造证明，你可
+    能会好奇我们是否可以通过<b>策略</b>，而不是显式地给出项，来构造<b>程序</b>。
+    自然地，答案是可以！
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">add1</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">nat</span>.<br/>
+<span class="id" type="tactic">intro</span> <span class="id" type="var">n</span>.<br/>
+<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">S</span>.<br/>
+<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
+<span class="id" type="tactic">apply</span> <span class="id" type="var">n</span>. <span class="id" type="keyword">Defined</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">add1</span>.<br/>
+<span class="comment">(*&nbsp;==&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;add1&nbsp;=&nbsp;fun&nbsp;n&nbsp;:&nbsp;nat&nbsp;=&gt;&nbsp;S&nbsp;n<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;nat<br/>
+*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" type="var">Compute</span> <span class="id" type="var">add1</span> 2.<br/>
+<span class="comment">(*&nbsp;==&gt;&nbsp;3&nbsp;:&nbsp;nat&nbsp;*)</span><br/>
+</div>
+
+<div class="doc">
+注意到我们通过使用<span class="inlinecode">.</span>终止了<span class="inlinecode"><span class="id" type="keyword">Definition</span></span>，而不是使用<span class="inlinecode">:=</span>和一个项来
+    定义它。这个记号会告诉Coq进入<b>证明脚本模式(Proof Scripting
+    Mode)</b>来构造类型是<span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span>的项。并且，我们通过使用<span class="inlinecode"><span class="id" type="keyword">Defined</span></span>而不是
+    <span class="inlinecode"><span class="id" type="keyword">Qed</span></span>来终止证明；这使得这个定义是<b>透明的(Transparent)</b>，所以它可
+    以在计算中就像正常定义的函数一样被使用。（通过<span class="inlinecode"><span class="id" type="keyword">Qed</span></span>定义的对象在计
     算中是不透明的。）
 
+<div class="paragraph"> </div>
+
     这个特性主要是在定义拥有依赖类型的函数时非常有用。我们不会在本书中
-    详细讨论后者。但是它确实表明了Coq里面基本思想的一致性和正交性。 *)
+    详细讨论后者。但是它确实表明了Coq里面基本思想的一致性和正交性。 
+</div>
 
+<div class="doc">
+<a name="lab266"></a><h1 class="section">逻辑联结词作为归纳类型</h1>
 
-(* ###################################################################### *)
-(** * 逻辑联结词作为归纳类型 *)
+<div class="paragraph"> </div>
 
-(** 归纳定义足够用于表达我们目前为止遇到的大多数的联结词和量词。事实上，
+ 归纳定义足够用于表达我们目前为止遇到的大多数的联结词和量词。事实上，
     只有全称量化（因此也包括蕴含式）是Coq内置的，所有其他的都是被归纳
-    定义的。在这一节中我们会看到它们的定义。 *)
+    定义的。在这一节中我们会看到它们的定义。 
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Props</span>.<br/>
+</div>
+
+<div class="doc">
+<a name="lab267"></a><h2 class="section">合取</h2>
 
 
-Module Props.
+<div class="paragraph"> </div>
 
-(** ** 合取
+    为了证明<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>成立，我们必须同时给出<span class="inlinecode"><span class="id" type="var">P</span></span>和<span class="inlinecode"><span class="id" type="var">Q</span></span>的证据。因此，我们可
+    以合理地将<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>的证明对象定义为包含两个证明的元祖：一个是<span class="inlinecode"><span class="id" type="var">P</span></span>的
+    证明，另一个是<span class="inlinecode"><span class="id" type="var">Q</span></span>的证明。即我们拥有如下定义。 
+</div>
+<div class="code code-tight">
 
-    为了证明[P /\ Q]成立，我们必须同时给出[P]和[Q]的证据。因此，我们可
-    以合理地将[P /\ Q]的证明对象定义为包含两个证明的元祖：一个是[P]的
-    证明，另一个是[Q]的证明。即我们拥有如下定义。 *)
+<span class="id" type="keyword">Module</span> <span class="id" type="var">And</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">and</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">conj</span> : <span class="id" type="var">P</span> → <span class="id" type="var">Q</span> → <span class="id" type="var">and</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">And</span>.<br/>
+</div>
 
-Module And.
+<div class="doc">
+注意到这个定义与在章节<a href="Poly.html"><span class="inlineref">Poly</span></a>中给出的<span class="inlinecode"><span class="id" type="var">prod</span></span>定义的类型的相似处；
+    唯一的不同之处在于，<span class="inlinecode"><span class="id" type="var">prod</span></span>的参数是<span class="inlinecode"><span class="id" type="keyword">Type</span></span>，而<span class="inlinecode"><span class="id" type="var">and</span></span>的类型是<span class="inlinecode"><span class="id" type="keyword">Prop</span></span>。 
+</div>
+<div class="code code-tight">
 
-Inductive and (P Q : Prop) : Prop :=
-| conj : P -&gt; Q -&gt; and P Q.
+<span class="id" type="keyword">Print</span> <span class="id" type="var">prod</span>.<br/>
+<span class="comment">(*&nbsp;===&gt;<br/>
+&nbsp;&nbsp;&nbsp;Inductive&nbsp;prod&nbsp;(X&nbsp;Y&nbsp;:&nbsp;Type)&nbsp;:&nbsp;Type&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;|&nbsp;pair&nbsp;:&nbsp;X&nbsp;-&gt;&nbsp;Y&nbsp;-&gt;&nbsp;X&nbsp;*&nbsp;Y.&nbsp;*)</span><br/>
+</div>
 
-End And.
+<div class="doc">
+这个定义能够解释为什么<span class="inlinecode"><span class="id" type="tactic">destruct</span></span>和<span class="inlinecode"><span class="id" type="tactic">intros</span></span>模式能用于一个合取前提。
+    情况分析允许我们考虑所有<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>可能被证明的方式——只有一种方式（即
+    <span class="inlinecode"><span class="id" type="var">conj</span></span>构造子）。类似地，<span class="inlinecode"><span class="id" type="tactic">split</span></span>策略能够用于所有只有一个构造子的归
+    纳定义命题。特别地，它能够用于<span class="inlinecode"><span class="id" type="var">and</span></span>： 
+</div>
+<div class="code code-tight">
 
-(** 注意到这个定义与在章节<a href="Poly.html"><span class="inlineref">Poly</span></a>中给出的[prod]定义的类型的相似处；
-    唯一的不同之处在于，[prod]的参数是[Type]，而[and]的类型是[Prop]。 *)
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">and_comm</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> ↔ <span class="id" type="var">Q</span> ∧ <span class="id" type="var">P</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">intros</span> [<span class="id" type="var">HP</span> <span class="id" type="var">HQ</span>]. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">HQ</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">HP</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">intros</span> [<span class="id" type="var">HP</span> <span class="id" type="var">HQ</span>]. <span class="id" type="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">HQ</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">HP</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
 
-Print prod.
-(* ===&gt;
-   Inductive prod (X Y : Type) : Type :=
-   | pair : X -&gt; Y -&gt; X * Y. *)
+<div class="doc">
+这解释了为什么一直以来我们能够使用策略来操作<span class="inlinecode"><span class="id" type="var">and</span></span>的归纳定义。我们
+    也可以使用模式匹配来用它直接构造证明。例如： 
+</div>
+<div class="code code-tight">
 
-(** 这个定义能够解释为什么[destruct]和[intros]模式能用于一个合取前提。
-    情况分析允许我们考虑所有[P /\ Q]可能被证明的方式——只有一种方式（即
-    [conj]构造子）。类似地，[split]策略能够用于所有只有一个构造子的归
-    纳定义命题。特别地，它能够用于[and]： *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">and_comm'_aux</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> (<span class="id" type="var">H</span> : <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">H</span> <span class="id" type="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">conj</span> <span class="id" type="var">HP</span> <span class="id" type="var">HQ</span> ⇒ <span class="id" type="var">conj</span> <span class="id" type="var">HQ</span> <span class="id" type="var">HP</span><br/>
+&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">and_comm'</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> ↔ <span class="id" type="var">Q</span> ∧ <span class="id" type="var">P</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">conj</span> (<span class="id" type="var">and_comm'_aux</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>) (<span class="id" type="var">and_comm'_aux</span> <span class="id" type="var">Q</span> <span class="id" type="var">P</span>).<br/>
+</div>
 
-Lemma and_comm : forall P Q : Prop, P /\ Q &lt;-&gt; Q /\ P.
-Proof.
-  intros P Q. split.
-  - intros [HP HQ]. split.
-    + apply HQ.
-    + apply HP.
-  - intros [HP HQ]. split.
-    + apply HQ.
-    + apply HP.
-Qed.
+<div class="doc">
+<a name="lab268"></a><h4 class="section">练习：2 星, optional (conj_fact)</h4>
+ 构造一个证明对象来证明下列命题。 
+</div>
+<div class="code code-tight">
 
-(** 这解释了为什么一直以来我们能够使用策略来操作[and]的归纳定义。我们
-    也可以使用模式匹配来用它直接构造证明。例如： *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">conj_fact</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span>, <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> → <span class="id" type="var">Q</span> ∧ <span class="id" type="var">R</span> → <span class="id" type="var">P</span> ∧ <span class="id" type="var">R</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
 
-Definition and_comm'_aux P Q (H : P /\ Q) :=
-  match H with
-  | conj HP HQ =&gt; conj HQ HP
-  end.
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
 
-Definition and_comm' P Q : P /\ Q &lt;-&gt; Q /\ P :=
-  conj (and_comm'_aux P Q) (and_comm'_aux Q P).
-
-(** **** 练习：2 星, optional (conj_fact)  *)
-(** 构造一个证明对象来证明下列命题。 *)
-
-Definition conj_fact : forall P Q R, P /\ Q -&gt; Q /\ R -&gt; P /\ R
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
-(** [] *)
+<a name="lab269"></a><h2 class="section">析取</h2>
 
 
+<div class="paragraph"> </div>
 
-(** ** 析取
+    析取的归纳定义有两个构造子，分别用于析取的两边： 
+</div>
+<div class="code code-tight">
 
-    析取的归纳定义有两个构造子，分别用于析取的两边： *)
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Or</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">or</span> (<span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">or_introl</span> : <span class="id" type="var">P</span> → <span class="id" type="var">or</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span><br/>
+| <span class="id" type="var">or_intror</span> : <span class="id" type="var">Q</span> → <span class="id" type="var">or</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Or</span>.<br/>
+</div>
 
-Module Or.
+<div class="doc">
+这个声明解释了<span class="inlinecode"><span class="id" type="tactic">destruct</span></span>策略在一个析取前提上的行为，产生的子类型和
+    <span class="inlinecode"><span class="id" type="var">or_introl</span></span>以及<span class="inlinecode"><span class="id" type="var">or_intror</span></span>构造子的形状相匹配。
 
-Inductive or (P Q : Prop) : Prop :=
-| or_introl : P -&gt; or P Q
-| or_intror : Q -&gt; or P Q.
+<div class="paragraph"> </div>
 
-End Or.
+    又一次地，我们可以不使用策略，直接写出涉及<span class="inlinecode"><span class="id" type="var">or</span></span>的定义的证明对象。 
+<div class="paragraph"> </div>
 
-(** 这个声明解释了[destruct]策略在一个析取前提上的行为，产生的子类型和
-    [or_introl]以及[or_intror]构造子的形状相匹配。
+<a name="lab270"></a><h4 class="section">练习：2 星, optional (or_commut'')</h4>
+ 尝试写下<span class="inlinecode"><span class="id" type="var">or_commut</span></span>的显式证明对象。（不要使用<span class="inlinecode"><span class="id" type="keyword">Print</span></span>来偷看我们已经
+    定义的版本！） 
+</div>
+<div class="code code-tight">
 
-    又一次地，我们可以不使用策略，直接写出涉及[or]的定义的证明对象。 *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">or_comm</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>, <span class="id" type="var">P</span> ∨ <span class="id" type="var">Q</span> → <span class="id" type="var">Q</span> ∨ <span class="id" type="var">P</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
 
-(** **** 练习：2 星, optional (or_commut'')  *)
-(** 尝试写下[or_commut]的显式证明对象。（不要使用[Print]来偷看我们已经
-    定义的版本！） *)
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
 
-Definition or_comm : forall P Q, P \/ Q -&gt; Q \/ P
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
-(** [] *)
+<a name="lab271"></a><h2 class="section">存在量化</h2>
 
-(** ** 存在量化
 
-    为了给出存在量词的证据，我们将一个证据类型[x]和[x]满足性质[P]的证明打包在一起： *)
+<div class="paragraph"> </div>
 
-Module Ex.
+    为了给出存在量词的证据，我们将一个证据类型<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">x</span></span>满足性质<span class="inlinecode"><span class="id" type="var">P</span></span>的证明打包在一起： 
+</div>
+<div class="code code-tight">
 
-Inductive ex {A : Type} (P : A -&gt; Prop) : Prop :=
-| ex_intro : forall x : A, P x -&gt; ex P.
+<span class="id" type="keyword">Module</span> <span class="id" type="var">Ex</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">ex</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">P</span> : <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">ex_intro</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> : <span class="id" type="var">A</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">ex</span> <span class="id" type="var">P</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">End</span> <span class="id" type="var">Ex</span>.<br/>
+</div>
 
-End Ex.
+<div class="doc">
+打包之后的命题可以通过解包操作受益。这里的核心定义是为了用于构造
+    <span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>命题的类型构造器<span class="inlinecode"><span class="id" type="var">ex</span></span>，其中<span class="inlinecode"><span class="id" type="var">P</span></span>自身是一个从类型为<span class="inlinecode"><span class="id" type="var">A</span></span>的证据类型
+    值到命题的<b>函数(Function)</b>。构造子<span class="inlinecode"><span class="id" type="var">ex_intro</span></span>提供了一个给定
+    证据类型<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>的证 明，可以构造<span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>的证据的方式。 
+<div class="paragraph"> </div>
 
-(** 打包之后的命题可以通过解包操作受益。这里的核心定义是为了用于构造
-    [ex P]命题的类型构造器[ex]，其中[P]自身是一个从类型为[A]的证据类型
-    值到命题的_'函数(Function)'_。构造子[ex_intro]提供了一个给定
-    证据类型[x]和[P x]的证 明，可以构造[ex P]的证据的方式。 *)
+ 我们更加熟悉的类型<span class="inlinecode"><span style='font-size:120%;'>&exist;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>可以转换为一个涉及<span class="inlinecode"><span class="id" type="var">ex</span></span>的表达式： 
+</div>
+<div class="code code-tight">
 
-(** 我们更加熟悉的类型[exists x, P x]可以转换为一个涉及[ex]的表达式： *)
+<span class="id" type="keyword">Check</span> <span class="id" type="var">ex</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">ev</span> <span class="id" type="var">n</span>).<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;exists&nbsp;n&nbsp;:&nbsp;nat,&nbsp;ev&nbsp;n<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Prop&nbsp;*)</span><br/>
+</div>
 
-Check ex (fun n =&gt; ev n).
-(* ===&gt; exists n : nat, ev n
-        : Prop *)
+<div class="doc">
+下面是我们如何定义一个涉及<span class="inlinecode"><span class="id" type="var">ex</span></span>的显式证明对象： 
+</div>
+<div class="code code-tight">
 
-(** 下面是我们如何定义一个涉及[ex]的显式证明对象： *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">some_nat_is_even</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">ex_intro</span> <span class="id" type="var">ev</span> 4 (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
+</div>
 
-Definition some_nat_is_even : exists n, ev n :=
-  ex_intro ev 4 (ev_SS 2 (ev_SS 0 ev_0)).
+<div class="doc">
+<a name="lab272"></a><h4 class="section">练习：2 星, optional (ex_ev_Sn)</h4>
+ 完成下列证明对象的定义： 
+</div>
+<div class="code code-tight">
 
-(** **** 练习：2 星, optional (ex_ev_Sn)  *)
-(** 完成下列证明对象的定义： *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ex_ev_Sn</span> : <span class="id" type="var">ex</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">ev</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>))<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+</div>
 
-Definition ex_ev_Sn : ex (fun n =&gt; ev (S n))
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
-(** [] *)
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
 
-(** ** [True]和[False] *)
+<a name="lab273"></a><h2 class="section"><span class="inlinecode"><span class="id" type="var">True</span></span>和<span class="inlinecode"><span class="id" type="var">False</span></span></h2>
 
-(** [True]命题的归纳定义很简单： *)
+<div class="paragraph"> </div>
 
-Inductive True : Prop :=
-  | I : True.
+ <span class="inlinecode"><span class="id" type="var">True</span></span>命题的归纳定义很简单： 
+</div>
+<div class="code code-tight">
 
-(** 它拥有一个构造子（因此[True]的所有证据都是一样的，所以给出一个
-    [True]的证明并没有信息量。） *)
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">True</span> : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;| <span class="id" type="var">I</span> : <span class="id" type="var">True</span>.<br/>
+</div>
 
-(** [False]也一样的简单——事实上，它是如此简单，以致于第一眼看上去像是一个
-    语法错误。 *)
+<div class="doc">
+它拥有一个构造子（因此<span class="inlinecode"><span class="id" type="var">True</span></span>的所有证据都是一样的，所以给出一个
+    <span class="inlinecode"><span class="id" type="var">True</span></span>的证明并没有信息量。） 
+<div class="paragraph"> </div>
 
-Inductive False : Prop :=.
+ <span class="inlinecode"><span class="id" type="var">False</span></span>也一样的简单——事实上，它是如此简单，以致于第一眼看上去像是一个
+    语法错误。 
+</div>
+<div class="code code-tight">
 
-(** 也就是说， [False]是一个_'没有'_构造子的归纳类型--即，没有任何方式能
-    够构造一个它的证明。 *)
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">False</span> : <span class="id" type="keyword">Prop</span> :=.<br/>
+</div>
 
-End Props.
+<div class="doc">
+也就是说， <span class="inlinecode"><span class="id" type="var">False</span></span>是一个<b>没有</b>构造子的归纳类型&mdash;即，没有任何方式能
+    够构造一个它的证明。 
+</div>
+<div class="code code-tight">
 
-(* ###################################################### *)
-(** * 相等关系 *)
+<span class="id" type="keyword">End</span> <span class="id" type="var">Props</span>.<br/>
+</div>
 
-(** 在Coq里，甚至连相等关系都不是内置的。它拥有如下的归纳定义。（事实上，
+<div class="doc">
+<a name="lab274"></a><h1 class="section">相等关系</h1>
+
+<div class="paragraph"> </div>
+
+ 在Coq里，甚至连相等关系都不是内置的。它拥有如下的归纳定义。（事实上，
     在标准库里的定义是这里给出的定义的轻微变体，前者给出了稍微容易使用
-    一些的归纳原理。） *)
+    一些的归纳原理。） 
+</div>
+<div class="code code-tight">
 
-Module MyEquality.
+<span class="id" type="keyword">Module</span> <span class="id" type="var">MyEquality</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">eq</span> {<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>} : <span class="id" type="var">X</span> → <span class="id" type="var">X</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+| <span class="id" type="var">eq_refl</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>, <span class="id" type="var">eq</span> <span class="id" type="var">x</span> <span class="id" type="var">x</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Notation</span> "x == y" := (<span class="id" type="var">eq</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 70, <span class="id" type="var">no</span> <span class="id" type="var">associativity</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">type_scope</span>.<br/>
+</div>
 
-Inductive eq {X:Type} : X -&gt; X -&gt; Prop :=
-| eq_refl : forall x, eq x x.
+<div class="doc">
+我们可以这样理解这个定义，给定一个集合<span class="inlinecode"><span class="id" type="var">X</span></span>，它定义了由<span class="inlinecode"><span class="id" type="var">X</span></span>的一对值
+    (<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">y</span></span>)所索引的“<span class="inlinecode"><span class="id" type="var">x</span></span>与<span class="inlinecode"><span class="id" type="var">y</span></span>相等”的一<b>系列(Family)</b>的命题。只有
+    一种方式能够构造该系列中任意成员的证据：将构造子<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>应用到一
+    个类型<span class="inlinecode"><span class="id" type="var">X</span></span>和一个值<span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">X</span></span>，产生一个<span class="inlinecode"><span class="id" type="var">x</span></span>等于<span class="inlinecode"><span class="id" type="var">x</span></span>的证据。 
+<div class="paragraph"> </div>
 
-Notation "x == y" := (eq x y)
-                    (at level 70, no associativity)
-                    : type_scope.
+ 我们可以使用<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>来构造证据，比如说，<span class="inlinecode">2</span> <span class="inlinecode">=</span> <span class="inlinecode">2</span>。那么我们能否使用
+    它来构造证据<span class="inlinecode">1</span> <span class="inlinecode">+</span> <span class="inlinecode">1</span> <span class="inlinecode">=</span> <span class="inlinecode">2</span>呢？答案是肯定的。事实上，它就是同一个证据！
 
-(** 我们可以这样理解这个定义，给定一个集合[X]，它定义了由[X]的一对值
-    ([x]和[y])所索引的“[x]与[y]相等”的一_'系列(Family)'_的命题。只有
-    一种方式能够构造该系列中任意成员的证据：将构造子[eq_refl]应用到一
-    个类型[X]和一个值[x:X]，产生一个[x]等于[x]的证据。 *)
+<div class="paragraph"> </div>
 
-(** 我们可以使用[eq_refl]来构造证据，比如说，[2 = 2]。那么我们能否使用
-    它来构造证据[1 + 1 = 2]呢？答案是肯定的。事实上，它就是同一个证据！
-
-    原因是如果两个项能够通过一些简单的计算规则_'可转换(convertible)'_ ，
+    原因是如果两个项能够通过一些简单的计算规则<b>可转换(convertible)</b> ，
     那么Coq认为两者“相等”。
 
-    这些计算规则，与[Compute]所使用的规则相似，包括函数应用的计算，定
-    义的内联，[match]语句的化简。 *)
+<div class="paragraph"> </div>
 
-Lemma four: 2 + 2 == 1 + 3.
-Proof.
-  apply eq_refl.
-Qed.
+    这些计算规则，与<span class="inlinecode"><span class="id" type="var">Compute</span></span>所使用的规则相似，包括函数应用的计算，定
+    义的内联，<span class="inlinecode"><span class="id" type="keyword">match</span></span>语句的化简。 
+</div>
+<div class="code code-tight">
 
-(** 至今为止我们所用来证据相等关系的[reflexivity]策略本质上只是[apply
-    eq_refl]的简写。
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">four</span>: 2 + 2 == 1 + 3.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">eq_refl</span>.<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
 
-    在基于策略的相等关系证明中，转换规则通常隐藏在[simpl]的使用后面（在
-    其他策略中或显式或隐式，例如[reflexivity]）。
+<div class="doc">
+至今为止我们所用来证据相等关系的<span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span>策略本质上只是<span class="inlinecode"><span class="id" type="tactic">apply</span></span>
+    <span class="inlinecode"><span class="id" type="var">eq_refl</span></span>的简写。
 
-    而在如下的显式证明对象中，你可以直接看到它们： *)
+<div class="paragraph"> </div>
 
-Definition four' : 2 + 2 == 1 + 3 :=
-  eq_refl 4.
+    在基于策略的相等关系证明中，转换规则通常隐藏在<span class="inlinecode"><span class="id" type="tactic">simpl</span></span>的使用后面（在
+    其他策略中或显式或隐式，例如<span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span>）。
 
-Definition singleton : forall (X:Type) (x:X), []++[x] == x::[]  :=
-  fun (X:Type) (x:X) =&gt; eq_refl [x].
+<div class="paragraph"> </div>
 
+    而在如下的显式证明对象中，你可以直接看到它们： 
+</div>
+<div class="code code-tight">
 
-(** **** 练习：2 星 (equality__leibniz_equality)  *)
-(** 相等关系的归纳定义隐含了_'Leibniz相等关系(Leibniz equality)'_：当我们
-    说“[x]和[y]相等的时候”，我们意味着所有[x]满足的性质[P]，对于[y]
-    来说也满足。 *)
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">four'</span> : 2 + 2 == 1 + 3 :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">eq_refl</span> 4.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">singleton</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>:<span class="id" type="var">X</span>), []++[<span class="id" type="var">x</span>] == <span class="id" type="var">x</span>::[]  :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>:<span class="id" type="var">X</span>) ⇒ <span class="id" type="var">eq_refl</span> [<span class="id" type="var">x</span>].<br/>
+</div>
 
-Lemma equality__leibniz_equality : forall (X : Type) (x y: X),
-  x == y -&gt; forall P:X-&gt;Prop, P x -&gt; P y.
-Proof.
-(* 请在此处解答 *) Admitted.
-(** [] *)
+<div class="doc">
+<a name="lab275"></a><h4 class="section">练习：2 星 (equality__leibniz_equality)</h4>
+ 相等关系的归纳定义隐含了<b>Leibniz相等关系(Leibniz equality)</b>：当我们
+    说“<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">y</span></span>相等的时候”，我们意味着所有<span class="inlinecode"><span class="id" type="var">x</span></span>满足的性质<span class="inlinecode"><span class="id" type="var">P</span></span>，对于<span class="inlinecode"><span class="id" type="var">y</span></span>
+    来说也满足。 
+</div>
+<div class="code code-tight">
 
-(** **** 练习：5 星, optional (leibniz_equality__equality)  *)
-(** 请说明，事实上，相等关系的归纳定义和Leibniz相等关系是
-    _'等价的(equivalent)'_。 *)
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">equality__leibniz_equality</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">x</span> == <span class="id" type="var">y</span> → <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span>:<span class="id" type="var">X</span>→<span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">P</span> <span class="id" type="var">y</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
 
-Lemma leibniz_equality__equality : forall (X : Type) (x y: X),
-  (forall P:X-&gt;Prop, P x -&gt; P y) -&gt; x == y.
-Proof.
-(* 请在此处解答 *) Admitted.
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
+<div class="paragraph"> </div>
 
-(** [] *)
+<a name="lab276"></a><h4 class="section">练习：5 星, optional (leibniz_equality__equality)</h4>
+ 请说明，事实上，相等关系的归纳定义和Leibniz相等关系是
+    <b>等价的(equivalent)</b>。 
+</div>
+<div class="code code-tight">
 
-End MyEquality.
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">leibniz_equality__equality</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span>:<span class="id" type="var">X</span>→<span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">P</span> <span class="id" type="var">y</span>) → <span class="id" type="var">x</span> == <span class="id" type="var">y</span>.<br/>
+<span class="id" type="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+</div>
 
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
 
-(* ####################################################### *)
-(** ** 反演, 再一次 *)
+<span class="id" type="keyword">End</span> <span class="id" type="var">MyEquality</span>.<br/>
+</div>
 
-(** 我们曾经见过[inversion]被同时用于相等关系前提，和关于被归纳定义的命
+<div class="doc">
+<a name="lab277"></a><h2 class="section">反演, 再一次</h2>
+
+<div class="paragraph"> </div>
+
+ 我们曾经见过<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>被同时用于相等关系前提，和关于被归纳定义的命
     题的前提。现在我们明白了实际上它们是同一件事情。那么我们现在可以细
-    究一下[inversion]是如何工作的。
+    究一下<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>是如何工作的。
 
-    一般来说，[inversion]策略...
+<div class="paragraph"> </div>
 
-    - 接受一个前提[H]，该前提的类型[P]是通过归纳定义的，以及
+    一般来说，<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>策略...
 
-    - 对于[P]的定义里的每一个构造子[C]，
+<div class="paragraph"> </div>
 
-      - 产生一个新的子目标，在该子目标中我们假设[H]是通过[C]构造的，
+<ul class="doclist">
+<li> 接受一个前提<span class="inlinecode"><span class="id" type="var">H</span></span>，该前提的类型<span class="inlinecode"><span class="id" type="var">P</span></span>是通过归纳定义的，以及
 
-      - 作为额外的假设，在子目标的上下文中增加[C]的论据（前提），
+<div class="paragraph"> </div>
 
-      - 将[C]的结论（结果类型）与当前的目标相匹配，计算出为了能够应用[C]而必须成立的一些相等关系，
 
-      - 将这些相等关系加入上下文中（以及，为了方便，在目标中替换它们），以及
+</li>
+<li> 对于<span class="inlinecode"><span class="id" type="var">P</span></span>的定义里的每一个构造子<span class="inlinecode"><span class="id" type="var">C</span></span>，
 
-      - 如果这些相等关系无法满足（例如，它们涉及到[S n = O]），那么立即解决这个子目标。 *)
+<div class="paragraph"> </div>
 
-(** _'例子'_：如果我们反演一个使用[or]构造的前提，它有两个构
-    造子，所以产生了两个子目标。构造子的结论（结果类型，即[P \/ Q]）
-    并没有对于[P]和[Q]的形式有任何要求，所以在子目标的上下文中我们不会
-    获得额外的相等关系。 *)
+<ul class="doclist">
+<li> 产生一个新的子目标，在该子目标中我们假设<span class="inlinecode"><span class="id" type="var">H</span></span>是通过<span class="inlinecode"><span class="id" type="var">C</span></span>构造的，
 
-(** _'例子'_：如果我们反演一个使用[and]构造的前提，它只有一个构造子，
-    所以只产生一个子目标。再一次地，构造子的结论（结果类型，即[P /\ Q]）
-    并没有对于[P]和[Q]的形式有任何要求，所以在子目标的上下文中我们不会
+<div class="paragraph"> </div>
+
+
+</li>
+<li> 作为额外的假设，在子目标的上下文中增加<span class="inlinecode"><span class="id" type="var">C</span></span>的论据（前提），
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> 将<span class="inlinecode"><span class="id" type="var">C</span></span>的结论（结果类型）与当前的目标相匹配，计算出为了能够应用<span class="inlinecode"><span class="id" type="var">C</span></span>而必须成立的一些相等关系，
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> 将这些相等关系加入上下文中（以及，为了方便，在目标中替换它们），以及
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> 如果这些相等关系无法满足（例如，它们涉及到<span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">O</span></span>），那么立即解决这个子目标。 
+</li>
+</ul>
+
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+ <b>例子</b>：如果我们反演一个使用<span class="inlinecode"><span class="id" type="var">or</span></span>构造的前提，它有两个构
+    造子，所以产生了两个子目标。构造子的结论（结果类型，即<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>）
+    并没有对于<span class="inlinecode"><span class="id" type="var">P</span></span>和<span class="inlinecode"><span class="id" type="var">Q</span></span>的形式有任何要求，所以在子目标的上下文中我们不会
+    获得额外的相等关系。 
+<div class="paragraph"> </div>
+
+ <b>例子</b>：如果我们反演一个使用<span class="inlinecode"><span class="id" type="var">and</span></span>构造的前提，它只有一个构造子，
+    所以只产生一个子目标。再一次地，构造子的结论（结果类型，即<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>）
+    并没有对于<span class="inlinecode"><span class="id" type="var">P</span></span>和<span class="inlinecode"><span class="id" type="var">Q</span></span>的形式有任何要求，所以在子目标的上下文中我们不会
     获得额外的相等关系。不过，这个构造子有两个额外的参数，我们能够在子
-    目标的上下文中看到它们。 *)
+    目标的上下文中看到它们。 
+<div class="paragraph"> </div>
 
-(** _'例子'_：如果我们反演一个使用[eq]构造的前提，它也只有一个构造子，
-    所以只产生一个子目标。但是，现在[eq_refl]构造子的形式给我们带来
-    的额外的信息：它告诉[eq]的两个参数必须是一样的。于是[inversion]策
-    略会将这个事实加入到上下文中。 *)
-
-
-</pre>
-
+ <b>例子</b>：如果我们反演一个使用<span class="inlinecode"><span class="id" type="var">eq</span></span>构造的前提，它也只有一个构造子，
+    所以只产生一个子目标。但是，现在<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>构造子的形式给我们带来
+    的额外的信息：它告诉<span class="inlinecode"><span class="id" type="var">eq</span></span>的两个参数必须是一样的。于是<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>策
+    略会将这个事实加入到上下文中。 
 </div>
 </div>
 
