@@ -155,7 +155,7 @@ Proof.
   - right. exists m. split. reflexivity. apply Hm.
 Qed.
 
-(** 将 [inversion] 替换为 [destruct] 亦可证明该定理： *)
+(** 用 [destruct] 解构证据即可证明下述定理： *)
 
 Theorem ev_minus2 : forall n,
   ev n -> ev (pred (pred n)).

@@ -4,7 +4,7 @@
 ##   \VV/  #                                                                 ##
 ##    //   #                                                                 ##
 ###############################################################################
-## GNUMakefile for Coq 8.8.1
+## GNUMakefile for Coq 8.8.2
 
 # For debugging purposes (must stay here, don't move below)
 INITIAL_VARS := $(.VARIABLES)
@@ -65,20 +65,20 @@ VERBOSE ?=
 # Time the Coq process (set to non empty), and how (see default value)
 TIMED?=
 TIMECMD?=
-# Use /usr/bin/env time on linux, gtime on Mac OS
+# Use command time on linux, gtime on Mac OS
 TIMEFMT?="$* (real: %e, user: %U, sys: %S, mem: %M ko)"
 ifneq (,$(TIMED))
-ifeq (0,$(shell /usr/bin/env time -f $(TIMEFMT) true >/dev/null 2>/dev/null; echo $$?))
-STDTIME?=/usr/bin/env time -f $(TIMEFMT)
+ifeq (0,$(shell command time -f $(TIMEFMT) true >/dev/null 2>/dev/null; echo $$?))
+STDTIME?=command time -f $(TIMEFMT)
 else
 ifeq (0,$(shell gtime -f $(TIMEFMT) true >/dev/null 2>/dev/null; echo $$?))
 STDTIME?=gtime -f $(TIMEFMT)
 else
-STDTIME?=time
+STDTIME?=command time
 endif
 endif
 else
-STDTIME?=/usr/bin/env time -f $(TIMEFMT)
+STDTIME?=command time -f $(TIMEFMT)
 endif
 
 # Coq binaries
@@ -176,7 +176,7 @@ COQDOCLIBS?=$(COQLIBS_NOML)
 # The version of Coq being run and the version of coq_makefile that
 # generated this makefile
 COQ_VERSION:=$(shell $(COQC) --print-version | cut -d " " -f 1)
-COQMAKEFILE_VERSION:=8.8.1
+COQMAKEFILE_VERSION:=8.8.2
 
 COQSRCLIBS?= $(foreach d,$(COQ_SRC_SUBDIRS), -I "$(COQLIB)$(d)")
 
@@ -334,19 +334,19 @@ make-pretty-timed make-pretty-timed-before make-pretty-timed-after::
 print-pretty-timed::
 	$(HIDE)$(COQMAKE_ONE_TIME_FILE) $(TIME_OF_BUILD_FILE) $(TIME_OF_PRETTY_BUILD_FILE) $(TIME_OF_PRETTY_BUILD_EXTRA_FILES)
 print-pretty-timed-diff::
-	$(HIDE)$(COQMAKE_BOTH_TIME_FILES) --sort-by=$(TIMING_SORT_BY) $(TIME_OF_BUILD_BEFORE_FILE) $(TIME_OF_BUILD_AFTER_FILE) $(TIME_OF_PRETTY_BOTH_BUILD_FILE) $(TIME_OF_PRETTY_BUILD_EXTRA_FILES)
+	$(HIDE)$(COQMAKE_BOTH_TIME_FILES) --sort-by=$(TIMING_SORT_BY) $(TIME_OF_BUILD_AFTER_FILE) $(TIME_OF_BUILD_BEFORE_FILE) $(TIME_OF_PRETTY_BOTH_BUILD_FILE) $(TIME_OF_PRETTY_BUILD_EXTRA_FILES)
 ifeq (,$(BEFORE))
 print-pretty-single-time-diff::
-	@echo 'Error: Usage: $(MAKE) print-pretty-single-time-diff BEFORE=path/to/file.v.before-timing AFTER=path/to/file.v.after-timing'
+	@echo 'Error: Usage: $(MAKE) print-pretty-single-time-diff AFTER=path/to/file.v.after-timing BEFORE=path/to/file.v.before-timing'
 	$(HIDE)false
 else
 ifeq (,$(AFTER))
 print-pretty-single-time-diff::
-	@echo 'Error: Usage: $(MAKE) print-pretty-single-time-diff BEFORE=path/to/file.v.before-timing AFTER=path/to/file.v.after-timing'
+	@echo 'Error: Usage: $(MAKE) print-pretty-single-time-diff AFTER=path/to/file.v.after-timing BEFORE=path/to/file.v.before-timing'
 	$(HIDE)false
 else
 print-pretty-single-time-diff::
-	$(HIDE)$(COQMAKE_BOTH_SINGLE_TIMING_FILES) --sort-by=$(TIMING_SORT_BY) $(BEFORE) $(AFTER) $(TIME_OF_PRETTY_BUILD_FILE) $(TIME_OF_PRETTY_BUILD_EXTRA_FILES)
+	$(HIDE)$(COQMAKE_BOTH_SINGLE_TIMING_FILES) --sort-by=$(TIMING_SORT_BY) $(AFTER) $(BEFORE) $(TIME_OF_PRETTY_BUILD_FILE) $(TIME_OF_PRETTY_BUILD_EXTRA_FILES)
 endif
 endif
 pretty-timed:
