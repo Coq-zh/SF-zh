@@ -1033,7 +1033,7 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
           end.
 
     Coq 会拒绝这种定义（“Error: Cannot guess decreasing argument of fix”，
-    错误：无法猜测出固定的递减参数），因为我们想要定义的函数并不保证中值。
+    错误：无法猜测出固定的递减参数），因为我们想要定义的函数并不保证终止。
     确实，它并不_'总是会终止'_：例如，[ceval_fun] 函数应用到上面的 [loop]
     程序的完整版本永远不会终止。由于 Coq 不仅是一个函数式编程语言，
     还是个逻辑一致的语言，因此任何潜在的不可终止函数都会被拒绝。下面是一个
