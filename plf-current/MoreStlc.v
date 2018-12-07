@@ -1,4 +1,4 @@
-(** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
+(** * MoreStlc: 扩展简单类型 Lambda-演算 *)
 
 Set Warnings "-notation-overridden,-parsing".
 From PLF Require Import Maps.
@@ -7,59 +7,47 @@ From PLF Require Import Smallstep.
 From PLF Require Import Stlc.
 
 (* ################################################################# *)
-(** * Simple Extensions to STLC *)
+(** * STLC 的简单扩展 *)
 
-(** The simply typed lambda-calculus has enough structure to make its
-    theoretical properties interesting, but it is not much of a
-    programming language.
+(** 简单类型 lambda-演算在理论上有一些有趣的性质，但由于缺乏一些结构使其还不足以成为一个实用的编程语言。
 
-    In this chapter, we begin to close the gap with real-world
-    languages by introducing a number of familiar features that have
-    straightforward treatments at the level of typing. *)
+    在本章中，我们引入一些常见的特性来缩小和现实世界中程序语言的距离，这些新的特性
+    在类型层面上是简单和直接的。*)
 
 (* ================================================================= *)
-(** ** Numbers *)
+(** ** 数值 *)
 
-(** As we saw in exercise [stlc_arith] at the end of the [StlcProp]
-    chapter, adding types, constants, and primitive operations for
-    natural numbers is easy -- basically just a matter of combining
-    the [Types] and [Stlc] chapters.  Adding more realistic
-    numeric types like machine integers and floats is also
-    straightforward, though of course the specifications of the
-    numeric primitives become more fiddly. *)
+(** 在 [StlcProp] 一章最后的 [stlc_arith] 练习中，我们看到为 STLC
+    添加自然数、常量和原始操作（primitive operation）十分容易的——
+    基本只需要将我们在 [Types] 和 [Stlc] 中学到的内容结合起来。
+    添加机器整数或浮点数这些类型同样直接，当然语言中数值的规格也会更加精确。*)
 
 (* ================================================================= *)
-(** ** Let Bindings *)
+(** ** Let 绑定 *)
 
-(** When writing a complex expression, it is useful to be able
-    to give names to some of its subexpressions to avoid repetition
-    and increase readability.  Most languages provide one or more ways
-    of doing this.  In OCaml (and Coq), for example, we can write [let
-    x=t1 in t2] to mean "reduce the expression [t1] to a value and
-    bind the name [x] to this value while reducing [t2]."
+(** 当写一个复杂的表达式时，为一些子表达式命名常常可以避免重复计算和提高可读性。
+    多数语言都提供了多种这样的机制。比如，在 OCaml（以及 Coq）中，我们可以写 [let
+    x=t1 in t2]，意思是说“首先归约 [t1] 到一个值，并绑定到 [x] 上，同时继续对 [t2] 
+    归约。”
 
-    Our [let]-binder follows OCaml in choosing a standard
-    _call-by-value_ evaluation order, where the [let]-bound term must
-    be fully reduced before reduction of the [let]-body can begin.
-    The typing rule [T_Let] tells us that the type of a [let] can be
-    calculated by calculating the type of the [let]-bound term,
-    extending the context with a binding with this type, and in this
-    enriched context calculating the type of the body (which is then
-    the type of the whole [let] expression).
+    我们的 [let] 绑定使用的求值策略和 OCaml 相同，均为标准的_'传值调用（call-by-value）'_，
+    也即在对 [let] 的主体（即 [t2]）归约前，被绑定的项（即 [t1]）必须已经完全归约。
+    类型规则 [T_Let] 告诉我们可以这样为 [let] 表达式定型：首先计算被绑定项的类型，
+    用此类型和对应的绑定名扩展上下文，并在新的上下文中对 [let] 主体定型
+    （最后得到的类型便是整个 [let] 表达式的类型）。
 
-    At this point in the book, it's probably easier simply to look at
-    the rules defining this new feature than to wade through a lot of
-    English text conveying the same information.  Here they are: *)
+    类型规则和自然语言的文本描述了同样的内容，但读者基于在本书中已经学过的内容，
+    理解前者应当已经比较容易了。如下： *)
 
-(** Syntax:
+(** 语法：
 
-       t ::=                Terms
-           | ...               (other terms same as before)
-           | let x=t in t      let-binding
+       t ::=                项
+           | ...               （与之前的其他项相同）
+           | let x=t in t      let-绑定
 *)
 
 (**
-    Reduction:
+    归约规则：
 
                                  t1 ==> t1'
                      ----------------------------------               (ST_Let1)
@@ -68,7 +56,7 @@ From PLF Require Import Stlc.
                         ----------------------------              (ST_LetValue)
                         let x=v1 in t2 ==> [x:=v1]t2
 
-    Typing:
+    定型规则：
 
              Gamma |- t1 : T1      Gamma & {{x-->T1}} |- t2 : T2
              ---------------------------------------------------        (T_Let)
@@ -76,22 +64,17 @@ From PLF Require Import Stlc.
 *)
 
 (* ================================================================= *)
-(** ** Pairs *)
+(** ** 二元组 *)
 
-(** Our functional programming examples in Coq have made
-    frequent use of _pairs_ of values.  The type of such a pair is
-    called a _product type_.
+(** Coq 中的函数式编程经常使用一_'对（pair）'_值，而其类型为_'积类型（product type）'_。
 
-    The formalization of pairs is almost too simple to be worth
-    discussing.  However, let's look briefly at the various parts of
-    the definition to emphasize the common pattern. *)
+    对二元组（序对）的形式化非常简单，以至于不需要太多讨论。然而，还是让我们看看它的定义，
+    以此强调和了解一些常见的模式。*)
 
-(** In Coq, the primitive way of extracting the components of a pair
-    is _pattern matching_.  An alternative is to take [fst] and
-    [snd] -- the first- and second-projection operators -- as
-    primitives.  Just for fun, let's do our pairs this way.  For
-    example, here's how we'd write a function that takes a pair of
-    numbers and returns the pair of their sum and difference:
+(** 在 Coq 里，从一个二元组中提取出值的基本方法是_'模式匹配（pattern matching）'_。
+    另一种方法是使用 [fst] 和 [snd]——第一投影和第二投影操作子。
+    我们在这里使用第二种方式。举个例子，下面的函数接受自然数的二元组作为参数，
+    并返回他们和与差构成的二元组：
 
        \x : Nat*Nat.
           let sum = x.fst + x.snd in
@@ -99,31 +82,29 @@ From PLF Require Import Stlc.
           (sum,diff)
 *)
 
-(** Adding pairs to the simply typed lambda-calculus, then, involves
-    adding two new forms of term -- pairing, written [(t1,t2)], and
-    projection, written [t.fst] for the first projection from [t] and
-    [t.snd] for the second projection -- plus one new type constructor,
-    [T1*T2], called the _product_ of [T1] and [T2].  *)
+(** 为简单类型 lambda-演算添加二元组需要为项添加两种新的形式：创建二元组，写做
+    [(t1,t2)]；以及投影操作，写做 [t.fst] 和 [t.snd]，分别用于提取出第一个和
+    第二个元素。我们还需要一个新的类型构造子，[T1*T2] 作为 [T1] 和 [T2]
+    的_'积（product）'_。*)
 
-(** Syntax:
+(** 语法：
 
-       t ::=                Terms
-           | (t,t)             pair
-           | t.fst             first projection
-           | t.snd             second projection
+       t ::=                项
+           | (t,t)             二元组
+           | t.fst             第一个元素
+           | t.snd             第二个元素
            | ...
 
-       v ::=                Values
-           | (v,v)             pair value
+       v ::=                值
+           | (v,v)             二元组值
            | ...
 
-       T ::=                Types
-           | T * T             product type
+       T ::=                类型
+           | T * T             积类型
            | ...
 *)
 
-(** For reduction, we need several new rules specifying how pairs and
-    projection behave. *)
+(** 我们需要几个新的归约规则来描述二元组和投影操作的行为。*)
 (**
 
                               t1 ==> t1'
@@ -149,24 +130,17 @@ From PLF Require Import Stlc.
                           (v1,v2).snd ==> v2
 *)
 
-(** Rules [ST_FstPair] and [ST_SndPair] say that, when a fully
-    reduced pair meets a first or second projection, the result is
-    the appropriate component.  The congruence rules [ST_Fst1] and
-    [ST_Snd1] allow reduction to proceed under projections, when the
-    term being projected from has not yet been fully reduced.
-    [ST_Pair1] and [ST_Pair2] reduce the parts of pairs: first the
-    left part, and then -- when a value appears on the left -- the right
-    part.  The ordering arising from the use of the metavariables [v]
-    and [t] in these rules enforces a left-to-right evaluation
-    strategy for pairs.  (Note the implicit convention that
-    metavariables like [v] and [v1] can only denote values.)  We've
-    also added a clause to the definition of values, above, specifying
-    that [(v1,v2)] is a value.  The fact that the components of a pair
-    value must themselves be values ensures that a pair passed as an
-    argument to a function will be fully reduced before the function
-    body starts executing. *)
+(** 规则 [ST_FstPair] 和 [ST_SndPair] 是说，我们可以对完全归约的二元组
+    取其第一个元素或第二个元素。同余规则 [ST_Fst1] 和 [ST_Snd1] 则是说，
+    在被投影的二元组还没有完全归约时，我们可以在投影下允许对二元组归约。
+    [ST_Pair1] 和 [ST_Pair2] 则对二元组的某一部分归约：分别是左边的部分，以及
+    当左边的部分是值时对右边的部分归约。在这两个规则中，我们使用元变量
+    [v] 和 [t] 来强制对二元组实现从左向右的求值策略。（请注意，其中隐含的约定是 [v]
+    或 [v1] 这样的元变量仅指值。）我们同样添加了对二元组值的定义，即 [(v1,v2)]
+    是一个值。二元组的成员必须是值，这一点保证了当二元组作为参数传入一个函数时已经
+    完全归约了。*)
 
-(** The typing rules for pairs and projections are straightforward. *)
+(** 二元组和投影的类型规则十分直接。 *)
 (**
 
                Gamma |- t1 : T1       Gamma |- t2 : T2
@@ -182,24 +156,20 @@ From PLF Require Import Stlc.
                         Gamma |- t1.snd : T12
 *)
 
-(** [T_Pair] says that [(t1,t2)] has type [T1*T2] if [t1] has
-   type [T1] and [t2] has type [T2].  Conversely, [T_Fst] and [T_Snd]
-   tell us that, if [t1] has a product type [T11*T12] (i.e., if it
-   will reduce to a pair), then the types of the projections from
-   this pair are [T11] and [T12]. *)
+(** [T_Pair] 是说如果 [t1] 有类型 [T1] 且 [t2] 有类型 [T2]，
+    那么 [(t1,t2)] 有类型 [T1*T2] 。相反，[T_Fst] 和 [T_Snd] 告诉我们，
+   如果 [t1] 为积类型 [T11*T12]（即，如果 [t1] 会归约为一个二元组），
+   那么二元组的投影的类型为 [T11] 和 [T12]。*)
 
 (* ================================================================= *)
-(** ** Unit *)
+(** ** 单元素类型 *)
 
-(** Another handy base type, found especially in languages in
-    the ML family, is the singleton type [Unit]. *)
-(** It has a single element -- the term constant [unit] (with a small
-    [u]) -- and a typing rule making [unit] an element of [Unit].  We
-    also add [unit] to the set of possible values -- indeed, [unit] is
-    the _only_ possible result of reducing an expression of type
-    [Unit]. *)
+(** 另一个在 ML 语言家族中经常出现的基础类型是只含有一个元素的类型（singleton type），即 [Unit]。*)
+(** 它只含有一个常量项 [unit]（以小写 [u] 开头），以及一个类型规则使 [unit] 成为
+    [Unit] 的一个元素。我们同时添加 [unit] 到可作为值的项的集合中，确实，[unit] 
+    是 [Unit] 类型的表达式唯一可能的归约结果。 *)
 
-(** Syntax:
+(** 语法：
 
        t ::=                Terms
            | unit              unit value
@@ -213,60 +183,49 @@ From PLF Require Import Stlc.
            | Unit              Unit type
            | ...
 
-    Typing:
+    定型规则：
 
                          --------------------                          (T_Unit)
                          Gamma |- unit : Unit
 *)
 
-(** It may seem a little strange to bother defining a type that
-    has just one element -- after all, wouldn't every computation
-    living in such a type be trivial?
+(** 看起来似乎有些奇怪，我们为什么要定义只含有一个元素的类型呢？
+    毕竟，难道不是每个计算都不会在这样的类型中居留吗？ 
 
-    This is a fair question, and indeed in the STLC the [Unit] type is
-    not especially critical (though we'll see two uses for it below).
-    Where [Unit] really comes in handy is in richer languages with
-    _side effects_ -- e.g., assignment statements that mutate
-    variables or pointers, exceptions and other sorts of nonlocal
-    control structures, etc.  In such languages, it is convenient to
-    have a type for the (trivial) result of an expression that is
-    evaluated only for its effect. *)
+    这是个好问题，而且确实在 STLC 中 [Unit] 类型并不是特别重要（尽管后面我们会看
+    到它的两个用处）。在更丰富的语言中，使用 [Unit] 类型来处理_'副作用（side effect）'_
+    会很方便，例如改写变量或指针的赋值语句、异常以及其他非局部控制结构等情形。
+    在这样的语言中，[Unit] 类型为仅有副作用的表达式提供了一个方便的类型。*)
 
 (* ================================================================= *)
-(** ** Sums *)
+(** ** 和类型 *)
 
-(** Many programs need to deal with values that can take two distinct
-   forms.  For example, we might identify employees in an accounting
-   application using _either_ their name _or_ their id number.
-   A search function might return _either_ a matching value _or_ an
-   error code.
+(** 一些程序需要处理具有两种不同形式的值。比如说，在会计应用中我们想要根据名字_'或'_
+    识别号码来搜索某个雇员。这个搜索函数可以返回匹配到的值，_'或'_返回一个错误代码。
 
-   These are specific examples of a binary _sum type_ (sometimes called
-   a _disjoint union_), which describes a set of values drawn from
-   one of two given types, e.g.:
+    有很多二元_'和类型（sum type）'_（有时候也叫做_'不交并（disjoint union）'_）
+    的具体例子，他们描述了从一个或两个给定类型的值的集合，例如：
 
        Nat + Bool
 *)
-(** We create elements of these types by _tagging_ elements of
-    the component types.  For example, if [n] is a [Nat] then [inl n]
-    is an element of [Nat+Bool]; similarly, if [b] is a [Bool] then
-    [inr b] is a [Nat+Bool].  The names of the tags [inl] and [inr]
-    arise from thinking of them as functions
+(** 
+    我们在创建这些类型的值时，会为值_'标记（tagging）'_上其成分类型。
+    比如说，如果 [n] 是自然数，那么 [inl n] 是 [Nat+Bool] 的一个元素；
+    类似地，如果 [b] 的类型为 [Bool]，那么 [inr b] 是 [Nat+Bool] 
+    的一个元素。
+    如果把标签 [inl] 和 [inr] 看作函数，其类型解释了他们的名字：
 
        inl : Nat -> Nat + Bool
        inr : Bool -> Nat + Bool
 
-    that "inject" elements of [Nat] or [Bool] into the left and right
-    components of the sum type [Nat+Bool].  (But note that we don't
-    actually treat them as functions in the way we formalize them:
-    [inl] and [inr] are keywords, and [inl t] and [inr t] are primitive
-    syntactic forms, not function applications.) *)
+    这两个函数分别将 [Nat] 或 [Bool] 的元素“注入”进和类型 [Nat+Bool] 
+    的左成分或右成分中。（但其实我们不必将其作为函数形式化：[inl] 和 [inr]
+    是关键字，而且  [inl t] 和 [inr t] 是基本的语法形式，而非函数应用。） *)
 
-(** In general, the elements of a type [T1 + T2] consist of the
-    elements of [T1] tagged with the token [inl], plus the elements of
-    [T2] tagged with [inr]. *)
+(** 一般来说，被 [inl] 标记的 [T1] 的元素加上被 [inr] 
+    标记的 [T2] 的元素一同构成了 [T1 + T2] 的元素。 *)
 
-(** One important usage of sums is signaling errors:
+(** 和类型的一个重要用途是传递错误：
 
       div : Nat -> Nat -> (Nat + Unit) =
       div =
@@ -276,14 +235,11 @@ From PLF Require Import Stlc.
           else
             inl ...
 *)
-(** The type [Nat + Unit] above is in fact isomorphic to [option
-    nat] in Coq -- i.e., it's easy to write functions that translate
-    back and forth. *)
+(** 事实上，上面的 [Nat + Unit] 类型与 Coq 中的 [option nat]
+    类型是同构的——也即，我们很容易写出他们的转换函数。 *)
 
-(** To _use_ elements of sum types, we introduce a [case]
-    construct (a very simplified form of Coq's [match]) to destruct
-    them. For example, the following procedure converts a [Nat+Bool]
-    into a [Nat]: *)
+(** 为了_'使用'_和类型和元素，我们引入 [case] 语句（Coq 中 [match] 
+    的非常简化版）用于解构他们。比如说，下面的程序将 [Nat+Bool] 的值转为了 [Nat]：*)
 (**
 
     getNat =
@@ -292,29 +248,29 @@ From PLF Require Import Stlc.
           inl n => n
         | inr b => if b then 1 else 0
 *)
-(** More formally... *)
+(** 更加形式化地讲…… *)
 
-(** Syntax:
+(** 语法：
 
-       t ::=                Terms
-           | inl T t           tagging (left)
-           | inr T t           tagging (right)
-           | case t of         case
+       t ::=                项
+           | inl T t           左标记
+           | inr T t           右标记
+           | case t of         模式匹配
                inl x => t
              | inr x => t
            | ...
 
-       v ::=                Values
-           | inl T v           tagged value (left)
-           | inr T v           tagged value (right)
+       v ::=                值
+           | inl T v           标记过的值（左）
+           | inr T v           标记过的值（右）
            | ...
 
-       T ::=                Types
-           | T + T             sum type
+       T ::=                类型
+           | T + T             和类型
            | ...
 *)
 
-(** Reduction:
+(** 归约规则：
 
 
                               t1 ==> t1'
@@ -339,7 +295,7 @@ From PLF Require Import Stlc.
                            ==>  [x2:=v0]t2
 *)
 
-(** Typing:
+(** 定型规则：
 
                           Gamma |- t1 :  T1
                      ----------------------------                       (T_Inl)
@@ -355,50 +311,36 @@ From PLF Require Import Stlc.
          ---------------------------------------------------           (T_Case)
          Gamma |- case t0 of inl x1 => t1 | inr x2 => t2 : T
 
+    为了让类型关系简单一点，在 [inl] 和 [inr] 规则中我们使用了类型注释，我们在处理
+    函数的类型时也是这么做的。*)
 
-    We use the type annotation in [inl] and [inr] to make the typing
-    relation simpler, similarly to what we did for functions. *)
-
-(** Without this extra information, the typing rule [T_Inl], for
-    example, would have to say that, once we have shown that [t1] is
-    an element of type [T1], we can derive that [inl t1] is an element
-    of [T1 + T2] for _any_ type [T2].  For example, we could derive both
-    [inl 5 : Nat + Nat] and [inl 5 : Nat + Bool] (and infinitely many
-    other types).  This peculiarity (technically, a failure of
-    uniqueness of types) would mean that we cannot build a
-    typechecking algorithm simply by "reading the rules from bottom to
-    top" as we could for all the other features seen so far.
-
-    There are various ways to deal with this difficulty.  One simple
-    one -- which we've adopted here -- forces the programmer to
-    explicitly annotate the "other side" of a sum type when performing
-    an injection.  This is a bit heavy for programmers (so real
-    languages adopt other solutions), but it is easy to understand and
-    formalize. *)
+(** 如果没有这额外的类型信息，一旦我们确定了 [t1] 为类型 [T1]，类型规则 
+    [T_Inl] 则必须有能力为 [inl t1] 推导出类型 [T1 + T2]，而其中 [T2]
+    可为任意类型。比如说，我们可以同时推导出 [inl 5 : Nat + Nat] 和 
+    [inl 5 : Nat + Bool]（以及无数个这样的类型）。这一特性（技术上说，
+    是类型唯一性的丧失）意味着我们无法像之前处理其他特性那样仅仅通过“自底向上地
+    阅读类型规则”来构造出类型检查的算法。
+    
+    有很多种方式处理这个难题。最简单的方法，也是我们在这里采用的，就是要求程序员
+    在注入时显式地提供和类型“另一侧”的类型。这对程序员会产生一些负担（因此很多
+    现实语言采用了其他方法），但这种方法易于理解和形式化。*)
 
 (* ================================================================= *)
-(** ** Lists *)
+(** ** 列表 *)
 
-(** The typing features we have seen can be classified into _base
-    types_ like [Bool], and _type constructors_ like [->] and [*] that
-    build new types from old ones.  Another useful type constructor is
-    [List].  For every type [T], the type [List T] describes
-    finite-length lists whose elements are drawn from [T].
+(** 我们可以将之前学过的类型归结为两类：例如 [Bool] 这样的_'基本类型'_；
+    以及例如 [->] 和 [*] 这样的_'类型构造子'_，用于从已有的类型构造新的类型。
+    另一个非常有用的类型构造子是 [List]。对于每个类型 [T]，类型 [List T]
+    表示元素类型为 [T] 的有限长列表。
 
-    In principle, we could encode lists using pairs, sums and
-    _recursive_ types. But giving semantics to recursive types is
-    non-trivial. Instead, we'll just discuss the special case of lists
-    directly.
+    原则上，我们可以用二元组、和类型与_'递归'_类型编码出列表。但为递归类型给出
+    其语义并不直接。因此，我们直接将列表作为一个特殊类型加以讨论。
 
-    Below we give the syntax, semantics, and typing rules for lists.
-    Except for the fact that explicit type annotations are mandatory
-    on [nil] and cannot appear on [cons], these lists are essentially
-    identical to those we built in Coq.  We use [lcase] to destruct
-    lists, to avoid dealing with questions like "what is the [head] of
-    the empty list?" *)
+    下面我们给出列表的语法，语义和类型规则。这些列表操作基本与 Coq 中的相同，
+    除了 [nil] 中类型注解是强制的，而 [cons] 而不需要类型注解。我们使用 [lcase]
+    来解构列表，以此可以用于提取出列表的 [head] 等。*)
 
-(** For example, here is a function that calculates the sum of
-    the first two elements of a list of numbers:
+(** 例如，下面的函数计算了一个数值列表的前两个元素之和：
 
       \x:List Nat.
       lcase x of nil => 0
@@ -406,25 +348,25 @@ From PLF Require Import Stlc.
                        | b::x'' => a+b
 *)
 (**
-    Syntax:
+    语法：
 
-       t ::=                Terms
+       t ::=                项
            | nil T
            | cons t t
            | lcase t of nil => t | x::x => t
            | ...
 
-       v ::=                Values
-           | nil T             nil value
-           | cons v v          cons value
+       v ::=                值
+           | nil T             nil 值
+           | cons v v          cons 值
            | ...
 
-       T ::=                Types
-           | List T            list of Ts
+       T ::=                类型
+           | List T            T 类型列表
            | ...
 *)
 
-(** Reduction:
+(** 归约规则：
 
                                  t1 ==> t1'
                        --------------------------                    (ST_Cons1)
@@ -448,7 +390,7 @@ From PLF Require Import Stlc.
                           ==> [xh:=vh,xt:=vt]t3
 *)
 
-(** Typing:
+(** 定型规则：
 
                           -----------------------                       (T_Nil)
                           Gamma |- nil T : List T
@@ -465,38 +407,30 @@ From PLF Require Import Stlc.
 *)
 
 (* ================================================================= *)
-(** ** General Recursion *)
+(** ** 一般递归 *)
 
-(** Another facility found in most programming languages (including
-    Coq) is the ability to define recursive functions.  For example,
-    we might like to be able to define the factorial function like
-    this:
+(** 另一个在多数语言（包括 Coq）中都会出现的功能是定义递归函数。例如，我们可以用
+    如下方式定义阶乘函数：
 
       fact = \x:Nat.
                 if x=0 then 1 else x * (fact (pred x)))
 
-   Note that the right-hand side of this binder mentions the variable
-   being bound -- something that is not allowed by our formalization of
-   [let] above.
+   请注意绑定的右侧使用了绑定左侧的变量名——这在我们之前的 [let] 中是不被允许的。
 
-   Directly formalizing this "recursive definition" mechanism is possible,
-   but it requires a bit of extra effort: in particular, we'd have to
-   pass around an "environment" of recursive function definitions in
-   the definition of the [step] relation. *)
+   直接形式化这种“递归定义”机制是可行的，但也需要一点额外的努力：特别是，在 [step]
+   关系中，我们需要给递归函数的定义传递一个“环境”。*)
 
-(** Here is another way of presenting recursive functions that is equally
-    powerful (though not quite as convenient for the programmer) and
-    more straightforward to formalize: instead of writing recursive
-    definitions, we define a _fixed-point operator_ called [fix]
-    that performs the "unfolding" of the recursive definition in the
-    right-hand side as needed, during reduction.
+(** 还有另外一种一样强大（但可能对程序员没那么方便）的方式来形式化递归函数，
+    这种方式更加直接：我们不直接写递归的定义，而是定义一个叫做 [fix] 
+    的_'不动点算子（fixed-point operator）'_，它会在归约时“展开”定义右侧表达式中
+    出现的递归定义。
 
-    For example, instead of
+    比如说，以下程序
 
       fact = \x:Nat.
                 if x=0 then 1 else x * (fact (pred x)))
 
-    we will write:
+    可以改写为：
 
       fact =
           fix
@@ -504,48 +438,38 @@ From PLF Require Import Stlc.
                \x:Nat.
                   if x=0 then 1 else x * (f (pred x)))
 *)
-(** We can derive the latter from the former as follows:
+(** 我们可用如下方式把前者转换为后者：
 
-      - In the right-hand side of the definition of [fact], replace
-        recursive references to [fact] by a fresh variable [f].
+      - 在 [fact] 的定义的右侧表达式中，替换递归引用的 [fact] 为一个新的变量 [f]。
 
-      - Add an abstraction binding [f] at the front, with an
-        appropriate type annotation.  (Since we are using [f] in place
-        of [fact], which had type [Nat->Nat], we should require [f]
-        to have the same type.)  The new abstraction has type
-        [(Nat->Nat) -> (Nat->Nat)].
+      - 在最开始为抽象添加一个参数 [f]，以及其合适的类型注解。（因为我们用 [f]
+        替换了类型为 [Nat->Nat] 的 [fact]，我们也要求 [f] 有相同的类型。）
+        新的抽象有类型 [(Nat->Nat) -> (Nat->Nat)]。
 
-      - Apply [fix] to this abstraction.  This application has
-        type [Nat->Nat].
+      - 对这个抽象应用 [fix]。这个应用的类型为 [Nat->Nat]。
 
-      - Use all of this as the right-hand side of an ordinary
-        [let]-binding for [fact].
+      - 在其他地方，像使用普通的 [let] 绑定一样使用 [fact]。
 *)
 
-(** The intuition is that the higher-order function [f] passed
-    to [fix] is a _generator_ for the [fact] function: if [f] is
-    applied to a function that "approximates" the desired behavior of
-    [fact] up to some number [n] (that is, a function that returns
-    correct results on inputs less than or equal to [n] but we don't
-    care what it does on inputs greater than [n]), then [f] returns a
-    slightly better approximation to [fact] -- a function that returns
-    correct results for inputs up to [n+1].  Applying [fix] to this
-    generator returns its _fixed point_, which is a function that
-    gives the desired behavior for all inputs [n].
+(** 可以把被传入 [fix] 的高阶函数 [f] 理解为一个 [fact] 函数的_'生成器（generator）'_：
+    如果 [f] 被应用于一个函数，且这个函数“近似地”描述了 [fact] 对至多某个数 [n] 的行为
+    （也即，一个仅会对小于或等于 [n] 的输入上返回正确结果的函数，但是我们并不在乎其在大于
+    [n] 的输入上的结果），那么 [f] 返回一个稍微好一点的 [fact] 的近似——一个对至多
+    [n+1] 会返回正确结果的函数。对这个生成器应用 [fix] 会返回它的_'不动点'_，也即一个对
+    所有输入 [n] 都有正确结果的函数。
 
-    (The term "fixed point" is used here in exactly the same sense as
-    in ordinary mathematics, where a fixed point of a function [f] is
-    an input [x] such that [f(x) = x].  Here, a fixed point of a
-    function [F] of type [(Nat->Nat)->(Nat->Nat)] is a function [f] of
-    type [Nat->Nat] such that [F f] behaves the same as [f].) *)
+    （“不动点”在这里的含义与数学上的不动点是完全相同的，也即函数 [f] 的一个不动点
+    是对于输入 [x] 有 [f(x) = x]。这里，类型为 [(Nat->Nat)->(Nat->Nat)] 
+    的函数 [F] 的一个不动点是类型为 [Nat->Nat] 的函数 [f]，使得 [F f] 与 [f]
+    的行为完全相同。） *)
 
-(** Syntax:
+(** 语法：
 
-       t ::=                Terms
-           | fix t             fixed-point operator
+       t ::=                项
+           | fix t             不动点算子
            | ...
 
-   Reduction:
+   归约规则：
 
                                 t1 ==> t1'
                             ------------------                        (ST_Fix1)
@@ -554,19 +478,18 @@ From PLF Require Import Stlc.
                --------------------------------------------         (ST_FixAbs)
                fix (\xf:T1.t2) ==> [xf:=fix (\xf:T1.t2)] t2
 
-   Typing:
+   定型规则：
 
                            Gamma |- t1 : T1->T1
                            --------------------                         (T_Fix)
                            Gamma |- fix t1 : T1
 *)
 
-(** Let's see how [ST_FixAbs] works by reducing [fact 3 = fix F 3],
-    where
+(** 让我们以 [fact 3 = fix F 3] 为例看看 [ST_FixAbs] 是如何工作的，其中
 
     F = (\f. \x. if x=0 then 1 else x * (f (pred x)))
 
-    (type annotations are omitted for brevity).
+    （简洁起见，我们省略了类型注解）。
 
     fix F 3
 
@@ -643,12 +566,11 @@ From PLF Require Import Stlc.
     6
 *)
 
-(** One important point to note is that, unlike [Fixpoint]
-    definitions in Coq, there is nothing to prevent functions defined
-    using [fix] from diverging. *)
+(** 特别重要的一点是，不同于 Coq 中的 [Fixpoint] 定义，
+    [fix] 并不会保证所定义的函数一定停机。*)
 
 (** **** 练习：1 星, optional (halve_fix)  *)
-(** Translate this informal recursive definition into one using [fix]:
+(** 请将下面非形式化的定义使用 [fix] 写出：
 
       halve =
         \x:Nat.
@@ -661,27 +583,22 @@ From PLF Require Import Stlc.
 (** [] *)
 
 (** **** 练习：1 星, optional (fact_steps)  *)
-(** Write down the sequence of steps that the term [fact 1] goes
-    through to reduce to a normal form (assuming the usual reduction
-    rules for arithmetic operations).
+(** 请分步骤写下 [fact 1] 如何归约为正规式（假定有一般算数操作的归约规则）。
 
     (* 请在此处解答 *)
 *)
 (** [] *)
 
-(** The ability to form the fixed point of a function of type [T->T]
-    for any [T] has some surprising consequences.  In particular, it
-    implies that _every_ type is inhabited by some term.  To see this,
-    observe that, for every type [T], we can define the term
+(** 对任意类型 [T]，构造类型为 [T->T] 的函数的不动点的能力带了了一些令人惊讶的推论。
+    特别是，这意味着_'每个'_类型都存在某个项。我们可以观察到，对每个类型 [T]，
+    我们可以定义项
 
     fix (\x:T.x)
 
-    By [T_Fix]  and [T_Abs], this term has type [T].  By [ST_FixAbs]
-    it reduces to itself, over and over again.  Thus it is a
-    _diverging element_ of [T].
+    由规则 [T_Fix] 和 [T_Abs]，这个项的类型为 [T]。由规则 [ST_FixAbs]，
+    这个项重复地归约为它自身。因此，它是类型 [T] 的_'不停机项（diverging element）'_。    
 
-    More usefully, here's an example using [fix] to define a
-    two-argument recursive function:
+    从更为实用的角度，下面提供一个使用 [fix] 定义两个参数的递归函数：
 
     equal =
       fix
@@ -691,9 +608,8 @@ From PLF Require Import Stlc.
              else if n=0 then false
              else eq (pred m) (pred n))
 *)
-(** And finally, here is an example where [fix] is used to define a
-    _pair_ of recursive functions (illustrating the fact that the type
-    [T1] in the rule [T_Fix] need not be a function type):
+(** 最后的例子展示了如何用 [fix] 定一个_'二元组'_的递归函数（规则 [T_Fix]
+    中的 [T1] 并不需要函数类型）：
 
       evenodd =
         fix
@@ -707,13 +623,11 @@ From PLF Require Import Stlc.
 *)
 
 (* ================================================================= *)
-(** ** Records *)
+(** ** 字段组 *)
 
-(** As a final example of a basic extension of the STLC, let's look
-    briefly at how to define _records_ and their types.  Intuitively,
-    records can be obtained from pairs by two straightforward
-    generalizations: they are n-ary (rather than just binary) and
-    their fields are accessed by _label_ (rather than position). *)
+(** 作为 STLC 最后的一个基础扩展，让我们简要地学习一下如何定义_'字段组（record）'_
+    及其类型。直观地说，字段组可以通过从两个方面一般化二元组来得到：他们是 n 
+    元（而不仅仅是二元）的而且可以通过_'标签（label）'_（而不仅仅是位置）来访问字段。 *)
 
 (** Syntax:
 
@@ -730,16 +644,12 @@ From PLF Require Import Stlc.
            | {i1:T1, ..., in:Tn}         record type
            | ...
 
-   The generalization from products should be pretty obvious.  But
-   it's worth noticing the ways in which what we've actually written is
-   even _more_ informal than the informal syntax we've used in previous
-   sections and chapters: we've used "[...]" in several places to mean "any
-   number of these," and we've omitted explicit mention of the usual
-   side condition that the labels of a record should not contain any
-   repetitions. *)
+   对二元组的一般化是很容易的。但是需要提醒的是，这里描述的方式要比之前章节中的
+   非形式语法_'更加'_非形式：我们多处使用了“[...]”来描述“任意数量的某项”，
+   我们还省略了“字段组的标签不应当重复”这个附加条件。*)
 
 (**
-   Reduction:
+   归约规则：
 
                               ti ==> ti'
                  ------------------------------------                  (ST_Rcd)
@@ -753,14 +663,12 @@ From PLF Require Import Stlc.
                       -------------------------                    (ST_ProjRcd)
                       {..., i=vi, ...}.i ==> vi
 
-   Again, these rules are a bit informal.  For example, the first rule
-   is intended to be read "if [ti] is the leftmost field that is not a
-   value and if [ti] steps to [ti'], then the whole record steps..."
-   In the last rule, the intention is that there should only be one
-   field called i, and that all the other fields must contain values. *)
+   再次提醒，这些规则是非形式化的。比如说，第一个规则应当被读做“如果 [ti]
+   是最左边的非值字段，且如果 [ti] 前进一步归约到 [ti']，那么整个字段组归约为……”。
+   最后一个规则的意思是说应当只有一个名字为 [i] 的字段，而其他的字段必须指向值。*)
 
 (**
-   The typing rules are also simple:
+   类型规则同样简单：
 
             Gamma |- t1 : T1     ...     Gamma |- tn : Tn
           --------------------------------------------------            (T_Rcd)
@@ -771,74 +679,56 @@ From PLF Require Import Stlc.
                           Gamma |- t.i : Ti
 *)
 
-(** There are several ways to approach formalizing the above
-    definitions.
+(** 有许多种方式来形式化上面的描述。
 
-      - We can directly formalize the syntactic forms and inference
-        rules, staying as close as possible to the form we've given
-        them above.  This is conceptually straightforward, and it's
-        probably what we'd want to do if we were building a real
-        compiler (in particular, it will allow us to print error
-        messages in the form that programmers will find easy to
-        understand).  But the formal versions of the rules will not be
-        very pretty or easy to work with, because all the [...]s above
-        will have to be replaced with explicit quantifications or
-        comprehensions.  For this reason, records are not included in
-        the extended exercise at the end of this chapter.  (It is
-        still useful to discuss them informally here because they will
-        help motivate the addition of subtyping to the type system
-        when we get to the [Sub] chapter.)
+      - 我们可以直接形式化语法结构和推断规则，并尽量与我们上面给出的非形式化描述保持相同。
+        这在概念上来讲十分直接，当我们开发一个真正的编译器时，也会是我们的选择（特别是，
+        它允许我们给出程序员易读的错误信息）。但是这些形式化的规则并不是十分容易和其他
+        部分配合，因为上面出现的 [...] 需要被替换为显式的量词（quantification）
+        或推导式（comprehension）。基于这个原因，本章最后的扩展练习中并没有包括字段组。
+        （这里非形式化地讨论字段组仍然非常有用，因为它为 [Sub] 
+        一章中对子类型的讨论提供了基础。）
 
-      - Alternatively, we could look for a smoother way of presenting
-        records -- for example, a binary presentation with one
-        constructor for the empty record and another constructor for
-        adding a single field to an existing record, instead of a
-        single monolithic constructor that builds a whole record at
-        once.  This is the right way to go if we are primarily
-        interested in studying the metatheory of the calculi with
-        records, since it leads to clean and elegant definitions and
-        proofs.  Chapter [Records] shows how this can be done.
-
-      - Finally, if we like, we can avoid formalizing records
-        altogether, by stipulating that record notations are just
-        informal shorthands for more complex expressions involving
-        pairs and product types.  We sketch this approach in the next
-        section. *)
+      - 此外，我们还可以用一种更简单的方式来表达字段组——比如说，相比与使用单一的构造子
+        直接地构造整个字段组，我们可以使用二元的表示，其中一个构造子表示空字段组，
+        另一个用于为已有的字段组添加一个新的字段。如果我们主要的兴趣在于学习带字段组
+        的演算的元理论，那么这种方式的定义和证明更加简单优雅。在 [Records] 
+        一章中我们会学习此种处理方式。
+      
+      - 最后，如果我们想的话，也可以通过使用二元组和积类型构造复杂的表达式并模拟字段组
+        来完全避免形式化字段组。在下一节中我们简要地描述这种方式。 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Encoding Records (Optional) *)
+(** *** 编码字段组（选读） *)
 
-(** Let's see how records can be encoded using just pairs and [unit].
+(** 让我们看看如何只使用二元组和 [unit] 来编码字段组。
 
-    First, observe that we can encode arbitrary-size _tuples_ using
-    nested pairs and the [unit] value.  To avoid overloading the pair
-    notation [(t1,t2)], we'll use curly braces without labels to write
-    down tuples, so [{}] is the empty tuple, [{5}] is a singleton
-    tuple, [{5,6}] is a 2-tuple (morally the same as a pair),
-    [{5,6,7}] is a triple, etc.
+    首先，我们可以用嵌套的二元组和 [unit] 值来编码任意大小的_'元组'_。为了避免重载
+    已有的二元组记法 [(t1,t2)]，我们使用无标签的花括号来表示元组，例如 [{}]
+    是空元组，[{5}] 是只有一个元素的元组，[{5,6}] 是二元组，
+    而 [{5,6,7}] 是一个三元组，以此类推。
+
 
       {}                 ---->  unit
       {t1, t2, ..., tn}  ---->  (t1, trest)
-                                where {t2, ..., tn} ----> trest
+                                其中 {t2, ..., tn} ----> trest
 
-    Similarly, we can encode tuple types using nested product types:
+    类似地，我们可以用积类型来表示元组类型：
 
       {}                 ---->  Unit
       {T1, T2, ..., Tn}  ---->  T1 * TRest
-                                where {T2, ..., Tn} ----> TRest
+                                其中 {T2, ..., Tn} ----> TRest
 
-    The operation of projecting a field from a tuple can be encoded
-    using a sequence of second projections followed by a first projection:
+    从元组中投影出元素的操作可以被编码为连续使用多次（或零次）第二投影操作，
+    最后使用第一投影操作：
 
       t.0        ---->  t.fst
       t.(n+1)    ---->  (t.snd).n
 
-    Next, suppose that there is some total ordering on record labels,
-    so that we can associate each label with a unique natural number.
-    This number is called the _position_ of the label.  For example,
-    we might assign positions like this:
+    下一步，假设在字段组的标签上存在某种全序，那么我们可以为每个标签关联一个唯一的自然数。
+    这个数被乘坐标签的_'位置'_。比如说，我们可以像下面这样指派位置：
 
-      LABEL   POSITION
+      标签     位置
       a       0
       b       1
       c       2
@@ -848,9 +738,8 @@ From PLF Require Import Stlc.
       foo     4460
       ...     ...
 
-    We use these positions to encode record values as tuples (i.e., as
-    nested pairs) by sorting the fields according to their positions.
-    For example:
+    我们根据字段的位置对他们排序，并使用这些位置来把字段组编码为元组（也即，嵌套的二元组）。
+    例如：
 
       {a=5, b=6}      ---->   {5,6}
       {a=5, c=7}      ---->   {5,unit,7}
@@ -859,84 +748,66 @@ From PLF Require Import Stlc.
       {f=8,c=5,a=7}   ---->   {7,unit,5,unit,unit,8}
       {f=8,c=5}       ---->   {unit,unit,5,unit,unit,8}
 
-    Note that each field appears in the position associated with its
-    label, that the size of the tuple is determined by the label with
-    the highest position, and that we fill in unused positions with
-    [unit].
+    请注意，每个字段都出现在他们标签所关联的位置，因此元组的大小取决与有最高位置的标签，
+    我们把未使用的位置填充为 [unit] 值。
 
-    We do exactly the same thing with record types:
+    我们在编码字段组类型时使用同样的方式：
 
       {a:Nat, b:Nat}      ---->   {Nat,Nat}
       {c:Nat, a:Nat}      ---->   {Nat,Unit,Nat}
       {f:Nat,c:Nat}       ---->   {Unit,Unit,Nat,Unit,Unit,Nat}
 
-    Finally, record projection is encoded as a tuple projection from
-    the appropriate position:
+    最后，字段组投影被编码为在正确的位置上对元组投影：
 
-      t.l  ---->  t.(position of l)
+      t.l  ---->  t.(l 的位置)
 
-    It is not hard to check that all the typing rules for the original
-    "direct" presentation of records are validated by this
-    encoding.  (The reduction rules are "almost validated" -- not
-    quite, because the encoding reorders fields.) *)
+    我们不难用这种编码来验证以“直接”形式表达的字段组的类型规则。（除了我们编码的是排序后的字段，
+    剩下的归约规则几乎已经被验证了。） *)
 
-(** Of course, this encoding will not be very efficient if we
-    happen to use a record with label [foo]!  But things are not
-    actually as bad as they might seem: for example, if we assume that
-    our compiler can see the whole program at the same time, we can
-    _choose_ the numbering of labels so that we assign small positions
-    to the most frequently used labels.  Indeed, there are industrial
-    compilers that essentially do this! *)
+(** 当然，如果我们碰巧使用了标签 [foo]，那么这种编码方式并不是十分高效。
+    但是这也并没有想象的那样糟糕：比如说，如果假设我们的编译器可以在同一时间获得
+    完整的程序，那么我们可以为经常使用的标签_'选择'_较小的位置。的确，一些成熟
+    的编译器所做的正是如此。*)
 
 (* ----------------------------------------------------------------- *)
-(** *** Variants (Optional) *)
+(** *** 变种类型（选读） *)
 
-(** Just as products can be generalized to records, sums can be
-    generalized to n-ary labeled types called _variants_.  Instead of
-    [T1+T2], we can write something like [<l1:T1,l2:T2,...ln:Tn>]
-    where [l1],[l2],... are field labels which are used both to build
-    instances and as case arm labels.
+(** 正如同积类型可以泛化为字段组，和类型也可以泛化为 n 元标签类型，称作_'变种类型（variants）'_。
+    我们可以把其类型写做 [<l1:T1,l2:T2,...ln:Tn>] 而非 [T1+T2]，其中 [l1]，[l2]，[...]
+    是字段的标签，用于构造实例以及解构时分类讨论。
 
-    These n-ary variants give us almost enough mechanism to build
-    arbitrary inductive data types like lists and trees from
-    scratch -- the only thing missing is a way to allow _recursion_ in
-    type definitions.  We won't cover this here, but detailed
-    treatments can be found in many textbooks -- e.g., Types and
-    Programming Languages [Pierce 2002] (in Bib.v). *)
+    这些 n 元变种类型提供了足够的机制来构造任意的归纳数据类型，比如列表和树。
+    唯一缺少的东西是在类型定义中_'递归（recursion）'_。在本书中我们不会讲解这些，
+    但在许多其他的教材中可以学习到他们，例如 Types and Programming Languages 
+    一书 [Pierce 2002] (in Bib.v)。*)
 
 (* ################################################################# *)
-(** * Exercise: Formalizing the Extensions *)
+(** * 练习：形式化以上扩展 *)
 
 (** **** 练习：5 星 (STLC_extensions)  *)
-(** In this exercise, you will formalize some of the extensions
-    described in this chapter.  We've provided the necessary additions
-    to the syntax of terms and types, and we've included a few
-    examples that you can test your definitions with to make sure they
-    are working as expected.  You'll fill in the rest of the
-    definitions and extend all the proofs accordingly.
+(** 在接下来的练习中，你将会形式化本章中描述的一些扩展。我们提供了必要的项和类型的语法，
+    以及一些例子用于测试你的定义是否工作。你需要完成剩下的定义，并相应地扩展证明。
 
-    To get you started, we've provided implementations for:
-     - numbers
-     - sums
-     - lists
-     - unit
+    作为开始，我们提供了下列实现：
+     - 数值
+     - 和
+     - 列表
+     - 项
 
-    You need to complete the implementations for:
-     - pairs
-     - let (which involves binding)
+    你需要完成的实现有：
+     - 二元组
+     - let（涉及到变量绑定）
      - [fix]
 
-    A good strategy is to work on the extensions one at a time, in two
-    passes, rather than trying to work through the file from start to
-    finish in a single pass.  For each definition or proof, begin by
-    reading carefully through the parts that are provided for you,
-    referring to the text in the [Stlc] chapter for high-level
-    intuitions and the embedded comments for detailed mechanics. *)
+    一个比较好的策略是一次完成一个扩展，分两部完成全部练习，
+    而不是尝试一次从头到尾完成本文件中所有的练习。
+    对每个定义或证明，首先仔细阅读已经提供的部分，可回顾 [Stlc] 
+    一章中的文本，并展开嵌套的注释复习细节。*)
 
 Module STLCExtended.
 
 (* ----------------------------------------------------------------- *)
-(** *** Syntax *)
+(** *** 语法 *)
 
 Inductive ty : Type :=
   | TArrow : ty -> ty -> ty
@@ -947,31 +818,31 @@ Inductive ty : Type :=
   | TList  : ty -> ty.
 
 Inductive tm : Type :=
-  (* pure STLC *)
+  (* 纯 STLC *)
   | tvar : string -> tm
   | tapp : tm -> tm -> tm
   | tabs : string -> ty -> tm -> tm
-  (* numbers *)
+  (* 数值 *)
   | tnat : nat -> tm
   | tsucc : tm -> tm
   | tpred : tm -> tm
   | tmult : tm -> tm -> tm
   | tif0  : tm -> tm -> tm -> tm
-  (* pairs *)
+  (* 二元组 *)
   | tpair : tm -> tm -> tm
   | tfst : tm -> tm
   | tsnd : tm -> tm
-  (* units *)
+  (* 单元 *)
   | tunit : tm
   (* let *)
   | tlet : string -> tm -> tm -> tm
           (* i.e., [let x = t1 in t2] *)
-  (* sums *)
+  (* 和 *)
   | tinl : ty -> tm -> tm
   | tinr : ty -> tm -> tm
   | tcase : tm -> string -> tm -> string -> tm -> tm
           (* i.e., [case t0 of inl x1 => t1 | inr x2 => t2] *)
-  (* lists *)
+  (* 列表 *)
   | tnil : ty -> tm
   | tcons : tm -> tm -> tm
   | tlcase : tm -> tm -> string -> string -> tm -> tm
@@ -979,19 +850,18 @@ Inductive tm : Type :=
   (* fix *)
   | tfix  : tm -> tm.
 
-(** Note that, for brevity, we've omitted booleans and instead
-    provided a single [if0] form combining a zero test and a
-    conditional.  That is, instead of writing
+(** 请注意，简洁起见，我们省略了布尔值，但提供了 [if0] 用于测试 0 值和作为条件语句。
+    也即，当有：
 
        if x = 0 then ... else ...
 
-    we'll write this:
+    我们可以写做：
 
        if0 x then ... else ...
 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Substitution *)
+(** *** 替换 *)
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
@@ -1040,31 +910,31 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 
 (* ----------------------------------------------------------------- *)
-(** *** Reduction *)
+(** *** 归约 *)
 
-(** Next we define the values of our language. *)
+(** 下面我们定义语言的值。 *)
 
 Inductive value : tm -> Prop :=
   | v_abs : forall x T11 t12,
       value (tabs x T11 t12)
-  (* Numbers are values: *)
+  (* 数值是值： *)
   | v_nat : forall n1,
       value (tnat n1)
-  (* A pair is a value if both components are: *)
+  (* 成分为值的二元组是值： *)
   | v_pair : forall v1 v2,
       value v1 ->
       value v2 ->
       value (tpair v1 v2)
-  (* A unit is always a value *)
+  (* unit 总是值： *)
   | v_unit : value tunit
-  (* A tagged value is a value:  *)
+  (* 带标记的值也是值： *)
   | v_inl : forall v T,
       value v ->
       value (tinl T v)
   | v_inr : forall v T,
       value v ->
       value (tinr T v)
-  (* A list is a value iff its head and tail are values: *)
+  (* 列表是值当且仅当其头部（head）和尾部（tail）均为值：*)
   | v_lnil : forall T, value (tnil T)
   | v_lcons : forall v1 vl,
       value v1 ->
@@ -1086,7 +956,7 @@ Inductive step : tm -> tm -> Prop :=
          value v1 ->
          t2 ==> t2' ->
          (tapp v1 t2) ==> (tapp v1 t2')
-  (* nats *)
+  (* 自然数 *)
   | ST_Succ1 : forall t1 t1',
        t1 ==> t1' ->
        (tsucc t1) ==> (tsucc t1')
@@ -1113,11 +983,11 @@ Inductive step : tm -> tm -> Prop :=
        (tif0 (tnat 0) t2 t3) ==> t2
   | ST_If0Nonzero : forall n t2 t3,
        (tif0 (tnat (S n)) t2 t3) ==> t3
-  (* pairs *)
+  (* 二元组 *)
   (* 请在此处解答 *)
   (* let *)
   (* 请在此处解答 *)
-  (* sums *)
+  (* 和 *)
   | ST_Inl : forall t1 t1' T,
         t1 ==> t1' ->
         (tinl T t1) ==> (tinl T t1')
@@ -1133,7 +1003,7 @@ Inductive step : tm -> tm -> Prop :=
   | ST_CaseInr : forall v0 x1 t1 x2 t2 T,
         value v0 ->
         (tcase (tinr T v0) x1 t1 x2 t2) ==> [x2:=v0]t2
-  (* lists *)
+  (* 列表 *)
   | ST_Cons1 : forall t1 t1' t2,
        t1 ==> t1' ->
        (tcons t1 t2) ==> (tcons t1' t2)
@@ -1161,17 +1031,16 @@ Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 Hint Constructors step.
 
 (* ----------------------------------------------------------------- *)
-(** *** Typing *)
+(** *** 定型 *)
 
 Definition context := partial_map ty.
 
-(** Next we define the typing rules.  These are nearly direct
-    transcriptions of the inference rules shown above. *)
+(** 下面我们定义类型规则，这基本上是直接将推断规则翻译一下。 *)
 
 Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
 
 Inductive has_type : context -> tm -> ty -> Prop :=
-  (* Typing rules for proper terms *)
+  (* 基本项的定型规则 *)
   | T_Var : forall Gamma x T,
       Gamma x = Some T ->
       Gamma |- (tvar x) \in T
@@ -1182,7 +1051,7 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- t1 \in (TArrow T1 T2) ->
       Gamma |- t2 \in T1 ->
       Gamma |- (tapp t1 t2) \in T2
-  (* nats *)
+  (* 自然数 *)
   | T_Nat : forall Gamma n1,
       Gamma |- (tnat n1) \in TNat
   | T_Succ : forall Gamma t1,
@@ -1200,14 +1069,14 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- t2 \in T1 ->
       Gamma |- t3 \in T1 ->
       Gamma |- (tif0 t1 t2 t3) \in T1
-  (* pairs *)
+  (* 二元组 *)
   (* 请在此处解答 *)
-  (* unit *)
+  (* 单元 *)
   | T_Unit : forall Gamma,
       Gamma |- tunit \in TUnit
   (* let *)
   (* 请在此处解答 *)
-  (* sums *)
+  (* 和 *)
   | T_Inl : forall Gamma t1 T1 T2,
       Gamma |- t1 \in T1 ->
       Gamma |- (tinl T2 t1) \in (TSum T1 T2)
@@ -1219,7 +1088,7 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       (update Gamma x1 T1) |- t1 \in T ->
       (update Gamma x2 T2) |- t2 \in T ->
       Gamma |- (tcase t0 x1 t1 x2 t2) \in T
-  (* lists *)
+  (* 列表 *)
   | T_Nil : forall Gamma T,
       Gamma |- (tnil T) \in (TList T)
   | T_Cons : forall Gamma t1 t2 T1,
@@ -1239,23 +1108,19 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 Hint Constructors has_type.
 
 (* ================================================================= *)
-(** ** Examples *)
+(** ** 例子 *)
 
-(** This section presents formalized versions of the examples from
-    above (plus several more).  The ones at the beginning focus on
-    specific features; you can use these to make sure your definition
-    of a given feature is reasonable before moving on to extending the
-    proofs later in the file with the cases relating to this feature.
-    The later examples require all the features together, so you'll
-    need to come back to these when you've got all the definitions
-    filled in. *)
+(** 本节形式化了一些上文中出现的例子（以及一些其他的例子）。
+    最开始我们会专注于某些特性，而在开始证明这些特性之前，你可以用一些例子先来
+    测试一下你的定义是否合理。后面的例子会整合全部的特性，因此你需要在完成所有的
+    定义后再阅读这部分。*)
 
 Module Examples.
 
 (* ----------------------------------------------------------------- *)
-(** *** Preliminaries *)
+(** *** 基础 *)
 
-(** First, let's define a few variable names: *)
+(** 首先，让我们定义几个变量： *)
 
 Open Scope string_scope.
 Notation x := "x".
@@ -1276,20 +1141,14 @@ Notation even := "even".
 Notation odd := "odd".
 Notation eo := "eo".
 
-(** Next, a bit of Coq hackery to automate searching for typing
-    derivations.  You don't need to understand this bit in detail --
-    just have a look over it so that you'll know what to look for if
-    you ever find yourself needing to make custom extensions to
-    [auto].
+(** 下面，我们为 Coq 提供一些提示来自动地搜索类型导出式。你不需要理解这部分的全部细节——
+    大概看一下便可，当你需要自己扩展 [auto] 时可再回过头来学习。
 
-    The following [Hint] declarations say that, whenever [auto]
-    arrives at a goal of the form [(Gamma |- (tapp e1 e1) \in T)], it
-    should consider [eapply T_App], leaving an existential variable
-    for the middle type T1, and similar for [lcase]. That variable
-    will then be filled in during the search for type derivations for
-    [e1] and [e2].  We also include a hint to "try harder" when
-    solving equality goals; this is useful to automate uses of
-    [T_Var] (which includes an equality as a precondition). *)
+    下面的 [Hint] 定义是说，当 [auto] 遇到一个形如 [(Gamma |- (tapp e1 e1) \in T)]
+    的目标时，它应当考虑使用 [eapply T_App]，并为中间的类型 T1 留下一个存在变量。
+    [lcase] 与此类似。这个变量在后面为 [e1] 和 [e2] 搜索类型导出式的过程中会被填补。
+    我们还引入一个提示用于搜索形如等式的证明目标；这对使用 [T_Var] 的情景非常有用
+    （其含有一个等式作为前提条件）。 *)
 
 Hint Extern 2 (has_type _ (tapp _ _) _) =>
   eapply T_App; auto.
@@ -1298,7 +1157,7 @@ Hint Extern 2 (has_type _ (tlcase _ _ _ _ _) _) =>
 Hint Extern 2 (_ = _) => compute; reflexivity.
 
 (* ----------------------------------------------------------------- *)
-(** *** Numbers *)
+(** *** 数值 *)
 
 Module Numtest.
 
@@ -1314,17 +1173,14 @@ Definition test :=
     (tnat 5)
     (tnat 6).
 
-(** Remove the comment braces once you've implemented enough of the
-    definitions that you think this should work. *)
+(** 当你完成足够的定义后将注释括号移除。 *)
 
 (* 
 Example typechecks :
   empty |- test \in TNat.
 Proof.
   unfold test.
-  (* This typing derivation is quite deep, so we need
-     to increase the max search depth of [auto] from the
-     default 5 to 10. *)
+  (* 这里的类型导出式非常深，因此我们需要将 [auto] 的最大搜索深度从 5 改为 10。 *)
   auto 10.
 Qed.
 
@@ -1338,7 +1194,7 @@ Qed.
 End Numtest.
 
 (* ----------------------------------------------------------------- *)
-(** *** Products *)
+(** *** 积 *)
 
 Module Prodtest.
 
@@ -1389,7 +1245,7 @@ Proof. unfold test. normalize. Qed.
 End LetTest.
 
 (* ----------------------------------------------------------------- *)
-(** *** Sums *)
+(** *** 和 *)
 
 Module Sumtest1.
 
@@ -1447,7 +1303,7 @@ Proof. unfold test. normalize. Qed.
 End Sumtest2.
 
 (* ----------------------------------------------------------------- *)
-(** *** Lists *)
+(** *** 列表 *)
 
 Module ListTest.
 
@@ -1495,8 +1351,7 @@ Definition fact :=
               (tvar a)
               (tapp (tvar f) (tpred (tvar a))))))).
 
-(** (Warning: you may be able to typecheck [fact] but still have some
-    rules wrong!) *)
+(** （警告：[fact] 可能通过了类型检查但仍然会有一些类型规则是错误的！） *)
 
 (* 
 Example fact_typechecks :
@@ -1534,7 +1389,7 @@ Definition map :=
                          (tapp (tvar f) (tvar l))))))).
 
 (* 
-(* Make sure you've uncommented the last [Hint Extern] above... *)
+(* 请确保你已将上面最后一个 [Hint Extern] 从注释中移出。 *)
 Example map_typechecks :
   empty |- map \in
     (TArrow (TArrow TNat TNat)
@@ -1645,108 +1500,103 @@ End FixTest4.
 End Examples.
 
 (* ================================================================= *)
-(** ** Properties of Typing *)
+(** ** 定型的性质 *)
 
-(** The proofs of progress and preservation for this enriched system
-    are essentially the same (though of course longer) as for the pure
-    STLC. *)
+(** 对扩展后的系统证明其可归约性与保型性类似于 STLC，但证明会更长。*)
 
 (* ----------------------------------------------------------------- *)
-(** *** Progress *)
+(** *** 可归约性 *)
 
 Theorem progress : forall t T,
      empty |- t \in T ->
      value t \/ exists t', t ==> t'.
 Proof with eauto.
-  (* Theorem: Suppose empty |- t : T.  Then either
-       1. t is a value, or
-       2. t ==> t' for some t'.
-     Proof: By induction on the given typing derivation. *)
+  (* 定理：假设 empty |- t : T，那么
+       1. t 是值，或
+       2. 存在某个 t' 使得 t ==> t'
+     证明：对类型导出式进行归纳。*)
   intros t T Ht.
   remember empty as Gamma.
   generalize dependent HeqGamma.
   induction Ht; intros HeqGamma; subst.
   - (* T_Var *)
-    (* The final rule in the given typing derivation cannot be
-       [T_Var], since it can never be the case that
-       [empty |- x : T] (since the context is empty). *)
+    (* 给定的类型导出式中的最后规则不可能是 
+       [T_Var], 因为它不可能是 [empty |- x : T] 这种情形（因为上下文为空）. *)
     inversion H.
   - (* T_Abs *)
-    (* If the [T_Abs] rule was the last used, then
-       [t = tabs x T11 t12], which is a value. *)
+    (* 如果规则 [T_Abs] 最后被使用，那么 
+       [t = tabs x T11 t12]，也即一个值。 *)
     left...
   - (* T_App *)
-    (* If the last rule applied was T_App, then [t = t1 t2],
-       and we know from the form of the rule that
+    (* 如果最后被使用的规则是 [T_App]，那么 [t = t1 t2]，
+       且有规则的形式我们可以知道
          [empty |- t1 : T1 -> T2]
          [empty |- t2 : T1]
-       By the induction hypothesis, each of t1 and t2 either is
-       a value or can take a step. *)
+       由归纳假设，t1 和 2 均要么是值，要么可前进一步。*)
     right.
     destruct IHHt1; subst...
-    + (* t1 is a value *)
+    + (* t1 是值 *)
       destruct IHHt2; subst...
-      * (* t2 is a value *)
-        (* If both [t1] and [t2] are values, then we know that
-           [t1 = tabs x T11 t12], since abstractions are the
-           only values that can have an arrow type.  But
-           [(tabs x T11 t12) t2 ==> [x:=t2]t12] by [ST_AppAbs]. *)
+      * (* t2 是值 *)
+        (* 如果 [t1] 和 [t2] 同时为值，那么我们可得
+           [t1 = tabs x T11 t12]，因为抽象是函数类型唯一可能的值。
+           但由规则 [ST_AppAbs] 可得
+           [(tabs x T11 t12) t2 ==> [x:=t2]t12]。*)
         inversion H; subst; try solve_by_invert.
         exists (subst x t2 t12)...
-      * (* t2 steps *)
-        (* If [t1] is a value and [t2 ==> t2'],
-           then [t1 t2 ==> t1 t2'] by [ST_App2]. *)
+      * (* t2 可前进 *)
+        (* 如果 [t1] 是值且 [t2 ==> t2']，
+           那么由 [ST_App2] 可得 [t1 t2 ==> t1 t2']。 *)
         inversion H0 as [t2' Hstp]. exists (tapp t1 t2')...
-    + (* t1 steps *)
-      (* Finally, If [t1 ==> t1'], then [t1 t2 ==> t1' t2]
-         by [ST_App1]. *)
+    + (* t1 可前进 *)
+      (* 最后，如果 [t1 ==> t1']，那么由 [ST_App1] 可得 [t1 t2 ==> t1' t2]。*)
       inversion H as [t1' Hstp]. exists (tapp t1' t2)...
   - (* T_Nat *)
     left...
   - (* T_Succ *)
     right.
     destruct IHHt...
-    + (* t1 is a value *)
+    + (* t1 是值 *)
       inversion H; subst; try solve_by_invert.
       exists (tnat (S n1))...
-    + (* t1 steps *)
+    + (* t1 可前进 *)
       inversion H as [t1' Hstp].
       exists (tsucc t1')...
   - (* T_Pred *)
     right.
     destruct IHHt...
-    + (* t1 is a value *)
+    + (* t1 是值 *)
       inversion H; subst; try solve_by_invert.
       exists (tnat (pred n1))...
-    + (* t1 steps *)
+    + (* t1 可前进 *)
       inversion H as [t1' Hstp].
       exists (tpred t1')...
   - (* T_Mult *)
     right.
     destruct IHHt1...
-    + (* t1 is a value *)
+    + (* t1 是值 *)
       destruct IHHt2...
-      * (* t2 is a value *)
+      * (* t2 是值 *)
         inversion H; subst; try solve_by_invert.
         inversion H0; subst; try solve_by_invert.
         exists (tnat (mult n1 n0))...
-      * (* t2 steps *)
+      * (* t2 可前进 *)
         inversion H0 as [t2' Hstp].
         exists (tmult t1 t2')...
-    + (* t1 steps *)
+    + (* t1 可前进 *)
       inversion H as [t1' Hstp].
       exists (tmult t1' t2)...
   - (* T_If0 *)
     right.
     destruct IHHt1...
-    + (* t1 is a value *)
+    + (* t1 是值 *)
       inversion H; subst; try solve_by_invert.
       destruct n1 as [|n1'].
       * (* n1=0 *)
         exists t2...
       * (* n1<>0 *)
         exists t3...
-    + (* t1 steps *)
+    + (* t1 可前进 *)
       inversion H as [t1' H0].
       exists (tif0 t1' t2 t3)...
   (* 请在此处解答 *)
@@ -1756,48 +1606,48 @@ Proof with eauto.
   (* 请在此处解答 *)
   - (* T_Inl *)
     destruct IHHt...
-    + (* t1 steps *)
+    + (* t1 可前进 *)
       right. inversion H as [t1' Hstp]...
-      (* exists (tinl _ t1')... *)
+      (* 存在 (tinl _ t1')... *)
   - (* T_Inr *)
     destruct IHHt...
-    + (* t1 steps *)
+    + (* t1 可前进 *)
       right. inversion H as [t1' Hstp]...
-      (* exists (tinr _ t1')... *)
+      (* 存在 (tinr _ t1')... *)
   - (* T_Case *)
     right.
     destruct IHHt1...
-    + (* t0 is a value *)
+    + (* t0 是值 *)
       inversion H; subst; try solve_by_invert.
-      * (* t0 is inl *)
+      * (* t0 是 inl *)
         exists ([x1:=v]t1)...
-      * (* t0 is inr *)
+      * (* t0 是 inr *)
         exists ([x2:=v]t2)...
-    + (* t0 steps *)
+    + (* t0 可前进 *)
       inversion H as [t0' Hstp].
       exists (tcase t0' x1 t1 x2 t2)...
   - (* T_Nil *)
     left...
   - (* T_Cons *)
     destruct IHHt1...
-    + (* head is a value *)
+    + (* 头部（head）是值 *)
       destruct IHHt2...
-      * (* tail steps *)
+      * (* 尾部（tail）可前进 *)
         right. inversion H0 as [t2' Hstp].
         exists (tcons t1 t2')...
-    + (* head steps *)
+    + (* 头部可前进 *)
       right. inversion H as [t1' Hstp].
       exists (tcons t1' t2)...
   - (* T_Lcase *)
     right.
     destruct IHHt1...
-    + (* t1 is a value *)
+    + (* t1 是值 *)
       inversion H; subst; try solve_by_invert.
       * (* t1=tnil *)
         exists t2...
       * (* t1=tcons v1 vl *)
         exists ([x2:=vl]([x1:=v1]t3))...
-    + (* t1 steps *)
+    + (* t1 可前进 *)
       inversion H as [t1' Hstp].
       exists (tlcase t1' t2 x1 x2 t3)...
   (* fix *)
@@ -1805,7 +1655,7 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Context Invariance *)
+(** *** 上下文不变性 *)
 
 Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
@@ -1818,7 +1668,7 @@ Inductive appears_free_in : string -> tm -> Prop :=
         y <> x  ->
         appears_free_in x t12 ->
         appears_free_in x (tabs y T11 t12)
-  (* nats *)
+  (* 自然数 *)
   | afi_succ : forall x t,
      appears_free_in x t ->
      appears_free_in x (tsucc t)
@@ -1840,11 +1690,11 @@ Inductive appears_free_in : string -> tm -> Prop :=
   | afi_if03 : forall x t1 t2 t3,
      appears_free_in x t3 ->
      appears_free_in x (tif0 t1 t2 t3)
-  (* pairs *)
+  (* 二元组 *)
   (* 请在此处解答 *)
   (* let *)
   (* 请在此处解答 *)
-  (* sums *)
+  (* 和 *)
   | afi_inl : forall x t T,
       appears_free_in x t ->
       appears_free_in x (tinl T t)
@@ -1862,7 +1712,7 @@ Inductive appears_free_in : string -> tm -> Prop :=
       x2 <> x ->
       appears_free_in x t2 ->
       appears_free_in x (tcase t0 x1 t1 x2 t2)
-  (* lists *)
+  (* 列表 *)
   | afi_cons1 : forall x t1 t2,
      appears_free_in x t1 ->
      appears_free_in x (tcons t1 t2)
@@ -1956,40 +1806,37 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Substitution *)
+(** *** 替换 *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
      (update Gamma x U) |- t \in S  ->
      empty |- v \in U   ->
      Gamma |- ([x:=v]t) \in S.
 Proof with eauto.
-  (* Theorem: If Gamma,x:U |- t : S and empty |- v : U, then
-     Gamma |- [x:=v]t : S. *)
+  (* 定理：如果 Gamma,x:U |- t : S 且 empty |- v : U，那么
+     Gamma |- [x:=v]t : S。 *)
   intros Gamma x U v t S Htypt Htypv.
   generalize dependent Gamma. generalize dependent S.
-  (* Proof: By induction on the term t.  Most cases follow
-     directly from the IH, with the exception of tvar
-     and tabs. These aren't automatic because we must
-     reason about how the variables interact. *)
+  (* 证明：对项 t 进行归纳。除了 tvar 和 tabs 外，多数情形可直接从 IH 得证。
+     他们不是自动完成的，因为我们需要推理变量之间如何交互。*)
   induction t;
     intros S Gamma Htypt; simpl; inversion Htypt; subst...
   - (* tvar *)
     simpl. rename s into y.
-    (* If t = y, we know that
-         [empty |- v : U] and
-         [Gamma,x:U |- y : S]
-       and, by inversion, [update Gamma x U y = Some S].  We want to
-       show that [Gamma |- [x:=v]y : S].
+    (* 如果 t = y，那么通过反演 [update Gamma x U y = Some S]，
+       我们知道
+         [empty |- v : U] 且
+         [Gamma,x:U |- y : S]。
+       我们想要证明 [Gamma |- [x:=v]y : S]。
 
-       There are two cases to consider: either [x=y] or [x<>y]. *)
+       有两个情形需要考虑： [x=y] 或 [x<>y]。 *)
     unfold update, t_update in H1.
     destruct (eqb_stringP x y).
     + (* x=y *)
-      (* If [x = y], then we know that [U = S], and that
-         [[x:=v]y = v].  So what we really must show is
-         that if [empty |- v : U] then [Gamma |- v : U].
-         We have already proven a more general version
-         of this theorem, called context invariance. *)
+      (* 如果 [x = y]，那么我们知道 [U = S]，并且
+         [[x:=v]y = v]。因此我们必须证明如果
+         [empty |- v : U] 那么 [Gamma |- v : U]。
+         我们已经证明了一个更一般的定理，叫做上下文不变性（context invariance）。*)
       subst.
       inversion H1; subst. clear H1.
       eapply context_invariance...
@@ -1998,39 +1845,36 @@ Proof with eauto.
         as [T' HT']...
       inversion HT'.
     + (* x<>y *)
-    (* If [x <> y], then [Gamma y = Some S] and the substitution has no
-       effect.  We can show that [Gamma |- y : S] by [T_Var]. *)
+    (* 如果 [x <> y]，那么 [Gamma y = Some S] 并且替换不会产生任何影响。
+      我们可以通过 [T_Var] 证明 [Gamma |- y : S]。 *)
       apply T_Var...
   - (* tabs *)
     rename s into y. rename t into T11.
-    (* If [t = tabs y T11 t0], then we know that
+    (* 如果 [t = tabs y T11 t0]， 那么我们知道
          [Gamma,x:U |- tabs y T11 t0 : T11->T12]
          [Gamma,x:U,y:T11 |- t0 : T12]
          [empty |- v : U]
-       As our IH, we know that forall S Gamma,
+       作为归纳假设（IH），我们知道对所有的 S Gamma，
          [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 : S].
-
-       We can calculate that
+       我们可以计算
          [x:=v]t = tabs y T11 (if eqb_string x y then t0 else [x:=v]t0)
-       And we must show that [Gamma |- [x:=v]t : T11->T12].  We know
-       we will do so using [T_Abs], so it remains to be shown that:
+       且我们必须证明 [Gamma |- [x:=v]t : T11->T12]。
+       我们知道可以通过 [T_Abs] 来达到此目的，因此剩下的便是证明：
          [Gamma,y:T11 |- if eqb_string x y then t0 else [x:=v]t0 : T12]
-       We consider two cases: [x = y] and [x <> y].
+       我们考虑两个情形： [x = y] 和 [x <> y]。
     *)
     apply T_Abs...
     destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
-    (* If [x = y], then the substitution has no effect.  Context
-       invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
-       equivalent.  Since the former context shows that
-       [t0 : T12], so does the latter. *)
+    (* 如果 [x = y]，那么替换不会产生任何影响。
+       上下文不变性展示了 [Gamma,y:U,y:T11] 和 [Gamma,y:T11] 是等价的。
+       因为前一个上下文展示了 [t0 : T12]，后者也同样。 *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
       destruct (eqb_string y x)...
     + (* x<>y *)
-      (* If [x <> y], then the IH and context invariance allow
-         us to show that
+      (* 如果 [x <> y]，那么归纳假设和上下文不变性允许我们证明
            [Gamma,x:U,y:T11 |- t0 : T12]       =>
            [Gamma,y:T11,x:U |- t0 : T12]       =>
            [Gamma,y:T11 |- [x:=v]t0 : T12] *)
@@ -2044,7 +1888,7 @@ Proof with eauto.
   - (* tcase *)
     rename s into x1. rename s0 into x2.
     eapply T_Case...
-    + (* left arm *)
+    + (* 左侧 *)
       destruct (eqb_stringP x x1) as [Hxx1|Hxx1].
       * (* x = x1 *)
         eapply context_invariance...
@@ -2056,7 +1900,7 @@ Proof with eauto.
         intros z Hafi.  unfold update, t_update.
         destruct (eqb_stringP x1 z) as [Hx1z|Hx1z]...
         subst. rewrite false_eqb_string...
-    + (* right arm *)
+    + (* 右侧 *)
       destruct (eqb_stringP x x2) as [Hxx2|Hxx2].
       * (* x = x2 *)
         eapply context_invariance...
@@ -2095,7 +1939,7 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Preservation *)
+(** *** 保型性 *)
 
 Theorem preservation : forall t t' T,
      empty |- t \in T  ->
@@ -2103,35 +1947,33 @@ Theorem preservation : forall t t' T,
      empty |- t' \in T.
 Proof with eauto.
   intros t t' T HT.
-  (* Theorem: If [empty |- t : T] and [t ==> t'], then
-     [empty |- t' : T]. *)
+  (* 定理：如果 [empty |- t : T] 且 [t ==> t']，那么
+     [empty |- t' : T]。 *)
   remember empty as Gamma. generalize dependent HeqGamma.
   generalize dependent t'.
-  (* Proof: By induction on the given typing derivation.  Many
-     cases are contradictory ([T_Var], [T_Abs]).  We show just
-     the interesting ones. *)
+  (* 证明：对给定的类型导出式进行归纳。许多情形是矛盾的（[T_Var], [T_Abs]），  
+     我们只证明有趣的那几个情形。*)
   induction HT;
     intros t' HeqGamma HE; subst; inversion HE; subst...
   - (* T_App *)
-    (* If the last rule used was [T_App], then [t = t1 t2], and
-       three rules could have been used to show [t ==> t']:
-       [ST_App1], [ST_App2], and [ST_AppAbs]. In the first two
-       cases, the result follows directly from the IH. *)
+    (* 如果最后被使用的规则是 [T_App]，那么 [t = t1 t2]，
+        且有三个规则会被用于证明 [t ==> t']：
+       [ST_App1]，[ST_App2]，和 [ST_AppAbs]。
+       在前两个情形中，结果可直接从归纳假设中得证。 *)
     inversion HE; subst...
     + (* ST_AppAbs *)
-      (* For the third case, suppose
+      (* 对于第三个情形，假设
            [t1 = tabs x T11 t12]
-         and
-           [t2 = v2].
-         We must show that [empty |- [x:=v2]t12 : T2].
-         We know by assumption that
+         且
+           [t2 = v2]。
+         我们必须证明 [empty |- [x:=v2]t12 : T2]。
+         由假设，我们可得
              [empty |- tabs x T11 t12 : T1->T2]
-         and by inversion
+         且，由反演可得
              [x:T1 |- t12 : T2]
-         We have already proven that substitution preserves
-         typing, and
+         我们已经证明了类型在替换下的不变性，且根据假设可得
              [empty |- v2 : T1]
-         by assumption, so we are done. *)
+         证毕。 *)
       apply substitution_preserves_typing with T1...
       inversion HT1...
   (* fst and snd *)
