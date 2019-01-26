@@ -128,3 +128,5 @@ Print Assumptions slow_assignment_dec_correct.
 idtac "---------- factorial_dec ---------".
 idtac "MANUAL".
 Abort.
+
+(* Sat Jan 26 15:15:59 UTC 2019 *)

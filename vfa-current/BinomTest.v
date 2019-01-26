@@ -223,3 +223,5 @@ Print Assumptions BinomQueue.smash_elems.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:18:47 UTC 2019 *)

@@ -30,11 +30,12 @@
     preservation theorem. *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Coq.Arith.Arith.
-Require Import Coq.omega.Omega.
+From Coq Require Import Strings.String.
+From Coq Require Import Arith.Arith.
+From Coq Require Import omega.Omega.
 From PLF Require Import Maps.
 From PLF Require Import Smallstep.
-Require Import Coq.Lists.List.
+From Coq Require Import Lists.List.
 Import ListNotations.
 
 (* ################################################################# *)
@@ -114,10 +115,10 @@ Module STLCRef.
 *)
 
 Inductive ty : Type :=
-  | TNat   : ty
-  | TUnit  : ty
-  | TArrow : ty -> ty -> ty
-  | TRef   : ty -> ty.
+  | Nat   : ty
+  | Unit  : ty
+  | Arrow : ty -> ty -> ty
+  | Ref   : ty -> ty.
 
 (* ----------------------------------------------------------------- *)
 (** *** Terms *)
@@ -135,33 +136,33 @@ Inductive ty : Type :=
 
 Inductive tm  : Type :=
   (* STLC with numbers: *)
-  | tvar    : string -> tm
-  | tapp    : tm -> tm -> tm
-  | tabs    : string -> ty -> tm -> tm
-  | tnat    : nat -> tm
-  | tsucc   : tm -> tm
-  | tpred   : tm -> tm
-  | tmult   : tm -> tm -> tm
-  | tif0    : tm -> tm -> tm -> tm
+  | var    : string -> tm
+  | app    : tm -> tm -> tm
+  | abs    : string -> ty -> tm -> tm
+  | const  : nat -> tm
+  | scc    : tm -> tm
+  | prd    : tm -> tm
+  | mlt    : tm -> tm -> tm
+  | test0  : tm -> tm -> tm -> tm
   (* New terms: *)
-  | tunit   : tm
-  | tref    : tm -> tm
-  | tderef  : tm -> tm
-  | tassign : tm -> tm -> tm
-  | tloc    : nat -> tm.
+  | unit   : tm
+  | ref    : tm -> tm
+  | deref  : tm -> tm
+  | assign : tm -> tm -> tm
+  | loc    : nat -> tm.
 
 (** Intuitively:
-    - [ref t] (formally, [tref t]) allocates a new reference cell
+    - [ref t] (formally, [ref t]) allocates a new reference cell
       with the value [t] and reduces to the location of the newly
       allocated cell;
 
-    - [!t] (formally, [tderef t]) reduces to the contents of the
+    - [!t] (formally, [deref t]) reduces to the contents of the
       cell referenced by [t];
 
-    - [t1 := t2] (formally, [tassign t1 t2]) assigns [t2] to the
+    - [t1 := t2] (formally, [assign t1 t2]) assigns [t2] to the
       cell referenced by [t1]; and
 
-    - [l] (formally, [tloc l]) is a reference to the cell at
+    - [l] (formally, [loc l]) is a reference to the cell at
       location [l].  We'll discuss locations later. *)
 
 (** In informal examples, we'll also freely use the extensions
@@ -201,13 +202,13 @@ Inductive tm  : Type :=
 
 Inductive value : tm -> Prop :=
   | v_abs  : forall x T t,
-      value (tabs x T t)
+      value (abs x T t)
   | v_nat : forall n,
-      value (tnat n)
+      value (const n)
   | v_unit :
-      value tunit
+      value unit
   | v_loc : forall l,
-      value (tloc l).
+      value (loc l).
 
 Hint Constructors value.
 
@@ -216,31 +217,31 @@ Hint Constructors value.
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar x'       =>
+  | var x'       =>
       if eqb_string x x' then s else t
-  | tapp t1 t2    =>
-      tapp (subst x s t1) (subst x s t2)
-  | tabs x' T t1  =>
-      if eqb_string x x' then t else tabs x' T (subst x s t1)
-  | tnat n        =>
+  | app t1 t2    =>
+      app (subst x s t1) (subst x s t2)
+  | abs x' T t1  =>
+      if eqb_string x x' then t else abs x' T (subst x s t1)
+  | const n        =>
       t
-  | tsucc t1      =>
-      tsucc (subst x s t1)
-  | tpred t1      =>
-      tpred (subst x s t1)
-  | tmult t1 t2   =>
-      tmult (subst x s t1) (subst x s t2)
-  | tif0 t1 t2 t3 =>
-      tif0 (subst x s t1) (subst x s t2) (subst x s t3)
-  | tunit         =>
+  | scc t1      =>
+      scc (subst x s t1)
+  | prd t1      =>
+      prd (subst x s t1)
+  | mlt t1 t2   =>
+      mlt (subst x s t1) (subst x s t2)
+  | test0 t1 t2 t3 =>
+      test0 (subst x s t1) (subst x s t2) (subst x s t3)
+  | unit         =>
       t
-  | tref t1       =>
-      tref (subst x s t1)
-  | tderef t1     =>
-      tderef (subst x s t1)
-  | tassign t1 t2 =>
-      tassign (subst x s t1) (subst x s t2)
-  | tloc _        =>
+  | ref t1       =>
+      ref (subst x s t1)
+  | deref t1     =>
+      deref (subst x s t1)
+  | assign t1 t2 =>
+      assign (subst x s t1) (subst x s t2)
+  | loc _        =>
       t
   end.
 
@@ -274,12 +275,12 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
     assignments:
 
        r:=succ(!r); r:=succ(!r); r:=succ(!r); r:=succ(!r); !r
-*)
-(** Formally, we introduce sequencing as a _derived form_
+
+    Formally, we introduce sequencing as a _derived form_
     [tseq] that expands into an abstraction and an application. *)
 
 Definition tseq t1 t2 :=
-  tapp (tabs "x" TUnit t2) t1.
+  app (abs "x" Unit t2) t1.
 
 (* ================================================================= *)
 (** ** References and Aliasing *)
@@ -379,13 +380,15 @@ Definition tseq t1 t2 :=
       r2  // yields 1, not 2!
 *)
 
-(** **** 练习：1 星, optional (store_draw)  *)
-(** Draw (on paper) the contents of the store at the point in
+(** **** 练习：1 星, standard, optional (store_draw)  
+
+    Draw (on paper) the contents of the store at the point in
     execution where the first two [let]s have finished and the third
     one is about to begin. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ================================================================= *)
 (** ** References to Compound Types *)
@@ -432,8 +435,9 @@ Definition tseq t1 t2 :=
     useful, allowing us to define data structures such as mutable
     lists and trees. *)
 
-(** **** 练习：2 星, recommended (compact_update)  *)
-(** If we defined [update] more compactly like this
+(** **** 练习：2 星, standard, recommended (compact_update)  
+
+    If we defined [update] more compactly like this
 
       update = \a:NatArray. \m:Nat. \v:Nat.
                   a := (\n:Nat. if equal m n then v else (!a) n)
@@ -493,8 +497,9 @@ Definition manual_grade_for_compact_update : option (nat*string) := None.
     names for the same storage cell -- one with type [Ref Nat] and the
     other with type [Ref Bool]. *)
 
-(** **** 练习：2 星 (type_safety_violation)  *)
-(** Show how this can lead to a violation of type safety. *)
+(** **** 练习：2 星, standard (type_safety_violation)  
+
+    Show how this can lead to a violation of type safety. *)
 
 (* 请在此处解答 *)
 
@@ -565,7 +570,7 @@ Definition manual_grade_for_type_safety_violation : option (nat*string) := None.
     before is that, in IMP, a program could modify any location at any
     time, so states had to be ready to map _any_ variable to a value.
     However, in the STLC with references, the only way to create a
-    reference cell is with [tref t1], which puts the value of [t1]
+    reference cell is with [ref t1], which puts the value of [t1]
     in a new reference cell and reduces to the location of the newly
     created reference cell. When reducing such an expression, we can
     just add a new reference cell to the end of the list representing
@@ -580,7 +585,7 @@ Definition store := list tm.
     that we don't will require a bit of work.) *)
 
 Definition store_lookup (n:nat) (st:store) :=
-  nth n st tunit.
+  nth n st unit.
 
 (** To update the store, we use the [replace] function, which replaces
     the contents of a cell at a particular index. *)
@@ -658,7 +663,7 @@ Qed.
     term can cause side effects on the store, and these may affect the
     reduction of other terms in the future, the reduction rules need
     to return a new store.  Thus, the shape of the single-step
-    reduction relation needs to change from [t ==> t'] to [t / st ==> t' /
+    reduction relation needs to change from [t --> t'] to [t / st --> t' /
     st'], where [st] and [st'] are the starting and ending states of
     the store.
 
@@ -667,15 +672,15 @@ Qed.
 
                                value v2
                 -------------------------------------- (ST_AppAbs)
-                (\x:T.t12) v2 / st ==> [x:=v2]t12 / st
+                (\x:T.t12) v2 / st --> [x:=v2]t12 / st
 
-                        t1 / st ==> t1' / st'
+                        t1 / st --> t1' / st'
                      --------------------------- (ST_App1)
-                     t1 t2 / st ==> t1' t2 / st'
+                     t1 t2 / st --> t1' t2 / st'
 
-                  value v1 t2 / st ==> t2' / st'
+                  value v1 t2 / st --> t2' / st'
                   ---------------------------------- (ST_App2)
-                     v1 t2 / st ==> v1 t2' / st'
+                     v1 t2 / st --> v1 t2' / st'
 
     Note that the first rule here returns the store unchanged, since
     function application, in itself, has no side effects.  The other
@@ -699,9 +704,9 @@ Qed.
     First, to reduce a dereferencing expression [!t1], we must first
     reduce [t1] until it becomes a value:
 
-                        t1 / st ==> t1' / st'
+                        t1 / st --> t1' / st'
                        ----------------------- (ST_Deref)
-                       !t1 / st ==> !t1' / st'
+                       !t1 / st --> !t1' / st'
 
     Once [t1] has finished reducing, we should have an expression of
     the form [!l], where [l] is some location.  (A term that attempts
@@ -714,20 +719,19 @@ Qed.
 
                                l < |st|
                      ---------------------------------- (ST_DerefLoc)
-                     !(loc l) / st ==> lookup l st / st
-
+                     !(loc l) / st --> lookup l st / st
 
     Next, to reduce an assignment expression [t1:=t2], we must first
     reduce [t1] until it becomes a value (a location), and then
     reduce [t2] until it becomes a value (of any sort):
 
-                        t1 / st ==> t1' / st'
+                        t1 / st --> t1' / st'
                  ----------------------------------- (ST_Assign1)
-                 t1 := t2 / st ==> t1' := t2 / st'
+                 t1 := t2 / st --> t1' := t2 / st'
 
-                        t2 / st ==> t2' / st'
+                        t2 / st --> t2' / st'
                   --------------------------------- (ST_Assign2)
-                  v1 := t2 / st ==> v1 := t2' / st'
+                  v1 := t2 / st --> v1 := t2' / st'
 
     Once we have finished with [t1] and [t2], we have an expression of
     the form [l:=v2], which we execute by updating the store to make
@@ -735,7 +739,7 @@ Qed.
 
                                l < |st|
                 ------------------------------------- (ST_Assign)
-                loc l := v2 / st ==> unit / [l:=v2]st
+                loc l := v2 / st --> unit / [l:=v2]st
 
     The notation [[l:=v2]st] means "the store that maps [l] to [v2]
     and maps all other locations to the same thing as [st.]"  Note
@@ -745,16 +749,16 @@ Qed.
     Finally, to reduct an expression of the form [ref t1], we first
     reduce [t1] until it becomes a value:
 
-                        t1 / st ==> t1' / st'
+                        t1 / st --> t1' / st'
                     ----------------------------- (ST_Ref)
-                    ref t1 / st ==> ref t1' / st'
+                    ref t1 / st --> ref t1' / st'
 
     Then, to reduce the [ref] itself, we choose a fresh location at
     the end of the current store -- i.e., location [|st|] -- and yield
     a new store that extends [st] with the new value [v1].
 
                    -------------------------------- (ST_RefValue)
-                   ref v1 / st ==> loc |st| / st,v1
+                   ref v1 / st --> loc |st| / st,v1
 
     The value resulting from this step is the newly allocated location
     itself.  (Formally, [st,v1] means [st ++ v1::nil] -- i.e., to add
@@ -773,7 +777,7 @@ Qed.
 
     Here are the rules again, formally: *)
 
-Reserved Notation "t1 '/' st1 '==>' t2 '/' st2"
+Reserved Notation "t1 '/' st1 '-->' t2 '/' st2"
   (at level 40, st1 at level 39, t2 at level 39).
 
 Import ListNotations.
@@ -781,65 +785,65 @@ Import ListNotations.
 Inductive step : tm * store -> tm * store -> Prop :=
   | ST_AppAbs : forall x T t12 v2 st,
          value v2 ->
-         tapp (tabs x T t12) v2 / st ==> [x:=v2]t12 / st
+         app (abs x T t12) v2 / st --> [x:=v2]t12 / st
   | ST_App1 : forall t1 t1' t2 st st',
-         t1 / st ==> t1' / st' ->
-         tapp t1 t2 / st ==> tapp t1' t2 / st'
+         t1 / st --> t1' / st' ->
+         app t1 t2 / st --> app t1' t2 / st'
   | ST_App2 : forall v1 t2 t2' st st',
          value v1 ->
-         t2 / st ==> t2' / st' ->
-         tapp v1 t2 / st ==> tapp v1 t2'/ st'
+         t2 / st --> t2' / st' ->
+         app v1 t2 / st --> app v1 t2'/ st'
   | ST_SuccNat : forall n st,
-         tsucc (tnat n) / st ==> tnat (S n) / st
+         scc (const n) / st --> const (S n) / st
   | ST_Succ : forall t1 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tsucc t1 / st ==> tsucc t1' / st'
+         t1 / st --> t1' / st' ->
+         scc t1 / st --> scc t1' / st'
   | ST_PredNat : forall n st,
-         tpred (tnat n) / st ==> tnat (pred n) / st
+         prd (const n) / st --> const (pred n) / st
   | ST_Pred : forall t1 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tpred t1 / st ==> tpred t1' / st'
+         t1 / st --> t1' / st' ->
+         prd t1 / st --> prd t1' / st'
   | ST_MultNats : forall n1 n2 st,
-         tmult (tnat n1) (tnat n2) / st ==> tnat (mult n1 n2) / st
+         mlt (const n1) (const n2) / st --> const (mult n1 n2) / st
   | ST_Mult1 : forall t1 t2 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tmult t1 t2 / st ==> tmult t1' t2 / st'
+         t1 / st --> t1' / st' ->
+         mlt t1 t2 / st --> mlt t1' t2 / st'
   | ST_Mult2 : forall v1 t2 t2' st st',
          value v1 ->
-         t2 / st ==> t2' / st' ->
-         tmult v1 t2 / st ==> tmult v1 t2' / st'
+         t2 / st --> t2' / st' ->
+         mlt v1 t2 / st --> mlt v1 t2' / st'
   | ST_If0 : forall t1 t1' t2 t3 st st',
-         t1 / st ==> t1' / st' ->
-         tif0 t1 t2 t3 / st ==> tif0 t1' t2 t3 / st'
+         t1 / st --> t1' / st' ->
+         test0 t1 t2 t3 / st --> test0 t1' t2 t3 / st'
   | ST_If0_Zero : forall t2 t3 st,
-         tif0 (tnat 0) t2 t3 / st ==> t2 / st
+         test0 (const 0) t2 t3 / st --> t2 / st
   | ST_If0_Nonzero : forall n t2 t3 st,
-         tif0 (tnat (S n)) t2 t3 / st ==> t3 / st
+         test0 (const (S n)) t2 t3 / st --> t3 / st
   | ST_RefValue : forall v1 st,
          value v1 ->
-         tref v1 / st ==> tloc (length st) / (st ++ v1::nil)
+         ref v1 / st --> loc (length st) / (st ++ v1::nil)
   | ST_Ref : forall t1 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tref t1 /  st ==> tref t1' /  st'
+         t1 / st --> t1' / st' ->
+         ref t1 /  st --> ref t1' /  st'
   | ST_DerefLoc : forall st l,
          l < length st ->
-         tderef (tloc l) / st ==> store_lookup l st / st
+         deref (loc l) / st --> store_lookup l st / st
   | ST_Deref : forall t1 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tderef t1 / st ==> tderef t1' / st'
+         t1 / st --> t1' / st' ->
+         deref t1 / st --> deref t1' / st'
   | ST_Assign : forall v2 l st,
          value v2 ->
          l < length st ->
-         tassign (tloc l) v2 / st ==> tunit / replace l v2 st
+         assign (loc l) v2 / st --> unit / replace l v2 st
   | ST_Assign1 : forall t1 t1' t2 st st',
-         t1 / st ==> t1' / st' ->
-         tassign t1 t2 / st ==> tassign t1' t2 / st'
+         t1 / st --> t1' / st' ->
+         assign t1 t2 / st --> assign t1' t2 / st'
   | ST_Assign2 : forall v1 t2 t2' st st',
          value v1 ->
-         t2 / st ==> t2' / st' ->
-         tassign v1 t2 / st ==> tassign v1 t2' / st'
+         t2 / st --> t2' / st' ->
+         assign v1 t2 / st --> assign v1 t2' / st'
 
-where "t1 '/' st1 '==>' t2 '/' st2" := (step (t1,st1) (t2,st2)).
+where "t1 '/' st1 '-->' t2 '/' st2" := (step (t1,st1) (t2,st2)).
 
 (** One slightly ugly point should be noted here: In the [ST_RefValue]
     rule, we extend the state by writing [st ++ v1::nil] rather than
@@ -850,7 +854,7 @@ where "t1 '/' st1 '==>' t2 '/' st2" := (step (t1,st1) (t2,st2)).
 Hint Constructors step.
 
 Definition multistep := (multi step).
-Notation "t1 '/' st '==>*' t2 '/' st'" :=
+Notation "t1 '/' st '-->*' t2 '/' st'" :=
                (multistep (t1,st) (t2,st'))
                (at level 40, st at level 39, t2 at level 39).
 
@@ -861,7 +865,6 @@ Notation "t1 '/' st '==>*' t2 '/' st'" :=
     same as for the STLC: partial maps from identifiers to types. *)
 
 Definition context := partial_map ty.
-
 
 (* ================================================================= *)
 (** ** Store typings *)
@@ -934,8 +937,9 @@ Definition context := partial_map ty.
    [\x:Nat. (!(loc 1)) x, \x:Nat. (!(loc 0)) x]
 *)
 
-(** **** 练习：2 星 (cyclic_store)  *)
-(** Can you find a term whose reduction will create this particular
+(** **** 练习：2 星, standard (cyclic_store)  
+
+    Can you find a term whose reduction will create this particular
     cyclic store? *)
 
 (* 请勿修改下面这一行： *)
@@ -972,7 +976,7 @@ Definition store_ty := list ty.
     index. *)
 
 Definition store_Tlookup (n:nat) (ST:store_ty) :=
-  nth n ST TUnit.
+  nth n ST Unit.
 
 (** Suppose we are given a store typing [ST] describing the store
     [st] in which some term [t] will be reduced.  Then we can use
@@ -985,7 +989,6 @@ Definition store_Tlookup (n:nat) (ST:store_ty) :=
                                  l < |ST|
                    -------------------------------------
                    Gamma; ST |- loc l : Ref (lookup l ST)
-
 
     That is, as long as [l] is a valid location, we can compute the
     type of [l] just by looking it up in [ST].  Typing is again a
@@ -1025,46 +1028,46 @@ Reserved Notation "Gamma ';' ST '|-' t '\in' T" (at level 40).
 Inductive has_type : context -> store_ty -> tm -> ty -> Prop :=
   | T_Var : forall Gamma ST x T,
       Gamma x = Some T ->
-      Gamma; ST |- (tvar x) \in T
+      Gamma; ST |- (var x) \in T
   | T_Abs : forall Gamma ST x T11 T12 t12,
       (update Gamma x T11); ST |- t12 \in T12 ->
-      Gamma; ST |- (tabs x T11 t12) \in (TArrow T11 T12)
+      Gamma; ST |- (abs x T11 t12) \in (Arrow T11 T12)
   | T_App : forall T1 T2 Gamma ST t1 t2,
-      Gamma; ST |- t1 \in (TArrow T1 T2) ->
+      Gamma; ST |- t1 \in (Arrow T1 T2) ->
       Gamma; ST |- t2 \in T1 ->
-      Gamma; ST |- (tapp t1 t2) \in T2
+      Gamma; ST |- (app t1 t2) \in T2
   | T_Nat : forall Gamma ST n,
-      Gamma; ST |- (tnat n) \in TNat
+      Gamma; ST |- (const n) \in Nat
   | T_Succ : forall Gamma ST t1,
-      Gamma; ST |- t1 \in TNat ->
-      Gamma; ST |- (tsucc t1) \in TNat
+      Gamma; ST |- t1 \in Nat ->
+      Gamma; ST |- (scc t1) \in Nat
   | T_Pred : forall Gamma ST t1,
-      Gamma; ST |- t1 \in TNat ->
-      Gamma; ST |- (tpred t1) \in TNat
+      Gamma; ST |- t1 \in Nat ->
+      Gamma; ST |- (prd t1) \in Nat
   | T_Mult : forall Gamma ST t1 t2,
-      Gamma; ST |- t1 \in TNat ->
-      Gamma; ST |- t2 \in TNat ->
-      Gamma; ST |- (tmult t1 t2) \in TNat
+      Gamma; ST |- t1 \in Nat ->
+      Gamma; ST |- t2 \in Nat ->
+      Gamma; ST |- (mlt t1 t2) \in Nat
   | T_If0 : forall Gamma ST t1 t2 t3 T,
-      Gamma; ST |- t1 \in TNat ->
+      Gamma; ST |- t1 \in Nat ->
       Gamma; ST |- t2 \in T ->
       Gamma; ST |- t3 \in T ->
-      Gamma; ST |- (tif0 t1 t2 t3) \in T
+      Gamma; ST |- (test0 t1 t2 t3) \in T
   | T_Unit : forall Gamma ST,
-      Gamma; ST |- tunit \in TUnit
+      Gamma; ST |- unit \in Unit
   | T_Loc : forall Gamma ST l,
       l < length ST ->
-      Gamma; ST |- (tloc l) \in (TRef (store_Tlookup l ST))
+      Gamma; ST |- (loc l) \in (Ref (store_Tlookup l ST))
   | T_Ref : forall Gamma ST t1 T1,
       Gamma; ST |- t1 \in T1 ->
-      Gamma; ST |- (tref t1) \in (TRef T1)
+      Gamma; ST |- (ref t1) \in (Ref T1)
   | T_Deref : forall Gamma ST t1 T11,
-      Gamma; ST |- t1 \in (TRef T11) ->
-      Gamma; ST |- (tderef t1) \in T11
+      Gamma; ST |- t1 \in (Ref T11) ->
+      Gamma; ST |- (deref t1) \in T11
   | T_Assign : forall Gamma ST t1 t2 T11,
-      Gamma; ST |- t1 \in (TRef T11) ->
+      Gamma; ST |- t1 \in (Ref T11) ->
       Gamma; ST |- t2 \in T11 ->
-      Gamma; ST |- (tassign t1 t2) \in TUnit
+      Gamma; ST |- (assign t1 t2) \in Unit
 
 where "Gamma ';' ST '|-' t '\in' T" := (has_type Gamma ST t T).
 
@@ -1117,7 +1120,7 @@ Hint Constructors has_type.
 
 Theorem preservation_wrong1 : forall ST T t st t' st',
   empty; ST |- t \in T ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   empty; ST |- t' \in T.
 Abort.
 
@@ -1145,8 +1148,9 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     typing to the typing relation.  This allows us to type circular
     stores like the one we saw above. *)
 
-(** **** 练习：2 星 (store_not_unique)  *)
-(** Can you find a store [st], and two
+(** **** 练习：2 星, standard (store_not_unique)  
+
+    Can you find a store [st], and two
     different store typings [ST1] and [ST2] such that both
     [ST1 |- st] and [ST2 |- st]? *)
 
@@ -1161,7 +1165,7 @@ Definition manual_grade_for_store_not_unique : option (nat*string) := None.
 
 Theorem preservation_wrong2 : forall ST T t st t' st',
   empty; ST |- t \in T ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   store_well_typed ST st ->
   empty; ST |- t' \in T.
 Abort.
@@ -1256,7 +1260,7 @@ Qed.
 Definition preservation_theorem := forall ST t t' T st st',
   empty; ST |- t \in T ->
   store_well_typed ST st ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   exists ST',
     (extends ST' ST /\
      empty; ST' |- t' \in T /\
@@ -1289,44 +1293,44 @@ Definition preservation_theorem := forall ST t t' T st st',
 
 Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
-      appears_free_in x (tvar x)
+      appears_free_in x (var x)
   | afi_app1 : forall x t1 t2,
-      appears_free_in x t1 -> appears_free_in x (tapp t1 t2)
+      appears_free_in x t1 -> appears_free_in x (app t1 t2)
   | afi_app2 : forall x t1 t2,
-      appears_free_in x t2 -> appears_free_in x (tapp t1 t2)
+      appears_free_in x t2 -> appears_free_in x (app t1 t2)
   | afi_abs : forall x y T11 t12,
       y <> x  ->
       appears_free_in x t12 ->
-      appears_free_in x (tabs y T11 t12)
+      appears_free_in x (abs y T11 t12)
   | afi_succ : forall x t1,
       appears_free_in x t1 ->
-      appears_free_in x (tsucc t1)
+      appears_free_in x (scc t1)
   | afi_pred : forall x t1,
       appears_free_in x t1 ->
-      appears_free_in x (tpred t1)
+      appears_free_in x (prd t1)
   | afi_mult1 : forall x t1 t2,
       appears_free_in x t1 ->
-      appears_free_in x (tmult t1 t2)
+      appears_free_in x (mlt t1 t2)
   | afi_mult2 : forall x t1 t2,
       appears_free_in x t2 ->
-      appears_free_in x (tmult t1 t2)
+      appears_free_in x (mlt t1 t2)
   | afi_if0_1 : forall x t1 t2 t3,
       appears_free_in x t1 ->
-      appears_free_in x (tif0 t1 t2 t3)
+      appears_free_in x (test0 t1 t2 t3)
   | afi_if0_2 : forall x t1 t2 t3,
       appears_free_in x t2 ->
-      appears_free_in x (tif0 t1 t2 t3)
+      appears_free_in x (test0 t1 t2 t3)
   | afi_if0_3 : forall x t1 t2 t3,
       appears_free_in x t3 ->
-      appears_free_in x (tif0 t1 t2 t3)
+      appears_free_in x (test0 t1 t2 t3)
   | afi_ref : forall x t1,
-      appears_free_in x t1 -> appears_free_in x (tref t1)
+      appears_free_in x t1 -> appears_free_in x (ref t1)
   | afi_deref : forall x t1,
-      appears_free_in x t1 -> appears_free_in x (tderef t1)
+      appears_free_in x t1 -> appears_free_in x (deref t1)
   | afi_assign1 : forall x t1 t2,
-      appears_free_in x t1 -> appears_free_in x (tassign t1 t2)
+      appears_free_in x t1 -> appears_free_in x (assign t1 t2)
   | afi_assign2 : forall x t1 t2,
-      appears_free_in x t2 -> appears_free_in x (tassign t1 t2).
+      appears_free_in x t2 -> appears_free_in x (assign t1 t2).
 
 Hint Constructors appears_free_in.
 
@@ -1386,7 +1390,7 @@ Proof with eauto.
   generalize dependent Gamma. generalize dependent T.
   induction t; intros T Gamma H;
     inversion H; subst; simpl...
-  - (* tvar *)
+  - (* var *)
     rename s0 into y.
     destruct (eqb_stringP x y).
     + (* x = y *)
@@ -1401,7 +1405,7 @@ Proof with eauto.
     + (* x <> y *)
       apply T_Var.
       rewrite update_neq in H3...
-  - (* tabs *) subst.
+  - (* abs *) subst.
     rename s0 into y.
     destruct (eqb_stringP x y).
     + (* x = y *)
@@ -1527,7 +1531,7 @@ Qed.
 Theorem preservation : forall ST t t' T st st',
   empty; ST |- t \in T ->
   store_well_typed ST st ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   exists ST',
     (extends ST' ST /\
      empty; ST' |- t' \in T /\
@@ -1582,8 +1586,8 @@ Proof with eauto using store_weakening, extends_refl.
     split.
       apply extends_app.
     split.
-      replace (TRef T1)
-        with (TRef (store_Tlookup (length st) (ST ++ T1::nil))).
+      replace (Ref T1)
+        with (Ref (store_Tlookup (length st) (ST ++ T1::nil))).
       apply T_Loc.
       rewrite <- H. rewrite app_length, plus_comm. simpl. omega.
       unfold store_Tlookup. rewrite <- H. rewrite nth_eq_last.
@@ -1619,8 +1623,9 @@ Proof with eauto using store_weakening, extends_refl.
     exists ST'...
 Qed.
 
-(** **** 练习：3 星 (preservation_informal)  *)
-(** Write a careful informal proof of the preservation theorem,
+(** **** 练习：3 星, standard (preservation_informal)  
+
+    Write a careful informal proof of the preservation theorem,
     concentrating on the [T_App], [T_Deref], [T_Assign], and [T_Ref]
     cases.
 
@@ -1641,7 +1646,7 @@ Definition manual_grade_for_preservation_informal : option (nat*string) := None.
 Theorem progress : forall ST t T st,
   empty; ST |- t \in T ->
   store_well_typed ST st ->
-  (value t \/ exists t', exists st', t / st ==> t' / st').
+  (value t \/ exists t' st', t / st --> t' / st').
 Proof with eauto.
   intros ST t T st Ht HST. remember (@empty ty) as Gamma.
   induction Ht; subst; try solve_by_invert...
@@ -1652,28 +1657,28 @@ Proof with eauto.
       destruct IHHt2 as [Ht2p | Ht2p]...
       * (* t2 steps *)
         inversion Ht2p as [t2' [st' Hstep]].
-        exists (tapp (tabs x T t) t2'). exists st'...
+        exists (app (abs x T t) t2'), st'...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tapp t1' t2). exists st'...
+      exists (app t1' t2), st'...
   - (* T_Succ *)
     right. destruct IHHt as [Ht1p | Ht1p]...
     + (* t1 is a value *)
       inversion Ht1p; subst; try solve [ inversion Ht ].
-      * (* t1 is a tnat *)
-        exists (tnat (S n)). exists st...
+      * (* t1 is a const *)
+        exists (const (S n)), st...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tsucc t1'). exists st'...
+      exists (scc t1'), st'...
   - (* T_Pred *)
     right. destruct IHHt as [Ht1p | Ht1p]...
     + (* t1 is a value *)
       inversion Ht1p; subst; try solve [inversion Ht ].
-      * (* t1 is a tnat *)
-        exists (tnat (pred n)). exists st...
+      * (* t1 is a const *)
+        exists (const (pred n)), st...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tpred t1'). exists st'...
+      exists (prd t1'), st'...
   - (* T_Mult *)
     right. destruct IHHt1 as [Ht1p | Ht1p]...
     + (* t1 is a value *)
@@ -1681,28 +1686,28 @@ Proof with eauto.
       destruct IHHt2 as [Ht2p | Ht2p]...
       * (* t2 is a value *)
         inversion Ht2p; subst; try solve [inversion Ht2].
-        exists (tnat (mult n n0)). exists st...
+        exists (const (mult n n0)), st...
       * (* t2 steps *)
         inversion Ht2p as [t2' [st' Hstep]].
-        exists (tmult (tnat n) t2'). exists st'...
+        exists (mlt (const n) t2'), st'...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tmult t1' t2). exists st'...
+      exists (mlt t1' t2), st'...
   - (* T_If0 *)
     right. destruct IHHt1 as [Ht1p | Ht1p]...
     + (* t1 is a value *)
       inversion Ht1p; subst; try solve [inversion Ht1].
       destruct n.
-      * (* n = 0 *) exists t2. exists st...
-      * (* n = S n' *) exists t3. exists st...
+      * (* n = 0 *) exists t2, st...
+      * (* n = S n' *) exists t3, st...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tif0 t1' t2 t3). exists st'...
+      exists (test0 t1' t2 t3), st'...
   - (* T_Ref *)
     right. destruct IHHt as [Ht1p | Ht1p]...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tref t1'). exists st'...
+      exists (ref t1'), st'...
   - (* T_Deref *)
     right. destruct IHHt as [Ht1p | Ht1p]...
     + (* t1 is a value *)
@@ -1712,7 +1717,7 @@ Proof with eauto.
       rewrite <- H...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tderef t1'). exists st'...
+      exists (deref t1'), st'...
   - (* T_Assign *)
     right. destruct IHHt1 as [Ht1p|Ht1p]...
     + (* t1 is a value *)
@@ -1724,10 +1729,10 @@ Proof with eauto.
         rewrite H in H5...
       * (* t2 steps *)
         inversion Ht2p as [t2' [st' Hstep]].
-        exists (tassign t1 t2'). exists st'...
+        exists (assign t1 t2'), st'...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tassign t1' t2). exists st'...
+      exists (assign t1' t2), st'...
 Qed.
 
 (* ################################################################# *)
@@ -1777,14 +1782,14 @@ Module RefsAndNontermination.
 Import ExampleVariables.
 
 Definition loop_fun :=
-  tabs x TUnit (tapp (tderef (tvar r)) tunit).
+  abs x Unit (app (deref (var r)) unit).
 
 Definition loop :=
-  tapp
-    (tabs r (TRef (TArrow TUnit TUnit))
-      (tseq (tassign (tvar r) loop_fun)
-              (tapp (tderef (tvar r)) tunit)))
-    (tref (tabs x TUnit tunit)).
+  app
+    (abs r (Ref (Arrow Unit Unit))
+      (tseq (assign (var r) loop_fun)
+              (app (deref (var r)) unit)))
+    (ref (abs x Unit unit)).
 
 (** This term is well typed: *)
 
@@ -1805,9 +1810,9 @@ Qed.
 
 (** To show formally that the term diverges, we first define the
     [step_closure] of the single-step reduction relation, written
-    [==>+].  This is just like the reflexive step closure of
-    single-step reduction (which we're been writing [==>*]), except
-    that it is not reflexive: [t ==>+ t'] means that [t] can reach
+    [-->+].  This is just like the reflexive step closure of
+    single-step reduction (which we're been writing [-->*]), except
+    that it is not reflexive: [t -->+ t'] means that [t] can reach
     [t'] by _one or more_ steps of reduction. *)
 
 Inductive step_closure {X:Type} (R: relation X) : X -> X -> Prop :=
@@ -1819,7 +1824,7 @@ Inductive step_closure {X:Type} (R: relation X) : X -> X -> Prop :=
                 step_closure R x z.
 
 Definition multistep1 := (step_closure step).
-Notation "t1 '/' st '==>+' t2 '/' st'" :=
+Notation "t1 '/' st '-->+' t2 '/' st'" :=
         (multistep1 (t1,st) (t2,st'))
         (at level 40, st at level 39, t2 at level 39).
 
@@ -1844,8 +1849,8 @@ Ltac reduce :=
     [!(loc 0) unit], starting from the empty store. *)
 
 Lemma loop_steps_to_loop_fun :
-  loop / nil ==>*
-  tapp (tderef (tloc 0)) tunit / cons ([r:=tloc 0]loop_fun) nil.
+  loop / nil -->*
+  app (deref (loc 0)) unit / cons ([r:=loc 0]loop_fun) nil.
 Proof.
   unfold loop.
   reduce.
@@ -1855,16 +1860,17 @@ Qed.
     two steps to itself! *)
 
 Lemma loop_fun_step_self :
-  tapp (tderef (tloc 0)) tunit / cons ([r:=tloc 0]loop_fun) nil ==>+
-  tapp (tderef (tloc 0)) tunit / cons ([r:=tloc 0]loop_fun) nil.
+  app (deref (loc 0)) unit / cons ([r:=loc 0]loop_fun) nil -->+
+  app (deref (loc 0)) unit / cons ([r:=loc 0]loop_fun) nil.
 Proof with eauto.
   unfold loop_fun; simpl.
   eapply sc_step. apply ST_App1...
   eapply sc_one. compute. apply ST_AppAbs...
 Qed.
 
-(** **** 练习：4 星 (factorial_ref)  *)
-(** Use the above ideas to implement a factorial function in STLC with
+(** **** 练习：4 星, standard (factorial_ref)  
+
+    Use the above ideas to implement a factorial function in STLC with
     references.  (There is no need to prove formally that it really
     behaves like the factorial.  Just uncomment the example below to make
     sure it gives the correct result when applied to the argument
@@ -1873,7 +1879,7 @@ Qed.
 Definition factorial : tm
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-Lemma factorial_type : empty; nil |- factorial \in (TArrow TNat TNat).
+Lemma factorial_type : empty; nil |- factorial \in (Arrow Nat Nat).
 Proof with eauto.
   (* 请在此处解答 *) Admitted.
 
@@ -1883,18 +1889,19 @@ Proof with eauto.
 
 (* 
 Lemma factorial_4 : exists st,
-  tapp factorial (tnat 4) / nil ==>* tnat 24 / st.
+  app factorial (const 4) / nil -->* const 24 / st.
 Proof.
   eexists. unfold factorial. reduce.
 Qed.
-*)
-(** [] *)
+
+    [] *)
 
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** 练习：5 星, optional (garabage_collector)  *)
-(** Challenge problem: modify our formalization to include an account
+(** **** 练习：5 星, standard, optional (garabage_collector)  
+
+    Challenge problem: modify our formalization to include an account
     of garbage collection, and prove that it satisfies whatever nice
     properties you can think to prove about it. *)
 
@@ -1903,4 +1910,5 @@ Qed.
 End RefsAndNontermination.
 End STLCRef.
 
-(** $Date$ *)
+
+(* Sat Jan 26 15:15:45 UTC 2019 *)

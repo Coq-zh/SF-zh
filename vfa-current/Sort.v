@@ -108,8 +108,9 @@ Definition is_a_sorting_algorithm (f: list nat -> list nat) :=
 (* ################################################################# *)
 (** * Proof of Correctness *)
 
-(** **** 练习：3 星 (insert_perm)  *)
-(** Prove the following auxiliary lemma, [insert_perm], which will be
+(** **** 练习：3 星, standard (insert_perm)  
+
+    Prove the following auxiliary lemma, [insert_perm], which will be
     useful for proving [sort_perm] below.  Your proof will be by
     induction, but you'll need some of the permutation facts from the
     library, so first remind yourself by doing [Search]. *)
@@ -121,16 +122,18 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (sort_perm)  *)
-(** Now prove that sort is a permutation. *)
+(** **** 练习：3 星, standard (sort_perm)  
+
+    Now prove that sort is a permutation. *)
 
 Theorem sort_perm: forall l, Permutation l (sort l).
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星 (insert_sorted)  *)
-(** This one is a bit tricky.  However, there just a single induction
+(** **** 练习：4 星, standard (insert_sorted)  
+
+    This one is a bit tricky.  However, there just a single induction
    right at the beginning, and you do _not_ need to use [insert_perm]
    or [sort_perm]. *)
 
@@ -140,8 +143,9 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (sort_sorted)  *)
-(** This one is easy.   *)
+(** **** 练习：2 星, standard (sort_sorted)  
+
+    This one is easy.   *)
 
 Theorem sort_sorted: forall l, sorted (sort l).
 Proof.
@@ -168,7 +172,7 @@ Qed.
     confidence that we have the right specification, though of course
     it doesn't _prove_ that we do. *)
 
-(** **** 练习：4 星, optional (sorted_sorted')  *)
+(** **** 练习：4 星, standard, optional (sorted_sorted')  *)
 Lemma sorted_sorted': forall al, sorted al -> sorted' al.
 
 (** Hint: Instead of doing induction on the list [al], do induction
@@ -179,7 +183,7 @@ Lemma sorted_sorted': forall al, sorted al -> sorted' al.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, optional (sorted'_sorted)  *)
+(** **** 练习：3 星, standard, optional (sorted'_sorted)  *)
 Lemma sorted'_sorted: forall al, sorted' al -> sorted al.
 
 (** Here, you can't do induction on the sorted'-ness of the list,
@@ -210,7 +214,7 @@ Proof.
     DO NOT USE [sorted_sorted'], [sorted'_sorted], [insert_sorted], or
     [sort_sorted] in these proofs! *)
 
-(** **** 练习：3 星, optional (Forall_nth)  *)
+(** **** 练习：3 星, standard, optional (Forall_nth)  *)
 Lemma Forall_nth:
   forall {A: Type} (P: A -> Prop) d (al: list A),
      Forall P al <-> (forall i,  i < length al -> P (nth i al d)).
@@ -218,14 +222,13 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-
-(** **** 练习：4 星, optional (insert_sorted')  *)
+(** **** 练习：4 星, standard, optional (insert_sorted')  *)
 Lemma insert_sorted':
   forall a l, sorted' l -> sorted' (insert a l).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, optional (insert_sorted')  *)
+(** **** 练习：4 星, standard, optional (insert_sorted')  *)
 Theorem sort_sorted': forall l, sorted' (sort l).
 (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -245,4 +248,5 @@ Theorem sort_sorted': forall l, sorted' (sort l).
    predicate ([sorted]), and then prove [sort_sorted] and
    [sorted_sorted']. *)
 
-(** $Date$ *)
+
+(* Sat Jan 26 15:18:06 UTC 2019 *)

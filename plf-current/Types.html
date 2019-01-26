@@ -45,7 +45,7 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Coq.Arith.Arith</span>.<br/>
+<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Arith.Arith</span>.<br/>
 <span class="id" type="var">From</span> <span class="id" type="var">PLF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/>
 <span class="id" type="var">From</span> <span class="id" type="var">PLF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Imp</span>.<br/>
 <span class="id" type="var">From</span> <span class="id" type="var">PLF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Smallstep</span>.<br/><hr class='doublespaceincode'/>
@@ -53,12 +53,12 @@
 </div>
 
 <div class="doc">
-<a name="lab170"></a><h1 class="section">有类型算数表达式</h1>
+<a name="lab174"></a><h1 class="section">有类型算数表达式</h1>
 
 <div class="paragraph"> </div>
 
  作为对类型系统讨论的动机，让我们像过去一样以一个小型玩具语言开始。
-    我们想要让程序有机会产生运行时类型错误，因此除了 <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a> 
+    我们想要让程序有机会产生运行时类型错误，因此除了 <a href="Smallstep.html"><span class="inlineref">Smallstep</span></a>
     一章中用到的常量和加法，还需要一点更复杂的语言构造：只有一种数据类型（比如说数字）
     太过于简单，但是两种（数字和布尔值）便足够产生有趣的故事了。
 
@@ -68,7 +68,7 @@
 </div>
 
 <div class="doc">
-<a name="lab171"></a><h2 class="section">语法</h2>
+<a name="lab175"></a><h2 class="section">语法</h2>
 
 <div class="paragraph"> </div>
 
@@ -77,13 +77,13 @@
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t</span>&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;<span class="id" type="var">true</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">false</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="keyword">if</span>&nbsp;<span class="id" type="var">t</span>&nbsp;<span class="id" type="keyword">then</span>&nbsp;<span class="id" type="var">t</span>&nbsp;<span class="id" type="keyword">else</span>&nbsp;<span class="id" type="var">t</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;0<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">succ</span>&nbsp;<span class="id" type="var">t</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">pred</span>&nbsp;<span class="id" type="var">t</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">iszero</span>&nbsp;<span class="id" type="var">t</span>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t</span>&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;<span class="id" type="var">tru</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">fls</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">test</span>&nbsp;<span class="id" type="var">t</span>&nbsp;<span class="id" type="keyword">then</span>&nbsp;<span class="id" type="var">t</span>&nbsp;<span class="id" type="keyword">else</span>&nbsp;<span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">zro</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">scc</span>&nbsp;<span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">prd</span>&nbsp;<span class="id" type="var">t</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">iszro</span>&nbsp;<span class="id" type="var">t</span>
 <div class="paragraph"> </div>
 
 </div>
@@ -92,34 +92,34 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">tm</span> : <span class="id" type="keyword">Type</span> :=<br/>
-&nbsp;&nbsp;| <span class="id" type="var">ttrue</span> : <span class="id" type="var">tm</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">tfalse</span> : <span class="id" type="var">tm</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">tif</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">tzero</span> : <span class="id" type="var">tm</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">tsucc</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">tpred</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">tiszero</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span>.<br/>
+&nbsp;&nbsp;| <span class="id" type="var">tru</span> : <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">fls</span> : <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">test</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">zro</span> : <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">scc</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">prd</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">iszro</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span>.<br/>
 </div>
 
 <div class="doc">
-对<b>值（values）</b>的定义包括 <span class="inlinecode"><span class="id" type="var">true</span></span>，<span class="inlinecode"><span class="id" type="var">false</span></span> 以及数值…… 
+对<b>值（values）</b>的定义包括 <span class="inlinecode"><span class="id" type="var">tru</span></span>，<span class="inlinecode"><span class="id" type="var">fls</span></span> 以及数值…… 
 </div>
 <div class="code code-tight">
 
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">bvalue</span> : <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
-&nbsp;&nbsp;| <span class="id" type="var">bv_true</span> : <span class="id" type="var">bvalue</span> <span class="id" type="var">ttrue</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">bv_false</span> : <span class="id" type="var">bvalue</span> <span class="id" type="var">tfalse</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;| <span class="id" type="var">bv_tru</span> : <span class="id" type="var">bvalue</span> <span class="id" type="var">tru</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">bv_fls</span> : <span class="id" type="var">bvalue</span> <span class="id" type="var">fls</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">nvalue</span> : <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
-&nbsp;&nbsp;| <span class="id" type="var">nv_zero</span> : <span class="id" type="var">nvalue</span> <span class="id" type="var">tzero</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">nv_succ</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>, <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span> → <span class="id" type="var">nvalue</span> (<span class="id" type="var">tsucc</span> <span class="id" type="var">t</span>).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">value</span> (<span class="id" type="var">t</span>:<span class="id" type="var">tm</span>) := <span class="id" type="var">bvalue</span> <span class="id" type="var">t</span> ∨ <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;| <span class="id" type="var">nv_zro</span> : <span class="id" type="var">nvalue</span> <span class="id" type="var">zro</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">nv_scc</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span>, <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span> → <span class="id" type="var">nvalue</span> (<span class="id" type="var">scc</span> <span class="id" type="var">t</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">value</span> (<span class="id" type="var">t</span> : <span class="id" type="var">tm</span>) := <span class="id" type="var">bvalue</span> <span class="id" type="var">t</span> ∨ <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">bvalue</span> <span class="id" type="var">nvalue</span>.<br/>
 <span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Unfold</span> <span class="id" type="var">value</span>.<br/>
 <span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Unfold</span> <span class="id" type="var">update</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab172"></a><h2 class="section">操作语义</h2>
+<a name="lab176"></a><h2 class="section">操作语义</h2>
 
 <div class="paragraph"> </div>
 
@@ -130,130 +130,130 @@
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_IfTrue) &nbsp;
+    (ST_TestTru) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">if&nbsp;true&nbsp;then&nbsp;t<sub>1</sub>&nbsp;else&nbsp;t<sub>2</sub>&nbsp;==>&nbsp;t<sub>1</sub></td>
+  <td class="infrule">test&nbsp;tru&nbsp;then&nbsp;t<sub>1</sub>&nbsp;else&nbsp;t<sub>2</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;t<sub>1</sub></td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_IfFalse) &nbsp;
+    (ST_TestFls) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">if&nbsp;false&nbsp;then&nbsp;t<sub>1</sub>&nbsp;else&nbsp;t<sub>2</sub>&nbsp;==>&nbsp;t<sub>2</sub></td>
+  <td class="infrule">test&nbsp;fls&nbsp;then&nbsp;t<sub>1</sub>&nbsp;else&nbsp;t<sub>2</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;t<sub>2</sub></td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
-  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrule">t<sub>1</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;t<sub>1</sub>'</td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_If) &nbsp;
+    (ST_Test) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">if&nbsp;t<sub>1</sub>&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub>&nbsp;==>&nbsp;if&nbsp;t<sub>1</sub>'&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub></td>
+  <td class="infrule">test&nbsp;t<sub>1</sub>&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;test&nbsp;t<sub>1</sub>'&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub></td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
-  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrule">t<sub>1</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;t<sub>1</sub>'</td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_Succ) &nbsp;
+    (ST_Scc) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">succ&nbsp;t<sub>1</sub>&nbsp;==>&nbsp;succ&nbsp;t<sub>1</sub>'</td>
+  <td class="infrule">scc&nbsp;t<sub>1</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;scc&nbsp;t<sub>1</sub>'</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_PredZero) &nbsp;
+    (ST_PrdZro) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">pred&nbsp;0&nbsp;==>&nbsp;0</td>
+  <td class="infrule">prd&nbsp;zro&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;zro</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">numeric&nbsp;value&nbsp;v<sub>1</sub></td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_PredSucc) &nbsp;
+    (ST_PrdScc) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">pred&nbsp;(succ&nbsp;v<sub>1</sub>)&nbsp;==>&nbsp;v<sub>1</sub></td>
+  <td class="infrule">prd&nbsp;(scc&nbsp;v<sub>1</sub>)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;v<sub>1</sub></td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
-  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrule">t<sub>1</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;t<sub>1</sub>'</td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_Pred) &nbsp;
+    (ST_Prd) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">pred&nbsp;t<sub>1</sub>&nbsp;==>&nbsp;pred&nbsp;t<sub>1</sub>'</td>
+  <td class="infrule">prd&nbsp;t<sub>1</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;prd&nbsp;t<sub>1</sub>'</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_IszeroZero) &nbsp;
+    (ST_IszroZro) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">iszero&nbsp;0&nbsp;==>&nbsp;true</td>
+  <td class="infrule">iszro&nbsp;zro&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;tru</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">numeric&nbsp;value&nbsp;v<sub>1</sub></td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_IszeroSucc) &nbsp;
+    (ST_IszroScc) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">iszero&nbsp;(succ&nbsp;v<sub>1</sub>)&nbsp;==>&nbsp;false</td>
+  <td class="infrule">iszro&nbsp;(scc&nbsp;v<sub>1</sub>)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;fls</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
-  <td class="infrule">t<sub>1</sub>&nbsp;==>&nbsp;t<sub>1</sub>'</td>
+  <td class="infrule">t<sub>1</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;t<sub>1</sub>'</td>
   <td class="infrulenamecol" rowspan="3">
-    (ST_Iszero) &nbsp;
+    (ST_Iszro) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">iszero&nbsp;t<sub>1</sub>&nbsp;==>&nbsp;iszero&nbsp;t<sub>1</sub>'</td>
+  <td class="infrule">iszro&nbsp;t<sub>1</sub>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;iszro&nbsp;t<sub>1</sub>'</td>
   <td></td>
 </td>
 </table></center>
@@ -263,48 +263,48 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Reserved Notation</span> "t<sub>1</sub> '==&gt;' t<sub>2</sub>" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Reserved Notation</span> "t<sub>1</sub> '<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>' t<sub>2</sub>" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">step</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="keyword">Prop</span> :=<br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_IfTrue</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span> <span class="id" type="var">ttrue</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) ==&gt; <span class="id" type="var">t<sub>1</sub></span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_IfFalse</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span> <span class="id" type="var">tfalse</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) ==&gt; <span class="id" type="var">t<sub>2</sub></span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_If</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>) ==&gt; (<span class="id" type="var">tif</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>)<br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_Succ</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span>) ==&gt; (<span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_PredZero</span> :<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tpred</span> <span class="id" type="var">tzero</span>) ==&gt; <span class="id" type="var">tzero</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_PredSucc</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_TestTru</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">test</span> <span class="id" type="var">tru</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t<sub>1</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_TestFls</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">test</span> <span class="id" type="var">fls</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t<sub>2</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Test</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">test</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (<span class="id" type="var">test</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Scc</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">scc</span> <span class="id" type="var">t<sub>1</sub></span>) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (<span class="id" type="var">scc</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_PrdZro</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">prd</span> <span class="id" type="var">zro</span>) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">zro</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_PrdScc</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">nvalue</span> <span class="id" type="var">t<sub>1</sub></span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tpred</span> (<span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span>)) ==&gt; <span class="id" type="var">t<sub>1</sub></span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_Pred</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tpred</span> <span class="id" type="var">t<sub>1</sub></span>) ==&gt; (<span class="id" type="var">tpred</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_IszeroZero</span> :<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tiszero</span> <span class="id" type="var">tzero</span>) ==&gt; <span class="id" type="var">ttrue</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_IszeroSucc</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">prd</span> (<span class="id" type="var">scc</span> <span class="id" type="var">t<sub>1</sub></span>)) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t<sub>1</sub></span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Prd</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">prd</span> <span class="id" type="var">t<sub>1</sub></span>) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (<span class="id" type="var">prd</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_IszroZro</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">iszro</span> <span class="id" type="var">zro</span>) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">tru</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_IszroScc</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span>,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">nvalue</span> <span class="id" type="var">t<sub>1</sub></span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tiszero</span> (<span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span>)) ==&gt; <span class="id" type="var">tfalse</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">ST_Iszero</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> ==&gt; <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tiszero</span> <span class="id" type="var">t<sub>1</sub></span>) ==&gt; (<span class="id" type="var">tiszero</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">iszro</span> (<span class="id" type="var">scc</span> <span class="id" type="var">t<sub>1</sub></span>)) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">fls</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">ST_Iszro</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>1</sub>'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>1</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t<sub>1</sub>'</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">iszro</span> <span class="id" type="var">t<sub>1</sub></span>) <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> (<span class="id" type="var">iszro</span> <span class="id" type="var">t<sub>1</sub>'</span>)<br/>
 <br/>
-<span class="id" type="keyword">where</span> "t<sub>1</sub> '==&gt;' t<sub>2</sub>" := (<span class="id" type="var">step</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">where</span> "t<sub>1</sub> '<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>' t<sub>2</sub>" := (<span class="id" type="var">step</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>).<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">step</span>.<br/>
 </div>
 
 <div class="doc">
-请注意 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系并不在意表达式是否有全局意义——它只是检查<b>下一步</b>
-    的归约操作是否在正确的操作对象上。比如，项 <span class="inlinecode"><span class="id" type="var">succ</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span>（用形式语法来说是 
-    <span class="inlinecode"><span class="id" type="var">tsucc</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span>）无法前进一步，但这个几乎显然无意义的项
+请注意 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系并不在意步进表达式是否有全局意义——它只是检查<b>下一步</b>
+    的归约操作是否在正确的操作对象上。比如，项 <span class="inlinecode"><span class="id" type="var">succ</span></span> <span class="inlinecode"><span class="id" type="var">true</span></span>
+    无法前进一步，但这个几乎显然无意义的项
 
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">succ</span>&nbsp;(<span class="id" type="keyword">if</span>&nbsp;<span class="id" type="var">true</span>&nbsp;<span class="id" type="keyword">then</span>&nbsp;<span class="id" type="var">true</span>&nbsp;<span class="id" type="keyword">else</span>&nbsp;<span class="id" type="var">true</span>)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">scc</span>&nbsp;(<span class="id" type="var">test</span>&nbsp;<span class="id" type="var">tru</span>&nbsp;<span class="id" type="keyword">then</span>&nbsp;<span class="id" type="var">tru</span>&nbsp;<span class="id" type="keyword">else</span>&nbsp;<span class="id" type="var">tru</span>)
 <div class="paragraph"> </div>
 
 </div>
@@ -312,7 +312,7 @@
 </div>
 
 <div class="doc">
-<a name="lab173"></a><h2 class="section">正规式和值</h2>
+<a name="lab177"></a><h2 class="section">正规式和值</h2>
 
 <div class="paragraph"> </div>
 
@@ -323,18 +323,18 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Notation</span> <span class="id" type="var">step_normal_form</span> := (<span class="id" type="var">normal_form</span> <span class="id" type="var">step</span>).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">stuck</span> (<span class="id" type="var">t</span>:<span class="id" type="var">tm</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">step_normal_form</span> <span class="id" type="var">t</span> ∧ ¬ <span class="id" type="var">value</span> <span class="id" type="var">t</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">stuck</span> (<span class="id" type="var">t</span> : <span class="id" type="var">tm</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">step_normal_form</span> <span class="id" type="var">t</span> ∧ ¬<span class="id" type="var">value</span> <span class="id" type="var">t</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Unfold</span> <span class="id" type="var">stuck</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab174"></a><h4 class="section">练习：2 星 (some_term_is_stuck)</h4>
+<a name="lab178"></a><h4 class="section">练习：2 星, standard (some_term_is_stuck)</h4>
 
 </div>
 <div class="code code-space">
 <span class="id" type="keyword">Example</span> <span class="id" type="var">some_term_is_stuck</span> :<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t</span>, <span class="id" type="var">stuck</span> <span class="id" type="var">t</span>.<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span><span class="id" type="var">t</span>, <span class="id" type="var">stuck</span> <span class="id" type="var">t</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
@@ -343,15 +343,15 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- 然而，值和正规式在这个语言中并<b>不</b>相同，值的集合被包括在正规式的集合中。
+ 然而，值和正规式在这个语言中<b>并不</b>相同，值的集合被包括在正规式的集合中。
     这一点很重要，因为这说明我们没有不小心定义了一些仍然能前进一步的值。
 <div class="paragraph"> </div>
 
-<a name="lab175"></a><h4 class="section">练习：3 星 (value_is_nf)</h4>
+<a name="lab179"></a><h4 class="section">练习：3 星, standard (value_is_nf)</h4>
 
 </div>
 <div class="code code-space">
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">value_is_nf</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>,<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">value_is_nf</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">t</span> → <span class="id" type="var">step_normal_form</span> <span class="id" type="var">t</span>.<br/>
 <div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
 <div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
@@ -366,7 +366,7 @@
     但你发现一种要比另一种稍微简短一点。作为练习，请尝试使用这两种方法完成证明。） <span class="proofbox">&#9744;</span> 
 <div class="paragraph"> </div>
 
-<a name="lab176"></a><h4 class="section">练习：3 星, optional (step_deterministic)</h4>
+<a name="lab180"></a><h4 class="section">练习：3 星, standard, optional (step_deterministic)</h4>
  使用 <span class="inlinecode"><span class="id" type="var">value_is_nf</span></span> 来证明 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系是确定的。
 </div>
 <div class="code code-tight">
@@ -380,7 +380,7 @@
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab177"></a><h2 class="section">定型</h2>
+<a name="lab181"></a><h2 class="section">定型</h2>
 
 <div class="paragraph"> </div>
 
@@ -392,141 +392,141 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">ty</span> : <span class="id" type="keyword">Type</span> :=<br/>
-&nbsp;&nbsp;| <span class="id" type="var">TBool</span> : <span class="id" type="var">ty</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">TNat</span> : <span class="id" type="var">ty</span>.<br/>
+&nbsp;&nbsp;| <span class="id" type="var">Bool</span> : <span class="id" type="var">ty</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">Nat</span> : <span class="id" type="var">ty</span>.<br/>
 </div>
 
 <div class="doc">
-在非形式化的记号中，类型关系经常写做 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，并读做“<span class="inlinecode"><span class="id" type="var">t</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">T</span></span>”。
-    <span class="inlinecode">|-</span> 符号叫做“十字转门（turnstile）”。下面，我们会看到更加丰富的类型关系，其中
-    我们会在 <span class="inlinecode">|-</span> 左侧添加一个或多个“上下文（context）”。目前暂时来说，上下文总是空的。  <center><table class="infrule">
+在非形式化的记号中，类型关系经常写做 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，并读做“<span class="inlinecode"><span class="id" type="var">t</span></span> 有类型 <span class="inlinecode"><span class="id" type="var">T</span></span>”。
+    <span class="inlinecode">&#x22A2;</span> 符号叫做“十字转门（turnstile）”。下面，我们会看到更加丰富的类型关系，其中
+    我们会在 <span class="inlinecode">&#x22A2;</span> 左侧添加一个或多个“上下文（context）”。目前暂时来说，上下文总是空的。  <center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
-    (T_True) &nbsp;
+    (T_Tru) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;true&nbsp;&#x2208;&nbsp;Bool</td>
-  <td></td>
-</td>
-</table></center><center><table class="infrule">
-<tr class="infruleassumption">
-  <td class="infrule">&nbsp;&nbsp;</td>
-  <td class="infrulenamecol" rowspan="3">
-    (T_False) &nbsp;
-  </td></tr>
-<tr class="infrulemiddle">
-  <td class="infrule"><hr /></td>
-</tr>
-<tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;false&nbsp;&#x2208;&nbsp;Bool</td>
-  <td></td>
-</td>
-</table></center><center><table class="infrule">
-<tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Bool&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;t<sub>2</sub>&nbsp;&#x2208;&nbsp;T&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;t<sub>3</sub>&nbsp;&#x2208;&nbsp;T</td>
-  <td class="infrulenamecol" rowspan="3">
-    (T_If) &nbsp;
-  </td></tr>
-<tr class="infrulemiddle">
-  <td class="infrule"><hr /></td>
-</tr>
-<tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;if&nbsp;t<sub>1</sub>&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub>&nbsp;&#x2208;&nbsp;T</td>
+  <td class="infrule">&#x22A2;&nbsp;tru&nbsp;&#x2208;&nbsp;Bool</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
-    (T_Zero) &nbsp;
+    (T_Fls) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;0&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrule">&#x22A2;&nbsp;fls&nbsp;&#x2208;&nbsp;Bool</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrule">&#x22A2;&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Bool&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;t<sub>2</sub>&nbsp;&#x2208;&nbsp;T&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;t<sub>3</sub>&nbsp;&#x2208;&nbsp;T</td>
   <td class="infrulenamecol" rowspan="3">
-    (T_Succ) &nbsp;
+    (T_Test) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;succ&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrule">&#x22A2;&nbsp;test&nbsp;t<sub>1</sub>&nbsp;then&nbsp;t<sub>2</sub>&nbsp;else&nbsp;t<sub>3</sub>&nbsp;&#x2208;&nbsp;T</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrule">&nbsp;&nbsp;</td>
   <td class="infrulenamecol" rowspan="3">
-    (T_Pred) &nbsp;
+    (T_Zro) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;pred&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrule">&#x22A2;&nbsp;zro&nbsp;&#x2208;&nbsp;Nat</td>
   <td></td>
 </td>
 </table></center><center><table class="infrule">
 <tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrule">&#x22A2;&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
   <td class="infrulenamecol" rowspan="3">
-    (T_IsZero) &nbsp;
+    (T_Scc) &nbsp;
   </td></tr>
 <tr class="infrulemiddle">
   <td class="infrule"><hr /></td>
 </tr>
 <tr class="infruleassumption">
-  <td class="infrule">|-&nbsp;iszero&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Bool</td>
+  <td class="infrule">&#x22A2;&nbsp;scc&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&#x22A2;&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_Prd) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">&#x22A2;&nbsp;prd&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&#x22A2;&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Nat</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_IsZro) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">&#x22A2;&nbsp;iszro&nbsp;t<sub>1</sub>&nbsp;&#x2208;&nbsp;Bool</td>
   <td></td>
 </td>
 </table></center>
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Reserved Notation</span> "'|-' t '&#x2208;' T" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Reserved Notation</span> "'&#x22A2;' t '&#x2208;' T" (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">has_type</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">ty</span> → <span class="id" type="keyword">Prop</span> :=<br/>
-&nbsp;&nbsp;| <span class="id" type="var">T_True</span> :<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">ttrue</span> &#x2208; <span class="id" type="var">TBool</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">T_False</span> :<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tfalse</span> &#x2208; <span class="id" type="var">TBool</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">T_If</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span> <span class="id" type="var">T</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TBool</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>2</sub></span> &#x2208; <span class="id" type="var">T</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>3</sub></span> &#x2208; <span class="id" type="var">T</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tif</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span> &#x2208; <span class="id" type="var">T</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">T_Zero</span> :<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tzero</span> &#x2208; <span class="id" type="var">TNat</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">T_Succ</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tsucc</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">T_Pred</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tpred</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">T_Iszero</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t<sub>1</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TNat</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|- <span class="id" type="var">tiszero</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">TBool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Tru</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">tru</span> &#x2208; <span class="id" type="var">Bool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Fls</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">fls</span> &#x2208; <span class="id" type="var">Bool</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Test</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">Bool</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t<sub>2</sub></span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t<sub>3</sub></span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">test</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span> &#x2208; <span class="id" type="var">T</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Zro</span> :<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">zro</span> &#x2208; <span class="id" type="var">Nat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Scc</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">Nat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">scc</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">Nat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Prd</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">Nat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">prd</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">Nat</span><br/>
+&nbsp;&nbsp;| <span class="id" type="var">T_Iszro</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">Nat</span> →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2; <span class="id" type="var">iszro</span> <span class="id" type="var">t<sub>1</sub></span> &#x2208; <span class="id" type="var">Bool</span><br/>
 <br/>
-<span class="id" type="keyword">where</span> "'|-' t '&#x2208;' T" := (<span class="id" type="var">has_type</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">where</span> "'&#x22A2;' t '&#x2208;' T" := (<span class="id" type="var">has_type</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>).<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">has_type</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Example</span> <span class="id" type="var">has_type_1</span> :<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">tif</span> <span class="id" type="var">tfalse</span> <span class="id" type="var">tzero</span> (<span class="id" type="var">tsucc</span> <span class="id" type="var">tzero</span>) &#x2208; <span class="id" type="var">TNat</span>.<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">test</span> <span class="id" type="var">fls</span> <span class="id" type="var">zro</span> (<span class="id" type="var">scc</span> <span class="id" type="var">zro</span>) &#x2208; <span class="id" type="var">Nat</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_If</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_False</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Zero</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Succ</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Zero</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_Test</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Fls</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Zro</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Scc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Zro</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
@@ -542,7 +542,7 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Example</span> <span class="id" type="var">has_type_not</span> :<br/>
-&nbsp;&nbsp;¬ (|- <span class="id" type="var">tif</span> <span class="id" type="var">tfalse</span> <span class="id" type="var">tzero</span> <span class="id" type="var">ttrue</span> &#x2208; <span class="id" type="var">TBool</span>).<br/>
+&nbsp;&nbsp;¬( &#x22A2; <span class="id" type="var">test</span> <span class="id" type="var">fls</span> <span class="id" type="var">zro</span> <span class="id" type="var">tru</span> &#x2208; <span class="id" type="var">Bool</span> ).<br/>
 <div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
 <div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
 <span class="id" type="keyword">Proof</span>.<br/>
@@ -551,13 +551,13 @@
 </div>
 
 <div class="doc">
-<a name="lab178"></a><h4 class="section">练习：1 星, optional (succ_hastype_nat__hastype_nat)</h4>
+<a name="lab182"></a><h4 class="section">练习：1 星, standard, optional (scc_hastype_nat__hastype_nat)</h4>
 
 </div>
 <div class="code code-space">
-<span class="id" type="keyword">Example</span> <span class="id" type="var">succ_hastype_nat__hastype_nat</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>,<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">tsucc</span> <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">TNat</span> →<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">TNat</span>.<br/>
+<span class="id" type="keyword">Example</span> <span class="id" type="var">scc_hastype_nat__hastype_nat</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">scc</span> <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">Nat</span> →<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">Nat</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
@@ -565,7 +565,7 @@
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab179"></a><h3 class="section">典范形式</h3>
+<a name="lab183"></a><h3 class="section">典范形式</h3>
 
 <div class="paragraph"> </div>
 
@@ -573,33 +573,32 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">bool_canonical</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>,<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">TBool</span> → <span class="id" type="var">value</span> <span class="id" type="var">t</span> → <span class="id" type="var">bvalue</span> <span class="id" type="var">t</span>.<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">bool_canonical</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">Bool</span> → <span class="id" type="var">value</span> <span class="id" type="var">t</span> → <span class="id" type="var">bvalue</span> <span class="id" type="var">t</span>.<br/>
 <div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
 <div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">HT</span> <span class="id" type="var">HV</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HV</span>; <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HT</span>; <span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">HT</span> [<span class="id" type="var">Hb</span> | <span class="id" type="var">Hn</span>].<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">induction</span> <span class="id" type="var">Hn</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HT</span>; <span class="id" type="tactic">auto</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nat_canonical</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span>,<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">TNat</span> → <span class="id" type="var">value</span> <span class="id" type="var">t</span> → <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span>.<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nat_canonical</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">Nat</span> → <span class="id" type="var">value</span> <span class="id" type="var">t</span> → <span class="id" type="var">nvalue</span> <span class="id" type="var">t</span>.<br/>
 <div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
 <div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">HT</span> <span class="id" type="var">HV</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HV</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HT</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">HT</span> [<span class="id" type="var">Hb</span> | <span class="id" type="var">Hn</span>].<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hb</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HT</span>.<br/>
+&nbsp;&nbsp;- <span class="id" type="tactic">assumption</span>.<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 </div>
 
 <div class="doc">
-<a name="lab180"></a><h2 class="section">可进性</h2>
+<a name="lab184"></a><h2 class="section">可进性</h2>
 
 <div class="paragraph"> </div>
 
@@ -608,13 +607,13 @@
     <b>可进性（progress）</b>。 
 <div class="paragraph"> </div>
 
-<a name="lab181"></a><h4 class="section">练习：3 星 (finish_progress)</h4>
+<a name="lab185"></a><h4 class="section">练习：3 星, standard (finish_progress)</h4>
 
 </div>
 <div class="code code-space">
-<span class="id" type="keyword">Theorem</span> <span class="id" type="tactic">progress</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">t</span> ∨ <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t'</span>, <span class="id" type="var">t</span> ==&gt; <span class="id" type="var">t'</span>.<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="tactic">progress</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">value</span> <span class="id" type="var">t</span> ∨ <span style='font-size:120%;'>&exist;</span><span class="id" type="var">t'</span>, <span class="id" type="var">t</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t'</span>.<br/>
 </div>
 
 <div class="doc">
@@ -627,17 +626,17 @@
 <span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">auto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">HT</span>...<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;对于显然是值的情形，比如&nbsp;T_True&nbsp;和&nbsp;T_False，我们直接使用&nbsp;auto&nbsp;完成。*)</span><br/>
-&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_If&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;对于显然是值的情形，比如&nbsp;T_Tru&nbsp;和&nbsp;T_Fls，我们直接使用&nbsp;auto&nbsp;完成。*)</span><br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Test&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">IHHT1</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">IHHT1</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;是值&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">bool_canonical</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">HT<sub>1</sub></span>) <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t<sub>2</sub></span>...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> <span class="id" type="var">t<sub>3</sub></span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span><span class="id" type="var">t<sub>2</sub></span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span><span class="id" type="var">t<sub>3</sub></span>...<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;可前进一步&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">H<sub>1</sub></span>].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span> (<span class="id" type="var">tif</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>)...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span>(<span class="id" type="var">test</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span> <span class="id" type="var">t<sub>3</sub></span>)...<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
 </div>
@@ -646,43 +645,44 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab182"></a><h4 class="section">练习：3 星, advanced (finish_progress_informal)</h4>
+<a name="lab186"></a><h4 class="section">练习：3 星, advanced (finish_progress_informal)</h4>
  请完成非形式化的证明： 
 <div class="paragraph"> </div>
 
- <b>定理</b>：如果 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> 要么是值，要么存在某个 <span class="inlinecode"><span class="id" type="var">t'</span></span> 使 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>。
+ <b>定理</b>：如果 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> 要么是值，要么存在某个 <span class="inlinecode"><span class="id" type="var">t'</span></span> 使 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>。
 <div class="paragraph"> </div>
 
- <b>证明</b>：对 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 的导出式进行归纳。
+ <b>证明</b>：对 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 的导出式进行归纳。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 如果导出式的最后一条规则是 <span class="inlinecode"><span class="id" type="var">T_If</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，
-        其中 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>，<span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 以及 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。
+<li> 如果导出式的最后一条规则是 <span class="inlinecode"><span class="id" type="var">T_Test</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">test</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，
+        其中 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>，<span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 以及 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。
         根据归纳假设，<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 要么是值，要么可前进一步到某个 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>。
 
 <div class="paragraph"> </div>
 
-<ul class="doclist">
+
+</li>
 <li> 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是值，那么根据典范形式（canonical forms）引理以及
-              <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span> 的事实，可得 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是一个 <span class="inlinecode"><span class="id" type="var">bvalue</span></span>——也即，
-              它要么是 <span class="inlinecode"><span class="id" type="var">true</span></span> 要么是 <span class="inlinecode"><span class="id" type="var">false</span></span>。如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span>，由 <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>
-              可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 前进到 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>；而当 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">false</span></span> 时，由 <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>
-              可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 前进到 <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>。不论哪种情况，<span class="inlinecode"><span class="id" type="var">t</span></span> 都可以前进一步，这是我们
-              想要证明的。
+        <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span> 的事实，可得 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 是一个 <span class="inlinecode"><span class="id" type="var">bvalue</span></span>——也即，
+        它要么是 <span class="inlinecode"><span class="id" type="var">tru</span></span> 要么是 <span class="inlinecode"><span class="id" type="var">fls</span></span>。如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">tru</span></span>，由 <span class="inlinecode"><span class="id" type="var">ST_TestTru</span></span>
+        可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 前进到 <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>；而当 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">fls</span></span> 时，由 <span class="inlinecode"><span class="id" type="var">ST_TestFls</span></span>
+        可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 前进到 <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>。不论哪种情况，<span class="inlinecode"><span class="id" type="var">t</span></span> 都可以前进一步，这是我们
+        想要证明的。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 自己可以前进一步，那么根据 <span class="inlinecode"><span class="id" type="var">ST_If</span></span> 可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 也可以。
+<li> 如果 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> 自己可以前进一步，那么根据 <span class="inlinecode"><span class="id" type="var">ST_Test</span></span> 可得 <span class="inlinecode"><span class="id" type="var">t</span></span> 也可以。
 
 <div class="paragraph"> </div>
 
 
-</li>
-</ul>
+<div class="paragraph"> </div>
+
 
 </li>
 <li> <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
@@ -705,21 +705,21 @@
 </div>
 
 <div class="doc">
-<a name="lab183"></a><h2 class="section">维型性</h2>
+<a name="lab187"></a><h2 class="section">维型性</h2>
 
 <div class="paragraph"> </div>
 
  关于类型的第二个重要性质是，当一个良型项可前进一步时，其结果也是一个良型项。
 <div class="paragraph"> </div>
 
-<a name="lab184"></a><h4 class="section">练习：2 星 (finish_preservation)</h4>
+<a name="lab188"></a><h4 class="section">练习：2 星, standard (finish_preservation)</h4>
 
 </div>
 <div class="code code-space">
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">preservation</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">t</span> ==&gt; <span class="id" type="var">t'</span> →<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">preservation</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">t</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t'</span> →<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
 </div>
 
 <div class="doc">
@@ -738,10 +738,10 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t'</span> <span class="id" type="var">HE</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;我们还需要处理一些不可能发生的情形&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_If&nbsp;*)</span> <span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">HE</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_IFTrue&nbsp;*)</span> <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_IfFalse&nbsp;*)</span> <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_If&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">T_If</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Test&nbsp;*)</span> <span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">HE</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_TESTTru&nbsp;*)</span> <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_TestFls&nbsp;*)</span> <span class="id" type="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_Test&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">T_Test</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">assumption</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHHT1</span>; <span class="id" type="tactic">assumption</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
@@ -751,54 +751,55 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab185"></a><h4 class="section">练习：3 星, advanced (finish_preservation_informal)</h4>
+<a name="lab189"></a><h4 class="section">练习：3 星, advanced (finish_preservation_informal)</h4>
  请完成非形式化的证明： 
 <div class="paragraph"> </div>
 
- <b>定理</b>：如果 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 且 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span>，那么 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。 
+ <b>定理</b>：如果 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 且 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>，那么 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。 
 <div class="paragraph"> </div>
 
- <b>证明</b>：对 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 的导出式进行归纳。
+ <b>证明</b>：对 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 的导出式进行归纳。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 如果导出式的最后一条规则是 <span class="inlinecode"><span class="id" type="var">T_If</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
-        <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，其中 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>， <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 以及 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>
+<li> 如果导出式的最后一条规则是 <span class="inlinecode"><span class="id" type="var">T_Test</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">test</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>
+        <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，其中 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>， <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 以及 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>
         <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。
 
 <div class="paragraph"> </div>
 
-        请记着 <span class="inlinecode"><span class="id" type="var">t</span></span> 形如 <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode">...</span>，通过检查小步归约关系的规则，我们看到可以用来证明
-        <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 的规则仅有 <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>，<span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span> 或者 <span class="inlinecode"><span class="id" type="var">ST_If</span></span>。
-
-<div class="paragraph"> </div>
-
-<ul class="doclist">
-<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_IfTrue</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>。但是我们有
-             <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，所以证明完成。
+        请记着 <span class="inlinecode"><span class="id" type="var">t</span></span> 形如 <span class="inlinecode"><span class="id" type="var">test</span></span> <span class="inlinecode">...</span>，通过检查小步归约关系的规则，我们看到可以用来证明
+        <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 的规则仅有 <span class="inlinecode"><span class="id" type="var">ST_TestTru</span></span>，<span class="inlinecode"><span class="id" type="var">ST_TestFls</span></span> 或者 <span class="inlinecode"><span class="id" type="var">ST_Test</span></span>。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_IfFalse</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>。但是我们有
-             <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，所以证明完成。
+<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_TestTru</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>。但是我们有
+        <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，所以证明完成。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_If</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
-             <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，其中 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>。我们知道 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>，
-             因此根据归纳假设可得 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>。正如需要的那样，规则
-             <span class="inlinecode"><span class="id" type="var">T_If</span></span> 为我们提供了 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。
+<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_TestFls</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>。但是我们有
+        <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，所以证明完成。
 
 <div class="paragraph"> </div>
 
 
 </li>
-</ul>
+<li> 如果最后的规则是 <span class="inlinecode"><span class="id" type="var">ST_Test</span></span>，那么 <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">test</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+        <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>，其中 <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>。我们知道 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>，
+        因此根据归纳假设可得 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>。正如需要的那样，规则
+        <span class="inlinecode"><span class="id" type="var">T_Test</span></span> 为我们提供了 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">test</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>。
+
+<div class="paragraph"> </div>
+
+
+<div class="paragraph"> </div>
+
 
 </li>
 <li> <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
@@ -816,17 +817,17 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab186"></a><h4 class="section">练习：3 星 (preservation_alternate_proof)</h4>
+<a name="lab190"></a><h4 class="section">练习：3 星, standard (preservation_alternate_proof)</h4>
  现在请对<b>求值</b>导出式（而非类型导出式）进行归纳来证明维型性定理。
     请仔细阅读和思考上面证明中最开始的几行，确保你理解了他们是在做什么。
     本证明的开始部分类似，但并不完全一样。
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">preservation'</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">t</span> ==&gt; <span class="id" type="var">t'</span> →<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">preservation'</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">t</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t'</span> →<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
 <span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
@@ -841,7 +842,7 @@
 </div>
 
 <div class="doc">
-<a name="lab187"></a><h2 class="section">类型可靠性</h2>
+<a name="lab191"></a><h2 class="section">类型可靠性</h2>
 
 <div class="paragraph"> </div>
 
@@ -850,10 +851,10 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">multistep</span> := (<span class="id" type="var">multi</span> <span class="id" type="var">step</span>).<br/>
-<span class="id" type="keyword">Notation</span> "t<sub>1</sub> '==&gt;*' t<sub>2</sub>" := (<span class="id" type="var">multistep</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Corollary</span> <span class="id" type="var">soundness</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
-&nbsp;&nbsp;|- <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">t</span> ==&gt;* <span class="id" type="var">t'</span> →<br/>
+<span class="id" type="keyword">Notation</span> "t<sub>1</sub> '<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span><span style='letter-spacing:-.2em;'>&gt;</span><span style='vertical-align:15%;'>*</span></span></span>' t<sub>2</sub>" := (<span class="id" type="var">multistep</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub></span>) (<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 40).<br/><hr class='doublespaceincode'/>
+<span class="id" type="keyword">Corollary</span> <span class="id" type="var">soundness</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&#x22A2; <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span> →<br/>
+&nbsp;&nbsp;<span class="id" type="var">t</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span><span style='letter-spacing:-.2em;'>&gt;</span><span style='vertical-align:15%;'>*</span></span></span> <span class="id" type="var">t'</span> →<br/>
 &nbsp;&nbsp;~(<span class="id" type="var">stuck</span> <span class="id" type="var">t'</span>).<br/>
 <div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
 <div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
@@ -866,144 +867,14 @@
 </div>
 
 <div class="doc">
-<a name="lab188"></a><h1 class="section">题外话：<span class="inlinecode"><span class="id" type="var">normalize</span></span> 策略</h1>
+<a name="lab192"></a><h2 class="section">额外练习</h2>
 
 <div class="paragraph"> </div>
 
-
-<div class="paragraph"> </div>
-
-    在使用 Coq 对程序语言的定义进行一些实验时，我们经常想要看看某个具体的项会归约到什么——
-    也即，我们想要为形如 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;*</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 的目标找到证明，其中 <span class="inlinecode"><span class="id" type="var">t</span></span> 是一个具体的项，而
-    <span class="inlinecode"><span class="id" type="var">t'</span></span> 是未知的。比如说，使用小步关系 <span class="inlinecode"><span class="id" type="var">astep</span></span> 来归约一个算数表达式。
-</div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">Module</span> <span class="id" type="var">NormalizePlayground</span>.<br/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">Smallstep</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Example</span> <span class="id" type="var">step_example1</span> :<br/>
-&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 4)))<br/>
-&nbsp;&nbsp;==&gt;* (<span class="id" type="var">C</span> 10).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_step</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 7)).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ST_Plus2</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">v_const</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ST_PlusConstConst</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_step</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">C</span> 10).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ST_PlusConstConst</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_refl</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
-</div>
-
-<div class="doc">
-证明重复地应用了 <span class="inlinecode"><span class="id" type="var">multi_step</span></span>，直到项被化简为一个正规式。幸运地是，如果有合适的
-    提示，中间证明步骤可以被 <span class="inlinecode"><span class="id" type="tactic">auto</span></span> 策略解决。
-</div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">Hint</span> <span class="id" type="var">Constructors</span> <span class="id" type="var">step</span> <span class="id" type="var">value</span>.<br/>
-<span class="id" type="keyword">Example</span> <span class="id" type="var">step_example1'</span> :<br/>
-&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 4)))<br/>
-&nbsp;&nbsp;==&gt;* (<span class="id" type="var">C</span> 10).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">multi_step</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">multi_step</span>. <span class="id" type="tactic">auto</span>. <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_refl</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
-</div>
-
-<div class="doc">
-下面使用 <span class="inlinecode"><span class="id" type="keyword">Tactic</span></span> <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> 自定义的策略捕捉了这种模式。此外，在每次归约前，
-    我们打印出当前的目标，这样我们可以观察到项是如何被归约的。 
-</div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">Tactic Notation</span> "print_goal" :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> |- ?<span class="id" type="var">x</span> ⇒ <span class="id" type="var">idtac</span> <span class="id" type="var">x</span> <span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Tactic Notation</span> "normalize" :=<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="var">print_goal</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">multi_step</span> ;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ (<span class="id" type="tactic">eauto</span> 10; <span class="id" type="tactic">fail</span>) | (<span class="id" type="var">instantiate</span>; <span class="id" type="tactic">simpl</span>)]);<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_refl</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Example</span> <span class="id" type="var">step_example1''</span> :<br/>
-&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 4)))<br/>
-&nbsp;&nbsp;==&gt;* (<span class="id" type="var">C</span> 10).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">normalize</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;<span class="inlinecode"><span class="id" type="var">normalize</span></span>&nbsp;策略中的&nbsp;<span class="inlinecode"><span class="id" type="var">print_goal</span></span>&nbsp;显示了项是如何一步步被归约的……<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;4))&nbsp;==&gt;*&nbsp;C&nbsp;10)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;7)&nbsp;==&gt;*&nbsp;C&nbsp;10)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C&nbsp;10&nbsp;==&gt;*&nbsp;C&nbsp;10)<br/>
-&nbsp;&nbsp;*)</span><br/>
-<span class="id" type="keyword">Qed</span>.<br/>
-</div>
-
-<div class="doc">
-<span class="inlinecode"><span class="id" type="var">normalize</span></span> 策略以一个目标和存在变量开始，提供了一种简单的方法计算出项的正规式。
-</div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">Example</span> <span class="id" type="var">step_example1'''</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">e'</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">C</span> 4)))<br/>
-&nbsp;&nbsp;==&gt;* <span class="id" type="var">e'</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">ex_intro</span>. <span class="id" type="var">normalize</span>.<br/>
-<span class="comment">(*&nbsp;This&nbsp;time,&nbsp;the&nbsp;trace&nbsp;is:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;4))&nbsp;==&gt;*&nbsp;?e')<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(P&nbsp;(C&nbsp;3)&nbsp;(C&nbsp;7)&nbsp;==&gt;*&nbsp;?e')<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(C&nbsp;10&nbsp;==&gt;*&nbsp;?e')<br/>
-&nbsp;&nbsp;&nbsp;这列的&nbsp;?e'&nbsp;是由&nbsp;eapply&nbsp;“猜”出来的变量。&nbsp;*)</span><br/>
-<span class="id" type="keyword">Qed</span>.<br/>
-</div>
-
-<div class="doc">
-<a name="lab189"></a><h4 class="section">练习：1 星 (normalize_ex)</h4>
-
-</div>
-<div class="code code-space">
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">normalize_ex</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">e'</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 2) (<span class="id" type="var">C</span> 1)))<br/>
-&nbsp;&nbsp;==&gt;* <span class="id" type="var">e'</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
-</div>
-
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
-<div class="paragraph"> </div>
-
-<a name="lab190"></a><h4 class="section">练习：1 星, optional (normalize_ex')</h4>
- 作为比较，请使用 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> 而非 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span> 证明它。
-</div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">normalize_ex'</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">e'</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 3) (<span class="id" type="var">P</span> (<span class="id" type="var">C</span> 2) (<span class="id" type="var">C</span> 1)))<br/>
-&nbsp;&nbsp;==&gt;* <span class="id" type="var">e'</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
-</div>
-
-<span class="proofbox">&#9744;</span> 
-<div class="code code-tight">
-
-<span class="id" type="keyword">End</span> <span class="id" type="var">NormalizePlayground</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Tactic Notation</span> "print_goal" :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">goal</span> <span class="id" type="keyword">with</span> |- ?<span class="id" type="var">x</span> ⇒ <span class="id" type="var">idtac</span> <span class="id" type="var">x</span> <span class="id" type="keyword">end</span>.<br/>
-<span class="id" type="keyword">Tactic Notation</span> "normalize" :=<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">repeat</span> (<span class="id" type="var">print_goal</span>; <span class="id" type="tactic">eapply</span> <span class="id" type="var">multi_step</span> ;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ (<span class="id" type="tactic">eauto</span> 10; <span class="id" type="tactic">fail</span>) | (<span class="id" type="var">instantiate</span>; <span class="id" type="tactic">simpl</span>)]);<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">multi_refl</span>.<br/>
-</div>
-
-<div class="doc">
-<a name="lab191"></a><h2 class="section">额外练习</h2>
-
-<div class="paragraph"> </div>
-
-<a name="lab192"></a><h4 class="section">练习：2 星, recommended (subject_expansion)</h4>
+<a name="lab193"></a><h4 class="section">练习：2 星, standard, recommended (subject_expansion)</h4>
  在学习了主语归约属性后，你可能会好奇其相反的属性——主语<b>扩张</b>（subject expasion）
-    ——是否也成立。也即，如果有 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">==&gt;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 且 <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，是否总是有
-    <span class="inlinecode">|-</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>？如果是的话，请证明它。如果不是的话，请给出一个反例。
+    ——是否也成立。也即，如果有 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> 且 <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>，是否总是有
+    <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>？如果是的话，请证明它。如果不是的话，请给出一个反例。
     （你并不需要在 Coq 中证明你的反例，不过也可以这样做。）
 
 <div class="paragraph"> </div>
@@ -1020,15 +891,15 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab193"></a><h4 class="section">练习：2 星 (variation1)</h4>
- 假设，我们为类型关系添加新的规则：
+<a name="lab194"></a><h4 class="section">练习：2 星, standard (variation1)</h4>
+ 假设我们为类型关系添加新的规则：
 
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">T_SuccBool</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">t</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;<span class="id" type="var">t</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">TBool</span>&nbsp;→<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;<span class="id" type="var">tsucc</span>&nbsp;<span class="id" type="var">t</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">TBool</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">T_SccBool</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;<span class="id" type="var">t</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">Bool</span>&nbsp;→<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;<span class="id" type="var">scc</span>&nbsp;<span class="id" type="var">t</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">Bool</span>
 <div class="paragraph"> </div>
 
 </div>
@@ -1039,24 +910,18 @@
 
 <ul class="doclist">
 <li> <span class="inlinecode"><span class="id" type="var">step</span></span> 的确定性
-
-<div class="paragraph"> </div>
-
+            <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
 
 </li>
 <li> 可进性
-
-<div class="paragraph"> </div>
-
+            <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
 
 </li>
 <li> 维型性
+            <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
 
 </li>
 </ul>
-
-<div class="paragraph"> </div>
-
 
 </div>
 <div class="code code-tight">
@@ -1068,21 +933,19 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab194"></a><h4 class="section">练习：2 星 (variation2)</h4>
+<a name="lab195"></a><h4 class="section">练习：2 星, standard (variation2)</h4>
  假设，我们仅为 <span class="inlinecode"><span class="id" type="var">step</span></span> 关系添加新的规则：
 
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ST_Funny1</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span>&nbsp;<span class="id" type="var">ttrue</span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)&nbsp;==&gt;&nbsp;<span class="id" type="var">t<sub>3</sub></span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ST_Funny1</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">test</span>&nbsp;<span class="id" type="var">tru</span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>
 <div class="paragraph"> </div>
 
 </div>
    上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
-
-<div class="paragraph"> </div>
-
+            <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
 
 </div>
 <div class="code code-tight">
@@ -1094,88 +957,87 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab195"></a><h4 class="section">练习：2 星, optional (variation3)</h4>
+<a name="lab196"></a><h4 class="section">练习：2 星, standard, optional (variation3)</h4>
  假设，我们仅添加新的规则：
 
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ST_Funny2</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;<span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;==&gt;&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;→<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tif</span>&nbsp;<span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)&nbsp;==&gt;&nbsp;(<span class="id" type="var">tif</span>&nbsp;<span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ST_Funny2</span>&nbsp;:&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;→<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">test</span>&nbsp;<span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub></span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;(<span class="id" type="var">test</span>&nbsp;<span class="id" type="var">t<sub>1</sub></span>&nbsp;<span class="id" type="var">t<sub>2</sub>'</span>&nbsp;<span class="id" type="var">t<sub>3</sub></span>)
 <div class="paragraph"> </div>
 
 </div>
-   上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
-
-<div class="paragraph"> </div>
-
+   this rule?  For each one that does, give a counter-example.
+            <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
  <span class="proofbox">&#9744;</span> 
 <div class="paragraph"> </div>
 
-<a name="lab196"></a><h4 class="section">练习：2 星, optional (variation4)</h4>
+<a name="lab197"></a><h4 class="section">练习：2 星, standard, optional (variation4)</h4>
  假设，我们仅添加新的规则：
 
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">ST_Funny3</span>&nbsp;:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">tpred</span>&nbsp;<span class="id" type="var">tfalse</span>)&nbsp;==&gt;&nbsp;(<span class="id" type="var">tpred</span>&nbsp;(<span class="id" type="var">tpred</span>&nbsp;<span class="id" type="var">tfalse</span>))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">prd</span>&nbsp;<span class="id" type="var">fls</span>)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;(<span class="id" type="var">prd</span>&nbsp;(<span class="id" type="var">prd</span>&nbsp;<span class="id" type="var">fls</span>))
 <div class="paragraph"> </div>
 
 </div>
    上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
-
-<div class="paragraph"> </div>
-
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
  <span class="proofbox">&#9744;</span> 
 <div class="paragraph"> </div>
 
-<a name="lab197"></a><h4 class="section">练习：2 星, optional (variation5)</h4>
+<a name="lab198"></a><h4 class="section">练习：2 星, standard, optional (variation5)</h4>
  假设，我们仅添加新的规则：
 
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">T_Funny4</span>&nbsp;:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;<span class="id" type="var">tzero</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">TBool</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;<span class="id" type="var">zro</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">Bool</span>
 <div class="paragraph"> </div>
 
 </div>
    上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
-
-<div class="paragraph"> </div>
-
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
  <span class="proofbox">&#9744;</span> 
 <div class="paragraph"> </div>
 
-<a name="lab198"></a><h4 class="section">练习：2 星, optional (variation6)</h4>
+<a name="lab199"></a><h4 class="section">练习：2 星, standard, optional (variation6)</h4>
  假设，我们仅添加新的规则：
 
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;<span class="id" type="var">T_Funny5</span>&nbsp;:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|-&nbsp;<span class="id" type="var">tpred</span>&nbsp;<span class="id" type="var">tzero</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">TBool</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x22A2;&nbsp;<span class="id" type="var">prd</span>&nbsp;<span class="id" type="var">zro</span>&nbsp;&#x2208;&nbsp;<span class="id" type="var">Bool</span>
 <div class="paragraph"> </div>
 
 </div>
    上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
-
-<div class="paragraph"> </div>
-
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
  <span class="proofbox">&#9744;</span> 
 <div class="paragraph"> </div>
 
-<a name="lab199"></a><h4 class="section">练习：3 星, optional (more_variations)</h4>
+<a name="lab200"></a><h4 class="section">练习：3 星, standard, optional (more_variations)</h4>
  请使用上面的模式编写更多的练习。尝试有选择地使某些性质不再成立——
     即，对定义的改变只会导致某一个性质不再成立，而其他仍然成立。
- <span class="proofbox">&#9744;</span> 
+
+</div>
+<div class="code code-tight">
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab200"></a><h4 class="section">练习：1 星 (remove_predzero)</h4>
- 归约规则 <span class="inlinecode"><span class="id" type="var">ST_PredZero</span></span> 可能有一点反直觉：我们想要让零的前继变为未定义的，
-    而非定义为零。我们是否可以通过仅仅移除 <span class="inlinecode"><span class="id" type="var">step</span></span> 中的某条规则达到这一点？
+<a name="lab201"></a><h4 class="section">练习：1 星, standard (remove_prdzro)</h4>
+ 归约规则 <span class="inlinecode"><span class="id" type="var">ST_PrdZro</span></span> 可能有一点反直觉：我们想要让 <span class="inlinecode"></span> <span class="inlinecode"><span class="id" type="var">zro</span></span> 的前趋变为未定义的，
+    而非定义为 <span class="inlinecode"><span class="id" type="var">zro</span></span>。我们是否可以通过仅仅移除 <span class="inlinecode"><span class="id" type="var">step</span></span> 中的某条规则达到这一点？
     这样做会导致别的问题出现吗？
 
 <div class="paragraph"> </div>
@@ -1185,14 +1047,14 @@
 </div>
 <div class="code code-tight">
 <span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_remove_predzero</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_remove_predzro</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
 </div>
 
 <span class="proofbox">&#9744;</span> 
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab201"></a><h4 class="section">练习：4 星, advanced (prog_pres_bigstep)</h4>
+<a name="lab202"></a><h4 class="section">练习：4 星, advanced (prog_pres_bigstep)</h4>
  假设我们的求值关系是以大步语义方式定义的。请陈述类似的可进性和维型性定理。
     （你不需要证明他们。）
 
@@ -1212,10 +1074,9 @@
 </div>
 
 <span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
-<div class="paragraph"> </div>
+<div class="code code-tight">
 
-  
+<span class="comment">(*&nbsp;Sat&nbsp;Jan&nbsp;26&nbsp;15:15:44&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
 </div>
 </div>
 

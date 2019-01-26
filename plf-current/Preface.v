@@ -33,7 +33,6 @@
     Foundations_, there is plenty of additional material to fill most
     of a semester from this book alone. *)
 
-
 (* ################################################################# *)
 (** * Overview *)
 
@@ -155,4 +154,5 @@
     NSF Expeditions grant 1521523, _The Science of Deep
     Specification_. *)
 
-(** $Date$ *)
+
+(* Sat Jan 26 15:15:42 UTC 2019 *)

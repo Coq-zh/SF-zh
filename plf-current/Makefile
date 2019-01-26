@@ -797,4 +797,3 @@ debug:
 .PHONY: debug
 
 .DEFAULT_GOAL := all
-include .depend

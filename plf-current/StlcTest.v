@@ -52,8 +52,7 @@ idtac " ".
 idtac "#> STLC.step_example5".
 idtac "Possible points: 2".
 check_type @STLC.step_example5 (
-(STLC.multistep (STLC.tapp (STLC.tapp STLC.idBBBB STLC.idBB) STLC.idB)
-   STLC.idB)).
+(STLC.multistep (STLC.app (STLC.app STLC.idBBBB STLC.idBB) STLC.idB) STLC.idB)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions STLC.step_example5.
@@ -68,11 +67,11 @@ idtac "Possible points: 2".
 check_type @STLC.typing_example_3 (
 (exists T : STLC.ty,
    STLC.has_type (@Maps.empty STLC.ty)
-     (STLC.tabs STLC.x (STLC.TArrow STLC.TBool STLC.TBool)
-        (STLC.tabs STLC.y (STLC.TArrow STLC.TBool STLC.TBool)
-           (STLC.tabs STLC.z STLC.TBool
-              (STLC.tapp (STLC.tvar STLC.y)
-                 (STLC.tapp (STLC.tvar STLC.x) (STLC.tvar STLC.z)))))) T)).
+     (STLC.abs STLC.x (STLC.Arrow STLC.Bool STLC.Bool)
+        (STLC.abs STLC.y (STLC.Arrow STLC.Bool STLC.Bool)
+           (STLC.abs STLC.z STLC.Bool
+              (STLC.app (STLC.var STLC.y)
+                 (STLC.app (STLC.var STLC.x) (STLC.var STLC.z)))))) T)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions STLC.typing_example_3.
@@ -96,3 +95,5 @@ Print Assumptions STLC.typing_example_3.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:16:08 UTC 2019 *)

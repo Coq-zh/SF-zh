@@ -120,3 +120,5 @@ Print Assumptions selsort'_perm.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:18:13 UTC 2019 *)

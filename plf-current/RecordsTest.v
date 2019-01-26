@@ -39,22 +39,22 @@ idtac "#> STLCExtendedRecords.typing_example_2".
 idtac "Possible points: 0.5".
 check_type @STLCExtendedRecords.typing_example_2 (
 (STLCExtendedRecords.has_type (@Maps.empty STLCExtendedRecords.ty)
-   (STLCExtendedRecords.tapp
-      (STLCExtendedRecords.tabs "a"
-         (STLCExtendedRecords.TRCons "i1"
-            (STLCExtendedRecords.TArrow STLCExtendedRecords.A
+   (STLCExtendedRecords.app
+      (STLCExtendedRecords.abs "a"
+         (STLCExtendedRecords.RCons "i1"
+            (STLCExtendedRecords.Arrow STLCExtendedRecords.A
                STLCExtendedRecords.A)
-            (STLCExtendedRecords.TRCons "i2"
-               (STLCExtendedRecords.TArrow STLCExtendedRecords.B
-                  STLCExtendedRecords.B) STLCExtendedRecords.TRNil))
-         (STLCExtendedRecords.tproj (STLCExtendedRecords.tvar "a") "i2"))
-      (STLCExtendedRecords.trcons "i1"
-         (STLCExtendedRecords.tabs "a" STLCExtendedRecords.A
-            (STLCExtendedRecords.tvar "a"))
-         (STLCExtendedRecords.trcons "i2"
-            (STLCExtendedRecords.tabs "a" STLCExtendedRecords.B
-               (STLCExtendedRecords.tvar "a")) STLCExtendedRecords.trnil)))
-   (STLCExtendedRecords.TArrow STLCExtendedRecords.B STLCExtendedRecords.B))).
+            (STLCExtendedRecords.RCons "i2"
+               (STLCExtendedRecords.Arrow STLCExtendedRecords.B
+                  STLCExtendedRecords.B) STLCExtendedRecords.RNil))
+         (STLCExtendedRecords.rproj (STLCExtendedRecords.var "a") "i2"))
+      (STLCExtendedRecords.rcons "i1"
+         (STLCExtendedRecords.abs "a" STLCExtendedRecords.A
+            (STLCExtendedRecords.var "a"))
+         (STLCExtendedRecords.rcons "i2"
+            (STLCExtendedRecords.abs "a" STLCExtendedRecords.B
+               (STLCExtendedRecords.var "a")) STLCExtendedRecords.trnil)))
+   (STLCExtendedRecords.Arrow STLCExtendedRecords.B STLCExtendedRecords.B))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions STLCExtendedRecords.typing_example_2.
@@ -69,12 +69,12 @@ check_type @STLCExtendedRecords.typing_nonexample (
     STLCExtendedRecords.has_type
       (@Maps.update STLCExtendedRecords.ty
          (@Maps.empty STLCExtendedRecords.ty) "a"
-         (STLCExtendedRecords.TRCons "i2"
-            (STLCExtendedRecords.TArrow STLCExtendedRecords.A
-               STLCExtendedRecords.A) STLCExtendedRecords.TRNil))
-      (STLCExtendedRecords.trcons "i1"
-         (STLCExtendedRecords.tabs "a" STLCExtendedRecords.B
-            (STLCExtendedRecords.tvar "a")) (STLCExtendedRecords.tvar "a")) T))).
+         (STLCExtendedRecords.RCons "i2"
+            (STLCExtendedRecords.Arrow STLCExtendedRecords.A
+               STLCExtendedRecords.A) STLCExtendedRecords.RNil))
+      (STLCExtendedRecords.rcons "i1"
+         (STLCExtendedRecords.abs "a" STLCExtendedRecords.B
+            (STLCExtendedRecords.var "a")) (STLCExtendedRecords.var "a")) T))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions STLCExtendedRecords.typing_nonexample.
@@ -90,13 +90,13 @@ check_type @STLCExtendedRecords.typing_nonexample_2 (
     STLCExtendedRecords.has_type
       (@Maps.update STLCExtendedRecords.ty
          (@Maps.empty STLCExtendedRecords.ty) y STLCExtendedRecords.A)
-      (STLCExtendedRecords.tapp
-         (STLCExtendedRecords.tabs "a"
-            (STLCExtendedRecords.TRCons "i1" STLCExtendedRecords.A
-               STLCExtendedRecords.TRNil)
-            (STLCExtendedRecords.tproj (STLCExtendedRecords.tvar "a") "i1"))
-         (STLCExtendedRecords.trcons "i1" (STLCExtendedRecords.tvar y)
-            (STLCExtendedRecords.trcons "i2" (STLCExtendedRecords.tvar y)
+      (STLCExtendedRecords.app
+         (STLCExtendedRecords.abs "a"
+            (STLCExtendedRecords.RCons "i1" STLCExtendedRecords.A
+               STLCExtendedRecords.RNil)
+            (STLCExtendedRecords.rproj (STLCExtendedRecords.var "a") "i1"))
+         (STLCExtendedRecords.rcons "i1" (STLCExtendedRecords.var y)
+            (STLCExtendedRecords.rcons "i2" (STLCExtendedRecords.var y)
                STLCExtendedRecords.trnil))) T))).
 idtac "Assumptions:".
 Abort.
@@ -121,3 +121,5 @@ Print Assumptions STLCExtendedRecords.typing_nonexample_2.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:16:26 UTC 2019 *)

@@ -23,7 +23,6 @@
   }
   return collisions;
 
-
   In a functional program, we must replace [a[i]=1] with the update
   of a finite map.  If we use the inefficient maps in [Maps.v], each
   lookup and update will take (worst-case) linear time, and the whole
@@ -68,7 +67,7 @@
 (* ################################################################# *)
 (** * A Simple Program That's Waaaaay Too Slow. *)
 
-Require Import Coq.Strings.String.
+From Coq Require Import Strings.String.
 From VFA Require Import Perm.
 From VFA Require Import Maps.
 Import FunctionalExtensionality.
@@ -115,8 +114,9 @@ Print eqb.
 End VerySlow.
 
 (* ################################################################# *)
-(** * Efficient Positive Numbers *)
-(** We can do better; we _must_ do better.  In fact, Coq's integer type,
+(** * Efficient Positive Numbers 
+
+    We can do better; we _must_ do better.  In fact, Coq's integer type,
      called [Z], is a binary representation (not unary), so that operations
      such as [plus] and [leq] take time linear in the number of bits, that is,
      logarithmic in the value of the numbers.  Here we will explore how [Z]
@@ -221,15 +221,16 @@ Fixpoint addc (carry: bool) (x y: positive) {struct x} : positive :=
 
 Definition add (x y: positive) : positive := addc false x y.
 
-(** **** 练习：2 星 (succ_correct)  *)
+(** **** 练习：2 星, standard (succ_correct)  *)
 Lemma succ_correct: forall p,
    positive2nat (succ p) = S (positive2nat p).
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (addc_correct)  *)
-(** You may use [omega] in this proof if you want, along with induction
+(** **** 练习：3 星, standard (addc_correct)  
+
+    You may use [omega] in this proof if you want, along with induction
     of course.  But really, using [omega] is an anachronism in a sense:
     Coq's [omega] uses theorems about [Z] that are proved from theorems about
     Coq's standard-library [positive] that, in turn, rely on a theorem much
@@ -272,7 +273,7 @@ Qed.
 Inductive comparison : Set :=
     Eq : comparison | Lt : comparison | Gt : comparison.
 
-(** **** 练习：5 星 (compare_correct)  *)
+(** **** 练习：5 星, standard (compare_correct)  *)
 Fixpoint compare x y {struct x}:=
   match x, y with
     | p~1, q~1 => compare p q
@@ -306,8 +307,9 @@ induction x; destruct y; simpl.
      Proof: it's structurally inductive on the height of [x]. *)
 
 (* ================================================================= *)
-(** ** Coq's Integer Type, [Z] *)
-(** Coq's integer type is constructed from positive numbers: *)
+(** ** Coq's Integer Type, [Z] 
+
+    Coq's integer type is constructed from positive numbers: *)
 
 Inductive Z : Set :=
   | Z0 : Z
@@ -504,8 +506,9 @@ End FastEnough.
     in which case, [1+c] takes worst-case [log N], and average-case
     constant time. *)
 
-(** **** 练习：2 星 (successor_of_Z_constant_time)  *)
-(** Explain why the average-case time for successor of a binary
+(** **** 练习：2 星, standard (successor_of_Z_constant_time)  
+
+    Explain why the average-case time for successor of a binary
      integer, with carry, is constant time.  Assume that the input integer
      is random (uniform distribution from 1 to N), or assume that
      we are iterating successor starting at 1, so that each number
@@ -535,22 +538,23 @@ Definition manual_grade_for_successor_of_Z_constant_time : option (nat*string) :
 (* ================================================================= *)
 (** ** Lemmas About the Relation Between [lookup] and [insert] *)
 
-(** **** 练习：1 星 (look_leaf)  *)
+(** **** 练习：1 星, standard (look_leaf)  *)
 Lemma look_leaf:
  forall A (a:A) j, look a j Leaf = a.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (look_ins_same)  *)
-(** This is a rather simple induction. *)
+(** **** 练习：2 星, standard (look_ins_same)  
+
+    This is a rather simple induction. *)
 
 Lemma look_ins_same: forall {A} a k (v:A) t, look a k (ins a k v t) = v.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
+(** **** 练习：3 星, standard (look_ins_same)  
 
-(** **** 练习：3 星 (look_ins_same)  *)
-(** Induction on j? Induction on t?   Do you feel lucky? *)
+    Induction on j? Induction on t?   Do you feel lucky? *)
 
 Lemma look_ins_other: forall {A} a j k (v:A) t,
    j <> k -> look a j (ins a k v t) = look a j t.
@@ -586,7 +590,7 @@ Qed.
 
 (** Now, use those two lemmas to prove that it's really a bijection! *)
 
-(** **** 练习：2 星 (pos2nat_bijective)  *)
+(** **** 练习：2 星, standard (pos2nat_bijective)  *)
 Lemma pos2nat_injective: forall p q, pos2nat p = pos2nat q -> p=q.
 (* 请在此处解答 *) Admitted.
 
@@ -617,8 +621,9 @@ Definition abstract {A: Type} (t: trie_table A) (n: nat) : A :=
 Definition Abs {A: Type} (t: trie_table A) (m: total_map A) :=
   abstract t = m.
 
-(** **** 练习：2 星 (is_trie)  *)
-(** If you picked a _really simple_ representation invariant, these should be easy.
+(** **** 练习：2 星, standard (is_trie)  
+
+    If you picked a _really simple_ representation invariant, these should be easy.
     Later, if you need to change the representation invariant in order to
     get the [_relate] proofs to work, then you'll need to fix these proofs. *)
 
@@ -630,8 +635,9 @@ Theorem insert_is_trie: forall {A} i x (t: trie_table A),
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (empty_relate)  *)
-(** Just unfold a bunch of definitions, use [extensionality], and
+(** **** 练习：2 星, standard (empty_relate)  
+
+    Just unfold a bunch of definitions, use [extensionality], and
     use one of the lemmas you proved above, in the section
     "Lemmas about the relation between [lookup] and [insert]." *)
 
@@ -641,17 +647,18 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
+(** **** 练习：2 星, standard (lookup_relate)  
 
-(** **** 练习：2 星 (lookup_relate)  *)
-(** Given the abstraction relation we've chosen, this one should be really simple. *)
+    Given the abstraction relation we've chosen, this one should be really simple. *)
 
 Theorem lookup_relate: forall {A} i (t: trie_table A) m,
     is_trie t -> Abs t m -> lookup i t = m (pos2nat i).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (insert_relate)  *)
-(** Given the abstraction relation we've chosen, this one should NOT be simple.
+(** **** 练习：3 星, standard (insert_relate)  
+
+    Given the abstraction relation we've chosen, this one should NOT be simple.
    However, you've already done the heavy lifting, with the lemmas
   [look_ins_same] and [look_ins_other].   You will not need induction here.
   Instead, unfold a bunch of things, use extensionality, and get to a case analysis
@@ -680,8 +687,9 @@ try (apply empty_relate).
 (* 请在此处解答 *) Admitted.
 
 (* ################################################################# *)
-(** * Conclusion *)
-(** Efficient functional maps with (positive) integer keys are one of the most
+(** * Conclusion 
+
+    Efficient functional maps with (positive) integer keys are one of the most
    important data structures in functional programming.  They are used for
   symbol tables in compilers and static analyzers; to represent directed graphs
   (the mapping from node-ID to edge-list); and (in general) anywhere that
@@ -694,3 +702,5 @@ try (apply empty_relate).
   The core implementation of [PositiveMap] is just as shown in this chapter,
   but [FMaps] uses different names for the functions [insert] and [lookup],
   and also provides several other operations on maps.  *)
+
+(* Sat Jan 26 15:18:06 UTC 2019 *)

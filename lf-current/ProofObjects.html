@@ -43,7 +43,7 @@
 <div class="paragraph"> </div>
 
  前文已讨论过 Coq 既可以用 <span class="inlinecode"><span class="id" type="var">nat</span></span>、<span class="inlinecode"><span class="id" type="var">list</span></span> 等归纳类型及其函数<b>编程</b>，又可
-    以用归纳命题（如 <span class="inlinecode"><span class="id" type="var">ev</span></span>）、蕴含式、全称量词等工具<b>证明</b>程序的性质。我们一直
+    以用归纳命题（如 <span class="inlinecode"><span class="id" type="var">even</span></span>）、蕴含式、全称量词等工具<b>证明</b>程序的性质。我们一直
     以来区别对待此两种用法，在很多情况下确实可以这样。但也有迹象表明在 Coq 中编
     程与证明紧密相关。例如，关键字 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 同时用于声明数据类型和命题，以及
     <span class="inlinecode">→</span> 同时用于描述函数类型和逻辑蕴含式。这可并不是语法上的巧合！事实上，在 Coq
@@ -68,22 +68,22 @@
     答曰：类型也！ 
 <div class="paragraph"> </div>
 
- 回顾一下 <span class="inlinecode"><span class="id" type="var">ev</span></span> 这个性质的形式化定义。  
+ 回顾一下 <span class="inlinecode"><span class="id" type="var">even</span></span> 这个性质的形式化定义。  
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Print</span> <span class="id" type="var">ev</span>.<br/>
+<span class="id" type="keyword">Print</span> <span class="id" type="var">even</span>.<br/>
 <span class="comment">(*&nbsp;==&gt;<br/>
-&nbsp;&nbsp;Inductive&nbsp;ev&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;Prop&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ev_0&nbsp;:&nbsp;ev&nbsp;0<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ev_SS&nbsp;:&nbsp;forall&nbsp;n,&nbsp;ev&nbsp;n&nbsp;-&gt;&nbsp;ev&nbsp;(S&nbsp;(S&nbsp;n)).<br/>
+&nbsp;&nbsp;Inductive&nbsp;even&nbsp;:&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop&nbsp;:=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ev_0&nbsp;:&nbsp;even&nbsp;0<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ev_SS&nbsp;:&nbsp;forall&nbsp;n,&nbsp;even&nbsp;n&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;even&nbsp;(S&nbsp;(S&nbsp;n)).<br/>
 *)</span><br/>
 </div>
 
 <div class="doc">
-试以另一种方式解读“<span class="inlinecode">:</span>”：以“是……的证明”取代“具有……类型”。例如将定义第二行的
-    <span class="inlinecode"><span class="id" type="var">ev_0</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span> 读作“<span class="inlinecode"><span class="id" type="var">ev_0</span></span> 是 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span> 的证明”以代替“<span class="inlinecode"><span class="id" type="var">ev_0</span></span> 具有 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span> 类型”。
-    
+试以另一种方式解读“<span class="inlinecode">:</span>”：以“是……的证明”取代“具有……类型”。例如将定义 <span class="inlinecode"><span class="id" type="var">even</span></span>
+    第二行的 <span class="inlinecode"><span class="id" type="var">ev_0</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode">0</span> 读作“<span class="inlinecode"><span class="id" type="var">ev_0</span></span> 是 <span class="inlinecode">[<span class="id" type="var">even</span>]</span> <span class="inlinecode">0</span> 的证明”以代替“<span class="inlinecode"><span class="id" type="var">ev_0</span></span> 具有
+    <span class="inlinecode">[<span class="id" type="var">even</span>]</span> <span class="inlinecode">0</span> 类型”。 
 <div class="paragraph"> </div>
 
  此处 <span class="inlinecode">:</span> 既在类型层面表达“具有……类型”，又在命题层面表示“证明了……”。这种双关
@@ -105,20 +105,20 @@
 
 <span class="id" type="keyword">Check</span> <span class="id" type="var">ev_SS</span>.<br/>
 <span class="comment">(*&nbsp;===&gt;&nbsp;ev_SS&nbsp;:&nbsp;forall&nbsp;n,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev&nbsp;n&nbsp;-&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ev&nbsp;(S&nbsp;(S&nbsp;n))&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;even&nbsp;n&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;even&nbsp;(S&nbsp;(S&nbsp;n))&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-可以将其读作“<span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 构造子接受两个参数——数字 <span class="inlinecode"><span class="id" type="var">n</span></span> 以及命题 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 的证明——并
-    产生 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span> 的证明。” 
+可以将其读作“<span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 构造子接受两个参数——数字 <span class="inlinecode"><span class="id" type="var">n</span></span> 以及命题 <span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>
+    的证明——并产生 <span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span> 的证明。” 
 <div class="paragraph"> </div>
 
- 现在让我们回顾一下之前有关 <span class="inlinecode"><span class="id" type="var">ev</span></span> 的一个证明。 
+ 现在让我们回顾一下之前有关 <span class="inlinecode"><span class="id" type="var">even</span></span> 的一个证明。 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4</span> : <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4</span> : <span class="id" type="var">even</span> 4.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ev_0</span>. <span class="id" type="keyword">Qed</span>.<br/>
 </div>
@@ -131,7 +131,7 @@
 
 <span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4</span>.<br/>
 <span class="comment">(*&nbsp;===&gt;&nbsp;ev_4&nbsp;=&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;ev&nbsp;4&nbsp;&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;even&nbsp;4&nbsp;&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
@@ -140,15 +140,24 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Check</span> (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
-<span class="comment">(*&nbsp;===&gt;&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;even&nbsp;4&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
 表达式 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> <span class="inlinecode">2</span> <span class="inlinecode">(<span class="id" type="var">ev_SS</span></span> <span class="inlinecode">0</span> <span class="inlinecode"><span class="id" type="var">ev_0</span>)</span> 可视为向构造子 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> 传入参数 2 和 0
-    等参数，以及对应的 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">2</span> 与 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">0</span> 之依据所构造的证明。或言之，视 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span>
+    等参数，以及对应的 <span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode">2</span> 与 <span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode">0</span> 之依据所构造的证明。或言之，视 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span>
     为“构造证明”之原语，需要给定一个数字，并进一步提供该数为偶数之依据以构造证明。
-    其类型表明了它的功能：<span class="inlinecode">[</span> <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>))</span> <span class="inlinecode">]</span>；类似地，多态类型 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">X</span>,</span>
-    <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 表明可以将 <span class="inlinecode"><span class="id" type="var">nil</span></span> 视为从某类型到由该类型元素组成的空列表的函数。 
+    其类型表明了它的功能：
+
+<div class="paragraph"> </div>
+
+<div class="code code-tight">
+&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>,&nbsp;<span class="id" type="var">even</span>&nbsp;<span class="id" type="var">n</span>&nbsp;→&nbsp;<span class="id" type="var">even</span>&nbsp;(<span class="id" type="var">S</span>&nbsp;(<span class="id" type="var">S</span>&nbsp;<span class="id" type="var">n</span>))
+<div class="paragraph"> </div>
+
+</div>
+    类似地，多态类型 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">X</span>,</span> <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 表明可以将 <span class="inlinecode"><span class="id" type="var">nil</span></span>
+    视为从某类型到由该类型元素组成的空列表的函数。 
 <div class="paragraph"> </div>
 
  我们在 <a href="Logic.html"><span class="inlineref">Logic</span></a> 这一章中已经了解到，我们可以使用函数应用
@@ -157,14 +166,14 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4'</span>: <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4'</span>: <span class="id" type="var">even</span> 4.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab262"></a><h1 class="section">证明脚本</h1>
+<a name="lab265"></a><h1 class="section">证明脚本</h1>
 
 <div class="paragraph"> </div>
 
@@ -176,7 +185,7 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4''</span> : <span class="id" type="var">ev</span> 4.<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_4''</span> : <span class="id" type="var">even</span> 4.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">Show</span> <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
@@ -204,7 +213,7 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_4'''</span> : <span class="id" type="var">ev</span> 4 :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_4'''</span> : <span class="id" type="var">even</span> 4 :=<br/>
 &nbsp;&nbsp;<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>).<br/>
 </div>
 
@@ -214,32 +223,32 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4</span>.<br/>
-<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;even&nbsp;4&nbsp;*)</span><br/>
 <span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4'</span>.<br/>
-<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4'&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4'&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;even&nbsp;4&nbsp;*)</span><br/>
 <span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4''</span>.<br/>
-<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4''&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4''&nbsp;&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;even&nbsp;4&nbsp;*)</span><br/>
 <span class="id" type="keyword">Print</span> <span class="id" type="var">ev_4'''</span>.<br/>
-<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4'''&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;ev&nbsp;4&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;ev_4'''&nbsp;=&nbsp;&nbsp;&nbsp;ev_SS&nbsp;2&nbsp;(ev_SS&nbsp;0&nbsp;ev_0)&nbsp;:&nbsp;even&nbsp;4&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab263"></a><h4 class="section">练习：2 星 (eight_is_even)</h4>
- 写出对应 <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">8</span> 的策略证明和证明对象。 
+<a name="lab266"></a><h4 class="section">练习：2 星, standard (eight_is_even)</h4>
+ 写出对应 <span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode">8</span> 的策略证明和证明对象。 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_8</span> : <span class="id" type="var">ev</span> 8.<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_8</span> : <span class="id" type="var">even</span> 8.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_8'</span> : <span class="id" type="var">ev</span> 8<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_8'</span> : <span class="id" type="var">even</span> 8<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
 <span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab264"></a><h1 class="section">量词，蕴含式，函数</h1>
+<a name="lab267"></a><h1 class="section">量词，蕴含式，函数</h1>
 
 <div class="paragraph"> </div>
 
@@ -258,7 +267,7 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_plus4</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>).<br/>
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ev_plus4</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>, <span class="id" type="var">even</span> <span class="id" type="var">n</span> → <span class="id" type="var">even</span> (4 + <span class="id" type="var">n</span>).<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">simpl</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ev_SS</span>.<br/>
@@ -272,7 +281,7 @@
 
 <div class="paragraph"> </div>
 
-    我们在寻找一个<b>类型(Type)</b>是 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode">(4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> 的表达式——也
+    我们在寻找一个<b>类型(Type)</b>是 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode">(4</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> 的表达式——也
     就是说，一个接受两个参数（一个数字和一个证据）并返回一个证据的
     <b>函数(Function)</b>!
 
@@ -282,8 +291,8 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus4'</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">fun</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) ⇒ <span class="id" type="keyword">fun</span> (<span class="id" type="var">H</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>) ⇒<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus4'</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>, <span class="id" type="var">even</span> <span class="id" type="var">n</span> → <span class="id" type="var">even</span> (4 + <span class="id" type="var">n</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" type="keyword">fun</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) ⇒ <span class="id" type="keyword">fun</span> (<span class="id" type="var">H</span> : <span class="id" type="var">even</span> <span class="id" type="var">n</span>) ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ev_SS</span> (<span class="id" type="var">S</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>)) (<span class="id" type="var">ev_SS</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>).<br/>
 </div>
 
@@ -294,17 +303,17 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus4''</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">H</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">ev</span> (4 + <span class="id" type="var">n</span>) :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus4''</span> (<span class="id" type="var">n</span> : <span class="id" type="var">nat</span>) (<span class="id" type="var">H</span> : <span class="id" type="var">even</span> <span class="id" type="var">n</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">even</span> (4 + <span class="id" type="var">n</span>) :=<br/>
 &nbsp;&nbsp;<span class="id" type="var">ev_SS</span> (<span class="id" type="var">S</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>)) (<span class="id" type="var">ev_SS</span> <span class="id" type="var">n</span> <span class="id" type="var">H</span>).<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Check</span> <span class="id" type="var">ev_plus4''</span>.<br/>
 <span class="comment">(*&nbsp;===&gt;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;n&nbsp;:&nbsp;nat,&nbsp;ev&nbsp;n&nbsp;-&gt;&nbsp;ev&nbsp;(4&nbsp;+&nbsp;n)&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;n&nbsp;:&nbsp;nat,&nbsp;even&nbsp;n&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;even&nbsp;(4&nbsp;+&nbsp;n)&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
 当我们将 <span class="inlinecode"><span class="id" type="var">ev_plus4</span></span> 证明的命题视为一个函数类型时，我们可以发现一个
-    有趣的现象：第二个参数的类型，<span class="inlinecode"><span class="id" type="var">ev</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>，依赖于第一个参数 <span class="inlinecode"><span class="id" type="var">n</span></span> 的<b>值</b>。
+    有趣的现象：第二个参数的类型，<span class="inlinecode"><span class="id" type="var">even</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>，依赖于第一个参数 <span class="inlinecode"><span class="id" type="var">n</span></span> 的<b>值</b>。
 
 <div class="paragraph"> </div>
 
@@ -320,8 +329,8 @@
 <div class="paragraph"> </div>
 
 <div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">x</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>&nbsp;(<span class="id" type="var">_</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">x</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">_</span>:<span class="id" type="var">nat</span>),&nbsp;<span class="id" type="var">nat</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;&nbsp;<span class="id" type="var">nat</span>&nbsp;→&nbsp;<span class="id" type="var">nat</span>
 <div class="paragraph"> </div>
 
@@ -334,7 +343,7 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2</span> : <span class="id" type="keyword">Prop</span> :=<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">E</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>), <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>, <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">E</span> : <span class="id" type="var">even</span> <span class="id" type="var">n</span>), <span class="id" type="var">even</span> (<span class="id" type="var">n</span> + 2).<br/>
 </div>
 
 <div class="doc">
@@ -346,7 +355,7 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2'</span> : <span class="id" type="keyword">Prop</span> :=<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">_</span> : <span class="id" type="var">ev</span> <span class="id" type="var">n</span>), <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>, <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">_</span> : <span class="id" type="var">even</span> <span class="id" type="var">n</span>), <span class="id" type="var">even</span> (<span class="id" type="var">n</span> + 2).<br/>
 </div>
 
 <div class="doc">
@@ -355,21 +364,21 @@
 <div class="code code-tight">
 
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">ev_plus2''</span> : <span class="id" type="keyword">Prop</span> :=<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> → <span class="id" type="var">ev</span> (<span class="id" type="var">n</span> + 2).<br/>
+&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>, <span class="id" type="var">even</span> <span class="id" type="var">n</span> → <span class="id" type="var">even</span> (<span class="id" type="var">n</span> + 2).<br/>
 </div>
 
 <div class="doc">
-总的来说，"<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>"只是 "<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span><span class="inlinecode">(<span class="id" type="var">_</span>:<span class="id" type="var">P</span>),</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>"的语法糖。 
+总的来说，"<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>"只是 "<span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode">(<span class="id" type="var">_</span>:<span class="id" type="var">P</span>),</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>"的语法糖。 
 </div>
 
 <div class="doc">
-<a name="lab265"></a><h1 class="section">使用策略编程</h1>
+<a name="lab268"></a><h1 class="section">使用策略编程</h1>
 
 <div class="paragraph"> </div>
 
  如果我们可以通过显式地给出项，而不是执行策略脚本，来构造证明，你可
     能会好奇我们是否可以通过<b>策略</b>，而不是显式地给出项，来构造<b>程序</b>。
-    自然地，答案是可以！
+    自然地，答案是可以！ 
 </div>
 <div class="code code-tight">
 
@@ -382,7 +391,7 @@
 <span class="id" type="keyword">Print</span> <span class="id" type="var">add1</span>.<br/>
 <span class="comment">(*&nbsp;==&gt;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;add1&nbsp;=&nbsp;fun&nbsp;n&nbsp;:&nbsp;nat&nbsp;=&gt;&nbsp;S&nbsp;n<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat&nbsp;-&gt;&nbsp;nat<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;nat<br/>
 *)</span><br/><hr class='doublespaceincode'/>
 <span class="id" type="var">Compute</span> <span class="id" type="var">add1</span> 2.<br/>
 <span class="comment">(*&nbsp;==&gt;&nbsp;3&nbsp;:&nbsp;nat&nbsp;*)</span><br/>
@@ -403,12 +412,12 @@
 </div>
 
 <div class="doc">
-<a name="lab266"></a><h1 class="section">逻辑联结词作为归纳类型</h1>
+<a name="lab269"></a><h1 class="section">逻辑联结词作为归纳类型</h1>
 
 <div class="paragraph"> </div>
 
- 归纳定义足够用于表达我们目前为止遇到的大多数的联结词和量词。事实上，
-    只有全称量化（因此也包括蕴含式）是Coq内置的，所有其他的都是被归纳
+ 归纳定义足够用于表达我们目前为止遇到的大多数的联结词。事实上，
+    只有全称量化（以及作为特殊情况的蕴含式）是Coq内置的，所有其他的都是被归纳
     定义的。在这一节中我们会看到它们的定义。 
 </div>
 <div class="code code-tight">
@@ -417,12 +426,11 @@
 </div>
 
 <div class="doc">
-<a name="lab267"></a><h2 class="section">合取</h2>
-
+<a name="lab270"></a><h2 class="section">合取</h2>
 
 <div class="paragraph"> </div>
 
-    为了证明<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>成立，我们必须同时给出<span class="inlinecode"><span class="id" type="var">P</span></span>和<span class="inlinecode"><span class="id" type="var">Q</span></span>的证据。因此，我们可
+ 为了证明<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>成立，我们必须同时给出<span class="inlinecode"><span class="id" type="var">P</span></span>和<span class="inlinecode"><span class="id" type="var">Q</span></span>的证据。因此，我们可
     以合理地将<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>的证明对象定义为包含两个证明的元祖：一个是<span class="inlinecode"><span class="id" type="var">P</span></span>的
     证明，另一个是<span class="inlinecode"><span class="id" type="var">Q</span></span>的证明。即我们拥有如下定义。 
 </div>
@@ -443,18 +451,22 @@
 <span class="id" type="keyword">Print</span> <span class="id" type="var">prod</span>.<br/>
 <span class="comment">(*&nbsp;===&gt;<br/>
 &nbsp;&nbsp;&nbsp;Inductive&nbsp;prod&nbsp;(X&nbsp;Y&nbsp;:&nbsp;Type)&nbsp;:&nbsp;Type&nbsp;:=<br/>
-&nbsp;&nbsp;&nbsp;|&nbsp;pair&nbsp;:&nbsp;X&nbsp;-&gt;&nbsp;Y&nbsp;-&gt;&nbsp;X&nbsp;*&nbsp;Y.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;|&nbsp;pair&nbsp;:&nbsp;X&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Y&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;X&nbsp;*&nbsp;Y.&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
 这个定义能够解释为什么<span class="inlinecode"><span class="id" type="tactic">destruct</span></span>和<span class="inlinecode"><span class="id" type="tactic">intros</span></span>模式能用于一个合取前提。
     情况分析允许我们考虑所有<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">Q</span></span>可能被证明的方式——只有一种方式（即
-    <span class="inlinecode"><span class="id" type="var">conj</span></span>构造子）。类似地，<span class="inlinecode"><span class="id" type="tactic">split</span></span>策略能够用于所有只有一个构造子的归
+    <span class="inlinecode"><span class="id" type="var">conj</span></span>构造子）。
+
+<div class="paragraph"> </div>
+
+    类似地，<span class="inlinecode"><span class="id" type="tactic">split</span></span>策略能够用于所有只有一个构造子的归
     纳定义命题。特别地，它能够用于<span class="inlinecode"><span class="id" type="var">and</span></span>： 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">and_comm</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> ↔ <span class="id" type="var">Q</span> ∧ <span class="id" type="var">P</span>.<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">and_comm</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">P</span> <span class="id" type="var">Q</span> : <span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> ↔ <span class="id" type="var">Q</span> ∧ <span class="id" type="var">P</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>. <span class="id" type="tactic">split</span>.<br/>
 &nbsp;&nbsp;- <span class="id" type="tactic">intros</span> [<span class="id" type="var">HP</span> <span class="id" type="var">HQ</span>]. <span class="id" type="tactic">split</span>.<br/>
@@ -472,7 +484,7 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">and_comm'_aux</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> (<span class="id" type="var">H</span> : <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span>) :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">and_comm'_aux</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> (<span class="id" type="var">H</span> : <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span>) : <span class="id" type="var">Q</span> ∧ <span class="id" type="var">P</span> :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">H</span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">conj</span> <span class="id" type="var">HP</span> <span class="id" type="var">HQ</span> ⇒ <span class="id" type="var">conj</span> <span class="id" type="var">HQ</span> <span class="id" type="var">HP</span><br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
@@ -481,12 +493,12 @@
 </div>
 
 <div class="doc">
-<a name="lab268"></a><h4 class="section">练习：2 星, optional (conj_fact)</h4>
+<a name="lab271"></a><h4 class="section">练习：2 星, standard, optional (conj_fact)</h4>
  构造一个证明对象来证明下列命题。 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">conj_fact</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span>, <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> → <span class="id" type="var">Q</span> ∧ <span class="id" type="var">R</span> → <span class="id" type="var">P</span> ∧ <span class="id" type="var">R</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">conj_fact</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">P</span> <span class="id" type="var">Q</span> <span class="id" type="var">R</span>, <span class="id" type="var">P</span> ∧ <span class="id" type="var">Q</span> → <span class="id" type="var">Q</span> ∧ <span class="id" type="var">R</span> → <span class="id" type="var">P</span> ∧ <span class="id" type="var">R</span><br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
@@ -494,12 +506,11 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab269"></a><h2 class="section">析取</h2>
-
+<a name="lab272"></a><h2 class="section">析取</h2>
 
 <div class="paragraph"> </div>
 
-    析取的归纳定义有两个构造子，分别用于析取的两边： 
+ 析取的归纳定义有两个构造子，分别用于析取的两边： 
 </div>
 <div class="code code-tight">
 
@@ -519,13 +530,13 @@
     又一次地，我们可以不使用策略，直接写出涉及<span class="inlinecode"><span class="id" type="var">or</span></span>的定义的证明对象。 
 <div class="paragraph"> </div>
 
-<a name="lab270"></a><h4 class="section">练习：2 星, optional (or_commut'')</h4>
+<a name="lab273"></a><h4 class="section">练习：2 星, standard, optional (or_commut'')</h4>
  尝试写下<span class="inlinecode"><span class="id" type="var">or_commut</span></span>的显式证明对象。（不要使用<span class="inlinecode"><span class="id" type="keyword">Print</span></span>来偷看我们已经
     定义的版本！） 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">or_comm</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span> <span class="id" type="var">Q</span>, <span class="id" type="var">P</span> ∨ <span class="id" type="var">Q</span> → <span class="id" type="var">Q</span> ∨ <span class="id" type="var">P</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">or_comm</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">P</span> <span class="id" type="var">Q</span>, <span class="id" type="var">P</span> ∨ <span class="id" type="var">Q</span> → <span class="id" type="var">Q</span> ∨ <span class="id" type="var">P</span><br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
@@ -533,18 +544,17 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab271"></a><h2 class="section">存在量化</h2>
-
+<a name="lab274"></a><h2 class="section">存在量化</h2>
 
 <div class="paragraph"> </div>
 
-    为了给出存在量词的证据，我们将一个证据类型<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">x</span></span>满足性质<span class="inlinecode"><span class="id" type="var">P</span></span>的证明打包在一起： 
+ 为了给出存在量词的证据，我们将一个证据类型<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">x</span></span>满足性质<span class="inlinecode"><span class="id" type="var">P</span></span>的证明打包在一起： 
 </div>
 <div class="code code-tight">
 
 <span class="id" type="keyword">Module</span> <span class="id" type="var">Ex</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">ex</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">P</span> : <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Prop</span> :=<br/>
-| <span class="id" type="var">ex_intro</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span> : <span class="id" type="var">A</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">ex</span> <span class="id" type="var">P</span>.<br/><hr class='doublespaceincode'/>
+| <span class="id" type="var">ex_intro</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> : <span class="id" type="var">A</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">ex</span> <span class="id" type="var">P</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">End</span> <span class="id" type="var">Ex</span>.<br/>
 </div>
 
@@ -555,12 +565,12 @@
     证据类型<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>的证 明，可以构造<span class="inlinecode"><span class="id" type="var">ex</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span>的证据的方式。 
 <div class="paragraph"> </div>
 
- 我们更加熟悉的类型<span class="inlinecode"><span style='font-size:120%;'>&exist;</span></span><span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>可以转换为一个涉及<span class="inlinecode"><span class="id" type="var">ex</span></span>的表达式： 
+ 我们更加熟悉的类型<span class="inlinecode"><span style='font-size:120%;'>&exist;</span></span> <span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>可以转换为一个涉及<span class="inlinecode"><span class="id" type="var">ex</span></span>的表达式： 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Check</span> <span class="id" type="var">ex</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">ev</span> <span class="id" type="var">n</span>).<br/>
-<span class="comment">(*&nbsp;===&gt;&nbsp;exists&nbsp;n&nbsp;:&nbsp;nat,&nbsp;ev&nbsp;n<br/>
+<span class="id" type="keyword">Check</span> <span class="id" type="var">ex</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">even</span> <span class="id" type="var">n</span>).<br/>
+<span class="comment">(*&nbsp;===&gt;&nbsp;exists&nbsp;n&nbsp;:&nbsp;nat,&nbsp;even&nbsp;n<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;Prop&nbsp;*)</span><br/>
 </div>
 
@@ -569,17 +579,17 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">some_nat_is_even</span> : <span style='font-size:120%;'>&exist;</span> <span class="id" type="var">n</span>, <span class="id" type="var">ev</span> <span class="id" type="var">n</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">ex_intro</span> <span class="id" type="var">ev</span> 4 (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">some_nat_is_even</span> : <span style='font-size:120%;'>&exist;</span><span class="id" type="var">n</span>, <span class="id" type="var">even</span> <span class="id" type="var">n</span> :=<br/>
+&nbsp;&nbsp;<span class="id" type="var">ex_intro</span> <span class="id" type="var">even</span> 4 (<span class="id" type="var">ev_SS</span> 2 (<span class="id" type="var">ev_SS</span> 0 <span class="id" type="var">ev_0</span>)).<br/>
 </div>
 
 <div class="doc">
-<a name="lab272"></a><h4 class="section">练习：2 星, optional (ex_ev_Sn)</h4>
+<a name="lab275"></a><h4 class="section">练习：2 星, standard, optional (ex_ev_Sn)</h4>
  完成下列证明对象的定义： 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">ex_ev_Sn</span> : <span class="id" type="var">ex</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">ev</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>))<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">ex_ev_Sn</span> : <span class="id" type="var">ex</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> ⇒ <span class="id" type="var">even</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>))<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
 </div>
 
@@ -587,7 +597,7 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab273"></a><h2 class="section"><span class="inlinecode"><span class="id" type="var">True</span></span>和<span class="inlinecode"><span class="id" type="var">False</span></span></h2>
+<a name="lab276"></a><h2 class="section"><span class="inlinecode"><span class="id" type="var">True</span></span>和<span class="inlinecode"><span class="id" type="var">False</span></span></h2>
 
 <div class="paragraph"> </div>
 
@@ -609,7 +619,7 @@
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">False</span> : <span class="id" type="keyword">Prop</span> :=.<br/>
+<span class="id" type="keyword">Inductive</span> <span class="id" type="var">False</span> : <span class="id" type="keyword">Prop</span> := .<br/>
 </div>
 
 <div class="doc">
@@ -622,7 +632,7 @@
 </div>
 
 <div class="doc">
-<a name="lab274"></a><h1 class="section">相等关系</h1>
+<a name="lab277"></a><h1 class="section">相等关系</h1>
 
 <div class="paragraph"> </div>
 
@@ -634,7 +644,7 @@
 
 <span class="id" type="keyword">Module</span> <span class="id" type="var">MyEquality</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">eq</span> {<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>} : <span class="id" type="var">X</span> → <span class="id" type="var">X</span> → <span class="id" type="keyword">Prop</span> :=<br/>
-| <span class="id" type="var">eq_refl</span> : <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">x</span>, <span class="id" type="var">eq</span> <span class="id" type="var">x</span> <span class="id" type="var">x</span>.<br/><hr class='doublespaceincode'/>
+| <span class="id" type="var">eq_refl</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span>, <span class="id" type="var">eq</span> <span class="id" type="var">x</span> <span class="id" type="var">x</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Notation</span> "x == y" := (<span class="id" type="var">eq</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 70, <span class="id" type="var">no</span> <span class="id" type="var">associativity</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">type_scope</span>.<br/>
@@ -643,8 +653,12 @@
 <div class="doc">
 我们可以这样理解这个定义，给定一个集合<span class="inlinecode"><span class="id" type="var">X</span></span>，它定义了由<span class="inlinecode"><span class="id" type="var">X</span></span>的一对值
     (<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">y</span></span>)所索引的“<span class="inlinecode"><span class="id" type="var">x</span></span>与<span class="inlinecode"><span class="id" type="var">y</span></span>相等”的一<b>系列(Family)</b>的命题。只有
-    一种方式能够构造该系列中任意成员的证据：将构造子<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>应用到一
-    个类型<span class="inlinecode"><span class="id" type="var">X</span></span>和一个值<span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">X</span></span>，产生一个<span class="inlinecode"><span class="id" type="var">x</span></span>等于<span class="inlinecode"><span class="id" type="var">x</span></span>的证据。 
+    一种方式能够构造该系列中成员的证据：将构造子<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>应用到类型<span class="inlinecode"><span class="id" type="var">X</span></span>
+    和值<span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">X</span></span>，产生一个<span class="inlinecode"><span class="id" type="var">x</span></span>等于<span class="inlinecode"><span class="id" type="var">x</span></span>的证据。
+
+<div class="paragraph"> </div>
+
+    其它形如 <span class="inlinecode"><span class="id" type="var">eq</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> 的类型中的 <span class="inlinecode"><span class="id" type="var">x</span></span> 和 <span class="inlinecode"><span class="id" type="var">y</span></span> 并不相同，因此是非居留的。 
 <div class="paragraph"> </div>
 
  我们可以使用<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>来构造证据，比如说，<span class="inlinecode">2</span> <span class="inlinecode">=</span> <span class="inlinecode">2</span>。那么我们能否使用
@@ -685,20 +699,20 @@
 
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">four'</span> : 2 + 2 == 1 + 3 :=<br/>
 &nbsp;&nbsp;<span class="id" type="var">eq_refl</span> 4.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">singleton</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>:<span class="id" type="var">X</span>), []++[<span class="id" type="var">x</span>] == <span class="id" type="var">x</span>::[]  :=<br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">singleton</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>:<span class="id" type="var">X</span>), []++[<span class="id" type="var">x</span>] == <span class="id" type="var">x</span>::[]  :=<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">fun</span> (<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span>:<span class="id" type="var">X</span>) ⇒ <span class="id" type="var">eq_refl</span> [<span class="id" type="var">x</span>].<br/>
 </div>
 
 <div class="doc">
-<a name="lab275"></a><h4 class="section">练习：2 星 (equality__leibniz_equality)</h4>
+<a name="lab278"></a><h4 class="section">练习：2 星, standard (equality__leibniz_equality)</h4>
  相等关系的归纳定义隐含了<b>Leibniz相等关系(Leibniz equality)</b>：当我们
     说“<span class="inlinecode"><span class="id" type="var">x</span></span>和<span class="inlinecode"><span class="id" type="var">y</span></span>相等的时候”，我们意味着所有<span class="inlinecode"><span class="id" type="var">x</span></span>满足的性质<span class="inlinecode"><span class="id" type="var">P</span></span>，对于<span class="inlinecode"><span class="id" type="var">y</span></span>
     来说也满足。 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">equality__leibniz_equality</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">X</span>),<br/>
-&nbsp;&nbsp;<span class="id" type="var">x</span> == <span class="id" type="var">y</span> → <span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span>:<span class="id" type="var">X</span>→<span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">P</span> <span class="id" type="var">y</span>.<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">equality__leibniz_equality</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;<span class="id" type="var">x</span> == <span class="id" type="var">y</span> → <span style='font-size:120%;'>&forall;</span><span class="id" type="var">P</span>:<span class="id" type="var">X</span>→<span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">P</span> <span class="id" type="var">y</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
@@ -707,14 +721,14 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
-<a name="lab276"></a><h4 class="section">练习：5 星, optional (leibniz_equality__equality)</h4>
+<a name="lab279"></a><h4 class="section">练习：5 星, standard, optional (leibniz_equality__equality)</h4>
  请说明，事实上，相等关系的归纳定义和Leibniz相等关系是
     <b>等价的(equivalent)</b>。 
 </div>
 <div class="code code-tight">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">leibniz_equality__equality</span> : <span style='font-size:120%;'>&forall;</span> (<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">X</span>),<br/>
-&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span> <span class="id" type="var">P</span>:<span class="id" type="var">X</span>→<span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">P</span> <span class="id" type="var">y</span>) → <span class="id" type="var">x</span> == <span class="id" type="var">y</span>.<br/>
+<span class="id" type="keyword">Lemma</span> <span class="id" type="var">leibniz_equality__equality</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">X</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> <span class="id" type="var">y</span>: <span class="id" type="var">X</span>),<br/>
+&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span><span class="id" type="var">P</span>:<span class="id" type="var">X</span>→<span class="id" type="keyword">Prop</span>, <span class="id" type="var">P</span> <span class="id" type="var">x</span> → <span class="id" type="var">P</span> <span class="id" type="var">y</span>) → <span class="id" type="var">x</span> == <span class="id" type="var">y</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
 </div>
@@ -726,7 +740,7 @@
 </div>
 
 <div class="doc">
-<a name="lab277"></a><h2 class="section">反演, 再一次</h2>
+<a name="lab280"></a><h2 class="section">再论反演</h2>
 
 <div class="paragraph"> </div>
 
@@ -802,6 +816,10 @@
     所以只产生一个子目标。但是，现在<span class="inlinecode"><span class="id" type="var">eq_refl</span></span>构造子的形式给我们带来
     的额外的信息：它告诉<span class="inlinecode"><span class="id" type="var">eq</span></span>的两个参数必须是一样的。于是<span class="inlinecode"><span class="id" type="tactic">inversion</span></span>策
     略会将这个事实加入到上下文中。 
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;Sat&nbsp;Jan&nbsp;26&nbsp;15:14:46&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
 </div>
 </div>
 

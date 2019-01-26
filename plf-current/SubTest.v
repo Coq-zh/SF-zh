@@ -127,39 +127,18 @@ idtac "#> sub_inversion_arrow".
 idtac "Possible points: 3".
 check_type @sub_inversion_arrow (
 (forall U V1 V2 : ty,
- U <: TArrow V1 V2 ->
- exists U1 U2 : ty, U = TArrow U1 U2 /\ V1 <: U1 /\ U2 <: V2)).
+ U <: Arrow V1 V2 ->
+ exists U1 U2 : ty, U = Arrow U1 U2 /\ V1 <: U1 /\ U2 <: V2)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions sub_inversion_arrow.
 Goal True.
 idtac " ".
 
-idtac "-------------------  variations  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: variations".
-idtac "Possible points: 2".
-print_manual_grade manual_grade_for_variations.
-idtac " ".
-
-idtac "-------------------  products  --------------------".
-idtac " ".
-
-idtac "#> Manually graded: progress".
-idtac "Possible points: 2".
-print_manual_grade manual_grade_for_progress.
-idtac " ".
-
-idtac "#> Manually graded: preservation".
-idtac "Possible points: 2".
-print_manual_grade manual_grade_for_preservation.
-idtac " ".
-
-idtac " ".
-
-idtac "Max points - standard: 29".
-idtac "Max points - advanced: 29".
+idtac "Max points - standard: 23".
+idtac "Max points - advanced: 23".
 idtac "".
 idtac "********** Summary **********".
 idtac "".
@@ -188,12 +167,8 @@ idtac "---------- pair_permutation ---------".
 idtac "MANUAL".
 idtac "---------- sub_inversion_arrow ---------".
 Print Assumptions sub_inversion_arrow.
-idtac "---------- variations ---------".
-idtac "MANUAL".
-idtac "---------- progress ---------".
-idtac "MANUAL".
-idtac "---------- preservation ---------".
-idtac "MANUAL".
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:16:20 UTC 2019 *)

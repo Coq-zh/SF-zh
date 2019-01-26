@@ -1,5 +1,4 @@
 (** * UseAuto: Theory and Practice of Automation in Coq Proofs *)
-
 (* Chapter written and maintained by Arthur Chargueraud *)
 
 (** In a machine-checked proof, every single detail has to be
@@ -27,7 +26,7 @@
     from the library [LibTactics.v], which is presented in the chapter
     [UseTactics]. *)
 
-Require Import Coq.Arith.Arith.
+From Coq Require Import Arith.Arith.
 
 From PLF Require Import Maps.
 From PLF Require Import Smallstep.
@@ -36,7 +35,7 @@ From PLF Require Import LibTactics.
 
 From PLF Require Imp.
 
-Require Import Coq.Lists.List.
+From Coq Require Import Lists.List.
 Import ListNotations.
 
 (* ################################################################# *)
@@ -55,7 +54,6 @@ Import ListNotations.
     reasonable use of automation is generally a big win, as it saves a
     lot of time both in building proof scripts and in subsequently
     maintaining those proof scripts. *)
-
 
 (* ================================================================= *)
 (** ** Strength of Proof Search *)
@@ -90,7 +88,6 @@ Import ListNotations.
     proof search is really intended to automate the final steps from
     the various branches of a proof. It is not able to discover the
     overall structure of a proof. *)
-
 
 (* ================================================================= *)
 (** ** Basics *)
@@ -140,7 +137,7 @@ Proof. auto. Qed.
 
     In the following example, the first hypothesis asserts that [P n]
     is true when [Q m] is true for some [m], and the goal is to prove
-    that [Q 1] implies [P 2].  This implication follows direction from
+    that [Q 1] implies [P 2].  This implication follows directly from
     the hypothesis by instantiating [m] as the value [1].  The
     following proof script shows that [eauto] successfully solves the
     goal, whereas [auto] is not able to do so. *)
@@ -150,7 +147,6 @@ Lemma solving_by_eapply : forall (P Q : nat->Prop),
   Q 1 ->
   P 2.
 Proof. auto. eauto. Qed.
-
 
 
 (* ================================================================= *)
@@ -230,7 +226,6 @@ Lemma solved_by_jauto : forall (P Q : nat->Prop) (F : Prop),
   P 2.
 Proof. jauto. (* or [iauto] *) Qed.
 
-
 (* ================================================================= *)
 (** ** Disjunctions *)
 
@@ -269,7 +264,6 @@ Proof. iauto. Qed.
     compared with [iauto] is that it never spends time performing this
     kind of case analyses. *)
 
-
 (* ================================================================= *)
 (** ** Existentials *)
 
@@ -304,7 +298,6 @@ Proof.
   (* For the details, run [intros. jauto_set. eauto] *)
 Qed.
 
-
 (* ================================================================= *)
 (** ** Negation *)
 
@@ -337,7 +330,6 @@ Proof. jauto. (* or [iauto] *) Qed.
 (** We will come back later on to the behavior of proof search with
     respect to the unfolding of definitions. *)
 
-
 (* ================================================================= *)
 (** ** Equalities *)
 
@@ -355,7 +347,6 @@ Proof. auto. Qed.
 (** To automate more advanced reasoning on equalities, one should
     rather try to use the tactic [congruence], which is presented at
     the end of this chapter in the "Decision Procedures" section. *)
-
 
 (* ################################################################# *)
 (** * How Proof Search Works *)
@@ -466,7 +457,6 @@ Lemma search_depth_5 : forall (P : nat->Prop),
   (* Hypothesis H2: *) (forall k, P (k-1) -> P k) ->
   (* Goal:          *) (P 4 /\ P 4).
 Proof. auto. auto 6. Qed.
-
 
 (* ================================================================= *)
 (** ** Backtracking *)
@@ -583,7 +573,6 @@ Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
     and [P 0]. This search tree explains why [eauto] came up with a
     proof term starting with an application of [H3]. *)
 
-
 (* ================================================================= *)
 (** ** Adding Hints *)
 
@@ -601,12 +590,12 @@ Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
 
     The second possibility is useful for lemmas that need to be
     exploited several times. The syntax for adding a lemma as a hint
-    is [Hint Resolve mylemma]. For example, the lemma asserting than
-    any number is less than or equal to itself, [forall x, x <= x],
-    called [Le.le_refl] in the Coq standard library, can be added as a
-    hint as follows. *)
+    is [Hint Resolve mylemma]. For example: *)
 
-Hint Resolve Le.le_refl.
+Lemma nat_le_refl : forall (x:nat), x <= x.
+Proof. apply le_n. Qed.
+
+Hint Resolve nat_le_refl.
 
 (** A convenient shorthand for adding all the constructors of an
     inductive datatype as hints is the command [Hint Constructors
@@ -617,7 +606,6 @@ Hint Resolve Le.le_refl.
     performance of proof search. The description of this problem
     and the presentation of a general work-around for transitivity
     lemmas appear further on. *)
-
 
 (* ================================================================= *)
 (** ** Integration of Automation in Tactics *)
@@ -684,7 +672,6 @@ Ltac auto_tilde ::= auto.
     of the "Software Foundations" course, proving in particular
     results such as determinism, preservation and progress. *)
 
-
 (* ================================================================= *)
 (** ** Determinism *)
 
@@ -695,8 +682,8 @@ Module DeterministicImp.
     language, shown below. *)
 
 Theorem ceval_deterministic: forall c st st1 st2,
-  c / st \\ st1 ->
-  c / st \\ st2 ->
+  st =[ c ]=> st1 ->
+  st =[ c ]=> st2 ->
   st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2.
@@ -738,8 +725,8 @@ Qed.
     (The solution uses [auto] 9 times.) *)
 
 Theorem ceval_deterministic': forall c st st1 st2,
-  c / st \\ st1 ->
-  c / st \\ st2 ->
+  st =[ c ]=> st1 ->
+  st =[ c ]=> st2 ->
   st1 = st2.
 Proof.
   (* 请在此处解答 *) admit.
@@ -757,12 +744,11 @@ Admitted.
       - use [inverts H] instead of [inversion H; subst],
       - use [tryfalse] to handle contradictions, and get rid of
         the cases where [beval st b1 = true] and [beval st b1 = false]
-        both appear in the context,
-      - stop using [ceval_cases] to label subcases. *)
+        both appear in the context. *)
 
 Theorem ceval_deterministic'': forall c st st1 st2,
-  c / st \\ st1 ->
-  c / st \\ st2 ->
+  st =[ c ]=> st1 ->
+  st =[ c ]=> st2 ->
   st1 = st2.
 Proof.
   introv E1 E2. gen st2.
@@ -777,7 +763,7 @@ Proof.
 Qed.
 
 (** To obtain a nice clean proof script, we have to remove the calls
-    [assert (st' = st'0)]. Such a tactic invokation is not nice
+    [assert (st' = st'0)]. Such a tactic call is not nice
     because it refers to some variables whose name has been
     automatically generated. This kind of tactics tend to be very
     brittle.  The tactic [assert (st' = st'0)] is used to assert the
@@ -790,8 +776,8 @@ Qed.
     example. *)
 
 Theorem ceval_deterministic''': forall c st st1 st2,
-  c / st \\ st1 ->
-  c / st \\ st2 ->
+  st =[ c ]=> st1 ->
+  st =[ c ]=> st2 ->
   st1 = st2.
 Proof.
   (* Let's replay the proof up to the [assert] tactic. *)
@@ -822,11 +808,11 @@ Abort.
 
 (** To polish the proof script, it remains to factorize the calls
     to [auto], using the star symbol. The proof of determinism can then
-    be rewritten in only four lines, including no more than 10 tactics. *)
+    be rewritten in just 4 lines, including no more than 10 tactics. *)
 
 Theorem ceval_deterministic'''': forall c st st1 st2,
-  c / st \\ st1  ->
-  c / st \\ st2 ->
+  st =[ c ]=> st1  ->
+  st =[ c ]=> st2 ->
   st1 = st2.
 Proof.
   introv E1 E2. gen st2.
@@ -837,9 +823,11 @@ Qed.
 
 End DeterministicImp.
 
-
 (* ================================================================= *)
 (** ** Preservation for STLC *)
+
+(** To investigate how to automate the proof of the lemma [preservation],
+    let us first import the definitions required to state that lemma. *)
 
 Set Warnings "-notation-overridden,-parsing".
 From PLF Require Import StlcProp.
@@ -853,7 +841,7 @@ Import STLCProp.
 
 Theorem preservation : forall t t' T,
   has_type empty t T  ->
-  t ==> t'  ->
+  t --> t'  ->
   has_type empty t' T.
 Proof with eauto.
   remember (@empty ty) as Gamma.
@@ -882,16 +870,15 @@ Qed.
     and calling automation using the star symbol rather than the
     triple-dot notation. More precisely, make use of the tactics
     [inverts*] and [applys*] to call [auto*] after a call to
-    [inverts] or to [applys]. The solution is three lines long.*)
+    [inverts] or to [applys]. The solution is three lines long. *)
 
 Theorem preservation' : forall t t' T,
   has_type empty t T  ->
-  t ==> t'  ->
+  t --> t'  ->
   has_type empty t' T.
 Proof.
   (* 请在此处解答 *) admit.
 Admitted.
-
 
 (* ================================================================= *)
 (** ** Progress for STLC *)
@@ -900,7 +887,7 @@ Admitted.
 
 Theorem progress : forall t T,
   has_type empty t T ->
-  value t \/ exists t', t ==> t'.
+  value t \/ exists t', t --> t'.
 Proof with eauto.
   intros t T Ht.
   remember (@empty ty) as Gamma.
@@ -915,28 +902,27 @@ Proof with eauto.
         inversion H; subst; try solve_by_invert.
         exists ([x0:=t2]t)...
       * (* t2 steps *)
-       destruct H0 as [t2' Hstp]. exists (tapp t1 t2')...
+       destruct H0 as [t2' Hstp]. exists (app t1 t2')...
     + (* t1 steps *)
-      destruct H as [t1' Hstp]. exists (tapp t1' t2)...
+      destruct H as [t1' Hstp]. exists (app t1' t2)...
   - (* T_If *)
     right. destruct IHHt1...
     destruct t1; try solve_by_invert...
-    inversion H. exists (tif x0 t2 t3)...
+    inversion H. exists (test x0 t2 t3)...
 Qed.
 
 (** Exercise: optimize the above proof.
     Hint: make use of [destruct*] and [inverts*].
-    The solution consists of 10 short lines. *)
+    The solution fits on 10 short lines. *)
 
 Theorem progress' : forall t T,
   has_type empty t T ->
-  value t \/ exists t', t ==> t'.
+  value t \/ exists t', t --> t'.
 Proof.
   (* 请在此处解答 *) admit.
 Admitted.
 
 End PreservationProgressStlc.
-
 
 (* ================================================================= *)
 (** ** BigStep and SmallStep *)
@@ -949,7 +935,7 @@ Module Semantics.
     to a big-step reduction judgment. *)
 
 Theorem multistep__eval : forall t v,
-  normal_form_of t v -> exists n, v = C n /\ t \\ n.
+  normal_form_of t v -> exists n, v = C n /\ t ==> n.
 Proof.
   intros t v Hnorm.
   unfold normal_form_of in Hnorm.
@@ -971,10 +957,10 @@ Qed.
 
 (** Exercise: prove the following result, using tactics
     [introv], [induction] and [subst], and [apply*].
-    The solution is 3 lines long. *)
+    The solution fits on 3 short lines. *)
 
 Theorem multistep_eval_ind : forall t v,
-  t ==>* v -> forall n, C n = v -> t \\ n.
+  t -->* v -> forall n, C n = v -> t ==> n.
 Proof.
   (* 请在此处解答 *) admit.
 Admitted.
@@ -982,19 +968,19 @@ Admitted.
 (** Exercise: using the lemma above, simplify the proof of
     the result [multistep__eval]. You should use the tactics
     [introv], [inverts], [split*] and [apply*].
-    The solution is 2 lines long. *)
+    The solution fits on 2 lines. *)
 
 Theorem multistep__eval' : forall t v,
-  normal_form_of t v -> exists n, v = C n /\ t \\ n.
+  normal_form_of t v -> exists n, v = C n /\ t ==> n.
 Proof.
   (* 请在此处解答 *) admit.
 Admitted.
 
 (** If we try to combine the two proofs into a single one,
     we will likely fail, because of a limitation of the
-    [induction] tactic. Indeed, this tactic looses
+    [induction] tactic. Indeed, this tactic loses
     information when applied to a property whose arguments
-    are not reduced to variables, such as [t ==>* (C n)].
+    are not reduced to variables, such as [t -->* (C n)].
     You will thus need to use the more powerful tactic called
     [dependent induction]. (This tactic is available only after
     importing the [Program] library, as we did above.) *)
@@ -1003,21 +989,20 @@ Admitted.
     the lemma [multistep_eval_ind], that is, by inlining the proof
     by induction involved in [multistep_eval_ind], using the
     tactic [dependent induction] instead of [induction].
-    The solution is 5 lines long. *)
+    The solution fits on 6 lines. *)
 
 Theorem multistep__eval'' : forall t v,
-  normal_form_of t v -> exists n, v = C n /\ t \\ n.
+  normal_form_of t v -> exists n, v = C n /\ t ==> n.
 Proof.
   (* 请在此处解答 *) admit.
 Admitted.
 
 End Semantics.
 
-
 (* ================================================================= *)
 (** ** Preservation for STLCRef *)
 
-Require Import Coq.omega.Omega.
+From Coq Require Import omega.Omega.
 From PLF Require Import References.
 Import STLCRef.
 Require Import Program.
@@ -1033,7 +1018,7 @@ Hint Resolve store_weakening extends_refl.
 Theorem preservation : forall ST t t' T st st',
   has_type empty ST t T ->
   store_well_typed ST st ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   exists ST',
     (extends ST' ST /\
      has_type empty ST' t' T /\
@@ -1196,7 +1181,7 @@ Proof. intros. subst. apply nth_eq_last. Qed.
 
 Lemma preservation_ref : forall (st:store) (ST : store_ty) T1,
   length ST = length st ->
-  TRef T1 = TRef (store_Tlookup (length st) (ST ++ T1::nil)).
+  Ref T1 = Ref (store_Tlookup (length st) (ST ++ T1::nil)).
 Proof.
   intros. dup.
 
@@ -1212,7 +1197,7 @@ Qed.
 Theorem preservation' : forall ST t t' T st st',
   has_type empty ST t T ->
   store_well_typed ST st ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   exists ST',
     (extends ST' ST /\
      has_type empty ST' t' T /\
@@ -1243,7 +1228,6 @@ Proof.
   - forwards*: IHHt2.
 Qed.
 
-
 (* ================================================================= *)
 (** ** Progress for STLCRef *)
 
@@ -1254,7 +1238,7 @@ Qed.
 Theorem progress : forall ST t T st,
   has_type empty ST t T ->
   store_well_typed ST st ->
-  (value t \/ exists t', exists st', t / st ==> t' / st').
+  (value t \/ exists t' st', t / st --> t' / st').
 Proof.
   introv Ht HST. remember (@empty ty) as Gamma.
   induction Ht; subst Gamma; tryfalse; try solve [left*].
@@ -1283,7 +1267,6 @@ Qed.
 
 End PreservationProgressReferences.
 
-
 (* ================================================================= *)
 (** ** Subtyping *)
 
@@ -1295,7 +1278,7 @@ Import Sub.
     of abstractions in a type system with subtyping. *)
 
 Lemma abs_arrow : forall x S1 s2 T1 T2,
-  has_type empty (tabs x S1 s2) (TArrow T1 T2) ->
+  has_type empty (abs x S1 s2) (Arrow T1 T2) ->
      subtype T1 S1
   /\ has_type (update empty x S1) s2 T2.
 Proof with eauto.
@@ -1311,32 +1294,17 @@ Qed.
     [introv], [lets] and [inverts*]. In particular,
     you will find it useful to replace the pattern
     [apply K in H. destruct H as I] with [lets I: K H].
-    The solution is 4 lines. *)
+    The solution fits on 3 lines. *)
 
 Lemma abs_arrow' : forall x S1 s2 T1 T2,
-  has_type empty (tabs x S1 s2) (TArrow T1 T2) ->
+  has_type empty (abs x S1 s2) (Arrow T1 T2) ->
      subtype T1 S1
   /\ has_type (update empty x S1) s2 T2.
 Proof.
   (* 请在此处解答 *) admit.
 Admitted.
 
-(** The lemma [substitution_preserves_typing] has already been used to
-    illustrate the working of [lets] and [applys] in chapter
-    [UseTactics]. Optimize further this proof using automation (with
-    the star symbol), and using the tactic [cases_if']. The solution
-    is 33 lines). *)
-
-Lemma substitution_preserves_typing : forall Gamma x U v t S,
-  has_type (update Gamma x U) t S ->
-  has_type empty v U ->
-  has_type Gamma ([x:=v]t) S.
-Proof.
-  (* 请在此处解答 *) admit.
-Admitted.
-
 End SubtypingInversion.
-
 
 (* ################################################################# *)
 (** * Advanced Topics in Proof Search *)
@@ -1400,7 +1368,6 @@ Abort.
     hand, guessing a value of [m] for which [m <> 0] and then checking
     that [P m] holds does not work well, because there are many values
     of [m] that satisfy [m <> 0] but not [P m]. *)
-
 
 (* ================================================================= *)
 (** ** Unfolding of Definitions During Proof-Search *)
@@ -1477,7 +1444,6 @@ Lemma demo_hint_unfold_context_2 :
   P 3.
 Proof. auto. Qed.
 
-
 (* ================================================================= *)
 (** ** Automation for Proving Absurd Goals *)
 
@@ -1515,7 +1481,7 @@ Parameter le_gt_false : forall x,
     automation. The following material is enclosed inside a [Section],
     so as to restrict the scope of the hints that we are adding. In
     other words, after the end of the section, the hints added within
-    the section will no longer be active.*)
+    the section will no longer be active. *)
 
 Section DemoAbsurd1.
 
@@ -1600,7 +1566,8 @@ Proof.
 
   (* The lemmas [le_not_gt] and [gt_not_le] work as well *)
   - false le_not_gt. eauto. eauto.
-Qed.
+
+Abort.
 
 (** In the above example, [false le_gt_false; eauto] proves the goal,
     but [false le_gt_false; auto] does not, because [auto] does not
@@ -1609,7 +1576,6 @@ Qed.
     to call [auto] first. So, there are two possibilities for
     completing the proof: either call [false le_gt_false; eauto], or
     call [false* (le_gt_false 3)]. *)
-
 
 (* ================================================================= *)
 (** ** Automation for Transitivity Lemmas *)
@@ -1750,7 +1716,6 @@ Proof.
   intros. (* debug *) eauto. (* Investigates 0 applications *)
 Abort.
 
-
 (* ################################################################# *)
 (** * Decision Procedures *)
 
@@ -1763,7 +1728,6 @@ Abort.
     inequalities. The tactic [congruence] is able to prove equalities
     and inequalities by exploiting equalities available in the proof
     context. *)
-
 
 (* ================================================================= *)
 (** ** Omega *)
@@ -1826,7 +1790,6 @@ Proof.
   false. omega.
 Qed.
 
-
 (* ================================================================= *)
 (** ** Ring *)
 
@@ -1847,7 +1810,6 @@ Lemma ring_demo : forall (x y z : Z),
 Proof. intros. ring. Qed.
 
 End RingDemo.
-
 
 (* ================================================================= *)
 (** ** Congruence *)
@@ -1951,4 +1913,4 @@ Proof. congruence. Qed.
     some investment, however this investment will pay off very quickly.
 *)
 
-(** $Date$ *)
+(* Sat Jan 26 15:15:46 UTC 2019 *)

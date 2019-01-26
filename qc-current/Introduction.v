@@ -59,9 +59,10 @@ Conjecture removeP : forall x l,  ~ (In x (remove x l)).
     input and 12 "shrinks" to reduce it to a minimal
     counterexample. *)
 
-(** **** 练习：1 星 (insertP)  *)
-(** Here is a somewhat mangled definition of a function for inserting a
-   new element into a sorted list of numbers: *)
+(** **** 练习：1 星, standard (insertP)  
+
+    Here is a somewhat mangled definition of a function for inserting a
+    new element into a sorted list of numbers: *)
 
 Fixpoint insert x l :=
   match l with
@@ -73,18 +74,21 @@ Fixpoint insert x l :=
     always yields a list containing [x]."  Make sure QuickChick finds
     a counterexample. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
 
-(** **** 练习：2 星 (insertP2)  *)
-(** Translate the following claim into a [Conjecture] (using [In] for
+    [] *)
+
+(** **** 练习：2 星, standard (insertP2)  
+
+    Translate the following claim into a [Conjecture] (using [In] for
     list membership): "For all numbers [x] and [y] and lists [l], if
     [y] is in [l] then it is also in the list that results from
     inserting [x] into [l]" (i.e., [insert] preserves all the elements
     already in [l]). Make sure QuickChick finds a counterexample. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ################################################################# *)
 (** * Overview *)
@@ -119,3 +123,5 @@ Fixpoint insert x l :=
 
     Finally, the [Postscript] chapter gives some suggestions for
     further reading. *)
+
+(* Sat Jan 26 15:19:29 UTC 2019 *)

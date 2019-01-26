@@ -50,8 +50,8 @@ idtac " ".
 idtac "#> Examples.subtyping_example_2".
 idtac "Possible points: 1".
 check_type @Examples.subtyping_example_2 (
-(TArrow TTop Examples.TRcd_kj <:
- TArrow (TArrow Examples.C Examples.C) Examples.TRcd_j)).
+(Arrow Top Examples.TRcd_kj <:
+ Arrow (Arrow Examples.C Examples.C) Examples.TRcd_j)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples.subtyping_example_2.
@@ -64,8 +64,8 @@ idtac " ".
 idtac "#> Examples.subtyping_example_3".
 idtac "Possible points: 1".
 check_type @Examples.subtyping_example_3 (
-(TArrow TRNil (TRCons "j" Examples.A TRNil) <:
- TArrow (TRCons "k" Examples.B TRNil) TRNil)).
+(Arrow RNil (RCons "j" Examples.A RNil) <:
+ Arrow (RCons "k" Examples.B RNil) RNil)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples.subtyping_example_3.
@@ -78,8 +78,8 @@ idtac " ".
 idtac "#> Examples.subtyping_example_4".
 idtac "Possible points: 2".
 check_type @Examples.subtyping_example_4 (
-(TRCons "x" Examples.A (TRCons "y" Examples.B (TRCons "z" Examples.C TRNil)) <:
- TRCons "z" Examples.C (TRCons "y" Examples.B (TRCons "x" Examples.A TRNil)))).
+(RCons "x" Examples.A (RCons "y" Examples.B (RCons "z" Examples.C RNil)) <:
+ RCons "z" Examples.C (RCons "y" Examples.B (RCons "x" Examples.A RNil)))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples.subtyping_example_4.
@@ -101,9 +101,8 @@ idtac "#> Examples2.typing_example_0".
 idtac "Possible points: 1".
 check_type @Examples2.typing_example_0 (
 (@Maps.empty ty
- |- trcons "k" (tabs "z" Examples.A (tvar "z"))
-      (trcons "j" (tabs "z" Examples.B (tvar "z")) trnil) \in
- Examples.TRcd_kj)).
+ |- rcons "k" (abs "z" Examples.A (var "z"))
+      (rcons "j" (abs "z" Examples.B (var "z")) rnil) \in Examples.TRcd_kj)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples2.typing_example_0.
@@ -117,8 +116,8 @@ idtac "#> Examples2.typing_example_1".
 idtac "Possible points: 2".
 check_type @Examples2.typing_example_1 (
 (@Maps.empty ty
- |- tapp (tabs "x" Examples.TRcd_j (tproj (tvar "x") "j")) Examples2.trcd_kj \in
- TArrow Examples.B Examples.B)).
+ |- app (abs "x" Examples.TRcd_j (rproj (var "x") "j")) Examples2.trcd_kj \in
+ Arrow Examples.B Examples.B)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples2.typing_example_1.
@@ -132,8 +131,8 @@ idtac "#> canonical_forms_of_arrow_types".
 idtac "Possible points: 3".
 check_type @canonical_forms_of_arrow_types (
 (forall (Gamma : context) (s : tm) (T1 T2 : ty),
- Gamma |- s \in TArrow T1 T2 ->
- value s -> exists (x : String.string) (S1 : ty) (s2 : tm), s = tabs x S1 s2)).
+ Gamma |- s \in Arrow T1 T2 ->
+ value s -> exists (x : String.string) (S1 : ty) (s2 : tm), s = abs x S1 s2)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions canonical_forms_of_arrow_types.
@@ -167,3 +166,5 @@ Print Assumptions canonical_forms_of_arrow_types.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:16:35 UTC 2019 *)

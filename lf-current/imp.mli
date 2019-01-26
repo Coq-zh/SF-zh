@@ -102,6 +102,8 @@ val aeval : state -> aexp -> int
 
 val beval : state -> bexp -> bool
 
+val empty_st : int total_map
+
 type com =
 | CSkip
 | CAss of char list * aexp
@@ -177,6 +179,4 @@ val parseSequencedCommand : int -> token list -> (com * token list) optionE
 
 val bignumber : int
 
-val parse : char list -> (com * token list) optionE
-
-val empty_state : int total_map
+val parse : char list -> com optionE

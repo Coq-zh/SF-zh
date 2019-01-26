@@ -84,7 +84,7 @@ idtac " ".
 idtac "#> test_multistep_4".
 idtac "Possible points: 2".
 check_type @test_multistep_4 (
-(P (C 0) (P (C 2) (P (C 0) (C 3))) ==>* P (C 0) (C (2 + (0 + 3))))).
+(P (C 0) (P (C 2) (P (C 0) (C 3))) -->* P (C 0) (C (2 + (0 + 3))))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions test_multistep_4.
@@ -97,7 +97,7 @@ idtac " ".
 idtac "#> multistep_congr_2".
 idtac "Possible points: 2".
 check_type @multistep_congr_2 (
-(forall t1 t2 t2' : tm, value t1 -> t2 ==>* t2' -> P t1 t2 ==>* P t1 t2')).
+(forall t1 t2 t2' : tm, value t1 -> t2 -->* t2' -> P t1 t2 -->* P t1 t2')).
 idtac "Assumptions:".
 Abort.
 Print Assumptions multistep_congr_2.
@@ -109,7 +109,7 @@ idtac " ".
 
 idtac "#> eval__multistep".
 idtac "Possible points: 3".
-check_type @eval__multistep ((forall (t : tm) (n : nat), t \\ n -> t ==>* C n)).
+check_type @eval__multistep ((forall (t : tm) (n : nat), t ==> n -> t -->* C n)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions eval__multistep.
@@ -130,7 +130,7 @@ idtac " ".
 
 idtac "#> step__eval".
 idtac "Possible points: 3".
-check_type @step__eval ((forall (t t' : tm) (n : nat), t ==> t' -> t' \\ n -> t \\ n)).
+check_type @step__eval ((forall (t t' : tm) (n : nat), t --> t' -> t' ==> n -> t ==> n)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions step__eval.
@@ -143,7 +143,7 @@ idtac " ".
 idtac "#> multistep__eval".
 idtac "Possible points: 3".
 check_type @multistep__eval (
-(forall t t' : tm, normal_form_of t t' -> exists n : nat, t' = C n /\ t \\ n)).
+(forall t t' : tm, normal_form_of t t' -> exists n : nat, t' = C n /\ t ==> n)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions multistep__eval.
@@ -171,10 +171,22 @@ Print Assumptions compiler_is_correct.
 Goal True.
 idtac " ".
 
+idtac "-------------------  normalize_ex  --------------------".
 idtac " ".
 
-idtac "Max points - standard: 24".
-idtac "Max points - advanced: 30".
+idtac "#> normalize_ex".
+idtac "Possible points: 1".
+check_type @normalize_ex ((exists e' : tm, P (C 3) (P (C 2) (C 1)) -->* e' /\ value e')).
+idtac "Assumptions:".
+Abort.
+Print Assumptions normalize_ex.
+Goal True.
+idtac " ".
+
+idtac " ".
+
+idtac "Max points - standard: 25".
+idtac "Max points - advanced: 31".
 idtac "".
 idtac "********** Summary **********".
 idtac "".
@@ -199,6 +211,8 @@ idtac "---------- multistep__eval ---------".
 Print Assumptions multistep__eval.
 idtac "---------- combined_properties ---------".
 idtac "MANUAL".
+idtac "---------- normalize_ex ---------".
+Print Assumptions normalize_ex.
 idtac "".
 idtac "********** Advanced **********".
 idtac "---------- eval__multistep_inf ---------".
@@ -206,3 +220,5 @@ idtac "MANUAL".
 idtac "---------- compiler_is_correct ---------".
 Print Assumptions compiler_is_correct.
 Abort.
+
+(* Sat Jan 26 15:16:03 UTC 2019 *)

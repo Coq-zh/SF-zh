@@ -63,7 +63,7 @@ idtac "#> progress".
 idtac "Possible points: 3".
 check_type @progress (
 (forall (t : tm) (T : ty),
- |- t \in T -> value t \/ (exists t' : tm, t ==> t'))).
+ |- t \in T -> value t \/ (exists t' : tm, t --> t'))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions progress.
@@ -85,7 +85,7 @@ idtac " ".
 idtac "#> preservation".
 idtac "Possible points: 2".
 check_type @preservation (
-(forall (t t' : tm) (T : ty), |- t \in T -> t ==> t' -> |- t' \in T)).
+(forall (t t' : tm) (T : ty), |- t \in T -> t --> t' -> |- t' \in T)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions preservation.
@@ -107,26 +107,10 @@ idtac " ".
 idtac "#> preservation'".
 idtac "Possible points: 3".
 check_type @preservation' (
-(forall (t t' : tm) (T : ty), |- t \in T -> t ==> t' -> |- t' \in T)).
+(forall (t t' : tm) (T : ty), |- t \in T -> t --> t' -> |- t' \in T)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions preservation'.
-Goal True.
-idtac " ".
-
-idtac "-------------------  normalize_ex  --------------------".
-idtac " ".
-
-idtac "#> NormalizePlayground.normalize_ex".
-idtac "Possible points: 1".
-check_type @NormalizePlayground.normalize_ex (
-(exists e' : Smallstep.tm,
-   @Smallstep.multi Smallstep.tm Smallstep.step
-     (Smallstep.P (Smallstep.C 3)
-        (Smallstep.P (Smallstep.C 2) (Smallstep.C 1))) e')).
-idtac "Assumptions:".
-Abort.
-Print Assumptions NormalizePlayground.normalize_ex.
 Goal True.
 idtac " ".
 
@@ -154,12 +138,12 @@ idtac "Possible points: 2".
 print_manual_grade manual_grade_for_variation2.
 idtac " ".
 
-idtac "-------------------  remove_predzero  --------------------".
+idtac "-------------------  remove_prdzro  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: remove_predzero".
+idtac "#> Manually graded: remove_predzro".
 idtac "Possible points: 1".
-print_manual_grade manual_grade_for_remove_predzero.
+print_manual_grade manual_grade_for_remove_predzro.
 idtac " ".
 
 idtac "-------------------  prog_pres_bigstep  --------------------".
@@ -173,8 +157,8 @@ idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 21".
-idtac "Max points - advanced: 31".
+idtac "Max points - standard: 20".
+idtac "Max points - advanced: 30".
 idtac "".
 idtac "********** Summary **********".
 idtac "".
@@ -189,15 +173,13 @@ idtac "---------- preservation ---------".
 Print Assumptions preservation.
 idtac "---------- preservation' ---------".
 Print Assumptions preservation'.
-idtac "---------- NormalizePlayground.normalize_ex ---------".
-Print Assumptions NormalizePlayground.normalize_ex.
 idtac "---------- subject_expansion ---------".
 idtac "MANUAL".
 idtac "---------- variation1 ---------".
 idtac "MANUAL".
 idtac "---------- variation2 ---------".
 idtac "MANUAL".
-idtac "---------- remove_predzero ---------".
+idtac "---------- remove_predzro ---------".
 idtac "MANUAL".
 idtac "".
 idtac "********** Advanced **********".
@@ -208,3 +190,5 @@ idtac "MANUAL".
 idtac "---------- prog_pres_bigstep ---------".
 idtac "MANUAL".
 Abort.
+
+(* Sat Jan 26 15:16:07 UTC 2019 *)

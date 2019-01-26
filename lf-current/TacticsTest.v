@@ -218,3 +218,5 @@ Print Assumptions filter_exercise.
 idtac "---------- existsb_existsb' ---------".
 Print Assumptions existsb_existsb'.
 Abort.
+
+(* Sat Jan 26 15:14:51 UTC 2019 *)

@@ -12,12 +12,12 @@
     但是大部分的读者大概只会粗略看一眼，然后跳到末尾的“例子”一节。 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Coq.Strings.String.
-Require Import Coq.Strings.Ascii.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Init.Nat.
-Require Import Coq.Arith.EqNat.
-Require Import Coq.Lists.List.
+From Coq Require Import Strings.String.
+From Coq Require Import Strings.Ascii.
+From Coq Require Import Arith.Arith.
+From Coq Require Import Init.Nat.
+From Coq Require Import Arith.EqNat.
+From Coq Require Import Lists.List.
 Import ListNotations.
 From LF Require Import Maps Imp.
 
@@ -124,19 +124,20 @@ Arguments NoneE {X}.
 
 (** 加一些语法糖以便于编写嵌套的对 [optionE] 的匹配表达式。 *)
 
-Notation "'DO' ( x , y ) <== e1 ; e2"
+Notation "' p <- e1 ;; e2"
    := (match e1 with
-         | SomeE (x,y) => e2
-         | NoneE err => NoneE err
+       | SomeE p => e2
+       | NoneE err => NoneE err
        end)
-   (right associativity, at level 60).
+   (right associativity, p pattern, at level 60, e1 at next level).
 
-Notation "'DO' ( x , y ) <-- e1 ; e2 'OR' e3"
+Notation "'TRY' ' p <- e1 ;; e2 'OR' e3"
    := (match e1 with
-         | SomeE (x,y) => e2
-         | NoneE err => e3
+       | SomeE p => e2
+       | NoneE _ => e3
        end)
-   (right associativity, at level 60, e2 at next level).
+   (right associativity, p pattern,
+    at level 60, e1 at next level, e2 at next level).
 
 (* ----------------------------------------------------------------- *)
 (** *** 用于构建语法分析器的通用组合子 *)
@@ -153,7 +154,7 @@ Fixpoint many_helper {T} (p : parser T) acc steps xs :=
   | _, NoneE _ =>
       SomeE ((rev acc), xs)
   | S steps', SomeE (t, xs') =>
-      many_helper p (t::acc) steps' xs'
+      many_helper p (t :: acc) steps' xs'
   end.
 
 (** 一个要求符合 [p] 零到多次的、指定步数的词法分析器： *)
@@ -177,7 +178,7 @@ Definition firstExpect {T} (t : token) (p : parser T)
 (** 一个要求某个特定词法标记的语法分析器： *)
 
 Definition expect (t : token) : parser unit :=
-  firstExpect t (fun xs => SomeE(tt, xs)).
+  firstExpect t (fun xs => SomeE (tt, xs)).
 
 (* ----------------------------------------------------------------- *)
 (** *** 一个 Imp 的递归下降语法分析器 *)
@@ -222,14 +223,15 @@ Fixpoint parsePrimaryExp (steps:nat)
   match steps with
   | 0 => NoneE "Too many recursive calls"
   | S steps' =>
-      DO (i, rest) <-- parseIdentifier xs ;
+      TRY ' (i, rest) <- parseIdentifier xs ;;
           SomeE (AId i, rest)
-      OR DO (n, rest) <-- parseNumber xs ;
+      OR
+      TRY ' (n, rest) <- parseNumber xs ;;
           SomeE (ANum n, rest)
-                OR (DO (e, rest) <== firstExpect "("
-                       (parseSumExp steps') xs;
-          DO (u, rest') <== expect ")" rest ;
-          SomeE(e,rest'))
+      OR
+      ' (e, rest) <- firstExpect "(" (parseSumExp steps') xs ;;
+      ' (u, rest') <- expect ")" rest ;;
+      SomeE (e,rest')
   end
 
 with parseProductExp (steps:nat)
@@ -237,11 +239,9 @@ with parseProductExp (steps:nat)
   match steps with
   | 0 => NoneE "Too many recursive calls"
   | S steps' =>
-    DO (e, rest) <==
-      parsePrimaryExp steps' xs ;
-    DO (es, rest') <==
-       many (firstExpect "*" (parsePrimaryExp steps'))
-            steps' rest;
+    ' (e, rest) <- parsePrimaryExp steps' xs ;;
+    ' (es, rest') <- many (firstExpect "*" (parsePrimaryExp steps'))
+                          steps' rest ;;
     SomeE (fold_left AMult es e, rest')
   end
 
@@ -249,22 +249,22 @@ with parseSumExp (steps:nat) (xs : list token)  :=
   match steps with
   | 0 => NoneE "Too many recursive calls"
   | S steps' =>
-    DO (e, rest) <==
-      parseProductExp steps' xs ;
-    DO (es, rest') <==
-      many (fun xs =>
-        DO (e,rest') <--
-           firstExpect "+"
-             (parseProductExp steps') xs;
-           SomeE ( (true, e), rest')
-        OR DO (e,rest') <==
-        firstExpect "-"
-           (parseProductExp steps') xs;
-            SomeE ( (false, e), rest'))
-        steps' rest;
+    ' (e, rest) <- parseProductExp steps' xs ;;
+    ' (es, rest') <-
+        many (fun xs =>
+                TRY ' (e,rest') <-
+                    firstExpect "+"
+                                (parseProductExp steps') xs ;;
+                    SomeE ( (true, e), rest')
+                OR
+                ' (e, rest') <-
+                    firstExpect "-"
+                                (parseProductExp steps') xs ;;
+                SomeE ( (false, e), rest'))
+        steps' rest ;;
       SomeE (fold_left (fun e0 term =>
                           match term with
-                            (true,  e) => APlus e0 e
+                          | (true,  e) => APlus e0 e
                           | (false, e) => AMinus e0 e
                           end)
                        es e,
@@ -280,32 +280,33 @@ Fixpoint parseAtomicExp (steps:nat)
 match steps with
   | 0 => NoneE "Too many recursive calls"
   | S steps' =>
-     DO    (u,rest) <-- expect "true" xs;
+     TRY ' (u,rest) <- expect "true" xs ;;
          SomeE (BTrue,rest)
-     OR DO (u,rest) <-- expect "false" xs;
+     OR
+     TRY ' (u,rest) <- expect "false" xs ;;
          SomeE (BFalse,rest)
-     OR DO (e,rest) <--
-            firstExpect "!"
-               (parseAtomicExp steps')
-               xs;
+     OR
+     TRY ' (e,rest) <- firstExpect "~"
+                                   (parseAtomicExp steps')
+                                   xs ;;
          SomeE (BNot e, rest)
-     OR DO (e,rest) <--
-              firstExpect "("
-                (parseConjunctionExp steps') xs;
-          (DO (u,rest') <== expect ")" rest;
-              SomeE (e, rest'))
-     OR DO (e, rest) <== parseProductExp steps' xs;
-            (DO (e', rest') <--
-              firstExpect "="
-                (parseAExp steps') rest;
-              SomeE (BEq e e', rest')
-             OR DO (e', rest') <--
-               firstExpect "<="
-                 (parseAExp steps') rest;
-               SomeE (BLe e e', rest')
-             OR
-               NoneE
-      "Expected '=' or '<=' after arithmetic expression")
+     OR
+     TRY ' (e,rest) <- firstExpect "("
+                                   (parseConjunctionExp steps')
+                                   xs ;;
+         ' (u,rest') <- expect ")" rest ;;
+         SomeE (e, rest')
+     OR
+     ' (e, rest) <- parseProductExp steps' xs ;;
+     TRY ' (e', rest') <- firstExpect "="
+                                  (parseAExp steps') rest ;;
+         SomeE (BEq e e', rest')
+     OR
+     TRY ' (e', rest') <- firstExpect "<="
+                                      (parseAExp steps') rest ;;
+         SomeE (BLe e e', rest')
+     OR
+     NoneE "Expected '=' or '<=' after arithmetic expression"
 end
 
 with parseConjunctionExp (steps:nat)
@@ -313,12 +314,10 @@ with parseConjunctionExp (steps:nat)
   match steps with
   | 0 => NoneE "Too many recursive calls"
   | S steps' =>
-    DO (e, rest) <==
-      parseAtomicExp steps' xs ;
-    DO (es, rest') <==
-       many (firstExpect "&&"
+    ' (e, rest) <- parseAtomicExp steps' xs ;;
+    ' (es, rest') <- many (firstExpect "&&"
                (parseAtomicExp steps'))
-            steps' rest;
+            steps' rest ;;
     SomeE (fold_left BAnd es e, rest')
   end.
 
@@ -336,10 +335,10 @@ Definition testParsing {X : Type}
 
 (*
 Eval compute in
-  testParsing parseProductExp "x*y*(x*x)*x".
+  testParsing parseProductExp "x.y.(x.x).x".
 
 Eval compute in
-  testParsing parseConjunctionExp "not((x=x||x*x<=(x*x)*x)&&x=x".
+  testParsing parseConjunctionExp "~(x=x&&x*x<=(x*x)*x)&&x=x".
 *)
 
 (** 解析指令： *)
@@ -349,74 +348,110 @@ Fixpoint parseSimpleCommand (steps:nat)
   match steps with
   | 0 => NoneE "Too many recursive calls"
   | S steps' =>
-    DO (u, rest) <-- expect "SKIP" xs;
-      SomeE (SKIP, rest)
-    OR DO (e,rest) <--
-         firstExpect "IFB" (parseBExp steps') xs;
-       DO (c,rest')  <==
-         firstExpect "THEN"
-           (parseSequencedCommand steps') rest;
-       DO (c',rest'') <==
-         firstExpect "ELSE"
-           (parseSequencedCommand steps') rest';
-       DO (u,rest''') <==
-         expect "END" rest'';
-       SomeE(IFB e THEN c ELSE c' FI, rest''')
-    OR DO (e,rest) <--
-         firstExpect "WHILE"
-           (parseBExp steps') xs;
-       DO (c,rest') <==
-         firstExpect "DO"
-           (parseSequencedCommand steps') rest;
-       DO (u,rest'') <==
-         expect "END" rest';
-       SomeE(WHILE e DO c END, rest'')
-    OR DO (i, rest) <==
-         parseIdentifier xs;
-       DO (e, rest') <==
-         firstExpect ":=" (parseAExp steps') rest;
-       SomeE(i ::= e, rest')
-  end
+    TRY ' (u, rest) <- expect "SKIP" xs ;;
+        SomeE (SKIP%imp, rest)
+    OR
+    TRY ' (e,rest) <-
+            firstExpect "TEST"
+                        (parseBExp steps') xs ;;
+        ' (c,rest') <-
+            firstExpect "THEN"
+                        (parseSequencedCommand steps') rest ;;
+        ' (c',rest'') <-
+            firstExpect "ELSE"
+                        (parseSequencedCommand steps') rest' ;;
+        ' (tt,rest''') <-
+            expect "END" rest'' ;;
+       SomeE(TEST e THEN c ELSE c' FI%imp, rest''')
+    OR
+    TRY ' (e,rest) <-
+            firstExpect "WHILE"
+                        (parseBExp steps') xs ;;
+        ' (c,rest') <-
+            firstExpect "DO"
+                        (parseSequencedCommand steps') rest ;;
+        ' (u,rest'') <-
+            expect "END" rest' ;;
+        SomeE(WHILE e DO c END%imp, rest'')
+    OR
+    TRY ' (i, rest) <- parseIdentifier xs ;;
+        ' (e, rest') <- firstExpect "::=" (parseAExp steps') rest ;;
+        SomeE ((i ::= e)%imp, rest')
+    OR
+        NoneE "Expecting a command"
+end
 
 with parseSequencedCommand (steps:nat)
                            (xs : list token) :=
   match steps with
   | 0 => NoneE "Too many recursive calls"
   | S steps' =>
-      DO (c, rest) <==
-        parseSimpleCommand steps' xs;
-      DO (c', rest') <--
-        firstExpect ";;"
-          (parseSequencedCommand steps') rest;
-        SomeE(c ;; c', rest')
-      OR
-        SomeE(c, rest)
+    ' (c, rest) <- parseSimpleCommand steps' xs ;;
+    TRY ' (c', rest') <-
+            firstExpect ";;"
+                        (parseSequencedCommand steps') rest ;;
+        SomeE ((c ;; c')%imp, rest')
+    OR
+    SomeE (c, rest)
   end.
 
 Definition bignumber := 1000.
 
-Definition parse (str : string) : optionE (com * list token) :=
+Definition parse (str : string) : optionE com :=
   let tokens := tokenize str in
-  parseSequencedCommand bignumber tokens.
+  match parseSequencedCommand bignumber tokens with
+  | SomeE (c, []) => SomeE c
+  | SomeE (_, t::_) => NoneE ("Trailing tokens remaining: " ++ t)
+  | NoneE err => NoneE err
+  end.
 
 (* ################################################################# *)
 (** * 示例 *)
 
 Example eg1 : parse "
-  IFB x = y + 1 + 2 - y * 6 + 3 THEN
-    x := x * 1;;
-    y := 0
+  TEST x = y + 1 + 2 - y * 6 + 3 THEN
+    x ::= x * 1;;
+    y ::= 0
   ELSE
     SKIP
   END  "
 =
   SomeE (
-     IFB "x" = "y" + 1 + 2 - "y" * 6 + 3 THEN
-       "x" ::= "x" * 1;;
-       "y" ::= 0
-     ELSE
-       SKIP
-     FI,
-     []).
-Proof. reflexivity. Qed.
+      TEST "x" = "y" + 1 + 2 - "y" * 6 + 3 THEN
+        "x" ::= "x" * 1;;
+        "y" ::= 0
+      ELSE
+        SKIP
+      FI)%imp.
+Proof. cbv. reflexivity. Qed.
 
+Example eg2 : parse "
+  SKIP;;
+  z::=x*y*(x*x);;
+  WHILE x=x DO
+    TEST (z <= z*z) && ~(x = 2) THEN
+      x ::= z;;
+      y ::= z
+    ELSE
+      SKIP
+    END;;
+    SKIP
+  END;;
+  x::=z  "
+=
+  SomeE (
+      SKIP;;
+      "z" ::= "x" * "y" * ("x" * "x");;
+      WHILE "x" = "x" DO
+        TEST ("z" <= "z" * "z") && ~("x" = 2) THEN
+          "x" ::= "z";;
+          "y" ::= "z"
+        ELSE
+          SKIP
+        FI;;
+        SKIP
+      END;;
+      "x" ::= "z")%imp.
+Proof. cbv. reflexivity. Qed.
+
+(* Sat Jan 26 15:14:46 UTC 2019 *)

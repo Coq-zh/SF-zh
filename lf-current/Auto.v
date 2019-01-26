@@ -1,7 +1,7 @@
 (** * Auto: 更多的自动化 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Coq.omega.Omega.
+From Coq Require Import omega.Omega.
 From LF Require Import Maps.
 From LF Require Import Imp.
 
@@ -23,9 +23,9 @@ From LF Require Import Imp.
 Ltac inv H := inversion H; subst; clear H.
 
 Theorem ceval_deterministic: forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1  ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2;
   generalize dependent st2;
@@ -119,7 +119,6 @@ Proof.
   auto 6.
 Qed.
 
-
 (** 在搜索当前目标的潜在证明时， [auto] 会同时考虑当前上下文中的前提，
     以及一个包含其它引理或构造子的_'提示数据库'_。
     某些关于相等关系和逻辑运算符的事实默认已经安装到提示数据库中了。 *)
@@ -193,9 +192,9 @@ Proof. auto. Qed.
 (** 我们来初次尝试简化 [ceval_deterministic] 的证明脚本。 *)
 
 Theorem ceval_deterministic': forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1  ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
@@ -228,9 +227,9 @@ Qed.
     作为示范，下面是以上证明的另一个版本，它用到了 [Proof with auto]。 *)
 
 Theorem ceval_deterministic'_alt: forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1 ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof with auto.
   intros c st st1 st2 E1 E2;
   generalize dependent st2;
@@ -278,11 +277,10 @@ Qed.
 
 Ltac rwinv H1 H2 := rewrite H1 in H2; inv H2.
 
-
 Theorem ceval_deterministic'': forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1  ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
@@ -326,9 +324,9 @@ Ltac find_rwinv :=
     把此策略添加到每一个归纳证明的情况中，就能把所有的矛盾情况都解决了。 *)
 
 Theorem ceval_deterministic''': forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1  ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
@@ -349,9 +347,9 @@ Proof.
     然后用它们进行 [rewrite] 改写，类似于这样： *)
 
 Theorem ceval_deterministic'''': forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1  ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
@@ -389,11 +387,10 @@ Ltac find_eqn :=
     - 我们可以把整体策略包装在 [repeat] 中，这样就可以一直进行有用的改写，
       直到只剩下平凡的了。 *)
 
-
 Theorem ceval_deterministic''''': forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1  ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
@@ -426,7 +423,7 @@ Notation "X '::=' a" :=
   (CAsgn X a) (at level 60).
 Notation "'WHILE' b 'DO' c 'END'" :=
   (CWhile b c) (at level 80, right associativity).
-Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
+Notation "'TEST' e1 'THEN' e2 'ELSE' e3 'FI'" :=
   (CIf e1 e2 e3) (at level 80, right associativity).
 Notation "'REPEAT' e1 'UNTIL' b2 'END'" :=
   (CRepeat e1 b2) (at level 80, right associativity).
@@ -444,11 +441,11 @@ Inductive ceval : state -> com -> state -> Prop :=
   | E_IfTrue : forall st st' b1 c1 c2,
       beval st b1 = true ->
       ceval st c1 st' ->
-      ceval st (IFB b1 THEN c1 ELSE c2 FI) st'
+      ceval st (TEST b1 THEN c1 ELSE c2 FI) st'
   | E_IfFalse : forall st st' b1 c1 c2,
       beval st b1 = false ->
       ceval st c2 st' ->
-      ceval st (IFB b1 THEN c1 ELSE c2 FI) st'
+      ceval st (TEST b1 THEN c1 ELSE c2 FI) st'
   | E_WhileFalse : forall b1 st c1,
       beval st b1 = false ->
       ceval st (WHILE b1 DO c1 END) st
@@ -467,16 +464,16 @@ Inductive ceval : state -> com -> state -> Prop :=
       ceval st' (CRepeat c1 b1) st'' ->
       ceval st (CRepeat c1 b1) st''.
 
-Notation "c1 '/' st '\\' st'" := (ceval st c1 st')
-                                 (at level 40, st at level 39).
+Notation "st '=[' c ']=>' st'" := (ceval st c st')
+                                 (at level 40).
 
 (** 我们对确定性证明的第一次尝试并不成功：[E_RepeatEnd] 和 [E_RepeatLoop]
     这两种情况并没有被之前的自动化处理。 *)
 
 Theorem ceval_deterministic: forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1  ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
@@ -496,9 +493,9 @@ Qed.
     的调用顺序就能修复这一点。 *)
 
 Theorem ceval_deterministic': forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
-     st1 = st2.
+    st =[ c ]=> st1  ->
+    st =[ c ]=> st2 ->
+    st1 = st2.
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
@@ -521,29 +518,28 @@ End Repeat.
     中的这个例子： *)
 
 Example ceval_example1:
-    (X ::= 2;;
-     IFB X <= 1
-       THEN Y ::= 3
-       ELSE Z ::= 4
-     FI)
-   / { --> 0 }
-   \\ { X --> 2 ; Z --> 4 }.
+  empty_st =[
+    X ::= 2;;
+    TEST X <= 1
+      THEN Y ::= 3
+      ELSE Z ::= 4
+    FI
+  ]=> (Z !-> 4 ; X !-> 2).
 Proof.
   (* 我们补充了中间状态 [st']... *)
-  apply E_Seq with { X --> 2 }.
+  apply E_Seq with (X !-> 2).
   - apply E_Ass. reflexivity.
   - apply E_IfFalse. reflexivity. apply E_Ass. reflexivity.
 Qed.
-
 
 (** 在证明的第一步，我们显式地提供了一个略长的表达式来帮助 Coq
     为 [E_Seq] 构造子实例化一个“隐藏”的参数。需要它的原因在于
     [E_Seq] 的定义...
 
           E_Seq : forall c1 c2 st st' st'',
-            c1 / st  \\ st' ->
-            c2 / st' \\ st'' ->
-            (c1 ;; c2) / st \\ st''
+            st  =[ c1 ]=> st'  ->
+            st' =[ c2 ]=> st'' ->
+            st  =[ c1 ;; c2 ]=> st''
 
    它是对 [st'] 的量化，而且并没有出现在结论中，因此将其结论与目标状态统一
    并不能帮助 Coq 为此变量找到合适的值。如果我们忽略 [with]，这一步就会失败
@@ -554,13 +550,13 @@ Qed.
    这正是 [eapply] 策略所能做到的： *)
 
 Example ceval'_example1:
-    (X ::= 2;;
-     IFB X <= 1
-       THEN Y ::= 3
-       ELSE Z ::= 4
-     FI)
-   / { --> 0 }
-   \\ { X --> 2 ; Z --> 4 }.
+  empty_st =[
+    X ::= 2;;
+    TEST X <= 1
+      THEN Y ::= 3
+      ELSE Z ::= 4
+    FI
+  ]=> (Z !-> 4 ; X !-> 2).
 Proof.
   eapply E_Seq. (* 1 *)
   - apply E_Ass. (* 2 *)
@@ -578,21 +574,23 @@ Qed.
     它会被后面 [3] 处的 [reflexivity] 步骤依次实例化。当我们开始着手第二个子目标时
     （[4] 处），我们观察到此子目标中出现的 [?st'] 已经被替换成了在第一个子目标中给出的值。 *)
 
-(** 我们目前学过的几个策略，包括 [exists]、[constructor] 和 [auto] 都有
-    [e...] 开头的变体。例如，下面是一个使用了 [eauto] 的证明： *)
+(** 我们目前学过的几个策略，包括 [exists]、[constructor] 和 [auto] 都有类似的变体。
+    例如，下面是一个使用了 [eauto] 的证明： *)
 
 Hint Constructors ceval.
 Hint Transparent state.
 Hint Transparent total_map.
 
-Definition st12 := { X --> 1 ; Y --> 2 }.
-Definition st21 := { X --> 2 ; Y --> 1 }.
+Definition st12 := (Y !-> 2 ; X !-> 1).
+Definition st21 := (Y !-> 1 ; X !-> 2).
 
 Example eauto_example : exists s',
-  (IFB X <= Y
-    THEN Z ::= Y - X
-    ELSE Y ::= X + Z
-  FI) / st21 \\ s'.
+  st21 =[
+    TEST X <= Y
+      THEN Z ::= Y - X
+      ELSE Y ::= X + Z
+    FI
+  ]=> s'.
 Proof. eauto. Qed.
 
 (** [eauto] 的策略和 [auto] 一样，除了它会使用 [eapply] 而非 [apply]。
@@ -603,3 +601,4 @@ Proof. eauto. Qed.
     [e] 开头的变体。 *)
 
 
+(* Sat Jan 26 15:14:46 UTC 2019 *)

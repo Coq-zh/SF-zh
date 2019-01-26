@@ -37,7 +37,7 @@ idtac " ".
 
 idtac "#> ev_double".
 idtac "Possible points: 1".
-check_type @ev_double ((forall n : nat, ev (double n))).
+check_type @ev_double ((forall n : nat, even (double n))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions ev_double.
@@ -49,7 +49,7 @@ idtac " ".
 
 idtac "#> SSSSev__even".
 idtac "Possible points: 1".
-check_type @SSSSev__even ((forall n : nat, ev (S (S (S (S n)))) -> ev n)).
+check_type @SSSSev__even ((forall n : nat, even (S (S (S (S n)))) -> even n)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions SSSSev__even.
@@ -61,7 +61,7 @@ idtac " ".
 
 idtac "#> even5_nonsense".
 idtac "Possible points: 1".
-check_type @even5_nonsense ((ev 5 -> 2 + 2 = 9)).
+check_type @even5_nonsense ((even 5 -> 2 + 2 = 9)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions even5_nonsense.
@@ -73,7 +73,7 @@ idtac " ".
 
 idtac "#> ev_sum".
 idtac "Possible points: 2".
-check_type @ev_sum ((forall n m : nat, ev n -> ev m -> ev (n + m))).
+check_type @ev_sum ((forall n m : nat, even n -> even m -> even (n + m))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions ev_sum.
@@ -86,7 +86,7 @@ idtac " ".
 idtac "#> ev_ev__ev".
 idtac "Advanced".
 idtac "Possible points: 3".
-check_type @ev_ev__ev ((forall n m : nat, ev (n + m) -> ev n -> ev m)).
+check_type @ev_ev__ev ((forall n m : nat, even (n + m) -> even n -> even m)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions ev_ev__ev.
@@ -104,10 +104,25 @@ idtac " ".
 idtac "-------------------  subsequence  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: subsequence".
+idtac "#> subseq_refl".
 idtac "Advanced".
-idtac "Possible points: 4".
-print_manual_grade manual_grade_for_subsequence.
+idtac "Possible points: 1".
+check_type @subseq_refl ((forall l : list nat, subseq l l)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions subseq_refl.
+Goal True.
+idtac " ".
+
+idtac "#> subseq_app".
+idtac "Advanced".
+idtac "Possible points: 1".
+check_type @subseq_app (
+(forall l1 l2 l3 : list nat, subseq l1 l2 -> subseq l1 (l2 ++ l3))).
+idtac "Assumptions:".
+Abort.
+Print Assumptions subseq_app.
+Goal True.
 idtac " ".
 
 idtac "-------------------  exp_match_ex1  --------------------".
@@ -232,7 +247,7 @@ idtac " ".
 idtac " ".
 
 idtac "Max points - standard: 23".
-idtac "Max points - advanced: 39".
+idtac "Max points - advanced: 37".
 idtac "".
 idtac "********** Summary **********".
 idtac "".
@@ -267,10 +282,14 @@ idtac "".
 idtac "********** Advanced **********".
 idtac "---------- ev_ev__ev ---------".
 Print Assumptions ev_ev__ev.
-idtac "---------- subsequence ---------".
-idtac "MANUAL".
+idtac "---------- subseq_refl ---------".
+Print Assumptions subseq_refl.
+idtac "---------- subseq_app ---------".
+Print Assumptions subseq_app.
 idtac "---------- Pumping.pumping ---------".
 Print Assumptions Pumping.pumping.
 idtac "---------- filter_challenge ---------".
 idtac "MANUAL".
 Abort.
+
+(* Sat Jan 26 15:14:54 UTC 2019 *)

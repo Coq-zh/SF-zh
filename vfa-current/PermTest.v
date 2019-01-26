@@ -99,3 +99,5 @@ Print Assumptions Forall_perm.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:18:09 UTC 2019 *)

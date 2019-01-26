@@ -323,6 +323,11 @@ let rec beval st = function
 | BNot b1 -> negb (beval st b1)
 | BAnd (b1, b2) -> (&&) (beval st b1) (beval st b2)
 
+(** val empty_st : int total_map **)
+
+let empty_st =
+  t_empty 0
+
 type com =
 | CSkip
 | CAss of char list * aexp
@@ -1637,7 +1642,7 @@ let rec parseAtomicExp steps xs =
       (match expect ('f'::('a'::('l'::('s'::('e'::[]))))) xs with
        | SomeE x -> let (_, rest) = x in SomeE (BFalse, rest)
        | NoneE _ ->
-         (match firstExpect ('!'::[]) (parseAtomicExp steps') xs with
+         (match firstExpect ('~'::[]) (parseAtomicExp steps') xs with
           | SomeE x -> let (e, rest) = x in SomeE ((BNot e), rest)
           | NoneE _ ->
             (match firstExpect ('('::[]) (parseConjunctionExp steps') xs with
@@ -1702,7 +1707,7 @@ let rec parseSimpleCommand steps xs =
     match expect ('S'::('K'::('I'::('P'::[])))) xs with
     | SomeE x -> let (_, rest) = x in SomeE (CSkip, rest)
     | NoneE _ ->
-      (match firstExpect ('I'::('F'::('B'::[]))) (parseBExp steps') xs with
+      (match firstExpect ('T'::('E'::('S'::('T'::[])))) (parseBExp steps') xs with
        | SomeE x ->
          let (e, rest) = x in
          (match firstExpect ('T'::('H'::('E'::('N'::[]))))
@@ -1737,11 +1742,14 @@ let rec parseSimpleCommand steps xs =
             (match parseIdentifier xs with
              | SomeE x ->
                let (i, rest) = x in
-               (match firstExpect (':'::('='::[])) (parseAExp steps') rest with
+               (match firstExpect (':'::(':'::('='::[]))) (parseAExp steps')
+                        rest with
                 | SomeE x0 ->
                   let (e, rest') = x0 in SomeE ((CAss (i, e)), rest')
                 | NoneE err -> NoneE err)
-             | NoneE err -> NoneE err))))
+             | NoneE _ ->
+               NoneE
+                 ('E'::('x'::('p'::('e'::('c'::('t'::('i'::('n'::('g'::(' '::('a'::(' '::('c'::('o'::('m'::('m'::('a'::('n'::('d'::[])))))))))))))))))))))))
     steps
 
 (** val parseSequencedCommand :
@@ -2017,12 +2025,18 @@ let bignumber =
     ((fun x -> x + 1) ((fun x -> x + 1) ((fun x -> x + 1) ((fun x -> x + 1)
     0)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
-(** val parse : char list -> (com * token list) optionE **)
+(** val parse : char list -> com optionE **)
 
 let parse str =
-  let tokens = tokenize str in parseSequencedCommand bignumber tokens
-
-(** val empty_state : int total_map **)
-
-let empty_state =
-  t_empty 0
+  let tokens = tokenize str in
+  (match parseSequencedCommand bignumber tokens with
+   | SomeE x ->
+     let (c, l) = x in
+     (match l with
+      | [] -> SomeE c
+      | t :: _ ->
+        NoneE
+          (append
+            ('T'::('r'::('a'::('i'::('l'::('i'::('n'::('g'::(' '::('t'::('o'::('k'::('e'::('n'::('s'::(' '::('r'::('e'::('m'::('a'::('i'::('n'::('i'::('n'::('g'::(':'::(' '::[])))))))))))))))))))))))))))
+            t))
+   | NoneE err -> NoneE err)

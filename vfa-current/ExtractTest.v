@@ -96,3 +96,5 @@ Print Assumptions SearchTree2.unrealistically_strong_can_relate.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:18:16 UTC 2019 *)

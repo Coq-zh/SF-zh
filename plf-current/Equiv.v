@@ -1,16 +1,16 @@
 (** * Equiv: 程序的等价关系 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Init.Nat.
-Require Import Coq.Arith.PeanoNat. Import Nat.
-Require Import Coq.Arith.EqNat.
-Require Import Coq.omega.Omega.
-Require Import Coq.Lists.List.
-Require Import Coq.Logic.FunctionalExtensionality.
-Import ListNotations.
 From PLF Require Import Maps.
+From Coq Require Import Bool.Bool.
+From Coq Require Import Arith.Arith.
+From Coq Require Import Init.Nat.
+From Coq Require Import Arith.PeanoNat. Import Nat.
+From Coq Require Import Arith.EqNat.
+From Coq Require Import omega.Omega.
+From Coq Require Import Lists.List.
+From Coq Require Import Logic.FunctionalExtensionality.
+Import ListNotations.
 From PLF Require Import Imp.
 
 (** *** 一些关于习题的建议：
@@ -48,23 +48,21 @@ From PLF Require Import Imp.
     我们就说他们的_'行为等价（behaviorally equivalent）'_。 *)
 
 Definition aequiv (a1 a2 : aexp) : Prop :=
-  forall (st:state),
+  forall (st : state),
     aeval st a1 = aeval st a2.
 
 Definition bequiv (b1 b2 : bexp) : Prop :=
-  forall (st:state),
+  forall (st : state),
     beval st b1 = beval st b2.
 
 (** 下面是一些算术和布尔表达式等价的简单例子。 *)
 
-Theorem aequiv_example:
-  aequiv (X - X) 0.
+Theorem aequiv_example: aequiv (X - X) 0.
 Proof.
   intros st. simpl. omega.
 Qed.
 
-Theorem bequiv_example:
-  bequiv (X - X = 0) true.
+Theorem bequiv_example: bequiv (X - X = 0)%imp true.
 Proof.
   intros st. unfold beval.
   rewrite aequiv_example. reflexivity.
@@ -79,17 +77,17 @@ Qed.
 
 Definition cequiv (c1 c2 : com) : Prop :=
   forall (st st' : state),
-    (c1 / st \\ st') <-> (c2 / st \\ st').
+    (st =[ c1 ]=> st') <-> (st =[ c2 ]=> st').
 
 (* ================================================================= *)
 (** ** 简单示例 *)
 
 (** 下面是一些指令等价的例子，我们首先从包含 [SKIP] 的简单程序变换开始： *)
 
-Theorem skip_left: forall c,
+Theorem skip_left : forall c,
   cequiv
-     (SKIP;; c)
-     c.
+    (SKIP;; c)
+    c.
 Proof.
   (* 课上已完成 *)
   intros c st st'.
@@ -104,10 +102,11 @@ Proof.
     assumption.
 Qed.
 
-(** **** 练习：2 星 (skip_right)  *)
-(** 请证明在某条指令之后添加 [SKIP] 后，两程序会等价 *)
+(** **** 练习：2 星, standard (skip_right)  
 
-Theorem skip_right: forall c,
+    请证明在某条指令之后添加 [SKIP] 后，两程序会等价 *)
+
+Theorem skip_right : forall c,
   cequiv
     (c ;; SKIP)
     c.
@@ -115,11 +114,11 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 同样，下面是一个优化 [IFB] 的简单程序变换： *)
+(** 同样，下面是一个优化 [TEST] 的简单程序变换： *)
 
-Theorem IFB_true_simple: forall c1 c2,
+Theorem TEST_true_simple : forall c1 c2,
   cequiv
-    (IFB BTrue THEN c1 ELSE c2 FI)
+    (TEST true THEN c1 ELSE c2 FI)
     c1.
 Proof.
   intros c1 c2.
@@ -129,44 +128,44 @@ Proof.
   - (* <- *)
     apply E_IfTrue. reflexivity. assumption.  Qed.
 
-(** 当然，人类程序员是不会写把断言（guard）直接写成 [BTrue] 的条件分支的。
-    有趣的是当断言_'等价于'_真的情况： *)
-(** _'定理'_：若 [b] 等价于 [BTrue]，则 [IFB b THEN c1 ELSE c2 FI] 等价于 [c1]。 *)
-(**
+(** 当然，人类程序员是不会写把断言（guard）直接写成 [true] 的条件分支的。
+    不过当断言_'等价于真'_的情况时就会写出来： 
+
+    _'定理'_：若 [b] 等价于 [BTrue]，则 [TEST b THEN c1 ELSE c2 FI] 等价于 [c1]。 
    _'证明'_：
 
-     - ([->]) 我们必须证明，对于所有的 [st] 和 [st']，若 [IFB b
-       THEN c1 ELSE c2 FI / st \\ st'] 则 [c1 / st \\ st']。
+     - ([->]) 我们必须证明，对于所有的 [st] 和 [st']，若 [st =[
+       TEST b THEN c1 ELSE c2 FI ]=> st'] 则 [st =[ c1 ]=> st']。
 
-       能够应用于 [IFB b THEN c1 ELSE c2 FI / st \\ st'] 的证明规则只有两条：
+       能够应用于 [st =[ TEST b THEN c1 ELSE c2 FI ]=> st'] 的证明规则只有两条：
        [E_IfTrue] 和 [E_IfFalse]。
 
-       - 假设 [IFB b THEN c1 ELSE c2 FI / st \\ st'] 证明自 [E_IfTrue]
-         这条证明规则。若使用证明规则 [E_IfTrue] 其必备的前提条件 [c1 / st \\ st']
+       - 假设 [st =[ TEST b THEN c1 ELSE c2 FI ]=> st'] 证明自 [E_IfTrue]
+         这条证明规则。若使用证明规则 [E_IfTrue] 其必备的前提条件 [st =[ c1 ]=> st']
          必为真，而这正好是我们的证明所需要的条件。
 
-       - 另一方面, 假设 [IFB b THEN c1 ELSE c2 FI / st \\ st'] 证明自
-         [E_IfFalse]。我们能得知 [beval st b = false] 和 [c2 / st \\ st']。
+       - 另一方面, 假设 [st =[ TEST b THEN c1 ELSE c2 FI ]=> st'] 证明自
+         [E_IfFalse]。我们能得知 [beval st b = false] 和 [st =[ c2 ]=> st']。
 
          之前提到 [b] 等价于 [BTrue], 即对于所有 [st]，有 [beval st b = beval st
          BTrue]。具体来说就是 [beval st b = true] 成立，因而 [beval st BTrue =
          true] 成立。然而，之前假设 [E_IfFalse] 必备的前提条件 [beval st b = false]
          也成立，这就构成了一组矛盾，因此不可能使用了 [E_IfFalse] 这条证明规则。
 
-     - ([<-]) 我们必须证明，对于所有 [st] 和 [st']，若 [c1 / st \\ st']
+     - ([<-]) 我们必须证明，对于所有 [st] 和 [st']，若[st =[ c1 ]=> st']
        则 [IFB b THEN c1 ELSE c2 FI / st \\ st']。
 
        已知 [b] 等价于 [BTrue]，我们知道 [beval st b] = [beval st BTrue] = [true]。
-       结合 [c1 / st \\ st'] 这条假设，我们能应用 [E_IfTrue] 来证明出 [IFB b THEN
-       c1 ELSE c2 FI / st \\ st']。 []
+       结合 [st =[ c1 ]=> st'] 这条假设，我们能应用 [E_IfTrue] 来证明
+       [st =[ TEST b THEN c1 ELSE c2 FI ]=> st']。 []
 
    下面是这个证明的形式化版本： *)
 
-Theorem IFB_true: forall b c1 c2,
-     bequiv b BTrue  ->
-     cequiv
-       (IFB b THEN c1 ELSE c2 FI)
-       c1.
+Theorem TEST_true: forall b c1 c2,
+  bequiv b BTrue  ->
+  cequiv
+    (TEST b THEN c1 ELSE c2 FI)
+    c1.
 Proof.
   intros b c1 c2 Hb.
   split; intros H.
@@ -183,23 +182,24 @@ Proof.
     unfold bequiv in Hb. simpl in Hb.
     rewrite Hb. reflexivity.  Qed.
 
-(** **** 练习：2 星, recommended (IFB_false)  *)
-Theorem IFB_false: forall b c1 c2,
-  bequiv b BFalse  ->
+(** **** 练习：2 星, standard, recommended (TEST_false)  *)
+Theorem TEST_false : forall b c1 c2,
+  bequiv b BFalse ->
   cequiv
-    (IFB b THEN c1 ELSE c2 FI)
+    (TEST b THEN c1 ELSE c2 FI)
     c2.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (swap_if_branches)  *)
-(** 证明我们可以通过对断言取反来交换 IF 的两个分支 *)
+(** **** 练习：3 星, standard (swap_if_branches)  
 
-Theorem swap_if_branches: forall b e1 e2,
+    证明我们可以通过对断言取反来交换 IF 的两个分支 *)
+
+Theorem swap_if_branches : forall b e1 e2,
   cequiv
-    (IFB b THEN e1 ELSE e2 FI)
-    (IFB BNot b THEN e2 ELSE e1 FI).
+    (TEST b THEN e1 ELSE e2 FI)
+    (TEST BNot b THEN e2 ELSE e1 FI).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -227,40 +227,45 @@ Proof.
     rewrite Hb.
     reflexivity.  Qed.
 
-(** **** 练习：2 星, advanced, optional (WHILE_false_informal)  *)
-(** 写出 [WHILE_false] 的非形式化证明。
+(** **** 练习：2 星, advanced, optional (WHILE_false_informal)  
+
+    写出 [WHILE_false] 的非形式化证明。
 
 (* 请在此处解答 *)
-*)
-(** [] *)
+
+    [] *)
 
 (** 为了证明第二个定理，我们需要一个辅助引理：[WHILE] 循环在其断言等价于 [BTrue]
     时不会停机。 *)
 
-(** _'引理'_：若 [b] 等价于 [BTrue]，则无法出现 [(WHILE b DO c END) /
-    st \\ st'] 的情况。
+(** _'引理'_：若 [b] 等价于 [BTrue]，则无法出现
+    [st =[ WHILE b DO c END ]=> st'] 的情况。
 
-    _'证明'_：假设 [(WHILE b DO c END) / st \\ st']。我们将证明通过对
-    [(WHILE b DO c END) / st \\ st'] 使用归纳法会导出矛盾。
+    _'证明'_：假设 [st =[ WHILE b DO c END ]=> st']。我们将证明通过对
+    [st =[ WHILE b DO c END ]=> st'] 使用归纳法会导出矛盾。需要考虑只有
+    [E_WhileFalse] 和 [E_WhileTrue] 两种情况，其它情况则矛盾。
 
-      - 假设 [(WHILE b DO c END) / st \\ st'] 使用规则 [E_WhileFalse] 证明。
+      - 假设 [st =[ WHILE b DO c END ]=> st'] 使用规则 [E_WhileFalse] 证明。
         那么根据假设得出 [beval st b = false]。但它与 [b] 等价于 [BTrue] 矛盾。
 
-      - 假设 [(WHILE b DO c END) / st \\ st'] 使用规则 [E_WhileTrue]证明。
-        那么我们就给出了一个和 [(WHILE b DO c END) / st \\ st'] 矛盾的假设，
-        它刚好就是我们要证明的那个！
+      - 假设 [st =[ WHILE b DO c END ]=> st'] 使用规则 [E_WhileTrue]证明。
+        我们必有：
 
-      - 由于只有以上几条规则可用于证明 [(WHILE b DO c END) / st \\ st']，
-        因此归纳时的其它情况可直接得出矛盾。 [] *)
+      1. [beval st b = true]，
+      2. 存在某个 [st0] 使得 [st =[ c ]=> st0] 且
+         [st0 =[ WHILE b DO c END ]=> st']，
+      3. 以及我们给出了导致矛盾的归纳假设 [st0 =[ WHILE b DO c END ]=> st']，
+
+      我们根据 2 和 3 会得到矛盾。 [] *)
 
 Lemma WHILE_true_nonterm : forall b c st st',
   bequiv b BTrue ->
-  ~( (WHILE b DO c END) / st \\ st' ).
+  ~( st =[ WHILE b DO c END ]=> st' ).
 Proof.
   (* 课上已完成 *)
   intros b c st st' Hb.
   intros H.
-  remember (WHILE b DO c END) as cw eqn:Heqcw.
+  remember (WHILE b DO c END)%imp as cw eqn:Heqcw.
   induction H;
   (* 大多数证明规则无法应用，我们可通过反演（inversion）来去除它们： *)
   inversion Heqcw; subst; clear Heqcw.
@@ -272,17 +277,19 @@ Proof.
   - (* E_WhileTrue *) (* 直接使用 IH *)
     apply IHceval2. reflexivity.  Qed.
 
-(** **** 练习：2 星, optional (WHILE_true_nonterm_informal)  *)
-(** 试解释 [WHILE_true_nonterm] 的含义。
+(** **** 练习：2 星, standard, optional (WHILE_true_nonterm_informal)  
+
+    试解释 [WHILE_true_nonterm] 的含义。
 
 (* 请在此处解答 *)
-*)
-(** [] *)
 
-(** **** 练习：2 星, recommended (WHILE_true)  *)
-(** 请证明以下定理。_'提示'_：你可能需要使用 [WHILE_true_nonterm] 。 *)
+    [] *)
 
-Theorem WHILE_true: forall b c,
+(** **** 练习：2 星, standard, recommended (WHILE_true)  
+
+    请证明以下定理。_'提示'_：你可能需要使用 [WHILE_true_nonterm] 。 *)
+
+Theorem WHILE_true : forall b c,
   bequiv b true  ->
   cequiv
     (WHILE b DO c END)
@@ -294,10 +301,10 @@ Proof.
 (** 关于 [WHILE] 指令的更有趣的事实是，任何数量的循环体的副本在不改变意义
     的情况下均可被“展开”。循环展开在实际的编译器中是种常见的变换。 *)
 
-Theorem loop_unrolling: forall b c,
+Theorem loop_unrolling : forall b c,
   cequiv
     (WHILE b DO c END)
-    (IFB b THEN (c ;; WHILE b DO c END) ELSE SKIP FI).
+    (TEST b THEN (c ;; WHILE b DO c END) ELSE SKIP FI).
 Proof.
   (* 课上已完成 *)
   intros b c st st'.
@@ -318,43 +325,42 @@ Proof.
     + (* 不执行循环 *)
       inversion H5; subst. apply E_WhileFalse. assumption.  Qed.
 
-(** **** 练习：2 星, optional (seq_assoc)  *)
+(** **** 练习：2 星, standard, optional (seq_assoc)  *)
 Theorem seq_assoc : forall c1 c2 c3,
   cequiv ((c1;;c2);;c3) (c1;;(c2;;c3)).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 证明涉及赋值的程序属性经常会用到函数的外延公理。 *)
+(** 证明涉及赋值的程序的属性经常会用到这一事实，即程序状态会根据其外延性
+    （如 [x !-> m x ; m] 和 [m] 是相等的映射）来对待。 *)
 
-Theorem identity_assignment : forall (X:string),
+Theorem identity_assignment : forall x,
   cequiv
-    (X ::= X)
+    (x ::= x)
     SKIP.
 Proof.
-   intros. split; intro H.
-     - (* -> *)
-       inversion H; subst. simpl.
-       replace (st & { X --> st X }) with st.
-       + constructor.
-       + apply functional_extensionality. intro.
-         rewrite t_update_same; reflexivity.
-     - (* <- *)
-       replace st' with (st' & { X --> aeval st' X }).
-       + inversion H. subst. apply E_Ass. reflexivity.
-       + apply functional_extensionality. intro.
-         rewrite t_update_same. reflexivity.
+  intros.
+  split; intro H; inversion H; subst.
+  - (* -> *)
+    rewrite t_update_same.
+    apply E_Skip.
+  - (* <- *)
+    assert (Hx : st' =[ x ::= x ]=> (x !-> st' x ; st')).
+    { apply E_Ass. reflexivity. }
+    rewrite t_update_same in Hx.
+    apply Hx.
 Qed.
 
-(** **** 练习：2 星, recommended (assign_aequiv)  *)
-Theorem assign_aequiv : forall (X:string) e,
-  aequiv X e ->
-  cequiv SKIP (X ::= e).
+(** **** 练习：2 星, standard, recommended (assign_aequiv)  *)
+Theorem assign_aequiv : forall (x : string) e,
+  aequiv x e ->
+  cequiv SKIP (x ::= e).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (equiv_classes)  *)
+(** **** 练习：2 星, standard (equiv_classes)  *)
 
 (** 给定下列程序，请按照它们在 [Imp] 中是否等价将这些程序分组。
     你的答案应该是一个列表的列表，其中每个子列表都表示一组等价的程序。
@@ -366,51 +372,51 @@ Proof.
     请在 [equiv_classes] 的定义下方写出你的答案。 *)
 
 Definition prog_a : com :=
-  WHILE ! (X <= 0) DO
+  (WHILE ~(X <= 0) DO
     X ::= X + 1
-  END.
+  END)%imp.
 
 Definition prog_b : com :=
-  IFB X = 0 THEN
+  (TEST X = 0 THEN
     X ::= X + 1;;
     Y ::= 1
   ELSE
     Y ::= 0
   FI;;
   X ::= X - Y;;
-  Y ::= 0.
+  Y ::= 0)%imp.
 
 Definition prog_c : com :=
-  SKIP.
+  SKIP%imp.
 
 Definition prog_d : com :=
-  WHILE ! (X = 0) DO
+  (WHILE ~(X = 0) DO
     X ::= (X * Y) + 1
-  END.
+  END)%imp.
 
 Definition prog_e : com :=
-  Y ::= 0.
+  (Y ::= 0)%imp.
 
 Definition prog_f : com :=
-  Y ::= X + 1;;
-  WHILE ! (X = Y) DO
+  (Y ::= X + 1;;
+  WHILE ~(X = Y) DO
     Y ::= X + 1
-  END.
+  END)%imp.
 
 Definition prog_g : com :=
-  WHILE true DO
+  (WHILE true DO
     SKIP
-  END.
+  END)%imp.
 
 Definition prog_h : com :=
-  WHILE ! (X = X) DO
+  (WHILE ~(X = X) DO
     X ::= X + 1
-  END.
+  END)%imp.
 
 Definition prog_i : com :=
-  WHILE ! (X = Y) DO
+  (WHILE ~(X = Y) DO
     X ::= Y + 1
-  END.
+  END)%imp.
 
 Definition equiv_classes : list (list com)
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -469,7 +475,7 @@ Lemma sym_cequiv : forall (c1 c2 : com),
   cequiv c1 c2 -> cequiv c2 c1.
 Proof.
   unfold cequiv. intros c1 c2 H st st'.
-  assert (c1 / st \\ st' <-> c2 / st \\ st') as H'.
+  assert (st =[ c1 ]=> st' <-> st =[ c2 ]=> st') as H'.
   { (* Proof of assertion *) apply H. }
   apply iff_sym. assumption.
 Qed.
@@ -487,7 +493,7 @@ Lemma trans_cequiv : forall (c1 c2 c3 : com),
   cequiv c1 c2 -> cequiv c2 c3 -> cequiv c1 c3.
 Proof.
   unfold cequiv. intros c1 c2 c3 H12 H23 st st'.
-  apply iff_trans with (c2 / st \\ st'). apply H12. apply H23.  Qed.
+  apply iff_trans with (st =[ c2 ]=> st'). apply H12. apply H23.  Qed.
 
 (* ================================================================= *)
 (** ** 行为等价是一种一致性 *)
@@ -498,11 +504,11 @@ Proof.
 
               aequiv a1 a1'
       -----------------------------
-      cequiv (i ::= a1) (i ::= a1')
+      cequiv (x ::= a1) (x ::= a1')
 
               cequiv c1 c1'
               cequiv c2 c2'
-         ------------------------
+         --------------------------
          cequiv (c1;;c2) (c1';;c2')
 
     ...以及这些指令的更多其它形式。 *)
@@ -516,11 +522,11 @@ Proof.
     _'无需'_进行与不变的部分相关的证明。也就是说，程序的改变所产生的证明的工作量
     与改变的大小而非整个程序的大小成比例。 *)
 
-Theorem CAss_congruence : forall i a1 a1',
+Theorem CAss_congruence : forall x a1 a1',
   aequiv a1 a1' ->
-  cequiv (CAss i a1) (CAss i a1').
+  cequiv (CAss x a1) (CAss x a1').
 Proof.
-  intros i a1 a2 Heqv st st'.
+  intros x a1 a2 Heqv st st'.
   split; intros Hceval.
   - (* -> *)
     inversion Hceval. subst. apply E_Ass.
@@ -535,26 +541,26 @@ Proof.
     等价于 [c1']，那么 [WHILE b1 DO c1 END] 等价于 [WHILE b1' DO c1' END]。
 
     _'证明'_: 假设 [b1] 等价于 [b1'] 且 [c1] 等价于 [c1']。我们必须证明，
-    对于每个 [st] 和 [st']，[WHILE b1 DO c1 END / st \\ st'] 当且仅当
-    [WHILE b1' DO c1' END / st \\ st']。我们把两个方向分开考虑。
+    对于每个 [st] 和 [st']，[st =[ WHILE b1 DO c1 END ]=> st'] 当且仅当
+    [st =[ WHILE b1' DO c1' END ]=> st']。我们把两个方向分开考虑。
 
-      - ([->]) 我们通过对 [WHILE b1 DO c1 END / st \\ st'] 使用归纳法证明
-        [WHILE b1 DO c1 END / st \\ st'] 蕴含 [WHILE b1' DO c1' END / st \\ st']。
+      - ([->]) 我们通过对 [st =[ WHILE b1 DO c1 END ]=> st'] 使用归纳法证明
+        [st =[ WHILE b1 DO c1 END ]=> st'] 蕴含 [st =[ WHILE b1' DO c1' END ]=> st']。
         只有推导的最后所使用的规则为 [E_WhileFalse] 或 [E_WhileTrue]
         时才需要进行特别讨论。
 
           - [E_WhileFalse]：此时我们拥有假设的必备条件 [beval st b1 = false]
             和 [st = st']。但是，由于 [b1] 和 [b1'] 等价，我们有
             [beval st b1' = false]，然后应用 [E-WhileFalse] 得出我们需要的
-            [WHILE b1' DO c1' END / st \\ st']。
+            [st =[ WHILE b1' DO c1' END ]=> st']。
 
           - [E_WhileTrue]：此时我们拥有假设的必备条件 [beval st b1 = true]，以及
-            对于某些状态 [st'0] 的 [c1 / st \\ st'0] 和 [WHILE b1 DO c1 END / st'0
-            \\ st']，还有归纳假设 [WHILE b1' DO c1' END / st'0 \\ st']。
+            对于某些状态 [st'0] 的 [st =[ c1 ]=> st'0] 和 [st'0 =[ WHILE b1 DO c1
+            END ]=> st']，还有归纳假设 [st'0 =[ WHILE b1' DO c1' END ]=> st']。
 
-            由于 [c1] 和 [c1'] 等价，我们有 [c1' / st \\ st'0]；
+            由于 [c1] 和 [c1'] 等价，我们有 [st =[ c1' ]=> st'0]；
             由于 [b1] 和 [b1'] 等价，我们有 [beval st b1' = true]。现在应用
-            [E-WhileTrue]，得出我们所需的 [WHILE b1' DO c1' END / st \\ st']。
+            [E-WhileTrue]，得出我们所需的 [st =[ WHILE b1' DO c1' END ]=> st']。
 
       - ([<-]) 反之亦然。 [] *)
 
@@ -567,7 +573,7 @@ Proof.
   intros b1 b1' c1 c1' Hb1e Hc1e st st'.
   split; intros Hce.
   - (* -> *)
-    remember (WHILE b1 DO c1 END) as cwhile
+    remember (WHILE b1 DO c1 END)%imp as cwhile
       eqn:Heqcwhile.
     induction Hce; inversion Heqcwhile; subst.
     + (* E_WhileFalse *)
@@ -580,7 +586,7 @@ Proof.
       * (* 执行之后的循环 *)
         apply IHHce2. reflexivity.
   - (* <- *)
-    remember (WHILE b1' DO c1' END) as c'while
+    remember (WHILE b1' DO c1' END)%imp as c'while
       eqn:Heqc'while.
     induction Hce; inversion Heqc'while; subst.
     + (* E_WhileFalse *)
@@ -593,7 +599,7 @@ Proof.
       * (* 执行之后的循环 *)
         apply IHHce2. reflexivity.  Qed.
 
-(** **** 练习：3 星, optional (CSeq_congruence)  *)
+(** **** 练习：3 星, standard, optional (CSeq_congruence)  *)
 Theorem CSeq_congruence : forall c1 c1' c2 c2',
   cequiv c1 c1' -> cequiv c2 c2' ->
   cequiv (c1;;c2) (c1';;c2').
@@ -601,11 +607,11 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (CIf_congruence)  *)
+(** **** 练习：3 星, standard (CIf_congruence)  *)
 Theorem CIf_congruence : forall b b' c1 c1' c2 c2',
   bequiv b b' -> cequiv c1 c1' -> cequiv c2 c2' ->
-  cequiv (IFB b THEN c1 ELSE c2 FI)
-         (IFB b' THEN c1' ELSE c2' FI).
+  cequiv (TEST b THEN c1 ELSE c2 FI)
+         (TEST b' THEN c1' ELSE c2' FI).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -616,7 +622,7 @@ Example congruence_example:
   cequiv
     (* 程序 1： *)
     (X ::= 0;;
-     IFB X = 0
+     TEST X = 0
      THEN
        Y ::= 0
      ELSE
@@ -624,7 +630,7 @@ Example congruence_example:
      FI)
     (* 程序 1： *)
     (X ::= 0;;
-     IFB X = 0
+     TEST X = 0
      THEN
        Y ::= X - X   (* <--- 这里不同 *)
      ELSE
@@ -632,20 +638,22 @@ Example congruence_example:
      FI).
 Proof.
   apply CSeq_congruence.
-    apply refl_cequiv.
-    apply CIf_congruence.
-      apply refl_bequiv.
-      apply CAss_congruence. unfold aequiv. simpl.
-        symmetry. apply minus_diag.
-      apply refl_cequiv.
+  - apply refl_cequiv.
+  - apply CIf_congruence.
+    + apply refl_bequiv.
+    + apply CAss_congruence. unfold aequiv. simpl.
+      * symmetry. apply minus_diag.
+    + apply refl_cequiv.
 Qed.
 
-(** **** 练习：3 星, advanced, optional (not_congr)  *)
-(** 我们已经证明了 [cequiv] 关系对指令同时满足等价关系和一致性。
+(** **** 练习：3 星, advanced, optional (not_congr)  
+
+    我们已经证明了 [cequiv] 关系对指令同时满足等价关系和一致性。
     你能想出一个对于指令满足等价关系但_'不满足'_一致性的关系吗？ *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ################################################################# *)
 (** * 程序变换 *)
@@ -678,33 +686,33 @@ Definition ctrans_sound (ctrans : com -> com) : Prop :=
 Fixpoint fold_constants_aexp (a : aexp) : aexp :=
   match a with
   | ANum n       => ANum n
-  | AId i        => AId i
+  | AId x        => AId x
   | APlus a1 a2  =>
-    match (fold_constants_aexp a1, fold_constants_aexp a2)
+    match (fold_constants_aexp a1,
+           fold_constants_aexp a2)
     with
     | (ANum n1, ANum n2) => ANum (n1 + n2)
     | (a1', a2') => APlus a1' a2'
     end
   | AMinus a1 a2 =>
-    match (fold_constants_aexp a1, fold_constants_aexp a2)
+    match (fold_constants_aexp a1,
+           fold_constants_aexp a2)
     with
     | (ANum n1, ANum n2) => ANum (n1 - n2)
     | (a1', a2') => AMinus a1' a2'
     end
   | AMult a1 a2  =>
-    match (fold_constants_aexp a1, fold_constants_aexp a2)
+    match (fold_constants_aexp a1,
+           fold_constants_aexp a2)
     with
     | (ANum n1, ANum n2) => ANum (n1 * n2)
     | (a1', a2') => AMult a1' a2'
     end
   end.
 
-(* 解析下面的示例时要用 *)
-Local Open Scope aexp_scope.
-Local Open Scope bexp_scope.
-
 Example fold_aexp_ex1 :
-    fold_constants_aexp ((1 + 2) * X) = (3 * X).
+    fold_constants_aexp ((1 + 2) * X)
+  = (3 * X)%imp.
 Proof. reflexivity. Qed.
 
 (** 注意此版本的常量折叠不包括优化平凡的加法等 -- 为简单起见，
@@ -712,7 +720,7 @@ Proof. reflexivity. Qed.
     只是定义和证明会更长。 *)
 
 Example fold_aexp_ex2 :
-  fold_constants_aexp (X - ((0 * 6) + Y)) = (X - (0 + Y)).
+  fold_constants_aexp (X - ((0 * 6) + Y))%imp = (X - (0 + Y))%imp.
 Proof. reflexivity. Qed.
 
 (** 我们不仅可以将 [fold_constants_aexp] 优化成 [bexp]（如在 [BEq] 和 [BLe]
@@ -723,14 +731,16 @@ Fixpoint fold_constants_bexp (b : bexp) : bexp :=
   | BTrue        => BTrue
   | BFalse       => BFalse
   | BEq a1 a2  =>
-      match (fold_constants_aexp a1, fold_constants_aexp a2) with
+      match (fold_constants_aexp a1,
+             fold_constants_aexp a2) with
       | (ANum n1, ANum n2) =>
           if n1 =? n2 then BTrue else BFalse
       | (a1', a2') =>
           BEq a1' a2'
       end
   | BLe a1 a2  =>
-      match (fold_constants_aexp a1, fold_constants_aexp a2) with
+      match (fold_constants_aexp a1,
+             fold_constants_aexp a2) with
       | (ANum n1, ANum n2) =>
           if n1 <=? n2 then BTrue else BFalse
       | (a1', a2') =>
@@ -743,7 +753,8 @@ Fixpoint fold_constants_bexp (b : bexp) : bexp :=
       | b1' => BNot b1'
       end
   | BAnd b1 b2  =>
-      match (fold_constants_bexp b1, fold_constants_bexp b2) with
+      match (fold_constants_bexp b1,
+             fold_constants_bexp b2) with
       | (BTrue, BTrue) => BTrue
       | (BTrue, BFalse) => BFalse
       | (BFalse, BTrue) => BFalse
@@ -753,29 +764,31 @@ Fixpoint fold_constants_bexp (b : bexp) : bexp :=
   end.
 
 Example fold_bexp_ex1 :
-  fold_constants_bexp (true && ! (false && true)) = true.
+  fold_constants_bexp (true && ~(false && true))%imp
+  = true.
 Proof. reflexivity. Qed.
 
 Example fold_bexp_ex2 :
-  fold_constants_bexp ((X = Y) && (0 = (2 - (1 + 1)))) =
-  ((X = Y) && true).
+  fold_constants_bexp ((X = Y) && (0 = (2 - (1 + 1))))%imp
+  = ((X = Y) && true)%imp.
 Proof. reflexivity. Qed.
 
 (** 为了折叠指令中的常量，我们需要对所有内嵌的表达式应用适当的折叠函数。 *)
 
+Open Scope imp.
 Fixpoint fold_constants_com (c : com) : com :=
   match c with
   | SKIP      =>
       SKIP
-  | i ::= a  =>
-      CAss i (fold_constants_aexp a)
+  | x ::= a   =>
+      x ::= (fold_constants_aexp a)
   | c1 ;; c2  =>
       (fold_constants_com c1) ;; (fold_constants_com c2)
-  | IFB b THEN c1 ELSE c2 FI =>
+  | TEST b THEN c1 ELSE c2 FI =>
       match fold_constants_bexp b with
-      | BTrue => fold_constants_com c1
+      | BTrue  => fold_constants_com c1
       | BFalse => fold_constants_com c2
-      | b' => IFB b' THEN fold_constants_com c1
+      | b' => TEST b' THEN fold_constants_com c1
                      ELSE fold_constants_com c2 FI
       end
   | WHILE b DO c END =>
@@ -785,38 +798,29 @@ Fixpoint fold_constants_com (c : com) : com :=
       | b' => WHILE b' DO (fold_constants_com c) END
       end
   end.
+Close Scope imp.
 
 Example fold_com_ex1 :
   fold_constants_com
     (* 原程序： *)
     (X ::= 4 + 5;;
      Y ::= X - 3;;
-     IFB (X - Y) = (2 + 4) THEN
-       SKIP
-     ELSE
-       Y ::= 0
-     FI;;
-     IFB 0 <= (4 - (2 + 1))
-     THEN
-       Y ::= 0
-     ELSE
-       SKIP
-     FI;;
+     TEST (X - Y) = (2 + 4) THEN SKIP
+     ELSE Y ::= 0 FI;;
+     TEST 0 <= (4 - (2 + 1)) THEN Y ::= 0
+     ELSE SKIP FI;;
      WHILE Y = 0 DO
        X ::= X + 1
-     END)
+     END)%imp
   = (* 常量折叠后： *)
     (X ::= 9;;
      Y ::= X - 3;;
-     IFB (X - Y) = 6 THEN
-       SKIP
-     ELSE
-       Y ::= 0
-     FI;;
+     TEST (X - Y) = 6 THEN SKIP
+     ELSE Y ::= 0 FI;;
      Y ::= 0;;
      WHILE Y = 0 DO
        X ::= X + 1
-     END).
+     END)%imp.
 Proof. reflexivity. Qed.
 
 (* ================================================================= *)
@@ -842,15 +846,16 @@ Proof.
          destruct (fold_constants_aexp a2);
          rewrite IHa1; rewrite IHa2; reflexivity). Qed.
 
-(** **** 练习：3 星, optional (fold_bexp_Eq_informal)  *)
-(** 下面是布尔表达式常量折叠中 [BEq] 情况的可靠性的证明。
+(** **** 练习：3 星, standard, optional (fold_bexp_Eq_informal)  
+
+    下面是布尔表达式常量折叠中 [BEq] 情况的可靠性的证明。
     请认真读完它再和之后的形式化证明作比较，然后补充完 [BLe] 情况的形式化证明
     （尽量不看之前 [BEq] 情况的证明）。
 
    _'定理'_：布尔值的常量折叠函数 [fold_constants_bexp] 是可靠的。
 
    _'证明'_：我们必须证明对于所有的布尔表达式 [b]，[b] 都等价于
-   [fold_constants_bexp]。我们对 [b] 使用归纳法。这里只给出了 [b]
+   [fold_constants_bexp b]。我们对 [b] 使用归纳法。这里只给出了 [b]
    形如 [BEq a1 a2] 的情况。
 
    在本情况中，我们必须证明
@@ -926,8 +931,7 @@ Proof.
          aeval st a1 = aeval st (fold_constants_aexp a1)
          aeval st a2 = aeval st (fold_constants_aexp a2),
 
-       本例证毕。  []
-*)
+       本例证毕。  [] *)
 
 Theorem fold_constants_bexp_sound:
   btrans_sound fold_constants_bexp.
@@ -968,8 +972,9 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (fold_constants_com_sound)  *)
-(** 完成以下证明的 [WHILE] 情况。 *)
+(** **** 练习：3 星, standard (fold_constants_com_sound)  
+
+    完成以下证明的 [WHILE] 情况。 *)
 
 Theorem fold_constants_com_sound :
   ctrans_sound fold_constants_com.
@@ -980,7 +985,7 @@ Proof.
   - (* ::= *) apply CAss_congruence.
               apply fold_constants_aexp_sound.
   - (* ;; *) apply CSeq_congruence; assumption.
-  - (* IFB *)
+  - (* TEST *)
     assert (bequiv b (fold_constants_bexp b)). {
       apply fold_constants_bexp_sound. }
     destruct (fold_constants_bexp b) eqn:Heqb;
@@ -989,10 +994,10 @@ Proof.
          [fold_constants_bexp_sound] 来得出证明。） *)
     + (* b 总为真 *)
       apply trans_cequiv with c1; try assumption.
-      apply IFB_true; assumption.
+      apply TEST_true; assumption.
     + (* b 总为假 *)
       apply trans_cequiv with c2; try assumption.
-      apply IFB_false; assumption.
+      apply TEST_false; assumption.
   - (* WHILE *)
     (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -1000,8 +1005,9 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** 再论 (0 + n) 优化的可靠性 *)
 
-(** **** 练习：4 星, advanced, optional (optimize_0plus)  *)
-(** 回顾_'逻辑基础'_ [Imp] 一章中 [optimize_0plus] 的定义：
+(** **** 练习：4 星, advanced, optional (optimize_0plus)  
+
+    回顾_'逻辑基础'_ [Imp] 一章中 [optimize_0plus] 的定义：
 
     Fixpoint optimize_0plus (e:aexp) : aexp :=
       match e with
@@ -1035,8 +1041,9 @@ Proof.
 
    - 证明此优化程序有可靠性。（这部分应该会_'很简单'_ 。）  *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ################################################################# *)
 (** * 证明程序不等价 *)
@@ -1056,57 +1063,56 @@ Proof.
 (** 我们马上就会发现这是不行的。不过且慢，现在，
     看你自己能否找出一个反例来。 *)
 
-(** 以下形式化的定义描述了如何在算术表达式中，
-    将某个变量的所有引用都替换成另一个表达式： *)
+(** 以下形式化的定义描述了如何在算术表达式 [a] 中，
+    将某个变量 [x] 的所有引用都替换成另一个表达式 [u] ： *)
 
-Fixpoint subst_aexp (i : string) (u : aexp) (a : aexp) : aexp :=
+Fixpoint subst_aexp (x : string) (u : aexp) (a : aexp) : aexp :=
   match a with
   | ANum n       =>
       ANum n
-  | AId i'       =>
-      if eqb_string i i' then u else AId i'
+  | AId x'       =>
+      if eqb_string x x' then u else AId x'
   | APlus a1 a2  =>
-      APlus (subst_aexp i u a1) (subst_aexp i u a2)
+      APlus (subst_aexp x u a1) (subst_aexp x u a2)
   | AMinus a1 a2 =>
-      AMinus (subst_aexp i u a1) (subst_aexp i u a2)
+      AMinus (subst_aexp x u a1) (subst_aexp x u a2)
   | AMult a1 a2  =>
-      AMult (subst_aexp i u a1) (subst_aexp i u a2)
+      AMult (subst_aexp x u a1) (subst_aexp x u a2)
   end.
 
 Example subst_aexp_ex :
-  subst_aexp X (42 + 53) (Y + X)
-  = (Y + (42 + 53)).
+  subst_aexp X (42 + 53) (Y + X)%imp
+  = (Y + (42 + 53))%imp.
 Proof. reflexivity.  Qed.
 
 (** 而这里是一个我们感兴趣的性质：它断言类似上述形式的 [c1] 和 [c2]
     总是等价的。  *)
 
-Definition subst_equiv_property := forall i1 i2 a1 a2,
-  cequiv (i1 ::= a1;; i2 ::= a2)
-         (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
+Definition subst_equiv_property := forall x1 x2 a1 a2,
+  cequiv (x1 ::= a1;; x2 ::= a2)
+         (x1 ::= a1;; x2 ::= subst_aexp x1 a1 a2).
 
 (** 遗憾的是, 这个性质_'并不'_总是成立 -- 即，它并不是对所有的
-    [i1]、[i2]、[a1] 和 [a2] 都成立。
+    [x1]、[x2]、[a1] 和 [a2] 都成立。
 
-      cequiv (i1 ::= a1;; i2 ::= a2)
-             (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
+      cequiv (x1 ::= a1;; x2 ::= a2)
+             (x1 ::= a1;; x2 ::= subst_aexp x1 a1 a2).
 
-    我们使用反证法来证明这一点。假设对于所有的 [i1]、[i2]、[a1]
+    我们使用反证法来证明这一点。假设对于所有的 [x1]、[x2]、[a1]
     和 [a2]，我们有
 
-      cequiv (i1 ::= a1;; i2 ::= a2)
-             (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
+      cequiv (x1 ::= a1;; x2 ::= a2)
+             (x1 ::= a1;; x2 ::= subst_aexp x1 a1 a2).
 
     考虑以下程序：
 
-       X ::= X + 1;; Y ::= X
+      X ::= X + 1;; Y ::= X
 
     注意
 
-       (X ::= X + 1;; Y ::= X)
-       / { --> 0 } \\ st1,
+      empty_st =[ X ::= X + 1;; Y ::= X ]=> st1,
 
-    其中 [st1 = { X --> 1; Y --> 1 }]。
+    其中 [st1 = (Y !-> 1 ; X !-> 1)].
 
     根据假设，我们知道
 
@@ -1117,17 +1123,14 @@ Definition subst_equiv_property := forall i1 i2 a1 a2,
 
     同时，根据 [cequiv] 的定义，我们有
 
-      (X ::= X + 1;; Y ::= X + 1
-      / { --> 0 } \\ st1.
+      empty_st =[ X ::= X + 1;; Y ::= X + 1 ]=> st1.
 
     但是我们也能推导出
 
-      (X ::= X + 1;; Y ::= X + 1)
-      / { --> 0 } \\ st2,
+      empty_st =[ X ::= X + 1;; Y ::= X + 1 ]=> st2,
 
-    其中 [st2 = { X --> 1; Y --> 2 }]。但由于 [ceval] 是确定性的，而
-    [st1 <> st2] ，这就造成了矛盾！ [] *)
-
+    其中 [st2 = (Y !-> 2 ; X !-> 1)]。但由于 [ceval] 是确定性的，而
+    [st1 <> st2] ，这就造成了矛盾！  [] *)
 
 Theorem subst_inequiv :
   ~ subst_equiv_property.
@@ -1138,65 +1141,68 @@ Proof.
   (* 这里有个反例：假设 [subst_equiv_property]
      成立能够让我们证明以下两个程序等价... *)
   remember (X ::= X + 1;;
-            Y ::= X)
+            Y ::= X)%imp
       as c1.
   remember (X ::= X + 1;;
-            Y ::= X + 1)
+            Y ::= X + 1)%imp
       as c2.
   assert (cequiv c1 c2) by (subst; apply Contra).
 
-  (* ...让我们证明 [c2] 能够在两个不同的状态下停机：
-        st1 = {X --> 1; Y --> 1}
-        st2 = {X --> 1; Y --> 2}. *)
-  remember {X --> 1 ; Y --> 1} as st1.
-  remember {X --> 1 ; Y --> 2} as st2.
-  assert (H1: c1 / { --> 0 } \\ st1);
-  assert (H2: c2 / { --> 0 } \\ st2);
+  (* ...我们来证明 [c2] 能够在两个不同的状态下停机：
+        st1 = (Y !-> 1 ; X !-> 1)
+        st2 = (Y !-> 2 ; X !-> 1). *)
+  remember (Y !-> 1 ; X !-> 1) as st1.
+  remember (Y !-> 2 ; X !-> 1) as st2.
+  assert (H1 : empty_st =[ c1 ]=> st1);
+  assert (H2 : empty_st =[ c2 ]=> st2);
   try (subst;
-       apply E_Seq with (st' := {X --> 1});
+       apply E_Seq with (st' := (X !-> 1));
        apply E_Ass; reflexivity).
   apply H in H1.
 
   (* 最后，因为程序求值的确定性而产生矛盾。 *)
-  assert (Hcontra: st1 = st2)
-    by (apply (ceval_deterministic c2 { --> 0 }); assumption).
-  assert (Hcontra': st1 Y = st2 Y)
+  assert (Hcontra : st1 = st2)
+    by (apply (ceval_deterministic c2 empty_st); assumption).
+  assert (Hcontra' : st1 Y = st2 Y)
     by (rewrite Hcontra; reflexivity).
   subst. inversion Hcontra'.  Qed.
 
-(** **** 练习：4 星, optional (better_subst_equiv)  *)
-(** 之前我们思考的等价关系也不全是妄言 -- 只要再增加一个条件，
+(** **** 练习：4 星, standard, optional (better_subst_equiv)  
+
+    之前我们思考的等价关系也不全是妄言 -- 只要再增加一个条件，
     即变量 [X] 不在第一个赋值语句的右边出现，它就是正确的了。 *)
 
-Inductive var_not_used_in_aexp (X:string) : aexp -> Prop :=
-  | VNUNum: forall n, var_not_used_in_aexp X (ANum n)
-  | VNUId: forall Y, X <> Y -> var_not_used_in_aexp X (AId Y)
-  | VNUPlus: forall a1 a2,
-      var_not_used_in_aexp X a1 ->
-      var_not_used_in_aexp X a2 ->
-      var_not_used_in_aexp X (APlus a1 a2)
-  | VNUMinus: forall a1 a2,
-      var_not_used_in_aexp X a1 ->
-      var_not_used_in_aexp X a2 ->
-      var_not_used_in_aexp X (AMinus a1 a2)
-  | VNUMult: forall a1 a2,
-      var_not_used_in_aexp X a1 ->
-      var_not_used_in_aexp X a2 ->
-      var_not_used_in_aexp X (AMult a1 a2).
+Inductive var_not_used_in_aexp (x : string) : aexp -> Prop :=
+  | VNUNum : forall n, var_not_used_in_aexp x (ANum n)
+  | VNUId : forall y, x <> y -> var_not_used_in_aexp x (AId y)
+  | VNUPlus : forall a1 a2,
+      var_not_used_in_aexp x a1 ->
+      var_not_used_in_aexp x a2 ->
+      var_not_used_in_aexp x (APlus a1 a2)
+  | VNUMinus : forall a1 a2,
+      var_not_used_in_aexp x a1 ->
+      var_not_used_in_aexp x a2 ->
+      var_not_used_in_aexp x (AMinus a1 a2)
+  | VNUMult : forall a1 a2,
+      var_not_used_in_aexp x a1 ->
+      var_not_used_in_aexp x a2 ->
+      var_not_used_in_aexp x (AMult a1 a2).
 
-Lemma aeval_weakening : forall i st a ni,
-  var_not_used_in_aexp i a ->
-  aeval (st & { i --> ni }) a = aeval st a.
+Lemma aeval_weakening : forall x st a ni,
+  var_not_used_in_aexp x a ->
+  aeval (x !-> ni ; st) a = aeval st a.
 Proof.
   (* 请在此处解答 *) Admitted.
 
 (** 使用 [var_not_used_in_aexp]，形式化并证明正确版本的 [subst_equiv_property]。 *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
 
-(** **** 练习：3 星 (inequiv_exercise)  *)
-(** 证明无限循环不等价于 [SKIP] *)
+    [] *)
+
+(** **** 练习：3 星, standard (inequiv_exercise)  
+
+    证明无限循环不等价于 [SKIP] *)
 
 Theorem inequiv_exercise:
   ~ cequiv (WHILE true DO SKIP END) SKIP.
@@ -1247,65 +1253,69 @@ Inductive com : Type :=
   | CSeq : com -> com -> com
   | CIf : bexp -> com -> com -> com
   | CWhile : bexp -> com -> com
-  | CHavoc : string -> com.                (* <---- 新增的 *)
+  | CHavoc : string -> com.                (* <--- 新增 *)
 
 Notation "'SKIP'" :=
-  CSkip.
+  CSkip : imp_scope.
 Notation "X '::=' a" :=
-  (CAss X a) (at level 60).
+  (CAss X a) (at level 60) : imp_scope.
 Notation "c1 ;; c2" :=
-  (CSeq c1 c2) (at level 80, right associativity).
+  (CSeq c1 c2) (at level 80, right associativity) : imp_scope.
 Notation "'WHILE' b 'DO' c 'END'" :=
-  (CWhile b c) (at level 80, right associativity).
-Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
-  (CIf e1 e2 e3) (at level 80, right associativity).
-Notation "'HAVOC' l" := (CHavoc l) (at level 60).
+  (CWhile b c) (at level 80, right associativity) : imp_scope.
+Notation "'TEST' e1 'THEN' e2 'ELSE' e3 'FI'" :=
+  (CIf e1 e2 e3) (at level 80, right associativity) : imp_scope.
+Notation "'HAVOC' l" :=
+  (CHavoc l) (at level 60) : imp_scope.
 
-(** **** 练习：2 星 (himp_ceval)  *)
-(** 现在，我们必须扩展操作语义。前面我们已经提过了 [ceval] 关系的模版，
+(** **** 练习：2 星, standard (himp_ceval)  
+
+    现在，我们必须扩展操作语义。前面我们已经提过了 [ceval] 关系的模版，
     指定了大步语义。为了形式化 [HAVOC] 指令的行为，我们还需要在 [ceval]
     的定义中添加哪些规则？ *)
 
-Reserved Notation "c1 '/' st '\\' st'"
-                  (at level 40, st at level 39).
+Reserved Notation "st '=[' c ']=>' st'" (at level 40).
 
+Open Scope imp_scope.
 Inductive ceval : com -> state -> state -> Prop :=
-  | E_Skip : forall st : state, SKIP / st \\ st
-  | E_Ass : forall (st : state) (a1 : aexp) (n : nat) (X : string),
+  | E_Skip : forall st,
+      st =[ SKIP ]=> st
+  | E_Ass  : forall st a1 n x,
       aeval st a1 = n ->
-      (X ::= a1) / st \\ st & { X --> n }
-  | E_Seq : forall (c1 c2 : com) (st st' st'' : state),
-      c1 / st \\ st' ->
-      c2 / st' \\ st'' ->
-      (c1 ;; c2) / st \\ st''
-  | E_IfTrue : forall (st st' : state) (b1 : bexp) (c1 c2 : com),
-      beval st b1 = true ->
-      c1 / st \\ st' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / st \\ st'
-  | E_IfFalse : forall (st st' : state) (b1 : bexp) (c1 c2 : com),
-      beval st b1 = false ->
-      c2 / st \\ st' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / st \\ st'
-  | E_WhileFalse : forall (b1 : bexp) (st : state) (c1 : com),
-      beval st b1 = false ->
-      (WHILE b1 DO c1 END) / st \\ st
-  | E_WhileTrue : forall (st st' st'' : state) (b1 : bexp) (c1 : com),
-      beval st b1 = true ->
-      c1 / st \\ st' ->
-      (WHILE b1 DO c1 END) / st' \\ st'' ->
-      (WHILE b1 DO c1 END) / st \\ st''
+      st =[ x ::= a1 ]=> (x !-> n ; st)
+  | E_Seq : forall c1 c2 st st' st'',
+      st  =[ c1 ]=> st'  ->
+      st' =[ c2 ]=> st'' ->
+      st  =[ c1 ;; c2 ]=> st''
+  | E_IfTrue : forall st st' b c1 c2,
+      beval st b = true ->
+      st =[ c1 ]=> st' ->
+      st =[ TEST b THEN c1 ELSE c2 FI ]=> st'
+  | E_IfFalse : forall st st' b c1 c2,
+      beval st b = false ->
+      st =[ c2 ]=> st' ->
+      st =[ TEST b THEN c1 ELSE c2 FI ]=> st'
+  | E_WhileFalse : forall b st c,
+      beval st b = false ->
+      st =[ WHILE b DO c END ]=> st
+  | E_WhileTrue : forall st st' st'' b c,
+      beval st b = true ->
+      st  =[ c ]=> st' ->
+      st' =[ WHILE b DO c END ]=> st'' ->
+      st  =[ WHILE b DO c END ]=> st''
 (* 请在此处解答 *)
 
-  where "c1 '/' st '\\' st'" := (ceval c1 st st').
+  where "st =[ c ]=> st'" := (ceval c st st').
+Close Scope imp_scope.
 
 (** 作为合理性检查，以下断言对于你的定义来说应该是可证的： *)
 
-Example havoc_example1 : (HAVOC X) / { --> 0 } \\ { X --> 0 }.
+Example havoc_example1 : empty_st =[ (HAVOC X)%imp ]=> (X !-> 0).
 Proof.
 (* 请在此处解答 *) Admitted.
 
 Example havoc_example2 :
-  (SKIP;; HAVOC Z) / { --> 0 } \\ { Z --> 42 }.
+  empty_st =[ (SKIP;; HAVOC Z)%imp ]=> (Z !-> 42).
 Proof.
 (* 请在此处解答 *) Admitted.
 
@@ -1316,35 +1326,36 @@ Definition manual_grade_for_Check_rule_for_HAVOC : option (nat*string) := None.
 (** 最后，我们重新定义和之前等价的指令： *)
 
 Definition cequiv (c1 c2 : com) : Prop := forall st st' : state,
-  c1 / st \\ st' <-> c2 / st \\ st'.
+  st =[ c1 ]=> st' <-> st =[ c2 ]=> st'.
 
 (** 我们应用此定义来证明一些非确定性程序是否等价。 *)
 
-(** **** 练习：3 星 (havoc_swap)  *)
-(** 以下两个程序是否等价？ *)
+(** **** 练习：3 星, standard (havoc_swap)  
+
+    以下两个程序是否等价？ *)
 
 Definition pXY :=
-  HAVOC X;; HAVOC Y.
+  (HAVOC X;; HAVOC Y)%imp.
 
 Definition pYX :=
-  HAVOC Y;; HAVOC X.
+  (HAVOC Y;; HAVOC X)%imp.
 
 (** 请证明你的想法。 *)
-
 
 Theorem pXY_cequiv_pYX :
   cequiv pXY pYX \/ ~cequiv pXY pYX.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, optional (havoc_copy)  *)
-(** 以下两个程序是否等价？ *)
+(** **** 练习：4 星, standard, optional (havoc_copy)  
+
+    以下两个程序是否等价？ *)
 
 Definition ptwice :=
-  HAVOC X;; HAVOC Y.
+  (HAVOC X;; HAVOC Y)%imp.
 
 Definition pcopy :=
-  HAVOC X;; Y ::= X.
+  (HAVOC X;; Y ::= X)%imp.
 
 (** 请证明你的想法。（提示：你可能会用到 [assert] 的略。） *)
 
@@ -1360,74 +1371,76 @@ Proof. (* 请在此处解答 *) Admitted.
     以下练习的最后一部分展示了这种现象。
 *)
 
-(** **** 练习：4 星, advanced (p1_p2_term)  *)
-(** 考虑一下指令： *)
+(** **** 练习：4 星, advanced (p1_p2_term)  
+
+    考虑一下指令： *)
 
 Definition p1 : com :=
-  WHILE ! (X = 0) DO
+  (WHILE ~ (X = 0) DO
     HAVOC Y;;
     X ::= X + 1
-  END.
+  END)%imp.
 
 Definition p2 : com :=
-  WHILE ! (X = 0) DO
+  (WHILE ~ (X = 0) DO
     SKIP
-  END.
+  END)%imp.
 
 (** 直觉上来说，[p1] 和 [p2] 的停机行为相同：要么无限循环，要么以相同的状态开始，
     就在相同的状态下停机。我们可以用以下引理分别刻画 [p1] 和 [p2] 的停机行为： *)
 
 Lemma p1_may_diverge : forall st st', st X <> 0 ->
-  ~ p1 / st \\ st'.
+  ~ st =[ p1 ]=> st'.
 Proof. (* 请在此处解答 *) Admitted.
 
 Lemma p2_may_diverge : forall st st', st X <> 0 ->
-  ~ p2 / st \\ st'.
+  ~ st =[ p2 ]=> st'.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced (p1_p2_equiv)  *)
-(** 使用这两个引理来证明 [p1] 和 [p2] 确实等价。 *)
+(** **** 练习：4 星, advanced (p1_p2_equiv)  
+
+    使用这两个引理来证明 [p1] 和 [p2] 确实等价。 *)
 
 Theorem p1_p2_equiv : cequiv p1 p2.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced (p3_p4_inequiv)  *)
-(** 证明以下程序_'不等价'_（提示：当 [p3] 停机时 [Z] 的值是什么？当
+(** **** 练习：4 星, advanced (p3_p4_inequiv)  
+
+    证明以下程序_'不等价'_（提示：当 [p3] 停机时 [Z] 的值是什么？当
     [p4] 停机时呢？） *)
 
 Definition p3 : com :=
-  Z ::= 1;;
-  WHILE ! (X = 0) DO
+  (Z ::= 1;;
+  WHILE ~(X = 0) DO
     HAVOC X;;
     HAVOC Z
-  END.
+  END)%imp.
 
 Definition p4 : com :=
-  X ::= 0;;
-  Z ::= 1.
-
+  (X ::= 0;;
+  Z ::= 1)%imp.
 
 Theorem p3_p4_inequiv : ~ cequiv p3 p4.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：5 星, advanced, optional (p5_p6_equiv)  *)
-(** 证明以下指令等价。（提示：正如我们之前提到的，我们为 Himp 定义的
-    [cequiv] 只考虑了可能的停机配置的集合：对于两个程序而言，
-    当且仅当给定了相同的起始状态 [st]，且可能的停机状态的集合相同时，二者才等价。
+(** **** 练习：5 星, advanced, optional (p5_p6_equiv)  
+
+    证明以下指令等价。（提示：正如我们之前提到的，我们为 Himp 定义的
+    [cequiv] 只考虑了可能的停机配置的集合：对于两个拥有相同起始状态 [st]
+    的程序而言，当且仅当二者可能的停机状态的集合相同时，二者才等价。
     若 [p5] 停机，那么最终状态应当是什么？反过来说，[p5] 总是会停机吗？） *)
 
 Definition p5 : com :=
-  WHILE ! (X = 1) DO
+  (WHILE ~(X = 1) DO
     HAVOC X
-  END.
+  END)%imp.
 
 Definition p6 : com :=
-  X ::= 1.
-
+  (X ::= 1)%imp.
 
 Theorem p5_p6_equiv : cequiv p5 p6.
 Proof. (* 请在此处解答 *) Admitted.
@@ -1438,8 +1451,9 @@ End Himp.
 (* ################################################################# *)
 (** * 附加练习 *)
 
-(** **** 练习：4 星, optional (for_while_equiv)  *)
-(** 此练习是 [Imp] 一章中可选练习 [add_for_loop] 的扩展，
+(** **** 练习：4 星, standard, optional (for_while_equiv)  
+
+    此练习是 [Imp] 一章中可选练习 [add_for_loop] 的扩展，
     就是那个让你扩展出类似 C 风格的 [for] 循环指令的练习。请证明指令：
 
       for (c1 ; b ; c2) {
@@ -1454,11 +1468,13 @@ End Himp.
          c2
        END
 *)
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
 
-(** **** 练习：3 星, optional (swap_noninterfering_assignments)  *)
-(** （提示：这里你需要 [functional_extensionality]。） *)
+    [] *)
+
+(** **** 练习：3 星, standard, optional (swap_noninterfering_assignments)  
+
+    （提示：这里你需要 [functional_extensionality]。） *)
 
 Theorem swap_noninterfering_assignments: forall l1 l2 a1 a2,
   l1 <> l2 ->
@@ -1471,23 +1487,31 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced, optional (capprox)  *)
-(** 在这个练习中我们定义了一个非对称的程序等价变形, 叫做
+(** **** 练习：4 星, advanced, optional (capprox)  
+
+    在这个练习中我们定义了一个非对称的程序等价变形, 叫做
     _'程序近似（program approximation）'_。 当每个能让 [c1]
     停机的初始状态也能让 [c2] 在相同的状态下停机时，我们就说程序 [c1]
     _'近似与'_ 程序 [c2] 。下面是程序近似的形式化定义： *)
 
 Definition capprox (c1 c2 : com) : Prop := forall (st st' : state),
-  c1 / st \\ st' -> c2 / st \\ st'.
+  st =[ c1 ]=> st' -> st =[ c2 ]=> st'.
 
-(** 例如，程序 [c1 = WHILE !(X = 1) DO X ::= X - 1 END]
+(** 例如，程序
+
+  c1 = WHILE ~(X = 1) DO
+         X ::= X - 1
+       END
+
     近似于 [c2 = X ::= 1]，但是 [c2] 不近似于 [c1]，因为 [c1]
     不会在 [X = 0] 时停机，而 [c2] 会。如果两个程序互相近似，那么它们等价。 *)
 
 (** 请找出两个程序 [c3] 和 [c4]，它们互不近似。 *)
 
-Definition c3 : com (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
-Definition c4 : com (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Definition c3 : com
+  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Definition c4 : com
+  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Theorem c3_c4_different : ~ capprox c3 c4 /\ ~ capprox c4 c3.
 Proof. (* 请在此处解答 *) Admitted.
@@ -1510,4 +1534,4 @@ Theorem zprop_preserving : forall c c',
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-
+(* Sat Jan 26 15:15:43 UTC 2019 *)

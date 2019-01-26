@@ -144,3 +144,5 @@ Print Assumptions List_Priqueue.delete_max_Some_relate.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:18:45 UTC 2019 *)

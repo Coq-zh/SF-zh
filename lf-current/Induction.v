@@ -151,7 +151,6 @@ Proof.
     [(S n') + 0 = S n']；它可被化简为 [S (n' + 0) = S n']，而此结论可通过
     [IHn'] 得出。 *)
 
-
 Theorem minus_diag : forall n,
   minus n n = 0.
 Proof.
@@ -165,8 +164,9 @@ Proof.
 (** （其实在这些证明中我们并不需要 [intros]：当 [induction]
     策略被应用到包含量化变量的目标中时，它会自动将需要的变量移到上下文中。） *)
 
-(** **** 练习：2 星, recommended (basic_induction)  *)
-(** 用归纳法证明以下命题。你可能需要之前的证明结果。 *)
+(** **** 练习：2 星, standard, recommended (basic_induction)  
+
+    用归纳法证明以下命题。你可能需要之前的证明结果。 *)
 
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
@@ -189,8 +189,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (double_plus)  *)
-(** 考虑以下函数，它将其参数乘以二： *)
+(** **** 练习：2 星, standard (double_plus)  
+
+    考虑以下函数，它将其参数乘以二： *)
 
 Fixpoint double (n:nat) :=
   match n with
@@ -205,8 +206,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (evenb_S)  *)
-(** 我们的 [evenb n] 定义对 [n - 2] 的递归调用不大方便。这让证明 [evenb n]
+(** **** 练习：2 星, standard, optional (evenb_S)  
+
+    我们的 [evenb n] 定义对 [n - 2] 的递归调用不大方便。这让证明 [evenb n]
     时更难对 [n] 进行归纳，因此我们需要一个关于 [n - 2] 的归纳假设。
     以下引理赋予了 [evenb (S n)] 另一个特征，使其在归纳时能够更好地工作： *)
 
@@ -216,8 +218,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (destruct_induction)  *)
-(** 请简要说明一下 [destruct] 策略和 [induction] 策略之间的区别。
+(** **** 练习：1 星, standard (destruct_induction)  
+
+    请简要说明一下 [destruct] 策略和 [induction] 策略之间的区别。
 
 (* 请在此处解答 *)
 *)
@@ -372,8 +375,9 @@ Proof.
     但在其它方面则不够明确（特别是 Coq 证明中任何一处的“证明状态”都是完全
     隐含的，而非形式化证明则经常反复告诉读者目前证明进行的状态）。 *)
 
-(** **** 练习：2 星, advanced, recommended (plus_comm_informal)  *)
-(** 将你对 [plus_comm] 的解答翻译成非形式化证明：
+(** **** 练习：2 星, advanced, recommended (plus_comm_informal)  
+
+    将你对 [plus_comm] 的解答翻译成非形式化证明：
 
     定理：加法满足交换律。
 
@@ -384,21 +388,23 @@ Proof.
 Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, optional (eqb_refl_informal)  *)
-(** 以 [plus_assoc] 的非形式化证明为范本，写出以下定理的非形式化证明。
+(** **** 练习：2 星, standard, optional (eqb_refl_informal)  
+
+    以 [plus_assoc] 的非形式化证明为范本，写出以下定理的非形式化证明。
     不要只是用中文来解释 Coq 策略！
 
     定理：对于任何 [n]，均有 [true = n =? n]。
 
     证明： (* 请在此处解答 *)
-*)
-(** [] *)
+
+    [] *)
 
 (* ################################################################# *)
 (** * 更多练习 *)
 
-(** **** 练习：3 星, recommended (mult_comm)  *)
-(** 用 [assert] 来帮助证明此定理。你应该不需要对 [plus_swap] 进行归纳。 *)
+(** **** 练习：3 星, standard, recommended (mult_comm)  
+
+    用 [assert] 来帮助证明此定理。你应该不需要对 [plus_swap] 进行归纳。 *)
 
 Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
@@ -414,8 +420,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, optional (more_exercises)  *)
-(** 找一张纸。对于以下定理，首先请 _'思考'_ (a) 它能否能只用化简和改写来证明，
+(** **** 练习：3 星, standard, optional (more_exercises)  
+
+    找一张纸。对于以下定理，首先请 _'思考'_ (a) 它能否能只用化简和改写来证明，
     (b) 它还需要分类讨论（[destruct]），以及 (c) 它还需要归纳证明。先写下你的
     预判，然后填写下面的证明（你的纸不用交上来，这只是鼓励你先思考再行动！） *)
 
@@ -470,8 +477,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (eqb_refl)  *)
-(** 证明以下定理。（把 [true] 放在等式左边可能看起来有点奇怪，不过 Coq 标准库中
+(** **** 练习：2 星, standard, optional (eqb_refl)  
+
+    证明以下定理。（把 [true] 放在等式左边可能看起来有点奇怪，不过 Coq 标准库中
     就是这样表示的，我们照做就是。无论按哪个方向改写都一样好用，所以无论我们如何
     表示定理，用起来都没问题。） *)
 
@@ -481,8 +489,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (plus_swap')  *)
-(** [replace] 策略允许你指定一个具体的要改写的子项和你想要将它改写成的项：
+(** **** 练习：2 星, standard, optional (plus_swap')  
+
+    [replace] 策略允许你指定一个具体的要改写的子项和你想要将它改写成的项：
     [replace (t) with (u)] 会将目标中表达式 [t]（的所有副本）替换为表达式 [u]，
     并生成 [t = u] 作为附加的子目标。在简单的 [rewrite] 作用在目标错误的部分上时
     这种做法通常很有用。
@@ -496,8 +505,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, recommended (binary_commute)  *)
-(** 回忆一下你在 [Basics] 中为练习 [binary] 编写的 [incr] 和 [bin_to_nat]
+(** **** 练习：3 星, standard, recommended (binary_commute)  
+
+    回忆一下你在 [Basics] 中为练习 [binary] 编写的 [incr] 和 [bin_to_nat]
     函数。证明下图可交换。
 
                             incr
@@ -523,8 +533,9 @@ Proof.
 Definition manual_grade_for_binary_commute : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：5 星, advanced (binary_inverse)  *)
-(** This is a further continuation of the previous exercises about
+(** **** 练习：5 星, advanced (binary_inverse)  
+
+    This is a further continuation of the previous exercises about
     binary numbers.  You may find you need to go back and change your
     earlier definitions to get things to work here.
 
@@ -577,7 +588,4 @@ Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
 (** [] *)
 
 
-(* NEW NAME *)
-Notation zero_neqb_S := zero_nbeq_S (only parsing).
-Notation S_neqb_0 := S_nbeq_0 (only parsing).
-Notation plus_leb_compat_l := plus_ble_compat_l (only parsing).
+(* Sat Jan 26 15:14:45 UTC 2019 *)

@@ -7,34 +7,38 @@
 (* ################################################################# *)
 (** * 一个无法完成的求值器 *)
 
-Require Import Coq.omega.Omega.
-Require Import Coq.Arith.Arith.
+From Coq Require Import omega.Omega.
+From Coq Require Import Arith.Arith.
 From LF Require Import Imp Maps.
 
 (** 在初次为指令编写求值函数时，我们写出了如下忽略了 [WHILE] 的代码： *)
 
+Open Scope imp_scope.
 Fixpoint ceval_step1 (st : state) (c : com) : state :=
   match c with
     | SKIP =>
         st
     | l ::= a1 =>
-        st & { l --> (aeval st a1)}
+        (l !-> aeval st a1 ; st)
     | c1 ;; c2 =>
         let st' := ceval_step1 st c1 in
         ceval_step1 st' c2
-    | IFB b THEN c1 ELSE c2 FI =>
+    | TEST b THEN c1 ELSE c2 FI =>
         if (beval st b)
           then ceval_step1 st c1
           else ceval_step1 st c2
     | WHILE b1 DO c1 END =>
         st  (* bogus *)
   end.
+Close Scope imp_scope.
 
 (** 如[Imp]一章中所言，在 ML 或 Haskell 这类传统的函数式语言中，
   我们可以这样处理 [WHILE] 指令：
 
-    | WHILE b1 DO c1 END => if (beval st b1) then ceval_step1 st (c1;;
-        WHILE b1 DO c1 END) else st
+    | WHILE b1 DO c1 END =>
+        if (beval st b1) then
+          ceval_step1 st (c1;; WHILE b1 DO c1 END)
+        else st
 
     Coq 不会接受此定义（它会提示出现错误 [Error: Cannot guess
     decreasing argument of fix]），因为我们想要定义的函数无需保证一定停机。
@@ -61,19 +65,20 @@ Fixpoint ceval_step1 (st : state) (c : com) : state :=
     （我们也可以说当前的状态为求值器耗尽了汽油 -- 这无关紧要，
     因为无论在哪种情况下结果都是错误的！） *)
 
+Open Scope imp_scope.
 Fixpoint ceval_step2 (st : state) (c : com) (i : nat) : state :=
   match i with
-  | O => { --> 0 }
+  | O => empty_st
   | S i' =>
     match c with
       | SKIP =>
           st
       | l ::= a1 =>
-          st & { l --> (aeval st a1) }
+          (l !-> aeval st a1 ; st)
       | c1 ;; c2 =>
           let st' := ceval_step2 st c1 i' in
           ceval_step2 st' c2 i'
-      | IFB b THEN c1 ELSE c2 FI =>
+      | TEST b THEN c1 ELSE c2 FI =>
           if (beval st b)
             then ceval_step2 st c1 i'
             else ceval_step2 st c2 i'
@@ -84,6 +89,7 @@ Fixpoint ceval_step2 (st : state) (c : com) (i : nat) : state :=
           else st
     end
   end.
+Close Scope imp_scope.
 
 (** _'注意'_：很容易想到这里的索引 [i] 是用来计算“求值的步数”的。
     然而我们仔细研究就会发现实际并非如此。例如，在串连的规则中，同一个
@@ -94,6 +100,7 @@ Fixpoint ceval_step2 (st : state) (c : com) (i : nat) : state :=
     因为程序可能是正常停机，也可能是耗尽了汽油。我们的下下一个版本会返回一个
     [option state] 而非只是一个 [state]，这样我们就能区分正常和异常的停机了。 *)
 
+Open Scope imp_scope.
 Fixpoint ceval_step3 (st : state) (c : com) (i : nat)
                     : option state :=
   match i with
@@ -103,13 +110,13 @@ Fixpoint ceval_step3 (st : state) (c : com) (i : nat)
       | SKIP =>
           Some st
       | l ::= a1 =>
-          Some (st & { l --> (aeval st a1) })
+          Some (l !-> aeval st a1 ; st)
       | c1 ;; c2 =>
           match (ceval_step3 st c1 i') with
           | Some st' => ceval_step3 st' c2 i'
           | None => None
           end
-      | IFB b THEN c1 ELSE c2 FI =>
+      | TEST b THEN c1 ELSE c2 FI =>
           if (beval st b)
             then ceval_step3 st c1 i'
             else ceval_step3 st c2 i'
@@ -122,6 +129,7 @@ Fixpoint ceval_step3 (st : state) (c : com) (i : nat)
           else Some st
     end
   end.
+Close Scope imp_scope.
 
 (** 我们可以引入一些辅助记法来隐藏对可选状态进行重复匹配的复杂工作，
     从而提高此版本的可读性。 *)
@@ -133,6 +141,7 @@ Notation "'LETOPT' x <== e1 'IN' e2"
        end)
    (right associativity, at level 60).
 
+Open Scope imp_scope.
 Fixpoint ceval_step (st : state) (c : com) (i : nat)
                     : option state :=
   match i with
@@ -142,11 +151,11 @@ Fixpoint ceval_step (st : state) (c : com) (i : nat)
       | SKIP =>
           Some st
       | l ::= a1 =>
-          Some (st & { l --> (aeval st a1)})
+          Some (l !-> aeval st a1 ; st)
       | c1 ;; c2 =>
           LETOPT st' <== ceval_step st c1 i' IN
           ceval_step st' c2 i'
-      | IFB b THEN c1 ELSE c2 FI =>
+      | TEST b THEN c1 ELSE c2 FI =>
           if (beval st b)
             then ceval_step st c1 i'
             else ceval_step st c2 i'
@@ -157,6 +166,7 @@ Fixpoint ceval_step (st : state) (c : com) (i : nat)
           else Some st
     end
   end.
+Close Scope imp_scope.
 
 Definition test_ceval (st:state) (c:com) :=
   match ceval_step st c 500 with
@@ -165,17 +175,18 @@ Definition test_ceval (st:state) (c:com) :=
   end.
 
 (* Compute
-     (test_ceval { --> 0 }
+     (test_ceval empty_st
          (X ::= 2;;
-          IFB (X <= 1)
+          TEST (X <= 1)
             THEN Y ::= 3
             ELSE Z ::= 4
           FI)).
    ====>
       Some (2, 0, 4)   *)
 
-(** **** 练习：2 星, recommended (pup_to_n)  *)
-(** 编写一个 Imp 程序对 [1] 到 [X] 求和（即 [1 + 2 + ... + X]）并赋值给 [Y]。
+(** **** 练习：2 星, standard, recommended (pup_to_n)  
+
+    编写一个 Imp 程序对 [1] 到 [X] 求和（即 [1 + 2 + ... + X]）并赋值给 [Y]。
     确保你的解答能满足之后的测试。 *)
 
 Definition pup_to_n : com
@@ -184,18 +195,20 @@ Definition pup_to_n : com
 (* 
 
 Example pup_to_n_1 :
-  test_ceval {X --> 5} pup_to_n
+  test_ceval (X !-> 5) pup_to_n
   = Some (0, 15, 0).
 Proof. reflexivity. Qed.
-*)
-(** [] *)
 
-(** **** 练习：2 星, optional (peven)  *)
-(** 编写一个 [Imp] 程序：该程序在 [X] 为偶数时将 [Z] 置为 [0]，
+    [] *)
+
+(** **** 练习：2 星, standard, optional (peven)  
+
+    编写一个 [Imp] 程序：该程序在 [X] 为偶数时将 [Z] 置为 [0]，
     否则将 [Z] 置为 [1]。使用 [test_ceval] 测试你的程序。 *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ################################################################# *)
 (** * 关系求值 vs. 计步求值 *)
@@ -205,7 +218,7 @@ Proof. reflexivity. Qed.
 
 Theorem ceval_step__ceval: forall c st st',
       (exists i, ceval_step st c i = Some st') ->
-      c / st \\ st'.
+      st =[ c ]=> st'.
 Proof.
   intros c st st' H.
   inversion H as [i E].
@@ -234,7 +247,7 @@ Proof.
         * (* Otherwise -- contradiction *)
           discriminate H1.
 
-      + (* IFB *)
+      + (* TEST *)
         destruct (beval st b) eqn:Heqr.
         * (* r = true *)
           apply E_IfTrue. rewrite Heqr. reflexivity.
@@ -256,9 +269,9 @@ Proof.
           injection H1. intros H2. rewrite <- H2.
           apply E_WhileFalse. apply Heqr. Qed.
 
+(** **** 练习：4 星, standard (ceval_step__ceval_inf)  
 
-(** **** 练习：4 星 (ceval_step__ceval_inf)  *)
-(** 按照通常的模版写出 [ceval_step__ceval] 的非形式化证明，
+    按照通常的模版写出 [ceval_step__ceval] 的非形式化证明，
     （对归纳定义的值进行分类讨论的模版，除了没有归纳假设外，
     应当看起来与归纳证明相同。）不要简单地翻译形式化证明的步骤，
     请让你的证明能够将主要想法传达给读者。 *)
@@ -297,7 +310,7 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
       * (* st1'o = None *)
         discriminate Hceval.
 
-    + (* IFB *)
+    + (* TEST *)
       simpl in Hceval. simpl.
       destruct (beval st b); apply (IHi1' i2') in Hceval;
         assumption.
@@ -313,12 +326,13 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
       * (* i1'o = None *)
         simpl in Hceval. discriminate Hceval.  Qed.
 
-(** **** 练习：3 星, recommended (ceval__ceval_step)  *)
-(** 请完成以下证明。你会在某些地方用到 [ceval_step_more] 以及一些关于
+(** **** 练习：3 星, standard, recommended (ceval__ceval_step)  
+
+    请完成以下证明。你会在某些地方用到 [ceval_step_more] 以及一些关于
     [<=] 和 [plus] 的基本事实。 *)
 
 Theorem ceval__ceval_step: forall c st st',
-      c / st \\ st' ->
+      st =[ c ]=> st' ->
       exists i, ceval_step st c i = Some st'.
 Proof.
   intros c st st' Hce.
@@ -327,7 +341,7 @@ Proof.
 (** [] *)
 
 Theorem ceval_and_ceval_step_coincide: forall c st st',
-      c / st \\ st'
+      st =[ c ]=> st'
   <-> exists i, ceval_step st c i = Some st'.
 Proof.
   intros c st st'.
@@ -341,8 +355,8 @@ Qed.
     我们可以给出一种取巧的方式来证明求值_'关系'_是确定性的。 *)
 
 Theorem ceval_deterministic' : forall c st st1 st2,
-     c / st \\ st1  ->
-     c / st \\ st2 ->
+     st =[ c ]=> st1 ->
+     st =[ c ]=> st2 ->
      st1 = st2.
 Proof.
   intros c st st1 st2 He1 He2.
@@ -355,3 +369,4 @@ Proof.
   rewrite E1 in E2. inversion E2. reflexivity.
   omega. omega.  Qed.
 
+(* Sat Jan 26 15:14:46 UTC 2019 *)

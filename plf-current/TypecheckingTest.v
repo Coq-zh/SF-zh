@@ -60,3 +60,5 @@ idtac "MANUAL".
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:16:25 UTC 2019 *)

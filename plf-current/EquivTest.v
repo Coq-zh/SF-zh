@@ -44,17 +44,17 @@ Print Assumptions skip_right.
 Goal True.
 idtac " ".
 
-idtac "-------------------  IFB_false  --------------------".
+idtac "-------------------  TEST_false  --------------------".
 idtac " ".
 
-idtac "#> IFB_false".
+idtac "#> TEST_false".
 idtac "Possible points: 2".
-check_type @IFB_false (
+check_type @TEST_false (
 (forall (b : Imp.bexp) (c1 c2 : Imp.com),
  bequiv b Imp.BFalse -> cequiv (Imp.CIf b c1 c2) c2)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions IFB_false.
+Print Assumptions TEST_false.
 Goal True.
 idtac " ".
 
@@ -93,8 +93,8 @@ idtac " ".
 idtac "#> assign_aequiv".
 idtac "Possible points: 2".
 check_type @assign_aequiv (
-(forall (X : String.string) (e : Imp.aexp),
- aequiv (Imp.AId X) e -> cequiv Imp.CSkip (Imp.CAss X e))).
+(forall (x : String.string) (e : Imp.aexp),
+ aequiv (Imp.AId x) e -> cequiv Imp.CSkip (Imp.CAss x e))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions assign_aequiv.
@@ -234,8 +234,8 @@ idtac "".
 idtac "********** Standard **********".
 idtac "---------- skip_right ---------".
 Print Assumptions skip_right.
-idtac "---------- IFB_false ---------".
-Print Assumptions IFB_false.
+idtac "---------- TEST_false ---------".
+Print Assumptions TEST_false.
 idtac "---------- swap_if_branches ---------".
 Print Assumptions swap_if_branches.
 idtac "---------- WHILE_true ---------".
@@ -265,3 +265,5 @@ Print Assumptions Himp.p1_p2_equiv.
 idtac "---------- Himp.p3_p4_inequiv ---------".
 Print Assumptions Himp.p3_p4_inequiv.
 Abort.
+
+(* Sat Jan 26 15:15:53 UTC 2019 *)

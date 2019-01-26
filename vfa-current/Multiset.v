@@ -8,7 +8,7 @@
     with repeats, where the order does not matter.  One simple
     representation of a multiset is a function from values to [nat]. *)
 
-Require Import Coq.Strings.String.
+From Coq Require Import Strings.String.
 From VFA Require Import Perm.
 From VFA Require Import Sort.
 Require Export FunctionalExtensionality.
@@ -35,8 +35,9 @@ Definition union (a b : multiset) : multiset :=
 Definition singleton (v: value) : multiset :=
    fun x => if x =? v then 1 else 0.
 
-(** **** 练习：1 星 (union_assoc)  *)
-(** Since multisets are represented as functions, to prove that one
+(** **** 练习：1 星, standard (union_assoc)  
+
+    Since multisets are represented as functions, to prove that one
     multiset equals another we must use the axiom of functional
     extensionality. *)
 
@@ -48,7 +49,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (union_comm)  *)
+(** **** 练习：1 星, standard (union_comm)  *)
 Lemma union_comm: forall a b : multiset,  (* comm stands for "commutative" *)
    union a b = union b a.
 Proof.
@@ -96,8 +97,9 @@ Qed.
 Definition is_a_sorting_algorithm' (f: list nat -> list nat) :=
   forall al, contents al = contents (f al) /\ sorted (f al).
 
-(** **** 练习：3 星 (insert_contents)  *)
-(** First, prove the auxiliary lemma [insert_contents], which will be
+(** **** 练习：3 星, standard (insert_contents)  
+
+    First, prove the auxiliary lemma [insert_contents], which will be
     useful for proving [sort_contents] below.  Your proof will be by
     induction.  You do not need to use [extensionality]. *)
 
@@ -106,8 +108,9 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (sort_contents)  *)
-(** Now prove that sort preserves contents. *)
+(** **** 练习：3 星, standard (sort_contents)  
+
+    Now prove that sort preserves contents. *)
 
 Theorem sort_contents: forall l, contents l = contents (sort l).
 (* 请在此处解答 *) Admitted.
@@ -121,8 +124,9 @@ Proof.
 split. apply sort_contents. apply sort_sorted.
 Qed.
 
-(** **** 练习：1 星 (permutations_vs_multiset)  *)
-(** Compare your proofs of [insert_perm, sort_perm] with your proofs
+(** **** 练习：1 星, standard (permutations_vs_multiset)  
+
+    Compare your proofs of [insert_perm, sort_perm] with your proofs
     of [insert_contents, sort_contents].  Which proofs are simpler?
 
       - [ ] easier with permutations,
@@ -148,8 +152,9 @@ Definition manual_grade_for_permutations_vs_multiset : option (nat*string) := No
 
        [Permutation al bl <-> contents al = contents bl.] *)
 
-(** **** 练习：3 星 (perm_contents)  *)
-(** The forward direction is easy, by induction on the evidence for
+(** **** 练习：3 星, standard (perm_contents)  
+
+    The forward direction is easy, by induction on the evidence for
     [Permutation]: *)
 
 Lemma perm_contents:
@@ -172,7 +177,7 @@ Fixpoint list_delete (al: list value) (v: value) :=
 Definition multiset_delete (m: multiset) (v: value) :=
    fun x => if x =? v then pred(m x) else m x.
 
-(** **** 练习：3 星 (delete_contents)  *)
+(** **** 练习：3 星, standard (delete_contents)  *)
 Lemma delete_contents:
   forall v al,
    contents (list_delete al v) = multiset_delete (contents al) v.
@@ -187,21 +192,21 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (contents_perm_aux)  *)
+(** **** 练习：2 星, standard (contents_perm_aux)  *)
 Lemma contents_perm_aux:
  forall v b, empty = union (singleton v) b -> False.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (contents_in)  *)
+(** **** 练习：2 星, standard (contents_in)  *)
 Lemma contents_in:
   forall (a: value) (bl: list value) , contents bl a > 0 -> In a bl.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (in_perm_delete)  *)
+(** **** 练习：2 星, standard (in_perm_delete)  *)
 Lemma in_perm_delete:
   forall a bl,
   In a bl -> Permutation (a :: list_delete bl a) bl.
@@ -209,7 +214,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星 (contents_perm)  *)
+(** **** 练习：4 星, standard (contents_perm)  *)
 Lemma contents_perm:
  forall al bl, contents al = contents bl -> Permutation al bl.
 Proof.
@@ -251,3 +256,5 @@ Proof.
   destruct (H al); split; auto;
   apply same_contents_iff_perm; auto.
 Qed.
+
+(* Sat Jan 26 15:18:06 UTC 2019 *)

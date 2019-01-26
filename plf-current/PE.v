@@ -27,18 +27,18 @@
       X ::= 3;; Y ::= 4 - Y
 *)
 
-Require Import Coq.Bool.Bool.
-Require Import Coq.Arith.Arith.
-Require Import Coq.Arith.EqNat.
-Require Import Coq.Arith.PeanoNat. Import Nat.
-Require Import Coq.omega.Omega.
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Coq.Lists.List.
+From PLF Require Import Maps.
+From Coq Require Import Bool.Bool.
+From Coq Require Import Arith.Arith.
+From Coq Require Import Arith.EqNat.
+From Coq Require Import Arith.PeanoNat. Import Nat.
+From Coq Require Import omega.Omega.
+From Coq Require Import Logic.FunctionalExtensionality.
+From Coq Require Import Lists.List.
 Import ListNotations.
 
-From PLF Require Import Maps.
-From PLF Require Import Imp.
 From PLF Require Import Smallstep.
+From PLF Require Import Imp.
 
 (* ################################################################# *)
 (** * 一般化的常量折叠 *)
@@ -166,17 +166,14 @@ Fixpoint pe_aexp (pe_st : pe_state) (a : aexp) : aexp :=
 
 (** 部分求值器会折叠起常量，但并不会应用加法的结合律。 *)
 
-Open Scope aexp_scope.
-Open Scope bexp_scope.
-
 Example test_pe_aexp1:
-  pe_aexp [(X,3)] (X + 1 + Y)
-  = (4 + Y).
+  pe_aexp [(X,3)] (X + 1 + Y)%imp
+  = (4 + Y)%imp.
 Proof. reflexivity. Qed.
 
 Example text_pe_aexp2:
-  pe_aexp [(Y,3)] (X + 1 + Y)
-  = (X + 1 + 3).
+  pe_aexp [(Y,3)] (X + 1 + Y)%imp
+  = (X + 1 + 3)%imp.
 Proof. reflexivity. Qed.
 
 (** 现在，[pe_aexp] 在什么意义上是正确的呢？可以合理地将 [pe_aexp] 的正确性
@@ -239,8 +236,8 @@ Fixpoint pe_update (st:state) (pe_st:pe_state) : state :=
   end.
 
 Example test_pe_update:
-  pe_update { Y --> 1 } [(X,3);(Z,2)]
-  = { Y --> 1 ; Z --> 2 ; X --> 3 }.
+  pe_update (Y !-> 1) [(X,3);(Z,2)]
+  = (X !-> 3 ; Z !-> 2 ; Y !-> 1).
 Proof. reflexivity. Qed.
 
 (** 尽管 [pe_update] 对一个具体的 [list] 表示的 [pe_state] 进行操作，它的行为完全
@@ -329,12 +326,12 @@ Fixpoint pe_bexp (pe_st : pe_state) (b : bexp) : bexp :=
   end.
 
 Example test_pe_bexp1:
-  pe_bexp [(X,3)] (!(X <= 3))
+  pe_bexp [(X,3)] (~(X <= 3))%imp
   = false.
 Proof. reflexivity. Qed.
 
 Example test_pe_bexp2: forall b:bexp,
-  b = !(X <= (X + 1)) ->
+  b = (~(X <= (X + 1)))%imp ->
   pe_bexp [] b = b.
 Proof. intros b H. rewrite -> H. reflexivity. Qed.
 
@@ -385,10 +382,13 @@ Qed.
     意思是对源程序 [c1] 在初始状态 [st] 中部分求值产生剩余程序 [c1']
     和最终部分状态 [st']。举个例子，我们想要让
 
-      (X ::= 3 ;; Y ::= Z * (X + X)
-      / [] \\ (Y ::= Z * 6) / [(X,3)]
+      [] / (X ::= 3 ;; Y ::= Z * (X + X)) \\ (Y ::= Z * 6) / [(X,3)]
 
-    成立。对 [X] 的赋值出现在最终部分状态中，而非剩余命令中。*)
+    成立。对 [X] 的赋值出现在最终部分状态中，而非剩余命令中。
+
+    （写成 [st =[ c1 ]=> c1' / st'] 的形式会更接近于 [Imp] 使用的记法，
+    或许这里需要改一下！）
+*)
 
 (* ================================================================= *)
 (** ** 赋值 *)
@@ -402,7 +402,7 @@ Qed.
     义函数 [pe_add] 和 [pe_remove]。与 [pe_update] 类似，这些函数操作
     某个具体的 [list] 表示的 [pe_state]，但定理 [pe_add_correct] 和
     [pe_remove_correct] 通过 [pe_lookup] 对 [pe_state] 的解释定义了
-    他们的行为。*)
+    他们的行为。 *)
 
 Fixpoint pe_remove (pe_st:pe_state) (V:string) : pe_state :=
   match pe_st with
@@ -458,7 +458,7 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
 (* ================================================================= *)
 (** ** 条件 *)
 
-(** 比赋值语句的部分求值要麻烦一点的是条件语句 [IFB b1 THEN c1 ELSE c2 FI]。
+(** 比赋值语句的部分求值要麻烦一点的是条件语句 [TEST b1 THEN c1 ELSE c2 FI]。
     如果 [b1] 被简化为 [BTrue] 或 [BFalse]，那么会很容易：我们知道哪个分支
     会被运行。如果 [b1] 不会被简化为常量，那么我们需要对两个分支部分地求值，
     且最终的部分状态在两个分支上可能是不同的！
@@ -466,9 +466,9 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     下面的程序展示了这种困难：
 
       X ::= 3;;
-      IFB Y <= 4 THEN
+      TEST Y <= 4 THEN
           Y ::= 4;;
-          IFB X <= Y THEN Y ::= 999 ELSE SKIP FI
+          TEST X <= Y THEN Y ::= 999 ELSE SKIP FI
       ELSE SKIP FI
 
     假设初始的部分状态为空状态。静态来说，我们不知道 [Y] 和 [4] 比较的结果，
@@ -483,7 +483,7 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     [Y ::= 4]。因此，剩余程序为
 
       SKIP;;
-      IFB Y <= 4 THEN
+      TEST Y <= 4 THEN
           SKIP;;
           SKIP;;
           Y ::= 4
@@ -646,12 +646,12 @@ Proof. intros pe_st ids st. apply functional_extensionality. intros V.
 Qed.
 
 Lemma ceval_extensionality: forall c st st1 st2,
-  c / st \\ st1 -> (forall V, st1 V = st2 V) -> c / st \\ st2.
+  st =[ c ]=> st1 -> (forall V, st1 V = st2 V) -> st =[ c ]=> st2.
 Proof. intros c st st1 st2 H Heq.
   apply functional_extensionality in Heq. rewrite <- Heq. apply H. Qed.
 
 Theorem eval_assign: forall pe_st ids st,
-  assign pe_st ids / st \\ assigned pe_st ids st.
+  st =[ assign pe_st ids ]=> assigned pe_st ids st.
 Proof. intros pe_st ids st. induction ids as [| V ids]; simpl.
   - (* [] *) eapply ceval_extensionality. apply E_Skip. reflexivity.
   - (* V::ids *)
@@ -696,18 +696,18 @@ Inductive pe_com : com -> pe_state -> com -> pe_state -> Prop :=
   | PE_IfTrue : forall pe_st pe_st' b1 c1 c2 c1',
       pe_bexp pe_st b1 = BTrue ->
       c1 / pe_st \\ c1' / pe_st' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st \\ c1' / pe_st'
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st \\ c1' / pe_st'
   | PE_IfFalse : forall pe_st pe_st' b1 c1 c2 c2',
       pe_bexp pe_st b1 = BFalse ->
       c2 / pe_st \\ c2' / pe_st' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st \\ c2' / pe_st'
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st \\ c2' / pe_st'
   | PE_If : forall pe_st pe_st1 pe_st2 b1 c1 c2 c1' c2',
       pe_bexp pe_st b1 <> BTrue ->
       pe_bexp pe_st b1 <> BFalse ->
       c1 / pe_st \\ c1' / pe_st1 ->
       c2 / pe_st \\ c2' / pe_st2 ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st
-        \\ (IFB pe_bexp pe_st b1
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st
+        \\ (TEST pe_bexp pe_st b1
              THEN c1' ;; assign pe_st1 (pe_compare pe_st1 pe_st2)
              ELSE c2' ;; assign pe_st2 (pe_compare pe_st1 pe_st2) FI)
             / pe_removes pe_st1 (pe_compare pe_st1 pe_st2)
@@ -725,28 +725,28 @@ Hint Constructors ceval.
     但这里并不是必须的。 *)
 
 Example pe_example1:
-  (X ::= 3 ;; Y ::= Z * (X + X))
-  / [] \\ (SKIP;; Y ::= Z * 6) / [(X,3)].
+  (X ::= 3 ;; Y ::= Z * (X + X))%imp
+  / [] \\ (SKIP;; Y ::= Z * 6)%imp / [(X,3)].
 Proof. eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_AssDynamic. reflexivity. intros n H. inversion H. Qed.
 
 Example pe_example2:
-  (X ::= 3 ;; IFB X <= 4 THEN X ::= 4 ELSE SKIP FI)
-  / [] \\ (SKIP;; SKIP) / [(X,4)].
+  (X ::= 3 ;; TEST X <= 4 THEN X ::= 4 ELSE SKIP FI)%imp
+  / [] \\ (SKIP;; SKIP)%imp / [(X,4)].
 Proof. eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_IfTrue. reflexivity.
   eapply PE_AssStatic. reflexivity. Qed.
 
 Example pe_example3:
   (X ::= 3;;
-   IFB Y <= 4 THEN
+   TEST Y <= 4 THEN
      Y ::= 4;;
-     IFB X = Y THEN Y ::= 999 ELSE SKIP FI
-   ELSE SKIP FI) / []
+     TEST X = Y THEN Y ::= 999 ELSE SKIP FI
+   ELSE SKIP FI)%imp / []
   \\ (SKIP;;
-       IFB Y <= 4 THEN
+       TEST Y <= 4 THEN
          (SKIP;; SKIP);; (SKIP;; Y ::= 4)
-       ELSE SKIP;; SKIP FI)
+       ELSE SKIP;; SKIP FI)%imp
       / [(X,3)].
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
@@ -766,7 +766,7 @@ Reserved Notation "c' '/' pe_st' '/' st '\\' st''"
 Inductive pe_ceval
   (c':com) (pe_st':pe_state) (st:state) (st'':state) : Prop :=
   | pe_ceval_intro : forall st',
-    c' / st \\ st' ->
+    st =[ c' ]=> st' ->
     pe_update st' pe_st' = st'' ->
     c' / pe_st' / st \\ st''
   where "c' '/' pe_st' '/' st '\\' st''" := (pe_ceval c' pe_st' st st'').
@@ -776,7 +776,7 @@ Hint Constructors pe_ceval.
 Theorem pe_com_complete:
   forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
   forall st st'',
-  (c / pe_update st pe_st \\ st'') ->
+  (pe_update st pe_st =[ c ]=> st'') ->
   (c' / pe_st' / st \\ st'').
 Proof. intros c pe_st pe_st' c' Hpe.
   induction Hpe; intros st st'' Heval;
@@ -810,7 +810,7 @@ Theorem pe_com_sound:
   forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
   forall st st'',
   (c' / pe_st' / st \\ st'') ->
-  (c / pe_update st pe_st \\ st'').
+  (pe_update st pe_st =[ c ]=> st'').
 Proof. intros c pe_st pe_st' c' Hpe.
   induction Hpe;
     intros st st'' [st' Heval Heq];
@@ -841,7 +841,7 @@ Qed.
 Corollary pe_com_correct:
   forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
   forall st st'',
-  (c / pe_update st pe_st \\ st'') <->
+  (pe_update st pe_st =[ c ]=> st'') <->
   (c' / pe_st' / st \\ st'').
 Proof. intros c pe_st pe_st' c' H st st''. split.
   - (* -> *) apply pe_com_complete. apply H.
@@ -919,18 +919,18 @@ Inductive pe_com : com -> pe_state -> com -> pe_state -> com -> Prop :=
   | PE_IfTrue : forall pe_st pe_st' b1 c1 c2 c1' c'',
       pe_bexp pe_st b1 = BTrue ->
       c1 / pe_st \\ c1' / pe_st' / c'' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st \\ c1' / pe_st' / c''
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st \\ c1' / pe_st' / c''
   | PE_IfFalse : forall pe_st pe_st' b1 c1 c2 c2' c'',
       pe_bexp pe_st b1 = BFalse ->
       c2 / pe_st \\ c2' / pe_st' / c'' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st \\ c2' / pe_st' / c''
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st \\ c2' / pe_st' / c''
   | PE_If : forall pe_st pe_st1 pe_st2 b1 c1 c2 c1' c2' c'',
       pe_bexp pe_st b1 <> BTrue ->
       pe_bexp pe_st b1 <> BFalse ->
       c1 / pe_st \\ c1' / pe_st1 / c'' ->
       c2 / pe_st \\ c2' / pe_st2 / c'' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st
-        \\ (IFB pe_bexp pe_st b1
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st
+        \\ (TEST pe_bexp pe_st b1
              THEN c1' ;; assign pe_st1 (pe_compare pe_st1 pe_st2)
              ELSE c2' ;; assign pe_st2 (pe_compare pe_st1 pe_st2) FI)
             / pe_removes pe_st1 (pe_compare pe_st1 pe_st2)
@@ -950,11 +950,11 @@ Inductive pe_com : com -> pe_state -> com -> pe_state -> com -> Prop :=
       c1 / pe_st \\ c1' / pe_st' / SKIP ->
       (WHILE b1 DO c1 END) / pe_st' \\ c2' / pe_st'' / c2'' ->
       pe_compare pe_st pe_st'' <> [] ->
-      (c2'' = SKIP \/ c2'' = WHILE b1 DO c1 END) ->
+      (c2'' = SKIP%imp \/ c2'' = WHILE b1 DO c1 END%imp) ->
       (WHILE b1 DO c1 END) / pe_st
-        \\ (IFB pe_bexp pe_st b1
+        \\ (TEST pe_bexp pe_st b1
              THEN c1';; c2';; assign pe_st'' (pe_compare pe_st pe_st'')
-             ELSE assign pe_st (pe_compare pe_st pe_st'') FI)
+             ELSE assign pe_st (pe_compare pe_st pe_st'') FI)%imp
             / pe_removes pe_st (pe_compare pe_st pe_st'')
             / c2''
   | PE_WhileFixedEnd : forall pe_st b1 c1,
@@ -997,28 +997,28 @@ Ltac step i :=
                | intuition eauto; solve_by_invert])).
 
 Definition square_loop: com :=
-  WHILE 1 <= X DO
+  (WHILE 1 <= X DO
     Y ::= Y * Y;;
     X ::= X - 1
-  END.
+  END)%imp.
 
 Example pe_loop_example1:
   square_loop / []
   \\ (WHILE 1 <= X DO
          (Y ::= Y * Y;;
           X ::= X - 1);; SKIP
-       END) / [] / SKIP.
+       END)%imp / [] / SKIP.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   step PE_WhileFixed. step PE_WhileFixedEnd. reflexivity.
   reflexivity. reflexivity. Qed.
 
 Example pe_loop_example2:
-  (X ::= 3;; square_loop) / []
+  (X ::= 3;; square_loop)%imp / []
   \\ (SKIP;;
        (Y ::= Y * Y;; SKIP);;
        (Y ::= Y * Y;; SKIP);;
        (Y ::= Y * Y;; SKIP);;
-       SKIP) / [(X,0)] / SKIP.
+       SKIP)%imp / [(X,0)] / SKIP%imp.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_WhileTrue.
@@ -1031,19 +1031,19 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
 Example pe_loop_example3:
   (Z ::= 3;; subtract_slowly) / []
   \\ (SKIP;;
-       IFB !(X = 0) THEN
+       TEST ~(X = 0) THEN
          (SKIP;; X ::= X - 1);;
-         IFB !(X = 0) THEN
+         TEST ~(X = 0) THEN
            (SKIP;; X ::= X - 1);;
-           IFB !(X = 0) THEN
+           TEST ~(X = 0) THEN
              (SKIP;; X ::= X - 1);;
-             WHILE !(X = 0) DO
+             WHILE ~(X = 0) DO
                (SKIP;; X ::= X - 1);; SKIP
              END;;
              SKIP;; Z ::= 0
            ELSE SKIP;; Z ::= 1 FI;; SKIP
          ELSE SKIP;; Z ::= 2 FI;; SKIP
-       ELSE SKIP;; Z ::= 3 FI) / [] / SKIP.
+       ELSE SKIP;; Z ::= 3 FI)%imp / [] / SKIP.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_While.
@@ -1058,7 +1058,7 @@ Example pe_loop_example4:
   (X ::= 0;;
    WHILE X <= 2 DO
      X ::= 1 - X
-   END) / [] \\ (SKIP;; WHILE true DO SKIP END) / [(X,0)] / SKIP.
+   END)%imp / [] \\ (SKIP;; WHILE true DO SKIP END)%imp / [(X,0)] / SKIP.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_WhileFixedLoop.
@@ -1088,11 +1088,11 @@ Inductive ceval_count : com -> state -> state -> nat -> Prop :=
   | E'IfTrue : forall st st' b1 c1 c2 n,
       beval st b1 = true ->
       c1 / st \\ st' # n ->
-      (IFB b1 THEN c1 ELSE c2 FI) / st \\ st' # n
+      (TEST b1 THEN c1 ELSE c2 FI) / st \\ st' # n
   | E'IfFalse : forall st st' b1 c1 c2 n,
       beval st b1 = false ->
       c2 / st \\ st' # n ->
-      (IFB b1 THEN c1 ELSE c2 FI) / st \\ st' # n
+      (TEST b1 THEN c1 ELSE c2 FI) / st \\ st' # n
   | E'WhileFalse : forall b1 st c1,
       beval st b1 = false ->
       (WHILE b1 DO c1 END) / st \\ st # 0
@@ -1107,7 +1107,7 @@ Inductive ceval_count : com -> state -> state -> nat -> Prop :=
 Hint Constructors ceval_count.
 
 Theorem ceval_count_complete: forall c st st',
-  c / st \\ st' -> exists n, c / st \\ st' # n.
+  st =[ c ]=> st' -> exists n, c / st \\ st' # n.
 Proof. intros c st st' Heval.
   induction Heval;
     try inversion IHHeval1;
@@ -1116,7 +1116,7 @@ Proof. intros c st st' Heval.
     eauto. Qed.
 
 Theorem ceval_count_sound: forall c st st' n,
-  c / st \\ st' # n -> c / st \\ st'.
+  c / st \\ st' # n -> st =[ c ]=> st'.
 Proof. intros c st st' n Heval. induction Heval; eauto. Qed.
 
 Theorem pe_compare_nil_lookup: forall pe_st1 pe_st2,
@@ -1139,12 +1139,10 @@ Reserved Notation "c' '/' pe_st' '/' c'' '/' st '\\' st'' '#' n"
   (at level 40, pe_st' at level 39, c'' at level 39,
    st at level 39, st'' at level 39).
 
-Close Scope bexp_scope.
-
 Inductive pe_ceval_count (c':com) (pe_st':pe_state) (c'':com)
                          (st:state) (st'':state) (n:nat) : Prop :=
   | pe_ceval_count_intro : forall st' n',
-    c' / st \\ st' ->
+    st =[ c' ]=> st' ->
     c'' / pe_update st' pe_st' \\ st'' # n' ->
     n' <= n ->
     c' / pe_st' / c'' / st \\ st'' # n
@@ -1239,7 +1237,7 @@ Theorem pe_com_sound:
   forall c pe_st pe_st' c' c'', c / pe_st \\ c' / pe_st' / c'' ->
   forall st st'' n,
   (c' / pe_st' / c'' / st \\ st'' # n) ->
-  (c / pe_update st pe_st \\ st'').
+  (pe_update st pe_st =[ c ]=> st'').
 Proof. intros c pe_st pe_st' c' c'' Hpe.
   induction Hpe;
     intros st st'' n [st' n' Heval Heval' Hle];
@@ -1295,7 +1293,7 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
     apply loop_never_stops in Heval. inversion Heval.
   - (* PE_WhileFixed *)
     clear - H1 IHHpe1 IHHpe2 Heval.
-    remember (WHILE pe_bexp pe_st b1 DO c1';; c2' END) as c'.
+    remember (WHILE pe_bexp pe_st b1 DO c1';; c2' END)%imp as c'.
     induction Heval;
       inversion Heqc'; subst; clear Heqc'.
     + (* E_WhileFalse *) apply E_WhileFalse.
@@ -1313,8 +1311,8 @@ Qed.
 Corollary pe_com_correct:
   forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' / SKIP ->
   forall st st'',
-  (c / pe_update st pe_st \\ st'') <->
-  (exists st', c' / st \\ st' /\ pe_update st' pe_st' = st'').
+  (pe_update st pe_st =[ c ]=> st'') <->
+  (exists st', st =[ c' ]=> st' /\ pe_update st' pe_st' = st'').
 Proof. intros c pe_st pe_st' c' H st st''. split.
   - (* -> *) intros Heval.
     apply ceval_count_complete in Heval. inversion Heval as [n Heval'].
@@ -1382,8 +1380,8 @@ Fixpoint keval {L:Type} (st:state) (k : block L) : state * L :=
   end.
 
 Example keval_example:
-  keval { --> 0 } parity_body
-  = ({ Y --> 0 ; X --> 1 }, loop).
+  keval empty_st parity_body
+  = ((X !-> 1 ; Y !-> 0), loop).
 Proof. reflexivity. Qed.
 
 (* ================================================================= *)
@@ -1418,7 +1416,7 @@ Inductive peval {L:Type} (p : program L)
     peval p st' l' st'' l'' ->
     peval p st l st'' l''.
 
-Example parity_eval: peval parity { --> 0 } entry  { --> 0 } done.
+Example parity_eval: peval parity empty_st entry  empty_st done.
 Proof. erewrite f_equal with (f := fun st => peval _ _ _ st _).
   eapply E_Some. reflexivity. reflexivity.
   eapply E_Some. reflexivity. reflexivity.
@@ -1530,4 +1528,5 @@ Proof. intros.
       eapply E_Some; eauto. apply pe_block_correct. apply Hkeval.
 Qed.
 
-(** $Date$ *)
+
+(* Sat Jan 26 15:15:46 UTC 2019 *)

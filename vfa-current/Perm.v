@@ -16,7 +16,7 @@
  to reasoning about algorithms and data structures.
  *)
 
-Require Import Coq.Strings.String.
+From Coq Require Import Strings.String.
 Require Export Coq.Bool.Bool.
 Require Export Coq.Arith.Arith.
 Require Export Coq.Arith.EqNat.
@@ -107,8 +107,9 @@ Qed.
 (** But there's another way to use [ltb_reflect], etc: read on. *)
 
 (* ================================================================= *)
-(** ** Some Advanced Tactical Hacking *)
-(** You may skip ahead to "Inversion/clear/subst".
+(** ** Some Advanced Tactical Hacking 
+
+    You may skip ahead to "Inversion/clear/subst".
      Right here, we build some machinery that you'll want to
      _use_, but you won't need to know how to _build_ it.
 
@@ -145,8 +146,9 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(** ** [inversion] / [clear] / [subst] *)
-(** Coq's [inversion H] tactic is so good at extracting information
+(** ** [inversion] / [clear] / [subst] 
+
+    Coq's [inversion H] tactic is so good at extracting information
     from the hypothesis [H] that [H] becomes completely redundant,
     and one might as well [clear] it from the goal.  Then, since the
     [inversion] typically creates some equality facts, why not then
@@ -443,8 +445,9 @@ Print Permutation.
     should use this specification to prove some properties that we
     think permutations ought to have. *)
 
-(** **** 练习：2 星 (Permutation_properties)  *)
-(** Think of some properties of the [Permutation] relation and write
+(** **** 练习：2 星, standard (Permutation_properties)  
+
+    Think of some properties of the [Permutation] relation and write
     them down informally in English, or a mix of Coq and English.
     Here are four to get you started:
      - 1. If [Permutation al bl], then [length al = length bl].
@@ -515,8 +518,9 @@ Qed.
   [perm_skip] to cancel a single element, or [Permutation_app_head]
   to cancel an append-chunk. *)
 
-(** **** 练习：3 星 (permut_example)  *)
-(** Use the permutation rules in the library (see the [Search],
+(** **** 练习：3 星, standard (permut_example)  
+
+    Use the permutation rules in the library (see the [Search],
     above) to prove the following theorem.  These [Check] commands
    are a hint about what lemmas you'll need. *)
 
@@ -532,8 +536,9 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (not_a_permutation)  *)
-(** Prove that [[1;1]] is not a permutation of [[1;2]].
+(** **** 练习：1 星, standard (not_a_permutation)  
+
+    Prove that [[1;1]] is not a permutation of [[1;2]].
     Hints are given as [Check] commands. *)
 
 Check Permutation_cons_inv.
@@ -605,8 +610,9 @@ End Exploration1.
   [maybe_swap_correct] will be applied (at a larger scale) in
   the next few chapters. *)
 
-(** **** 练习：2 星 (Forall_perm)  *)
-(** To close, a useful utility lemma.  Prove this by induction;
+(** **** 练习：2 星, standard (Forall_perm)  
+
+    To close, a useful utility lemma.  Prove this by induction;
   but is it induction on [al], or on [bl], or on [Permutation al bl],
   or on [Forall f al]  ? *)
 
@@ -617,4 +623,5 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** $Date$ *)
+
+(* Sat Jan 26 15:18:06 UTC 2019 *)

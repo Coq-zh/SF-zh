@@ -264,7 +264,7 @@ Inductive sorted: list nat -> Prop :=
 | sorted_cons: forall x y l,
    x <= y -> sorted (y::l) -> sorted (x::y::l).
 
-(** **** 练习：2 星 (insert_sorted_le_dec)  *)
+(** **** 练习：2 星, standard (insert_sorted_le_dec)  *)
 Lemma insert_sorted:
   forall a l, sorted l -> sorted (insert a l).
 Proof.
@@ -378,7 +378,6 @@ Qed.
 
 End ScratchPad2.
 
-
 (* ################################################################# *)
 (** * Opacity of [Qed] *)
 
@@ -458,8 +457,9 @@ Eval compute in if list_nat_eq_dec [1;3;4] [1;4;3] then true else false.
 Eval compute in if list_nat_eq_dec [1;3;4] [1;3;4] then true else false.
  (* = true : bool *)
 
-(** **** 练习：2 星 (list_nat_in)  *)
-(** Use [in_dec] to build this function. *)
+(** **** 练习：2 星, standard (list_nat_in)  
+
+    Use [in_dec] to build this function. *)
 
 Definition list_nat_in: forall (i: nat) (al: list nat), {In i al}+{~ In i al}
  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -503,3 +503,4 @@ simpl.
    it does.   Either of these two methods is a reasonable way of programming
    with proof.  *)
 
+(* Sat Jan 26 15:18:06 UTC 2019 *)

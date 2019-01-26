@@ -64,12 +64,18 @@ idtac "Possible points: 2".
 print_manual_grade STLCProp.manual_grade_for_subject_expansion_stlc.
 idtac " ".
 
-idtac "-------------------  types_unique  --------------------".
+idtac "-------------------  unique_types  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: STLCProp.types_unique".
+idtac "#> STLCProp.unique_types".
 idtac "Possible points: 3".
-print_manual_grade STLCProp.manual_grade_for_types_unique.
+check_type @STLCProp.unique_types (
+(forall (Gamma : Stlc.STLC.context) (e : Stlc.STLC.tm) (T T' : Stlc.STLC.ty),
+ Stlc.STLC.has_type Gamma e T -> Stlc.STLC.has_type Gamma e T' -> T = T')).
+idtac "Assumptions:".
+Abort.
+Print Assumptions STLCProp.unique_types.
+Goal True.
 idtac " ".
 
 idtac "-------------------  progress_preservation_statement  --------------------".
@@ -108,14 +114,14 @@ idtac "-------------------  stlc_arith  --------------------".
 idtac " ".
 
 idtac "#> Manually graded: STLCArith.stlc_arith".
-idtac "Possible points: 4".
+idtac "Possible points: 5".
 print_manual_grade STLCArith.manual_grade_for_stlc_arith.
 idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 17".
-idtac "Max points - advanced: 20".
+idtac "Max points - standard: 18".
+idtac "Max points - advanced: 21".
 idtac "".
 idtac "********** Summary **********".
 idtac "".
@@ -124,8 +130,8 @@ idtac "---------- afi ---------".
 idtac "MANUAL".
 idtac "---------- subject_expansion_stlc ---------".
 idtac "MANUAL".
-idtac "---------- types_unique ---------".
-idtac "MANUAL".
+idtac "---------- STLCProp.unique_types ---------".
+Print Assumptions STLCProp.unique_types.
 idtac "---------- progress_preservation_statement ---------".
 idtac "MANUAL".
 idtac "---------- stlc_variation1 ---------".
@@ -141,3 +147,5 @@ idtac "********** Advanced **********".
 idtac "---------- STLCProp.progress' ---------".
 Print Assumptions STLCProp.progress'.
 Abort.
+
+(* Sat Jan 26 15:16:10 UTC 2019 *)

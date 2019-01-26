@@ -245,3 +245,5 @@ Print Assumptions insert_relate.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:18:44 UTC 2019 *)

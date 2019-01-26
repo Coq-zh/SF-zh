@@ -115,9 +115,9 @@ Example test_repeat2 :
 Proof. reflexivity.  Qed.
 
 
+(** **** 练习：2 星, standard (mumble_grumble)  
 
-(** **** 练习：2 星 (mumble_grumble)  *)
-(** 考虑以下两个归纳定义的类型： *)
+    考虑以下两个归纳定义的类型： *)
 
 Module MumbleGrumble.
 
@@ -341,8 +341,9 @@ Definition list123''' := [1; 2; 3].
 (* ----------------------------------------------------------------- *)
 (** *** 练习 *)
 
-(** **** 练习：2 星, optional (poly_exercises)  *)
-(** 下面是一些简单的练习，和 [Lists] 一章中的一样。
+(** **** 练习：2 星, standard, optional (poly_exercises)  
+
+    下面是一些简单的练习，和 [Lists] 一章中的一样。
     为了实践多态，请完成下面的证明。 *)
 
 Theorem app_nil_r : forall (X:Type), forall l:list X,
@@ -361,8 +362,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (more_poly_exercises)  *)
-(** 这儿有些更有趣的东西... *)
+(** **** 练习：2 星, standard, optional (more_poly_exercises)  
+
+    这儿有些更有趣的东西... *)
 
 Theorem rev_app_distr: forall X (l1 l2 : list X),
   rev (l1 ++ l2) = rev l2 ++ rev l1.
@@ -428,17 +430,19 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
   | x :: tx, y :: ty => (x, y) :: (combine tx ty)
   end.
 
-(** **** 练习：1 星, optional (combine_checks)  *)
-(** 请尝试在纸上回答以下问题并在 Coq 中检验你的解答：
+(** **** 练习：1 星, standard, optional (combine_checks)  
+
+    请尝试在纸上回答以下问题并在 Coq 中检验你的解答：
     - [combine] 的类型是什么？（即 [Check @combine] 会打印出什么？）
     - 以下指令会打印出什么？
 
         Compute (combine [1;2] [false;false;true;true]).
-*)
-(** [] *)
 
-(** **** 练习：2 星, recommended (split)  *)
-(** 函数 [split] 是 [combine] 的右逆（right inverse）：
+    [] *)
+
+(** **** 练习：2 星, standard, recommended (split)  
+
+    函数 [split] 是 [combine] 的右逆（right inverse）：
     它接受一个序对的列表并返回一个列表的序对。
     在很多函数式语言中，它被称作 [unzip]。
 
@@ -458,8 +462,9 @@ Proof.
 (** ** 多态候选 *)
 
 (** 现在介绍最后一种多态类型：_'多态候选（Polymorphic Options）'_,
-    它推广了上一章中的 [natoption]： *)
-(** One last polymorphic type for now: _polymorphic options_,
+    它推广了上一章中的 [natoption]： 
+
+    One last polymorphic type for now: _polymorphic options_,
     which generalize [natoption] from the previous chapter.  (We put
     the definition inside a module because the standard library
     already defines [option] and it's this one that we want to use
@@ -492,8 +497,9 @@ Proof. reflexivity. Qed.
 Example test_nth_error3 : nth_error [true] 2 = None.
 Proof. reflexivity. Qed.
 
-(** **** 练习：1 星, optional (hd_error_poly)  *)
-(** 请完成上一章中 [hd_error] 的多态定义，确保它能通过下方的单元测试。 *)
+(** **** 练习：1 星, standard, optional (hd_error_poly)  
+
+    请完成上一章中 [hd_error] 的多态定义，确保它能通过下方的单元测试。 *)
 
 Definition hd_error {X : Type} (l : list X) : option X
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -603,8 +609,9 @@ Example test_filter2':
   = [ [3]; [4]; [8] ].
 Proof. reflexivity.  Qed.
 
-(** **** 练习：2 星 (filter_even_gt7)  *)
-(** 使用 [filter]（而非 [Fixpoint]）来编写 Coq 函数 [filter_even_gt7]，
+(** **** 练习：2 星, standard (filter_even_gt7)  
+
+    使用 [filter]（而非 [Fixpoint]）来编写 Coq 函数 [filter_even_gt7]，
     它接受一个自然数列表作为输入，返回一个只包含大于 [7] 的偶数的列表。 *)
 
 Definition filter_even_gt7 (l : list nat) : list nat
@@ -619,8 +626,9 @@ Example test_filter_even_gt7_2 :
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (partition)  *)
-(** 使用 [filter] 编写一个 Coq 函数 [partition]：
+(** **** 练习：3 星, standard (partition)  
+
+    使用 [filter] 编写一个 Coq 函数 [partition]：
 
       partition : forall X : Type,
                   (X -> bool) -> list X -> list X * list X
@@ -679,8 +687,9 @@ Proof. reflexivity.  Qed.
 (* ----------------------------------------------------------------- *)
 (** *** 习题 *)
 
-(** **** 练习：3 星 (map_rev)  *)
-(** 请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引力 *)
+(** **** 练习：3 星, standard (map_rev)  
+
+    请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引力 *)
 
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
@@ -688,8 +697,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, recommended (flat_map)  *)
-(** 函数 [map] 通过一个类型为 [X -> Y] 的函数将 [list X] 映射到 [list Y]。
+(** **** 练习：2 星, standard, recommended (flat_map)  
+
+    函数 [map] 通过一个类型为 [X -> Y] 的函数将 [list X] 映射到 [list Y]。
     我们可以定义一个类似的函数 [flat_map]，它通过一个类型为 [X -> list Y]
     的函数 [f] 将 [list X] 映射到 [list Y]。你的定义应当可以“压扁”[f]
     的结果，就像这样：
@@ -718,13 +728,14 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
     | Some x => Some (f x)
   end.
 
-(** **** 练习：2 星, optional (implicit_args)  *)
-(** [filter] 和 [map] 的定义和应用在很多地方使用了隐式参数。
+(** **** 练习：2 星, standard, optional (implicit_args)  
+
+    [filter] 和 [map] 的定义和应用在很多地方使用了隐式参数。
     请将隐式参数外层的花括号替换为圆括号，然后在必要的地方补充显式类型形参并用
     Coq 检查你做的是否正确。（本练习并不会打分，你可以在本文件的_'副本'_中做它，
     之后丢掉即可。）
-*)
-(** [] *)
+
+    [] *)
 
 (* ================================================================= *)
 (** ** 折叠 *)
@@ -767,8 +778,9 @@ Example fold_example3 :
   fold app  [[1];[];[2;3];[4]] [] = [1;2;3;4].
 Proof. reflexivity. Qed.
 
-(** **** 练习：1 星, advanced (fold_types_different)  *)
-(** 我们观察到 [fold] 由 [X] 和 [Y] 这_'两个'_类型变量参数化，形参 [f]
+(** **** 练习：1 星, advanced (fold_types_different)  
+
+    我们观察到 [fold] 由 [X] 和 [Y] 这_'两个'_类型变量参数化，形参 [f]
     则是个接受 [X] 和 [Y] 并返回 [Y] 的二元操作符。你能想出一种 [X] 和
     [Y] 不同时的应用情景吗？ *)
 
@@ -826,8 +838,9 @@ Proof. reflexivity.  Qed.
 
 Module Exercises.
 
-(** **** 练习：2 星 (fold_length)  *)
-(** 列表的很多通用函数都可以通过 [fold] 来实现。例如，下面是
+(** **** 练习：2 星, standard (fold_length)  
+
+    列表的很多通用函数都可以通过 [fold] 来实现。例如，下面是
     [length] 的另一种实现： *)
 
 Definition fold_length {X : Type} (l : list X) : nat :=
@@ -836,7 +849,9 @@ Definition fold_length {X : Type} (l : list X) : nat :=
 Example test_fold_length1 : fold_length [4;7;0] = 3.
 Proof. reflexivity. Qed.
 
-(** 请证明 [fold_length] 的正确性。 *)
+(** 请证明 [fold_length] 的正确性。（提示：知道 [reflexivity] 的化简力度比 [simpl]
+    更大或许会有所帮助。也就是说，你或许会遇到 [simpl] 无法解决但 [reflexivity]
+    可以解决的目标。） *)
 
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
@@ -844,13 +859,15 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (fold_map)  *)
-(** 我们也可以用 [fold] 来定义 [map]。请完成下面的 [fold_map]。 *)
+(** **** 练习：3 星, standard (fold_map)  
+
+    我们也可以用 [fold] 来定义 [map]。请完成下面的 [fold_map]。 *)
 
 Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-(** 在 Coq 中写出 [fold_map_correct] 来陈述 [fold_map] 是正确的，然后证明它。 *)
+(** 在 Coq 中写出 [fold_map_correct] 来陈述 [fold_map] 是正确的，然后证明它。
+    （提示：再次提醒，[reflexivity] 的化简力度比 [simpl] 更强。） *)
 
 (* 请在此处解答 *)
 
@@ -858,8 +875,9 @@ Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y
 Definition manual_grade_for_fold_map : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, advanced (currying)  *)
-(** 在 Coq 中，函数 [f : A -> B -> C] 的类型其实是 [A -> (B -> C)]。
+(** **** 练习：2 星, advanced (currying)  
+
+    在 Coq 中，函数 [f : A -> B -> C] 的类型其实是 [A -> (B -> C)]。
     也就是说，如果给 [f] 一个类型为 [A] 的值，它就会给你函数 [f' : B -> C]。
     如果再给 [f'] 一个类型为 [B] 的值，它就会返回一个类型为 [C] 的值。
     这为我们提供了 [plus3] 中的那种偏应用能力。
@@ -906,8 +924,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, advanced (nth_error_informal)  *)
-(** 回想 [nth_error] 函数的定义：
+(** **** 练习：2 星, advanced (nth_error_informal)  
+
+    回想 [nth_error] 函数的定义：
 
    Fixpoint nth_error {X : Type} (l : list X) (n : nat) : option X :=
      match l with
@@ -1041,3 +1060,4 @@ End Church.
 End Exercises.
 
 
+(* Sat Jan 26 15:14:45 UTC 2019 *)

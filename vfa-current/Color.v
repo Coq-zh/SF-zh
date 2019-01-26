@@ -181,8 +181,9 @@ inv H1.
 Qed.
 
 (* ================================================================= *)
-(** ** SortA_equivlistA_eqlistA *)
-(** Suppose two lists [al,bl] are "equivalent:" they contain the same set of elements
+(** ** SortA_equivlistA_eqlistA 
+
+    Suppose two lists [al,bl] are "equivalent:" they contain the same set of elements
     (modulo an equivalence relation [eqA] on elements, perhaps in different orders, 
     and perhaps with different numbers of repetitions).  That is, suppose
     [equivlistA eqA al bl].
@@ -258,8 +259,9 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(** ** S.remove and S.elements *)
-(** The [FSets] interface (and therefore our [Module S]) provides these two functions: *)
+(** ** S.remove and S.elements 
+
+    The [FSets] interface (and therefore our [Module S]) provides these two functions: *)
 
 Check S.remove.  (* : S.elt -> S.t -> S.t *)
 Check S.elements. (* : S.t -> list S.elt *)
@@ -277,7 +279,7 @@ Abort.  (* Before we prove that, there is some preliminary work to do. *)
 (** That is, if [i] is in the set [s], then the elements of [S.remove i s] is the
     list that you get by filtering [i] out of [S.elements s].  Go ahead and prove it! *)
 
-(** **** 练习：3 星 (Sremove_elements)  *)
+(** **** 练习：3 星, standard (Sremove_elements)  *)
 Lemma Proper_eq_eq:
   forall f, Proper (E.eq ==> @eq bool) f.
 Proof.
@@ -320,16 +322,16 @@ Check M.elements. (*  : forall A : Type, M.t A -> list (positive * A) *)
 (** Let's start with a little lemma about lists of pairs:  Suppose [l: list (positive*A)].  
      Then [j] is in [map fst l]   iff   there is some e such that (j,e) is in l. *)
     
-(** **** 练习：2 星 (InA_map_fst_key)  *)
+(** **** 练习：2 星, standard (InA_map_fst_key)  *)
 Lemma InA_map_fst_key:
  forall A j l, 
  InA E.eq j (map (@fst M.E.t A) l) <-> exists e, InA (@M.eq_key_elt A) (j,e) l.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
+(** **** 练习：3 星, standard (Sorted_lt_key)  
 
-(** **** 练习：3 星 (Sorted_lt_key)  *)
-(** The function [M.lt_key] compares two elements of an [M.elements] list,
+    The function [M.lt_key] compares two elements of an [M.elements] list,
     that is, two pairs of type [positive*A], by just comparing their first elements
     using [E.lt].  Therefore, an elements list (of type [list(positive*A)] is [Sorted]
     by [M.lt_key] iff its list-of-first-elements is [Sorted] by [E.lt]. *) 
@@ -348,7 +350,7 @@ Proof.
   The cardinality of a finite map is, essentially, the cardinality of 
    its domain set. *)
 
-(** **** 练习：4 星 (cardinal_map)  *)
+(** **** 练习：4 星, standard (cardinal_map)  *)
 Lemma cardinal_map:  forall A B (f: A -> B) g, 
      M.cardinal (M.map f g) = M.cardinal g.
 
@@ -369,7 +371,7 @@ Check Sorted_lt_key.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星 (Sremove_cardinal_less)  *)
+(** **** 练习：4 星, standard (Sremove_cardinal_less)  *)
 Lemma Sremove_cardinal_less: forall i s,
         S.In i s ->    S.cardinal (S.remove i s) < S.cardinal s.
 Proof.
@@ -379,7 +381,6 @@ generalize (Sremove_elements _ _ H); intro.
 rewrite H0; clear H0.
 (* 请在此处解答 *) Admitted.
 (** [] *)
-
 
 (** We have a lemma [SortA_equivlistA_eqlistA] that talks about
     arbitrary equivalence relations and arbitrary total-order relations
@@ -411,7 +412,7 @@ Proof.
  repeat intro. destruct H,H0. rewrite H,H0. split; auto.
 Qed.
 
-(** **** 练习：4 星 (Mremove_elements)  *)
+(** **** 练习：4 星, standard (Mremove_elements)  *)
 Lemma Mremove_elements:  forall A i s, 
   M.In i s -> 
      eqlistA (@M.eq_key_elt A) (M.elements (M.remove i s)) 
@@ -431,7 +432,7 @@ Check filter_InA.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (Mremove_cardinal_less)  *)
+(** **** 练习：3 星, standard (Mremove_cardinal_less)  *)
 Lemma Mremove_cardinal_less: forall A i (s: M.t A), M.In i s -> 
         M.cardinal (M.remove i s) < M.cardinal s.
 
@@ -441,7 +442,7 @@ Lemma Mremove_cardinal_less: forall A i (s: M.t A), M.In i s ->
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (two_little_lemmas)  *)
+(** **** 练习：2 星, standard (two_little_lemmas)  *)
 
 Lemma fold_right_rev_left:
   forall (A B: Type) (f: A -> B -> A) (l: list B) (i: A),
@@ -452,7 +453,7 @@ Lemma Snot_in_empty: forall n, ~ S.In n S.empty.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (Sin_domain)  *)
+(** **** 练习：3 星, standard (Sin_domain)  *)
 Lemma Sin_domain: forall A n (g: M.t A), S.In n (Mdomain g) <-> M.In n g.
 
 (** This seems so obvious!  But I didn't find a really simple proof of it. *)
@@ -491,16 +492,17 @@ Definition remove_node (n: node) (g: graph) : graph :=
   M.map (S.remove n) (M.remove n g).
 
 (* ================================================================= *)
-(** ** Some Proofs in Support of Termination *)
-(** We need to prove some lemmas related to the termination of the algorithm
+(** ** Some Proofs in Support of Termination 
+
+    We need to prove some lemmas related to the termination of the algorithm
   before we can actually define the [Function]. *)
 
-(** **** 练习：3 星 (subset_nodes_sub)  *)
+(** **** 练习：3 星, standard (subset_nodes_sub)  *)
 Lemma subset_nodes_sub:  forall P g, S.Subset (subset_nodes P g) (nodes g).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (select_terminates)  *)
+(** **** 练习：3 星, standard (select_terminates)  *)
 Lemma select_terminates: 
   forall (K: nat) (g : graph) (n : S.elt),
    S.choose (subset_nodes (low_deg K) g) = Some n -> 
@@ -546,18 +548,18 @@ Definition coloring_ok (palette: S.t) (g: graph) (f: coloring) :=
      (forall ci, M.find i f = Some ci -> S.In ci palette) /\
      (forall ci cj, M.find i f = Some ci -> M.find j f = Some cj -> ci<>cj).
 
-(** **** 练习：2 星 (adj_ext)  *)
+(** **** 练习：2 星, standard (adj_ext)  *)
 Lemma adj_ext: forall g i j, E.eq i j -> S.eq (adj g i) (adj g j).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (in_colors_of_1)  *)
+(** **** 练习：3 星, standard (in_colors_of_1)  *)
 Lemma in_colors_of_1:
   forall i s f c, S.In i s -> M.find i f = Some c -> S.In c (colors_of f s).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星 (color_correct)  *)
+(** **** 练习：4 星, standard (color_correct)  *)
 Theorem color_correct:
   forall palette g, 
        no_selfloop g -> 
@@ -594,3 +596,4 @@ Compute (M.elements (color palette G)). (* = [(4, 1); (2, 3); (6, 2); (1, 2); (5
   nodes [6] and [1] with [2], and node [5] with color [1]. *)
 
 
+(* Sat Jan 26 15:18:07 UTC 2019 *)

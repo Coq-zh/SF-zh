@@ -14,9 +14,9 @@ Extraction Language OCaml.
 (** 现在我们将待提取的定义加载到 Coq 环境中。你可以直接写出定义，
     也可以从其它模块中加载。 *)
 
-Require Import Coq.Arith.Arith.
-Require Import Coq.Init.Nat.
-Require Import Coq.Arith.EqNat.
+From Coq Require Import Arith.Arith.
+From Coq Require Import Init.Nat.
+From Coq Require Import Arith.EqNat.
 From LF Require Import ImpCEvalFun.
 
 (** 最后，我们来指定需要提取的定义，以及用于保存提取结果的文件名。 *)
@@ -91,8 +91,7 @@ From LF Require Import Imp.
 From LF Require Import ImpParser.
 
 From LF Require Import Maps.
-Definition empty_state := { --> 0 }.
-Extraction "imp.ml" empty_state ceval_step parse.
+Extraction "imp.ml" empty_st ceval_step parse.
 
 (** 现在我们来运行一下生成的 Imp 求值器。首先你应该阅览一下
     [impdriver.ml]（这并非从某个 Coq 源码提取而来，它是手写的。）
@@ -116,3 +115,5 @@ Extraction "imp.ml" empty_state ceval_step parse.
 
 (** 有关提取的更多详情见_'软件基础'_第三卷_'已验证的函数式算法'_中的
     Extract 一章。 *)
+
+(* Sat Jan 26 15:14:46 UTC 2019 *)

@@ -19,26 +19,26 @@ Import STLC.
     first step in establishing basic properties of reduction and types
     is to identify the possible _canonical forms_ (i.e., well-typed
     closed values) belonging to each type.  For [Bool], these are the
-    boolean values [ttrue] and [tfalse]; for arrow types, they are
+    boolean values [tru] and [fls]; for arrow types, they are
     lambda-abstractions.  *)
 
 Lemma canonical_forms_bool : forall t,
-  empty |- t \in TBool ->
+  empty |- t \in Bool ->
   value t ->
-  (t = ttrue) \/ (t = tfalse).
+  (t = tru) \/ (t = fls).
 Proof.
   intros t HT HVal.
   inversion HVal; intros; subst; try inversion HT; auto.
 Qed.
 
 Lemma canonical_forms_fun : forall t T1 T2,
-  empty |- t \in (TArrow T1 T2) ->
+  empty |- t \in (Arrow T1 T2) ->
   value t ->
-  exists x u, t = tabs x T1 u.
+  exists x u, t = abs x T1 u.
 Proof.
   intros t T1 T2 HT HVal.
   inversion HVal; intros; subst; try inversion HT; subst; auto.
-  exists x0. exists t0.  auto.
+  exists x0, t0.  auto.
 Qed.
 
 (* ################################################################# *)
@@ -48,31 +48,31 @@ Qed.
     terms are not stuck: either a well-typed term is a value, or it
     can take a reduction step.  The proof is a relatively
     straightforward extension of the progress proof we saw in the
-    [Types] chapter.  We'll give the proof in English first, then
+    [Types] chapter.  We give the proof in English first, then
     the formal version. *)
 
 Theorem progress : forall t T,
   empty |- t \in T ->
-  value t \/ exists t', t ==> t'.
+  value t \/ exists t', t --> t'.
 
 (** _Proof_: By induction on the derivation of [|- t \in T].
 
     - The last rule of the derivation cannot be [T_Var], since a
       variable is never well typed in an empty context.
 
-    - The [T_True], [T_False], and [T_Abs] cases are trivial, since in
+    - The [T_Tru], [T_Fls], and [T_Abs] cases are trivial, since in
       each of these cases we can see by inspecting the rule that [t]
       is a value.
 
     - If the last rule of the derivation is [T_App], then [t] has the
       form [t1 t2] for some [t1] and [t2], where [|- t1 \in T2 -> T]
-      and [|- t2 \in T2] for some type [T2].  By the induction
-      hypothesis, either [t1] is a value or it can take a reduction
-      step.
+      and [|- t2 \in T2] for some type [T2].  The induction hypothesis
+      for the first subderivation says that either [t1] is a value or
+      else it can take a reduction step.
 
-        - If [t1] is a value, then consider [t2], which by the other
-          induction hypothesis must also either be a value or take a
-          step.
+        - If [t1] is a value, then consider [t2], which by the
+          induction hypothesis for the second subderivation must also
+          either be a value or take a step.
 
             - Suppose [t2] is a value.  Since [t1] is a value with an
               arrow type, it must be a lambda abstraction; hence [t1
@@ -83,16 +83,16 @@ Theorem progress : forall t T,
 
         - If [t1] can take a step, then so can [t1 t2] by [ST_App1].
 
-    - If the last rule of the derivation is [T_If], then [t = if t1
-      then t2 else t3], where [t1] has type [Bool].  By the IH, [t1]
-      either is a value or takes a step.
+    - If the last rule of the derivation is [T_Test], then [t = test
+      t1 then t2 else t3], where [t1] has type [Bool].  The first IH
+      says that [t1] either is a value or takes a step.
 
         - If [t1] is a value, then since it has type [Bool] it must be
-          either [true] or [false].  If it is [true], then [t] steps
-          to [t2]; otherwise it steps to [t3].
+          either [tru] or [fls].  If it is [tru], then [t] steps to
+          [t2]; otherwise it steps to [t3].
 
         - Otherwise, [t1] takes a step, and therefore so does [t] (by
-          [ST_If]). *)
+          [ST_Test]). *)
 Proof with eauto.
   intros t T Ht.
   remember (@empty ty) as Gamma.
@@ -109,34 +109,35 @@ Proof with eauto.
     + (* t1 is a value *)
       destruct IHHt2...
       * (* t2 is also a value *)
-        assert (exists x0 t0, t1 = tabs x0 T11 t0).
+        assert (exists x0 t0, t1 = abs x0 T11 t0).
         eapply canonical_forms_fun; eauto.
         destruct H1 as [x0 [t0 Heq]]. subst.
         exists ([x0:=t2]t0)...
 
       * (* t2 steps *)
-        inversion H0 as [t2' Hstp]. exists (tapp t1 t2')...
+        inversion H0 as [t2' Hstp]. exists (app t1 t2')...
 
     + (* t1 steps *)
-      inversion H as [t1' Hstp]. exists (tapp t1' t2)...
+      inversion H as [t1' Hstp]. exists (app t1' t2)...
 
-  - (* T_If *)
+  - (* T_Test *)
     right. destruct IHHt1...
 
     + (* t1 is a value *)
       destruct (canonical_forms_bool t1); subst; eauto.
 
     + (* t1 also steps *)
-      inversion H as [t1' Hstp]. exists (tif t1' t2 t3)...
+      inversion H as [t1' Hstp]. exists (test t1' t2 t3)...
 Qed.
 
-(** **** 练习：3 星, advanced (progress_from_term_ind)  *)
-(** Show that progress can also be proved by induction on terms
+(** **** 练习：3 星, advanced (progress_from_term_ind)  
+
+    Show that progress can also be proved by induction on terms
     instead of induction on typing derivations. *)
 
 Theorem progress' : forall t T,
      empty |- t \in T ->
-     value t \/ exists t', t ==> t'.
+     value t \/ exists t', t --> t'.
 Proof.
   intros t.
   induction t; intros T Ht; auto.
@@ -179,12 +180,12 @@ Proof.
         careful definition of...
 
       - the _free variables_ in a term -- i.e., variables that are
-        used in the term and where these uses are _not_ in the scope of
+        used in the term in positions that are _not_ in the scope of
         an enclosing function abstraction binding a variable of the
         same name.
 
-   To make Coq happy, we need to formalize the story in the opposite
-   order... *)
+   To make Coq happy, of course, we need to formalize the story in the
+   opposite order... *)
 
 (* ================================================================= *)
 (** ** Free Occurrences *)
@@ -200,26 +201,26 @@ Proof.
 
 Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
-      appears_free_in x (tvar x)
+      appears_free_in x (var x)
   | afi_app1 : forall x t1 t2,
       appears_free_in x t1 ->
-      appears_free_in x (tapp t1 t2)
+      appears_free_in x (app t1 t2)
   | afi_app2 : forall x t1 t2,
       appears_free_in x t2 ->
-      appears_free_in x (tapp t1 t2)
+      appears_free_in x (app t1 t2)
   | afi_abs : forall x y T11 t12,
       y <> x  ->
       appears_free_in x t12 ->
-      appears_free_in x (tabs y T11 t12)
-  | afi_if1 : forall x t1 t2 t3,
+      appears_free_in x (abs y T11 t12)
+  | afi_test1 : forall x t1 t2 t3,
       appears_free_in x t1 ->
-      appears_free_in x (tif t1 t2 t3)
-  | afi_if2 : forall x t1 t2 t3,
+      appears_free_in x (test t1 t2 t3)
+  | afi_test2 : forall x t1 t2 t3,
       appears_free_in x t2 ->
-      appears_free_in x (tif t1 t2 t3)
-  | afi_if3 : forall x t1 t2 t3,
+      appears_free_in x (test t1 t2 t3)
+  | afi_test3 : forall x t1 t2 t3,
       appears_free_in x t3 ->
-      appears_free_in x (tif t1 t2 t3).
+      appears_free_in x (test t1 t2 t3).
 
 Hint Constructors appears_free_in.
 
@@ -232,10 +233,11 @@ Definition closed (t:tm) :=
 
 (** An _open_ term is one that may contain free variables.  (I.e., every
     term is an open term; the closed terms are a subset of the open ones.
-    "Open" really means "possibly containing free variables.") *)
+    "Open" precisely means "possibly containing free variables.") *)
 
-(** **** 练习：1 星 (afi)  *)
-(** In the space below, write out the rules of the [appears_free_in]
+(** **** 练习：1 星, standard (afi)  
+
+    In the space below, write out the rules of the [appears_free_in]
     relation in informal inference-rule notation.  (Use whatever
     notational conventions you like -- the point of the exercise is
     just for you to think a bit about the meaning of each rule.)
@@ -286,9 +288,9 @@ Lemma free_in_context : forall x t T Gamma,
         \y:T11.t12] and [x] appears free in [t12], and we also know
         that [x] is different from [y].  The difference from the
         previous cases is that, whereas [t] is well typed under
-        [Gamma], its body [t12] is well typed under [(Gamma & {{y-->T11}}],
+        [Gamma], its body [t12] is well typed under [(y|->T11; Gamma],
         so the IH allows us to conclude that [x] is assigned some type
-        by the extended context [(Gamma & {{y-->T11}}].  To conclude that
+        by the extended context [(y|->T11; Gamma].  To conclude that
         [Gamma] assigns a type to [x], we appeal to lemma
         [update_neq], noting that [x] and [y] are different
         variables. *)
@@ -304,10 +306,11 @@ Proof.
     rewrite update_neq in H7; assumption.
 Qed.
 
-(** Next, we'll need the fact that any term [t] that is well typed in
-    the empty context is closed (it has no free variables). *)
+(** From the [free_in_context] lemma, it immediately follows that any
+    term [t] that is well typed in the empty context is closed (it has
+    no free variables). *)
 
-(** **** 练习：2 星, optional (typable_empty__closed)  *)
+(** **** 练习：2 星, standard, optional (typable_empty__closed)  *)
 Corollary typable_empty__closed : forall t T,
     empty |- t \in T  ->
     closed t.
@@ -315,12 +318,12 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Sometimes, when we have a proof [Gamma |- t : T], we will need to
-    replace [Gamma] by a different context [Gamma'].  When is it safe
-    to do this?  Intuitively, it must at least be the case that
-    [Gamma'] assigns the same types as [Gamma] to all the variables
-    that appear free in [t]. In fact, this is the only condition that
-    is needed. *)
+(** Sometimes, when we have a proof of some typing relation
+    [Gamma |- t \in T], we will need to replace [Gamma] by a different
+    context [Gamma'].  When is it safe to do this?  Intuitively, it
+    must at least be the case that [Gamma'] assigns the same types as
+    [Gamma] to all the variables that appear free in [t]. In fact,
+    this is the only condition that is needed. *)
 
 Lemma context_invariance : forall Gamma Gamma' t T,
      Gamma |- t \in T  ->
@@ -334,27 +337,27 @@ Lemma context_invariance : forall Gamma Gamma' t T,
         hence [Gamma' |- t \in T] by [T_Var].
 
       - If the last rule was [T_Abs], then [t = \y:T11. t12], with [T
-        = T11 -> T12] and [Gamma & {{y-->T11}} |- t12 \in T12].  The
+        = T11 -> T12] and [y|->T11; Gamma |- t12 \in T12].  The
         induction hypothesis is that, for any context [Gamma''], if
-        [Gamma & {{y-->T11}}] and [Gamma''] assign the same types to
+        [y|->T11; Gamma] and [Gamma''] assign the same types to
         all the free variables in [t12], then [t12] has type [T12]
         under [Gamma''].  Let [Gamma'] be a context which agrees with
         [Gamma] on the free variables in [t]; we must show [Gamma' |-
         \y:T11. t12 \in T11 -> T12].
 
-        By [T_Abs], it suffices to show that [Gamma' & {{y-->T11}} |-
-        t12 \in T12].  By the IH (setting [Gamma'' = Gamma' &
-        {{y:T11}}]), it suffices to show that [Gamma & {{y-->T11}}]
-        and [Gamma' & {{y-->T11}}] agree on all the variables that
+        By [T_Abs], it suffices to show that [y|->T11; Gamma' |-
+        t12 \in T12].  By the IH (setting [Gamma'' = y|->T11;Gamma']), 
+        it suffices to show that [y|->T11;Gamma] 
+        and [y|->T11;Gamma'] agree on all the variables that
         appear free in [t12].
 
         Any variable occurring free in [t12] must be either [y] or
-        some other variable.  [Gamma & {{y-->T11}}] and [Gamma' &
-        {{y-->T11}}] clearly agree on [y].  Otherwise, note that any
+        some other variable.  [y|->T11; Gamma] and [y|->T11; Gamma'] 
+        clearly agree on [y].  Otherwise, note that any
         variable other than [y] that occurs free in [t12] also occurs
         free in [t = \y:T11. t12], and by assumption [Gamma] and
-        [Gamma'] agree on all such variables; hence so do [Gamma &
-        {{y-->T11}}] and [Gamma' & {{y-->T11}}].
+        [Gamma'] agree on all such variables; hence so do [y|->T11; Gamma] 
+        and [y|->T11; Gamma'].
 
       - If the last rule was [T_App], then [t = t1 t2], with [Gamma |-
         t1 \in T2 -> T] and [Gamma |- t2 \in T2].  One induction
@@ -379,7 +382,7 @@ Proof with eauto.
     apply T_Abs.
     apply IHhas_type. intros x1 Hafi.
     (* the only tricky step... the [Gamma'] we use to
-       instantiate is [Gamma & {{x-->T11}}] *)
+       instantiate is [x|->T11;Gamma] *)
     unfold update. unfold t_update. destruct (eqb_string x0 x1) eqn: Hx0x1...
     rewrite eqb_string_false_iff in Hx0x1. auto.
   - (* T_App *)
@@ -399,11 +402,11 @@ Qed.
     substitute [v] for each of the occurrences of [x] in [t] and
     obtain a new term that still has type [T]. *)
 
-(** _Lemma_: If [Gamma & {{x-->U}} |- t \in T] and [|- v \in U],
+(** _Lemma_: If [x|->U; Gamma |- t \in T] and [|- v \in U],
     then [Gamma |- [x:=v]t \in T]. *)
 
 Lemma substitution_preserves_typing : forall Gamma x U t v T,
-  Gamma & {{x-->U}} |- t \in T ->
+  (x |-> U ; Gamma) |- t \in T ->
   empty |- v \in U   ->
   Gamma |- [x:=v]t \in T.
 
@@ -417,8 +420,8 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
     worry about free variables in [v] clashing with the variable being
     introduced into the context by [T_Abs].
 
-    The substitution lemma can be viewed as a kind of commutation
-    property.  Intuitively, it says that substitution and typing can
+    The substitution lemma can be viewed as a kind of "commutation
+    property."  Intuitively, it says that substitution and typing can
     be done in either order: we can either assign types to the terms
     [t] and [v] separately (under suitable contexts) and then combine
     them using substitution, or we can substitute first and then
@@ -426,13 +429,13 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
     way.
 
     _Proof_: We show, by induction on [t], that for all [T] and
-    [Gamma], if [Gamma & {{x-->U}} |- t \in T] and [|- v \in U], then
+    [Gamma], if [x|->U; Gamma |- t \in T] and [|- v \in U], then
     [Gamma |- [x:=v]t \in T].
 
       - If [t] is a variable there are two cases to consider,
         depending on whether [t] is [x] or some other variable.
 
-          - If [t = x], then from the fact that [Gamma & {{x-->U}} |-
+          - If [t = x], then from the fact that [x|->U; Gamma |-
             x \in T] we conclude that [U = T].  We must show that
             [[x:=v]x = v] has type [T] under [Gamma], given the
             assumption that [v] has type [U = T] under the empty
@@ -441,11 +444,11 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
             type in any context.
 
           - If [t] is some variable [y] that is not equal to [x], then
-            we need only note that [y] has the same type under [Gamma
-            & {{x-->U}}] as under [Gamma].
+            we need only note that [y] has the same type under 
+            [x|->U; Gamma] as under [Gamma].
 
       - If [t] is an abstraction [\y:T11. t12], then the IH tells us,
-        for all [Gamma'] and [T'], that if [Gamma' & {{x-->U} |- t12
+        for all [Gamma'] and [T'], that if [x|->U; Gamma' |- t12
         \in T'] and [|- v \in U], then [Gamma' |- [x:=v]t12 \in T'].
 
         The substitution in the conclusion behaves differently
@@ -453,15 +456,15 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
 
         First, suppose [x = y].  Then, by the definition of
         substitution, [[x:=v]t = t], so we just need to show [Gamma |-
-        t \in T].  But we know [Gamma & {{x-->U}} |- t : T], and,
+        t \in T].  But we know [x|->U; Gamma |- t \in T], and,
         since [y] does not appear free in [\y:T11. t12], the context
         invariance lemma yields [Gamma |- t \in T].
 
-        Second, suppose [x <> y].  We know [Gamma & {{x-->U; y-->T11}}
+        Second, suppose [x <> y].  We know [x|->U; y|->T11; Gamma
         |- t12 \in T12] by inversion of the typing relation, from
-        which [Gamma & {{y-->T11; x-->U}} |- t12 \in T12] follows by
+        which [y|->T11; x|->U; Gamma |- t12 \in T12] follows by
         the context invariance lemma, so the IH applies, giving us
-        [Gamma & {{y-->T11}} |- [x:=v]t12 \in T12].  By [T_Abs],
+        [y|->T11; Gamma |- [x:=v]t12 \in T12].  By [T_Abs],
         [Gamma |- \y:T11. [x:=v]t12 \in T11->T12], and by the
         definition of substitution (noting that [x <> y]), [Gamma |-
         \y:T11. [x:=v]t12 \in T11->T12] as required.
@@ -474,7 +477,7 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
 
     _Technical note_: This proof is a rare case where an induction on
     terms, rather than typing derivations, yields a simpler argument.
-    The reason for this is that the assumption [Gamma & {{x-->U}} |- t
+    The reason for this is that the assumption [x|->U; Gamma |- t
     \in T] is not completely generic, in the sense that one of the
     "slots" in the typing relation -- namely the context -- is not
     just a variable, and this means that Coq's native induction tactic
@@ -489,7 +492,7 @@ Proof with eauto.
   induction t; intros T Gamma H;
     (* in each case, we'll want to get at the derivation of H *)
     inversion H; subst; simpl...
-  - (* tvar *)
+  - (* var *)
     rename s into y. destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
       subst.
@@ -500,7 +503,7 @@ Proof with eauto.
       intros.  apply (Ht' x0) in H0. inversion H0.
     + (* x<>y *)
       apply T_Var. rewrite update_neq in H2...
-  - (* tabs *)
+  - (* abs *)
     rename s into y. rename t into T. apply T_Abs.
     destruct (eqb_stringP x y) as [Hxy | Hxy].
     + (* x=y *)
@@ -523,39 +526,50 @@ Qed.
 
 Theorem preservation : forall t t' T,
   empty |- t \in T  ->
-  t ==> t'  ->
+  t --> t'  ->
   empty |- t' \in T.
 
 (** _Proof_: By induction on the derivation of [|- t \in T].
 
-    - We can immediately rule out [T_Var], [T_Abs], [T_True], and
-      [T_False] as the final rules in the derivation, since in each of
-      these cases [t] cannot take a step.
+    - We can immediately rule out [T_Var], [T_Abs], [T_Tru], and
+      [T_Fls] as final rules in the derivation, since in each of these
+      cases [t] cannot take a step.
 
-    - If the last rule in the derivation is [T_App], then [t = t1
-      t2].  There are three cases to consider, one for each rule that
-      could be used to show that [t1 t2] takes a step to [t'].
+    - If the last rule in the derivation is [T_App], then [t = t1 t2],
+      and there are subderivations showing that [|- t1 \in T11->T] and
+      [|- t2 \in T11] plus two induction hypotheses: (1) [t1 --> t1']
+      implies [|- t1' \in T11->T] and (2) [t2 --> t2'] implies [|- t2'
+      \in T11].  There are now three subcases to consider, one for
+      each rule that could be used to show that [t1 t2] takes a step
+      to [t'].
 
         - If [t1 t2] takes a step by [ST_App1], with [t1] stepping to
-          [t1'], then by the IH [t1'] has the same type as [t1], and
-          hence [t1' t2] has the same type as [t1 t2].
+          [t1'], then, by the first IH, [t1'] has the same type as
+          [t1] ([|- t1 \in T11->T]), and hence by [T_App] [t1' t2] has
+          type [T].
 
-        - The [ST_App2] case is similar.
+        - The [ST_App2] case is similar, using the second IH.
 
         - If [t1 t2] takes a step by [ST_AppAbs], then [t1 =
-          \x:T11.t12] and [t1 t2] steps to [[x:=t2]t12]; the
-          desired result now follows from the fact that substitution
-          preserves types.
+          \x:T11.t12] and [t1 t2] steps to [[x:=t2]t12]; the desired
+          result now follows from the substitution lemma.
 
-    - If the last rule in the derivation is [T_If], then [t = if t1
-      then t2 else t3], and there are again three cases depending on
-      how [t] steps.
+    - If the last rule in the derivation is [T_Test], then [t = test
+      t1 then t2 else t3], with [|- t1 \in Bool], [|- t2 \in T], and
+      [|- t3 \in T], and with three induction hypotheses: (1) [t1 -->
+      t1'] implies [|- t1' \in Bool], (2) [t2 --> t2'] implies [|- t2'
+      \in T], and (3) [t3 --> t3'] implies [|- t3' \in T].
 
-        - If [t] steps to [t2] or [t3], the result is immediate, since
-          [t2] and [t3] have the same type as [t].
+      There are again three subcases to consider, depending on how [t]
+      steps.
 
-        - Otherwise, [t] steps by [ST_If], and the desired conclusion
-          follows directly from the induction hypothesis. *)
+        - If [t] steps to [t2] or [t3] by [ST_TestTru] or
+          [ST_TestFalse], the result is immediate, since [t2] and [t3]
+          have the same type as [t].
+
+        - Otherwise, [t] steps by [ST_Test], and the desired
+          conclusion follows directly from the first induction
+          hypothesis. *)
 
 Proof with eauto.
   remember (@empty ty) as Gamma.
@@ -572,19 +586,20 @@ Proof with eauto.
       inversion HT1...
 Qed.
 
-(** **** 练习：2 星, recommended (subject_expansion_stlc)  *)
-(** An exercise in the [Types] chapter asked about the _subject
-    expansion_ property for the simple language of arithmetic and
-    boolean expressions.  Does this property hold for STLC?  That is,
-    is it always the case that, if [t ==> t'] and [has_type t' T],
-    then [empty |- t \in T]?  If so, prove it.  If not, give a
-    counter-example not involving conditionals.
+(** **** 练习：2 星, standard, recommended (subject_expansion_stlc)  
 
-    You can state your counterexample informally
-    in words, with a brief explanation.
+    An exercise in the [Types] chapter asked about the _subject
+    expansion_ property for the simple language of arithmetic and
+    boolean expressions.  This property did not hold for that language, 
+    and it also fails for STLC.  That is, it is not always the case that, 
+    if [t --> t'] and [has_type t' T], then [empty |- t \in T].  
+    Show this by giving a counter-example that does _not involve 
+    conditionals_.
+
+    You can state your counterexample informally in words, with a brief 
+    explanation. *)
 
 (* 请在此处解答 *)
-*)
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_subject_expansion_stlc : option (nat*string) := None.
@@ -593,8 +608,9 @@ Definition manual_grade_for_subject_expansion_stlc : option (nat*string) := None
 (* ################################################################# *)
 (** * Type Soundness *)
 
-(** **** 练习：2 星, optional (type_soundness)  *)
-(** Put progress and preservation together and show that a well-typed
+(** **** 练习：2 星, standard, optional (type_soundness)  
+
+    Put progress and preservation together and show that a well-typed
     term can _never_ reach a stuck state.  *)
 
 Definition stuck (t:tm) : Prop :=
@@ -602,7 +618,7 @@ Definition stuck (t:tm) : Prop :=
 
 Corollary soundness : forall t t' T,
   empty |- t \in T ->
-  t ==>* t' ->
+  t -->* t' ->
   ~(stuck t').
 Proof.
   intros t t' T Hhas_type Hmulti. unfold stuck.
@@ -614,23 +630,25 @@ Proof.
 (* ################################################################# *)
 (** * Uniqueness of Types *)
 
-(** **** 练习：3 星 (types_unique)  *)
-(** Another nice property of the STLC is that types are unique: a
+(** **** 练习：3 星, standard (unique_types)  
+
+    Another nice property of the STLC is that types are unique: a
     given term (in a given context) has at most one type. *)
-(** Formalize this statement as a theorem called
-      [unique_types], and prove your theorem. *)
 
-(* 请在此处解答 *)
-
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_types_unique : option (nat*string) := None.
+Theorem unique_types : forall Gamma e T T',
+  Gamma |- e \in T ->
+  Gamma |- e \in T' ->
+  T = T'.
+Proof.
+  (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** 练习：1 星 (progress_preservation_statement)  *)
-(** Without peeking at their statements above, write down the progress
+(** **** 练习：1 星, standard (progress_preservation_statement)  
+
+    Without peeking at their statements above, write down the progress
     and preservation theorems for the simply typed lambda-calculus (as
     Coq theorems).
     You can write [Admitted] for the proofs. *)
@@ -640,16 +658,17 @@ Definition manual_grade_for_types_unique : option (nat*string) := None.
 Definition manual_grade_for_progress_preservation_statement : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星 (stlc_variation1)  *)
-(** Suppose we add a new term [zap] with the following reduction rule
+(** **** 练习：2 星, standard (stlc_variation1)  
+
+    Suppose we add a new term [zap] with the following reduction rule
 
                          ---------                  (ST_Zap)
-                         t ==> zap
+                         t --> zap
 
 and the following typing rule:
 
-                      ----------------               (T_Zap)
-                      Gamma |- zap : T
+                      ------------------            (T_Zap)
+                      Gamma |- zap \in T
 
     Which of the following properties of the STLC remain true in
     the presence of these rules?  For each property, write either
@@ -668,15 +687,16 @@ and the following typing rule:
 Definition manual_grade_for_stlc_variation1 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星 (stlc_variation2)  *)
-(** Suppose instead that we add a new term [foo] with the following
+(** **** 练习：2 星, standard (stlc_variation2)  
+
+    Suppose instead that we add a new term [foo] with the following
     reduction rules:
 
                        -----------------                (ST_Foo1)
-                       (\x:A. x) ==> foo
+                       (\x:A. x) --> foo
 
                          ------------                   (ST_Foo2)
-                         foo ==> true
+                         foo --> tru
 
     Which of the following properties of the STLC remain true in
     the presence of this rule?  For each one, write either
@@ -695,8 +715,9 @@ Definition manual_grade_for_stlc_variation1 : option (nat*string) := None.
 Definition manual_grade_for_stlc_variation2 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星 (stlc_variation3)  *)
-(** Suppose instead that we remove the rule [ST_App1] from the [step]
+(** **** 练习：2 星, standard (stlc_variation3)  
+
+    Suppose instead that we remove the rule [ST_App1] from the [step]
     relation. Which of the following properties of the STLC remain
     true in the presence of this rule?  For each one, write either
     "remains true" or else "becomes false." If a property becomes
@@ -714,12 +735,13 @@ Definition manual_grade_for_stlc_variation2 : option (nat*string) := None.
 Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, optional (stlc_variation4)  *)
-(** Suppose instead that we add the following new rule to the
+(** **** 练习：2 星, standard, optional (stlc_variation4)  
+
+    Suppose instead that we add the following new rule to the
     reduction relation:
 
-            ----------------------------------        (ST_FunnyIfTrue)
-            (if true then t1 else t2) ==> true
+            ----------------------------------        (ST_FunnyTestTru)
+            (test tru then t1 else t2) --> tru
 
     Which of the following properties of the STLC remain true in
     the presence of this rule?  For each one, write either
@@ -732,11 +754,12 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (* 请在此处解答 *)
       - Preservation
 (* 请在此处解答 *)
-*)
-(** [] *)
 
-(** **** 练习：2 星, optional (stlc_variation5)  *)
-(** Suppose instead that we add the following new rule to the typing
+    [] *)
+
+(** **** 练习：2 星, standard, optional (stlc_variation5)  
+
+    Suppose instead that we add the following new rule to the typing
     relation:
 
                  Gamma |- t1 \in Bool->Bool->Bool
@@ -755,11 +778,12 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (* 请在此处解答 *)
       - Preservation
 (* 请在此处解答 *)
-*)
-(** [] *)
 
-(** **** 练习：2 星, optional (stlc_variation6)  *)
-(** Suppose instead that we add the following new rule to the typing
+    [] *)
+
+(** **** 练习：2 星, standard, optional (stlc_variation6)  
+
+    Suppose instead that we add the following new rule to the typing
     relation:
 
                      Gamma |- t1 \in Bool
@@ -778,11 +802,12 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (* 请在此处解答 *)
       - Preservation
 (* 请在此处解答 *)
-*)
-(** [] *)
 
-(** **** 练习：2 星, optional (stlc_variation7)  *)
-(** Suppose we add the following new rule to the typing relation
+    [] *)
+
+(** **** 练习：2 星, standard, optional (stlc_variation7)  
+
+    Suppose we add the following new rule to the typing relation
     of the STLC:
 
                          ------------------- (T_FunnyAbs)
@@ -799,8 +824,8 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (* 请在此处解答 *)
       - Preservation
 (* 请在此处解答 *)
-*)
-(** [] *)
+
+    [] *)
 
 End STLCProp.
 
@@ -819,24 +844,25 @@ Import STLC.
     booleans, for brevity). *)
 
 Inductive ty : Type :=
-  | TArrow : ty -> ty -> ty
-  | TNat   : ty.
+  | Arrow : ty -> ty -> ty
+  | Nat  : ty.
 
 (** To terms, we add natural number constants, along with
     successor, predecessor, multiplication, and zero-testing. *)
 
 Inductive tm : Type :=
-  | tvar : string -> tm
-  | tapp : tm -> tm -> tm
-  | tabs : string -> ty -> tm -> tm
-  | tnat  : nat -> tm
-  | tsucc : tm -> tm
-  | tpred : tm -> tm
-  | tmult : tm -> tm -> tm
-  | tif0  : tm -> tm -> tm -> tm.
+  | var : string -> tm
+  | app : tm -> tm -> tm
+  | abs : string -> ty -> tm -> tm
+  | const  : nat -> tm
+  | scc : tm -> tm
+  | prd : tm -> tm
+  | mlt : tm -> tm -> tm
+  | test0 : tm -> tm -> tm -> tm.
 
-(** **** 练习：4 星 (stlc_arith)  *)
-(** Finish formalizing the definition and properties of the STLC
+(** **** 练习：5 星, standard (stlc_arith)  
+
+    Finish formalizing the definition and properties of the STLC
     extended with arithmetic. This is a longer exercise. Specifically:
 
     1. Copy the core definitions for STLC that we went through,
@@ -879,4 +905,4 @@ Definition manual_grade_for_stlc_arith : option (nat*string) := None.
 
 End STLCArith.
 
-(** $Date$ *)
+(* Sat Jan 26 15:15:44 UTC 2019 *)

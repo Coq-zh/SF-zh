@@ -97,8 +97,9 @@ Module TreeTable <: TABLE.
     rewrite H1. apply t_update_eq.
    Qed.
 
-(** **** 练习：3 星 (TreeTable_gso)  *)
-(** Prove this using techniques similar to the proof of [gss] just above. *)
+(** **** 练习：3 星, standard (TreeTable_gso)  
+
+    Prove this using techniques similar to the proof of [gss] just above. *)
 
  Theorem gso: forall j k v t,  j<>k -> get j (set k v t) = get j t.
    Proof. 
@@ -125,8 +126,7 @@ Check can_relate.
 *)
 
 (* ################################################################# *)
-(** * A Brief Excursion into Dependent Types *)
-(**
+(** * A Brief Excursion into Dependent Types 
    We can enforce the representation invariant in Coq using dependent types.
    Suppose [P] is a predicate
    on type [A], that is, [P: A -> Prop].  Suppose [x] is a value of type [A],
@@ -181,8 +181,9 @@ Module TreeTable2 <: TABLE.
     rewrite H1. apply t_update_eq.
   Qed.
 
-(** **** 练习：3 星 (TreeTable_gso)  *)
-(** Prove this using techniques similar to the proof of [gss] just above;
+(** **** 练习：3 星, standard (TreeTable_gso)  
+
+    Prove this using techniques similar to the proof of [gss] just above;
      don't use [unrealistically_strong_can_relate]. *)
 
  Theorem gso: forall j k v t,  j<>k -> get j (set k v t) = get j t.
@@ -336,8 +337,9 @@ induction i; destruct j,al; simpl; intros; auto; try omega.
 apply IHi. omega.
 Qed.
 
-(** **** 练习：4 星, optional (listish_abstraction)  *)
-(** In this exercise we will not need a _representation invariant_.
+(** **** 练习：4 星, standard, optional (listish_abstraction)  
+
+    In this exercise we will not need a _representation invariant_.
     Define an abstraction relation: *)
 
 Inductive L_Abs: L.list -> List.list nat -> Prop :=
@@ -386,8 +388,9 @@ Proof.  (* No induction needed in this proof! *)
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (fib_time_complexity)  *)
-(** Suppose you run these three programs call-by-value, that is,
+(** **** 练习：2 星, standard, optional (fib_time_complexity)  
+
+    Suppose you run these three programs call-by-value, that is,
      as if they were ML programs.  
     [fibonacci N]
     [fib N]
@@ -401,7 +404,6 @@ Proof.  (* No induction needed in this proof! *)
   fib:  (* fill  in here *)
   fibish: (* fill in here *)
 
-
     [] *)
 
 
@@ -410,6 +412,4 @@ Proof.  (* No induction needed in this proof! *)
 
 
 
-
-
-
+(* Sat Jan 26 15:18:06 UTC 2019 *)

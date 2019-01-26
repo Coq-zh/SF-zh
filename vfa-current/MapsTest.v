@@ -90,3 +90,5 @@ Print Assumptions t_update_permute.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:18:07 UTC 2019 *)

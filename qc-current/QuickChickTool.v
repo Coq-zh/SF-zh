@@ -109,7 +109,6 @@ Set Bullet Behavior "Strict Subproofs".
     definitions and properties. After some [Import]s at the top, the
     [Exp] module begins with a _section declaration_:
 
-
     (*! Section arithmetic_expressions *)
 
    
@@ -169,8 +168,6 @@ Definition optimize_correct_prop (e : exp) := eval (optimize e) = eval e?.
 (** 
 
     (*! QuickChick optimize_correct_prop. *)
-*)
-(**
 
     QuickChecking optimize_correct_prop
     +++ Passed 10000 tests (0 discards)
@@ -249,7 +246,6 @@ Definition optimize_correct_prop (e : exp) := eval (optimize e) = eval e?.
        quickChick -color -top Stack -s optimizations
 
 
-
     Testing base...
     make -f Makefile.coq 
     make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
@@ -261,7 +257,6 @@ Definition optimize_correct_prop (e : exp) := eval (optimize e) = eval e?.
     Checking Exp.optimize_correct_prop...
     +++ Passed 10000 tests (0 discards)
     ... etc ...
-
 
     In addition to the standard arguments ([-color], [-top Stack])
     we also specified that we only care about the [optimizations] section
@@ -329,7 +324,6 @@ Definition optimize_correct_prop (e : exp) := eval (optimize e) = eval e?.
 
     quickChick -color -top Stack -s optimizations
 
-
     Testing mutant 0 (./Exp.v: line 35): Minus-Reverse
     make -f Makefile.coq 
     make[1]: Entering directory '/home/lemonidas/sfdev/qc/_qc_stack-compiler.tmp'
@@ -354,7 +348,6 @@ Definition optimize_correct_prop (e : exp) := eval (optimize e) = eval e?.
     Checking Exp.optimize_correct_prop...
     *** Failed after 5 tests and 3 shrinks. (0 discards)
     All tests produced the expected results
-
 
     After running all the tests for [base] (the unmutated artifact), the
     [quickChick] tool proceeds to run the single test in the [optimizations]
@@ -435,11 +428,9 @@ Definition compiles_correctly (e : exp) := (execute [] (compile e)) = [eval e]?.
     AMinus (ANum 0) (ANum 1)
     *** Failed after 3 tests and 2 shrinks. (0 discards)
 
-
     The problem is that subtraction is not associative and we have compiled
     the two operands in the wrong order! We can now log that mutant in our 
     development as shown in the [Stack] module.
-
 
     Fixpoint compile (e : exp) : list sinstr :=
       match e with
@@ -461,7 +452,6 @@ Definition compiles_correctly (e : exp) := (execute [] (compile e)) = [eval e]?.
     [-s stack] to only check the [stack] section.
 
     quickChick -color -top Stack -s stack
-
 
     Testing base...
     make -f Makefile.coq 
@@ -508,3 +498,4 @@ Definition compiles_correctly (e : exp) := (execute [] (compile e)) = [eval e]?.
 (** For more information on the tool's flags, look at the reference manual
     in [QuickChickInterface].
 *)
+(* Sat Jan 26 15:19:30 UTC 2019 *)

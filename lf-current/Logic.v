@@ -107,7 +107,6 @@ Example and_example : 3 + 4 = 7 /\ 2 * 2 = 4.
 (** 证明合取的命题通常使用 [split] 策略。它会分别为语句的两部分生成两个子目标： *)
 
 Proof.
-  (* 课上已完成 *)
   split.
   - (* 3 + 4 = 7 *) reflexivity.
   - (* 2 + 2 = 4 *) reflexivity.
@@ -133,7 +132,7 @@ Proof.
   - (* 2 + 2 = 4 *) reflexivity.
 Qed.
 
-(** **** 练习：2 星 (and_exercise)  *)
+(** **** 练习：2 星, standard (and_exercise)  *)
 Example and_exercise :
   forall n m : nat, n + m = 0 -> n = 0 /\ m = 0.
 Proof.
@@ -203,7 +202,7 @@ Proof.
   intros P Q [HP HQ].
   apply HP.  Qed.
 
-(** **** 练习：1 星, optional (proj2)  *)
+(** **** 练习：1 星, standard, optional (proj2)  *)
 Lemma proj2 : forall P Q : Prop,
   P /\ Q -> Q.
 Proof.
@@ -221,8 +220,9 @@ Proof.
     - (* left *) apply HQ.
     - (* right *) apply HP.  Qed.
 
-(** **** 练习：2 星 (and_assoc)  *)
-(** （在以下结合律的证明中，注意_'嵌套'_的 [intros] 模式是如何将
+(** **** 练习：2 星, standard (and_assoc)  
+
+    （在以下结合律的证明中，注意_'嵌套'_的 [intros] 模式是如何将
     [H : P /\ (Q /\ R)] 拆分为 [HP : P]、[HQ : Q] 和 [HR : R] 的。
     请从那里开始完成证明。） *)
 
@@ -243,12 +243,12 @@ Check and.
 (** ** 析取 *)
 
 (** 另一个重要的联结词是_析取_，即两个命题的_'逻辑或'_：若 [A] 或 [B]
-    二者之一为真，则 [A \/ B] 为真。（我们也可以写作 [or A B]，其中
+    二者之一为真，则 [A \/ B] 为真。（这中中缀记法表示 [or A B]，其中
     [or : Prop -> Prop -> Prop]。） *)
 
 (** 为了在证明中使用析取前提，我们需要分类讨论，它与 [nat]
-    或其它数据类型一样，都可以通过 [destruct] 或 [intros] 来拆分。
-    下面就是个例子： *)
+    或其它数据类型一样，都可以显示地通过 [destruct] 或隐式地通过 [intros]
+    模式来拆分： *)
 
 Lemma or_example :
   forall n m : nat, n = 0 \/ m = 0 -> n * m = 0.
@@ -274,7 +274,7 @@ Proof.
   apply HA.
 Qed.
 
-(** ...而更有趣的例子则同时需要 [left] 和 [right]： *)
+(** ...而这个更有趣的例子则同时需要 [left] 和 [right]： *)
 
 Lemma zero_or_succ :
   forall n : nat, n = 0 \/ n = S (pred n).
@@ -285,14 +285,14 @@ Proof.
   - right. reflexivity.
 Qed.
 
-(** **** 练习：1 星 (mult_eq_0)  *)
+(** **** 练习：1 星, standard (mult_eq_0)  *)
 Lemma mult_eq_0 :
   forall n m, n * m = 0 -> n = 0 \/ m = 0.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (or_commut)  *)
+(** **** 练习：1 星, standard (or_commut)  *)
 Theorem or_commut : forall P Q : Prop,
   P \/ Q  -> Q \/ P.
 Proof.
@@ -300,16 +300,19 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(** ** 假命题与否定 *)
-(** 目前为止，我们主要都在证明某些东西是_'真'_的：加法满足结合律，
+(** ** 假命题与否定 
+
+    目前为止，我们主要都在证明某些东西是_'真'_的：加法满足结合律，
     列表的连接满足结合律，等等。当然，我们也关心_'否定'_的结果，
-    即证明某些命题_'不是'_真的。在 Coq 中，这样的否定语句使用否定运算符
+    即证明某些给定的命题_'不是'_真的。在 Coq 中，这样的否定语句使用否定运算符
     [~] 来表达。 *)
 
-(** 为了理解否定背后的原理，我们需要回想一下[Tactics]一章中对_'爆炸原理'_的讨论。
-    爆炸原理断言，当我们假设了矛盾存在时，就能推出任何命题。遵循这一直觉，
-    我们可以可以将 [~ P]（即非 [P]）定义为 [forall Q, P -> Q]。
-    不过 Coq 选择了稍有些不同的做法，它将 [~ P] 定义为 [P -> False]，而
+(** 为了理解否定背后的原理，我们需要回想一下[Tactics]一章中的_'爆炸原理'_。
+    爆炸原理断言，当我们假设了矛盾存在时，就能推出任何命题。
+
+    遵循这一直觉，我们可以可以将 [~ P]（即非 [P]）定义为 [forall Q, P -> Q]。
+
+    不过 Coq 选择了稍有些不同（但等价）的做法，它将 [~ P] 定义为 [P -> False]，而
     [False] 是在标准库中特别定义的矛盾性命题。 *)
 
 Module MyNot.
@@ -324,8 +327,7 @@ Check not.
 End MyNot.
 
 (** 由于 [False] 是个矛盾性命题，因此爆炸原理对它也适用。如果我们让 [False]
-    进入到了证明的上下文中，可以对它使用 [destruct]（或 [discriminate]）
-    来完成任何待证目标。 *)
+    进入到了证明的上下文中，可以对它使用 [destruct] 来完成任何待证目标。 *)
 
 Theorem ex_falso_quodlibet : forall (P:Prop),
   False -> P.
@@ -337,8 +339,9 @@ Proof.
 (** 拉丁文 _'ex falso quodlibet'_ 的字面意思是“从谬误出发，
     你能够证明任何你想要的”，这也是爆炸原理的另一个广为人知的名字。 *)
 
-(** **** 练习：2 星, optional (not_implies_our_not)  *)
-(** 证明 Coq 对否定的定义蕴含前面提到的直觉上的定义： *)
+(** **** 练习：2 星, standard, optional (not_implies_our_not)  
+
+    证明 Coq 对否定的定义蕴含前面提到的直觉上的定义： *)
 
 Fact not_implies_our_not : forall (P:Prop),
   ~ P -> (forall (Q:Prop), P -> Q).
@@ -346,21 +349,24 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 下面我们用 [not] 陈述了 [0] 和 [1] 是不同的 [nat] 元素： *)
+(** 不等性是十分常见的否定句的例子，，它有一个特别的记法 [x <> y]：
 
-Theorem zero_not_one : ~(0 = 1).
+      Notation "x <> y" := (~(x = y)).
+*)
+
+(** 我们可以用 [not] 来陈述 [0] 和 [1] 是不同的 [nat] 元素： *)
+
+Theorem zero_not_one : 0 <> 1.
 Proof.
-  intros contra. discriminate contra.
-Qed.
-
-(** 这样的不等性表述频繁出现，足以让我们为其定义一种特殊的记法 [x <> y]： *)
-
-Check (0 <> 1).
-(* ===> Prop *)
-
-Theorem zero_not_one' : 0 <> 1.
-Proof.
-  intros H. discriminate H.
+  (** 性质 [0 <> 1] 就是 [~(0 = 1)]，即 [not (0 = 1)]，
+      它会展开为 [(0 = 1) -> False]。（这里显式地用 [unfold not]
+      展示了这一点，不过一般可以忽略。 *)
+  unfold not.
+  (** 要证明不等性，我们可以反过来假设其相等... *)
+  intros contra.
+  (** ... 然后从中推出矛盾。在这里，等式 [O = S O] 与构造子 [O] 和 [S]
+      的不交性相矛盾，因此用 [discriminate] 就能解决它。 *)
+  discriminate contra.
 Qed.
 
 (** 为了习惯用 Coq 处理否定命题，我们需要一些练习。
@@ -385,8 +391,9 @@ Proof.
   (* 课上已完成 *)
   intros P H. unfold not. intros G. apply G. apply H.  Qed.
 
-(** **** 练习：2 星, advanced (double_neg_inf)  *)
-(** 请写出 [double_neg] 的非形式化证明：
+(** **** 练习：2 星, advanced (double_neg_inf)  
+
+    请写出 [double_neg] 的非形式化证明：
 
    _'定理'_：对于任何命题 [P] 而言，[P] 蕴含 [~~P]。 *)
 
@@ -396,22 +403,23 @@ Proof.
 Definition manual_grade_for_double_neg_inf : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, recommended (contrapositive)  *)
+(** **** 练习：2 星, standard, recommended (contrapositive)  *)
 Theorem contrapositive : forall (P Q : Prop),
   (P -> Q) -> (~Q -> ~P).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (not_both_true_and_false)  *)
+(** **** 练习：1 星, standard (not_both_true_and_false)  *)
 Theorem not_both_true_and_false : forall P : Prop,
   ~ (P /\ ~P).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星, advanced (informal_not_PNP)  *)
-(** 请写出 [forall P : Prop, ~(P /\ ~P)] 的非形式化证明。 *)
+(** **** 练习：1 星, advanced (informal_not_PNP)  
+
+    请写出 [forall P : Prop, ~(P /\ ~P)] 的非形式化证明。 *)
 
 (* 请在此处解答 *)
 
@@ -461,8 +469,9 @@ Lemma True_is_true : True.
 Proof. apply I. Qed.
 
 (** 与经常使用的 [False] 不同，[True] 很少使用，因为它作为证明目标来说过于平凡，
-    而作为前提又不携带任何有用的信息。 *)
-(** 然而在使用条件从句定义复杂的 [Prop]，或者作为高阶 [Prop] 的参数时，
+    而作为前提又不携带任何有用的信息。 
+
+    然而在使用条件从句定义复杂的 [Prop]，或者作为高阶 [Prop] 的参数时，
     它还是挺有用的。之后我们会看到 [True] 的这类用法。 *)
 
 (* ================================================================= *)
@@ -500,8 +509,9 @@ Proof.
     intros H. rewrite H. intros H'. discriminate H'.
 Qed.
 
-(** **** 练习：1 星, optional (iff_properties)  *)
-(** 参照上面对 [<->] 对称性（[iff_sym]）的证明，
+(** **** 练习：1 星, standard, optional (iff_properties)  
+
+    参照上面对 [<->] 对称性（[iff_sym]）的证明，
     请证明它同时也有自反性和传递性。 *)
 
 Theorem iff_refl : forall P : Prop,
@@ -515,7 +525,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (or_distributes_over_and)  *)
+(** **** 练习：3 星, standard (or_distributes_over_and)  *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
 Proof.
@@ -526,7 +536,7 @@ Proof.
     特别来说，[rewrite] 和 [reflexivity] 不仅可以用于相等关系，还可用于
     [iff] 语句。为了开启此行为，我们需要导入一个 Coq 的库来支持它： *)
 
-Require Import Coq.Setoids.Setoid.
+From Coq Require Import Setoids.Setoid.
 
 (** 下面是一个简单的例子，它展示了这些策略如何使用 [iff]。
     首先，我们来证明一些基本的 [iff] 等价关系命题... *)
@@ -603,8 +613,9 @@ Proof.
   exists (2 + m).
   apply Hm.  Qed.
 
-(** **** 练习：1 星, recommended (dist_not_exists)  *)
-(** 请证明“[P] 对所有 [x] 成立”蕴含“不存在 [x] 使 [P] 不成立。”
+(** **** 练习：1 星, standard, recommended (dist_not_exists)  
+
+    请证明“[P] 对所有 [x] 成立”蕴含“不存在 [x] 使 [P] 不成立。”
     （提示：[destruct H as [x E]] 可以用于存在假设！） *)
 
 Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
@@ -613,8 +624,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (dist_exists_or)  *)
-(** 请证明存在量化对析取满足分配律。 *)
+(** **** 练习：2 星, standard (dist_exists_or)  
+
+    请证明存在量化对析取满足分配律。 *)
 
 Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
   (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
@@ -627,10 +639,12 @@ Proof.
 
 (** 我们学过的逻辑联结词为我们提供了丰富的用简单命题构造复杂命题的词汇。
     为了说明，我们来看一下如何表达“元素 [x] 出现在列表 [l] 中”这一断言。
-    注意此性质有着简单的递归结构： *)
-(**    - 若 [l] 为空列表，则 [x] 无法在其中出现，因此性质“[x] 出现在 [l] 中”
-         为假。 *)
-(**    - 否则，若 [l] 的形式为 [x' :: l']，此时 [x] 是否出现在 [l] 中，
+    注意此性质有着简单的递归结构： 
+
+       - 若 [l] 为空列表，则 [x] 无法在其中出现，因此性质“[x] 出现在 [l] 中”
+         为假。 
+
+       - 否则，若 [l] 的形式为 [x' :: l']，此时 [x] 是否出现在 [l] 中，
          取决于它是否等于 [x'] 或出现在 [l'] 中。 *)
 
 (** 我们可以将此定义直接翻译成递归函数，它接受一个元素和一个列表，
@@ -687,7 +701,7 @@ Qed.
     “明显会终止”的。在下一章中，我们会了解如何_'归纳地'_定义命题，
     这是一种与之不同的技巧，有着其独特的优势和限制。 *)
 
-(** **** 练习：2 星 (In_map_iff)  *)
+(** **** 练习：2 星, standard (In_map_iff)  *)
 Lemma In_map_iff :
   forall (A B : Type) (f : A -> B) (l : list A) (y : B),
     In y (map f l) <->
@@ -696,15 +710,16 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (In_app_iff)  *)
+(** **** 练习：2 星, standard (In_app_iff)  *)
 Lemma In_app_iff : forall A l l' (a:A),
   In a (l++l') <-> In a l \/ In a l'.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, recommended (All)  *)
-(** 回忆一下，返回命题的函数可以视作对其参数_'性质'_的定义。例如，若
+(** **** 练习：3 星, standard, recommended (All)  
+
+    回忆一下，返回命题的函数可以视作对其参数_'性质'_的定义。例如，若
     [P] 的类型为 [nat -> Prop]，那么 [P n] 就陈述了性质 [P] 对 [n] 成立。
 
     以 [In] 作为参考，请写出递归函数 [All]，它陈述某个 [P] 对列表 [l]
@@ -722,8 +737,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (combine_odd_even)  *)
-(** 完成以下 [combine_odd_even] 函数的定义。它接受两个对数字成立的性质
+(** **** 练习：3 星, standard (combine_odd_even)  
+
+    完成以下 [combine_odd_even] 函数的定义。它接受两个对数字成立的性质
     [Podd] 与 [Peven]，返回性质 [P] 使得当 [n] 为奇数时 [P n] 等价于 [Podd n]，
     否则等价于 [Peven n]。*)
 
@@ -760,9 +776,10 @@ Proof.
 (* ################################################################# *)
 (** * 对参数应用定理 *)
 
-(** Coq 拥有一个不同于其它证明助理的特性，即它将_'证明'_本身也作为一等对象。
+(** Coq 拥有一个不同于其它的证明助理（如 ACL2 和 Isabelle）的特性，
+    即它将_'证明'_本身也作为一等对象。
 
-    关于这一点有很多地方值得着墨，不过详细了解它对于使用 Coq 来说不是必须的。
+    关于这一点有很多地方值得着墨，不过了解所有的细节对于使用 Coq 来说不是必须的。
     本节点到为止，深入的探讨参见 [ProofObjects] 和 [IndPrinciples]。 *)
 
 (** 我们已经知道 [Check] 可以用来显式表达式的类型了，
@@ -794,6 +811,7 @@ Lemma plus_comm3 :
     然而问题是，第二次 [rewrite] 会抵消第一次的效果。 *)
 
 Proof.
+  (* 课上已完成 *)
   intros x y z.
   rewrite plus_comm.
   rewrite plus_comm.
@@ -826,9 +844,69 @@ Proof.
   reflexivity.
 Qed.
 
+(** 我们来展示另一个像函数那样使用定理或引理的例子。以下定理说明：
+    任何包含元素的列表 [l] 一定非空。 *)
+
+Lemma in_not_nil :
+  forall A (x : A) (l : list A), In x l -> l <> [].
+Proof.
+  intros A x l H. unfold not. intro Hl. destruct l.
+  - simpl in H. destruct H.
+  - discriminate Hl.
+Qed.
+
+(** 有趣的地方是一个量化的变量（[x]）没有出现在结论（[l <> []]）中。 *)
+
+(** 我们可以用此引理来证明 [x] 为 [42] 的特殊情况。直接用 [apply in_not_nil]
+    会失败，因为它无法推出 [x] 的值。有一些方法可以绕开它... *)
+
+Lemma in_not_nil_42 :
+  forall l : list nat, In 42 l -> l <> [].
+Proof.
+  (* 课上已完成 *)
+  intros l H.
+  Fail apply in_not_nil.
+Abort.
+
+(* [apply ... with ...] *)
+Lemma in_not_nil_42_take2 :
+  forall l : list nat, In 42 l -> l <> [].
+Proof.
+  intros l H.
+  apply in_not_nil with (x := 42).
+  apply H.
+Qed.
+
+(* [apply ... in ...] *)
+Lemma in_not_nil_42_take3 :
+  forall l : list nat, In 42 l -> l <> [].
+Proof.
+  intros l H.
+  apply in_not_nil in H.
+  apply H.
+Qed.
+
+(* 显式地对 [x] 的值应用引理。 *)
+Lemma in_not_nil_42_take4 :
+  forall l : list nat, In 42 l -> l <> [].
+Proof.
+  intros l H.
+  apply (in_not_nil nat 42).
+  apply H.
+Qed.
+
+(* 显式地对假设应用引理。 *)
+Lemma in_not_nil_42_take5 :
+  forall l : list nat, In 42 l -> l <> [].
+Proof.
+  intros l H.
+  apply (in_not_nil _ _ _ H).
+Qed.
+
 (** 对于几乎所有将定理名作为参数的策略而言，你都可以“将定理作为函数”来使用。
     注意，定理应用与函数应用使用了同样的类型推导机制，所以你可以将通配符作为定理的参数，
-    或者为定理声明默认的隐式前提。这些特性在以下证明中展示。 *)
+    或者为定理声明默认的隐式前提。这些特性在以下证明中展示。（此证明如何工作的细节
+    不必关心，这里的目标只是为了展示它的用途。） *)
 
 Example lemma_application_ex :
   forall {n : nat} {ns : list nat},
@@ -852,7 +930,7 @@ Qed.
     一个数学对象可同时属于不同的集合；而在 Coq 的逻辑中，一个项最多只属于一个类型。
     这些不同之处需要人们用稍微不同的方式来描述非形式化的数学概念，但总的来说，
     它们都是非常自然而易于使用的。例如，在 Coq 中我们一般不说某个自然数 [n]
-    属于偶数集合，而是说 [ev n] 成立，其中的 [ev : nat -> Prop] 描述了偶数的性质。
+    属于偶数集合，而是说 [even n] 成立，其中的 [even : nat -> Prop] 描述了偶数的性质。
 
     然而在某些情况下，将标准的数学论证翻译到 Coq 中会十分繁琐甚至是不可能的，
     除非我们引入新的公理来丰富其逻辑核心。作为本章的结尾，
@@ -865,7 +943,8 @@ Qed.
     （如 [nat]、[bool] 等等）。然而由于 Coq 的相等关系运算符是多态的，
     因此它们并不是唯一的可能。特别是，我们可以写出宣称_'两个函数相等'_的命题： *)
 
-Example function_equality_ex1 : plus 3 = plus (pred 4).
+Example function_equality_ex1 :
+  (fun x => 3 + x) = (fun x => (pred 4) + x).
 Proof. reflexivity. Qed.
 
 (** 在一般的数学研究中，对于任意的两个函数 [f] 和 [g]，只要它们产生的结果相等，
@@ -884,7 +963,7 @@ Proof. reflexivity. Qed.
 Example function_equality_ex2 :
   (fun x => plus x 1) = (fun x => plus 1 x).
 Proof.
-   (* Stuck *)
+   (* 卡住了 *)
 Abort.
 
 (** 然而，我们可以用 [Axiom] 指令将函数的外延性添加到 Coq 的核心逻辑系统中。 *)
@@ -906,10 +985,11 @@ Proof.
 Qed.
 
 (** 当然，在为 Coq 添加公理时必须十分小心，因为这有可能会导致系统
-    _'不一致'_，而当系统不一致的，任何命题都能在其中证明，包括 [False]！
+    _'不一致'_，而当系统不一致的，任何命题都能在其中证明，包括 [False]
+    和 [2+2=5]！
 
     不幸的是，并没有一种简单的方式能够判断添加某条公理是否安全：
-    一般来说，确认任何一组公理的一致性都需要付出艰辛的努力。
+    一般来说，确认任何一组公理的一致性都需要训练有素的专家付出艰辛的努力。
 
     然而，我们已经知道了添加函数外延性后的公理系统_'确实是'_一致的。 *)
 
@@ -922,8 +1002,9 @@ Print Assumptions function_equality_ex2.
          forall (X Y : Type) (f g : X -> Y),
                 (forall x : X, f x = g x) -> f = g *)
 
-(** **** 练习：4 星 (tr_rev_correct)  *)
-(** 列表反转函数 [rev] 的定义有一个问题，它会在每一步都执行一次 [app]
+(** **** 练习：4 星, standard (tr_rev_correct)  
+
+    列表反转函数 [rev] 的定义有一个问题，它会在每一步都执行一次 [app]
     调用，而运行 [app] 所需时间与列表的大小线性渐近，也就是说 [rev]
     的时间复杂度与列表长度成平方关系。我们可以用以下定义来改进它： *)
 
@@ -950,13 +1031,18 @@ Lemma tr_rev_correct : forall X, @tr_rev X = @rev X.
 (** 我们已经知道在 Coq 中有两种编码逻辑事实的方式了，即使用_'布尔值'_
     （类型为 [bool]）和_'命题'_（类型为 [Prop]）。
 
-    例如，我们可以通过以下两种方式来断言 [n] 为偶数：
-       - (1) [evenb n] 返回 [true]，或者
-       - (2) 存在某个 [k] 使得 [n = double k]。
-             这两种对偶数的定义确实是等价的，我们可以通过一些辅助引理来证明它。
+    例如，我们可以通过以下两种方式来断言 [n] 为偶数： *)
 
-    当然，如果二者对偶数的刻画描述的并是不同一个自然数集，那会非常奇怪！
-    幸运的是，我们可以证明二者确实等价... *)
+(** [evenb n] 求值为 [true]： *)
+Example even_42_bool : evenb 42 = true.
+Proof. reflexivity. Qed.
+
+(** 或者存在某个 [k] 使得 [n = double k]： *)
+Example even_42_prop : exists k, 42 = double k.
+Proof. exists 21. reflexivity. Qed.
+
+(** 当然，如果二者刻画的偶数性描述的不是同一个自然数集合，那么会非常奇怪！
+    幸运的是，我们确实可以证明二者相同... *)
 
 (** 首先我们需要两个辅助引理。 *)
 Theorem evenb_double : forall k, evenb (double k) = true.
@@ -966,7 +1052,7 @@ Proof.
   - simpl. apply IHk'.
 Qed.
 
-(** **** 练习：3 星 (evenb_double_conv)  *)
+(** **** 练习：3 星, standard (evenb_double_conv)  *)
 Theorem evenb_double_conv : forall n,
   exists k, n = if evenb n then double k
                 else S (double k).
@@ -987,9 +1073,10 @@ Qed.
 (** 此定理说明，逻辑命题 [exists k, n = double k] 的真伪对应布尔计算 [evenb n]
     的真值。 *)
 
-(** 类似地，以下两种描述 [n] 与 [m] 相等的表达方式等价：
-    （一）[n =? m] 值为 [true]；
-    （二）[n = m]。 *)
+(** 类似地，以下两种 [n] 与 [m] 相等的表述等价：
+      - (1) [n =? m] 值为 [true]；
+      - (2) [n = m]。
+    同样，二者的记法也等价。 *)
 
 Theorem eqb_eq : forall n1 n2 : nat,
   n1 =? n2 = true <-> n1 = n2.
@@ -1000,17 +1087,13 @@ Proof.
 Qed.
 
 (** 然而，即便布尔值和某个断言的命题式在逻辑上是等价的，但它们在_'操作上'_
-    并不一样。
+    也可能不一样。 *)
 
-    相等关系就是一个极端的例子：就涉及 [n] 和 [m] 的证明的中间步骤而言，
-    知道 [n =? m = true] 通常没什么帮助。然而，如果我们可以将此陈述
-    转换成 [n = m] 的形式，就能用它来改写证明。 *)
-
-(** 偶数也是个有趣的例子。回想一下，在证明 [even_bool_prop]
-    的反向部分（即 [evenb_double]，从命题到布尔表达式的方向）时，我们对
+(** 在前面的偶数例子中，证明 [even_bool_prop] 的反向部分（即
+    [evenb_double]，从命题到布尔表达式的方向）时，我们对
     [k] 进行了简单的归纳。而反方向的证明（即练习 [evenb_double_conv]）
-    则需要一种聪明的一般化方法，因为我们无法直接证明 [(exists k, n =
-    double k) -> evenb n = true]。 *)
+    则需要一种聪明的一般化方法，因为我们无法直接证明
+    [(exists k, n = double k) -> evenb n = true]。 *)
 
 (** 对于这些例子来说，命题式的声明比与之对应的布尔表达式要更为有用，
     但并非总是如此。例如，我们无法在函数的定义中测试一般的命题是否为真，
@@ -1055,14 +1138,53 @@ Proof. reflexivity. Qed.
 Example even_1000'' : exists k, 1000 = double k.
 Proof. apply even_bool_prop. reflexivity. Qed.
 
-(** 尽管此例的证明的长度并未因此而减少，然而更大的证明通常可通过
+(** 尽管此例的证明脚本的长度并未因此而减少，然而更大的证明通常可通过
     这种互映的方式来显著化简。举一个极端的例子，在用 Coq 证明著名的
-    _'四色定理'_时，人们使用互映技巧将几百种不同的情况归约成了一个布尔计算。
-    我们不会详细地介绍互映技巧，然而对于展示布尔计算与一般命题的互补优势而言，
+    _'四色定理'_时，人们使用互映技巧将几百种不同的情况归约成了一个布尔计算。 *)
+
+(** 另一点明显的不同是“布尔事实”的否定可以被直白地陈述并证明，
+    只需翻转预期的布尔值结果即可。 *)
+
+Example not_even_1001 : evenb 1001 = false.
+Proof.
+  (* 课上已完成 *)
+  reflexivity.
+Qed.
+
+(** 相反，命题的否定形式可能更难以掌握。 *)
+
+Example not_even_1001' : ~(exists k, 1001 = double k).
+Proof.
+  (* 课上已完成 *)
+  rewrite <- even_bool_prop.
+  unfold not.
+  simpl.
+  intro H.
+  discriminate H.
+Qed.
+
+(** 相等性补充了另一个例子。在涉及 [n] 和 [m] 的证明中，知道 [n =? m = true]
+    通常会有一点直接的帮助。然而如果我们将该语句转换为等价的 [n = m] 形式，
+    那么我们可以对它进行改写。
+ *)
+
+Lemma plus_eqb_example : forall n m p : nat,
+    n =? m = true -> n + p =? m + p = true.
+Proof.
+  (* 课上已完成 *)
+  intros n m p H.
+    rewrite eqb_eq in H.
+  rewrite H.
+  rewrite eqb_eq.
+  reflexivity.
+Qed.
+
+(** 我们不会详细地介绍互映技巧，然而对于展示布尔计算与一般命题的互补优势而言，
     它是个很好的例子。 *)
 
-(** **** 练习：2 星 (logical_connectives)  *)
-(** 以下引理将本章中讨论的命题联结词与对应的布尔操作关联了起来。 *)
+(** **** 练习：2 星, standard (logical_connectives)  
+
+    以下引理将本章中讨论的命题联结词与对应的布尔操作关联了起来。 *)
 
 Lemma andb_true_iff : forall b1 b2:bool,
   b1 && b2 = true <-> b1 = true /\ b2 = true.
@@ -1075,8 +1197,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (eqb_neq)  *)
-(** 以下定理为等价式 [eqb_eq] 的“否定”版本，
+(** **** 练习：1 星, standard (eqb_neq)  
+
+    以下定理为等价式 [eqb_eq] 的“否定”版本，
     在某些场景中使用它会更方便些（后面的章节中会讲到这方面的例子）。 *)
 
 Theorem eqb_neq : forall x y : nat,
@@ -1085,8 +1208,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (eqb_list)  *)
-(** 给定一个用于测试类型为 [A] 的元素相等关系的布尔操作符 [eqb]，
+(** **** 练习：3 星, standard (eqb_list)  
+
+    给定一个用于测试类型为 [A] 的元素相等关系的布尔操作符 [eqb]，
     我们可以定义函数 [eqb_list] 来测试元素类型为 [A] 的列表的相等关系。
     请完成以下 [eqb_list] 函数的定义。要确定你的定义是否正确，请证明引理
     [eqb_list_true_iff]。 *)
@@ -1103,8 +1227,9 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, recommended (All_forallb)  *)
-(** 回忆一下[Tactics]一章中练习 [forall_exists_challenge] 的函数
+(** **** 练习：2 星, standard, recommended (All_forallb)  
+
+    回忆一下[Tactics]一章中练习 [forall_exists_challenge] 的函数
     [forallb]： *)
 
 Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
@@ -1122,8 +1247,9 @@ Proof.
 
 (** 函数 [forallb] 是否还存在尚未被此规范捕获的重要性质？ *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ================================================================= *)
 (** ** 经典逻辑 vs. 构造逻辑 *)
@@ -1204,8 +1330,9 @@ Qed.
     允许自己从任意陈述中去掉双重否定等价于引入排中律。因此，只要我们不引入排中律，
     就无法在 Coq 中编码此推理。 *)
 
-(** **** 练习：3 星 (excluded_middle_irrefutable)  *)
-(** 证明通用排中律公理与 Coq 的一致性需要复杂的推理，而且并不能在 Coq
+(** **** 练习：3 星, standard (excluded_middle_irrefutable)  
+
+    证明通用排中律公理与 Coq 的一致性需要复杂的推理，而且并不能在 Coq
     自身中进行。然而，以下定理蕴含了假设可判定性公理（即排中律的一个特例）
     成立对于任何_'具体的'_命题 [P] 而言总是安全的。之所以如此，
     是因为我们无法证明这类公理的否定命题。假如我们可以的话，就会同时有
@@ -1218,8 +1345,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced (not_exists_dist)  *)
-(** 在经典逻辑中有这样一条定理，它断言以下两条命题是等价的：
+(** **** 练习：3 星, advanced (not_exists_dist)  
+
+    在经典逻辑中有这样一条定理，它断言以下两条命题是等价的：
 
     ~ (exists x, ~ P x)
     forall x, P x
@@ -1235,8 +1363,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：5 星, optional (classical_axioms)  *)
-(** 对于喜欢挑战的读者，以下练习来自于 Bertot 与 Casteran 所著的
+(** **** 练习：5 星, standard, optional (classical_axioms)  
+
+    对于喜欢挑战的读者，以下练习来自于 Bertot 与 Casteran 所著的
     Coq'Art 一书中第 123 页。以下四条陈述的每一条，加上 [excluded_middle]
     可以认为刻画了经典逻辑。我们无法在 Coq 中证明其中的任意一条，
     不过如果我们希望在经典逻辑下工作的话，可以安全地将其中任意一条作为公理添加到
@@ -1256,6 +1385,8 @@ Definition de_morgan_not_and_not := forall P Q:Prop,
 Definition implies_to_or := forall P Q:Prop,
   (P->Q) -> (~P\/Q).
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
 
+    [] *)
+
+(* Sat Jan 26 15:14:45 UTC 2019 *)

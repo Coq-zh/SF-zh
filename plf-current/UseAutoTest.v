@@ -43,3 +43,5 @@ idtac "********** Standard **********".
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:16:46 UTC 2019 *)

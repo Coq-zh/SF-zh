@@ -11,7 +11,6 @@ Set Bullet Behavior "Strict Subproofs".
 
 From QC Require Import QC.
 
-
 (** Having covered the basics of QuickChick in the previous
     chapter, we are ready to dive into a more realistic case study: a
     typed variant of Imp, the simple imperative language introduced in
@@ -103,13 +102,13 @@ Fixpoint get_fresh_ids n l :=
   | S n' => get_fresh_ids n' ((fresh l) :: l)
   end.
 
-(** **** 练习：2 星 (genId)  *)
-(** Write a [Gen] instance for [id] using the [elems_]
+(** **** 练习：2 星, standard (genId)  
+
+    Write a [Gen] instance for [id] using the [elems_]
     combinator and [get_fresh_ids].  *)
 
 (* 请在此处解答 *)   
 (** [] *)
-
 
 (** There remains the question of how to [shrink] [id]s. 
     We will answer that question when [id]s are used later 
@@ -179,7 +178,6 @@ Proof. dec_eq. Defined.
        - [set] : To update the binding of an element.
        - [dom] : To get the list of keys in the map. *)
 
-
     
 
 (** The implementation of a map is a simple association list.  If a
@@ -230,7 +228,6 @@ Inductive bound_to {A} : Map A -> id -> A -> Prop :=
     prefer to skip the next few paragraphs (until the start of the
     [Context] subsection), which deal with partially automating the
     proofs for such instances. *)
-
 
 Instance dec_bound_to {A : Type} Gamma x (T : A) 
          `{D : forall (x y : A), Dec (x = y)} 
@@ -406,7 +403,6 @@ where "Gamma '||-' e '\IN' T" := (has_type Gamma e T).
     have allowed for equality checks between booleans as well - that will
     become an exercise at the end of this chapter. *)
 
-
 (** Once again, we need a decidable instance for the typing relation of
     TImp. You can skip to the next exercise if you are not interested in
     specific proof details. *)
@@ -455,8 +451,9 @@ Proof with solve_sum.
   destruct (dec_bound_to Gamma i T); destruct dec; solve_sum.
 Defined.
 
-(** **** 练习：3 星 (arbitraryExp)  *)
-(** Derive [Arbitrary] for expressions.  To see how good it is at
+(** **** 练习：3 星, standard (arbitraryExp)  
+
+    Derive [Arbitrary] for expressions.  To see how good it is at
     generating _well-typed_ expressions, write a conditional property 
     [cond_prop] that is (trivially) always true, with the precondition 
     that some expression is well-typed. Try to check that property like 
@@ -470,8 +467,9 @@ Defined.
     increase the size until the maximum size is reached, and then
     start over.  What happens when you vary the size bound? *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ================================================================= *)
 (** ** Generating Typed Expressions *)
@@ -509,8 +507,9 @@ Print GOpt.
          : Type -> Type
 *)
 
-(* Check Monad_GOpt. *)
-(** 
+(* Check Monad_GOpt. 
+
+    
     Monad_GOpt
          : Monad GOpt
 *)
@@ -846,8 +845,9 @@ Definition expression_soundness_exec :=
   | _ => true
   end)))).   
 
-(* QuickChick expression_soundness_exec. *)
-(** 
+(* QuickChick expression_soundness_exec. 
+
+    
 
      ===>
        QuickChecking expression_soundness_exec
@@ -856,8 +856,8 @@ Definition expression_soundness_exec :=
        TBool
        Some EAnd (EAnd (EEq (EVar 4) (EVar 1)) (EEq (ENum 0) (EVar 4))) EFalse
        *** Failed after 8 tests and 0 shrinks. (0 discards)
-*)
-(** Where is the bug??  Looks like we need some shrinking! *)
+
+    Where is the bug??  Looks like we need some shrinking! *)
 
 (* ================================================================= *)
 (** ** Shrinking for Expressions *)
@@ -879,8 +879,9 @@ Definition expression_soundness_exec_firstshrink :=
   | _ => true
   end)))).   
 
-(* QuickChick expression_soundness_exec_firstshrink. *)
-(** 
+(* QuickChick expression_soundness_exec_firstshrink. 
+
+    
 << 
      ===> 
        QuickChecking expression_soundness_exec_firsttry
@@ -1025,8 +1026,9 @@ Definition shrink_typed_has_type :=
 (* QuickChick shrink_typed_has_type. *)
 
 (* ================================================================= *)
-(** ** Back to Soundness *)
-(** To lift the shrinker to optional expressions, QuickChick provides
+(** ** Back to Soundness 
+
+    To lift the shrinker to optional expressions, QuickChick provides
     the following function. *)
 
 Definition lift_shrink {A}
@@ -1054,8 +1056,9 @@ Definition expression_soundness_exec' :=
   | _ => true
   end)))).   
 
-(* QuickChick expression_soundness_exec'. *)
-(** 
+(* QuickChick expression_soundness_exec'. 
+
+    
 
      ===>
         QuickChecking expression_soundness_exec'
@@ -1087,7 +1090,7 @@ Notation "c1 ;;; c2" :=
   (CSeq c1 c2) (at level 80, right associativity).
 Notation "'WHILE' b 'DO' c 'END'" :=
   (CWhile b c) (at level 80, right associativity).
-Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
+Notation "'TEST' c1 'THEN' c2 'ELSE' c3 'FI'" :=
   (CIf c1 c2 c3) (at level 80, right associativity).
 
 Derive Show for com.
@@ -1176,13 +1179,15 @@ Proof with eauto.
     destruct (dec_has_type e Gamma TBool); destruct dec; solve_sum.
 Qed.
 
-(** **** 练习：4 星 (arbitrary_well_typed_com)  *)
-(** Write a generator and a shrinker for well_typed programs given
+(** **** 练习：4 星, standard (arbitrary_well_typed_com)  
+
+    Write a generator and a shrinker for well_typed programs given
     some context [Gamma].  Write some appropriate sanity checks and
     make sure they give expected results. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (** To complete the tour of testing for TImp, here is a (buggy??)
     evaluation function for commands given a state. To ensure
@@ -1213,7 +1218,7 @@ Fixpoint ceval (fuel : nat) (st : state) (c : com) : result :=
         | Success st' =>  ceval fuel' st' c2 
         | _ => Fail 
         end
-    | IFB b THEN c1 ELSE c2 FI =>
+    | TEST b THEN c1 ELSE c2 FI =>
       match eval st b with 
       | Some (VBool b) =>
         ceval fuel' st (if b then c1 else c2)
@@ -1243,13 +1248,15 @@ Conjecture well_typed_state_never_stuck :
   forall c, well_typed_com Gamma c ->
   forall fuel, isFail (ceval fuel st c) = false.
 
-(** **** 练习：4 星 (well_typed_state_never_stuck)  *)
-(** Write a checker for the above property, find any bugs, and fix them. *)
+(** **** 练习：4 星, standard (well_typed_state_never_stuck)  
+
+    Write a checker for the above property, find any bugs, and fix them. *)
 
 (* 请在此处解答 *)
 
-(** **** 练习：4 星 (ty_eq_polymorphic)  *)
-(** In the [has_type] relation we allowed equality checks between 
+(** **** 练习：4 星, standard (ty_eq_polymorphic)  
+
+    In the [has_type] relation we allowed equality checks between 
     only arithmetic expressions. Introduce an additional typing 
     rule that allows for equality checks between booleans.
 
@@ -1381,8 +1388,9 @@ End GenSTPlayground.
 Conjecture conditional_prop_example : 
   forall (x y : nat), x = y -> x = y.
 
-(* QuickChick conditional_prop_example. *)
-(** 
+(* QuickChick conditional_prop_example. 
+
+    
   ==>
     QuickChecking conditional_prop_example
     +++ Passed 10000 tests (0 discards)
@@ -1396,3 +1404,5 @@ Conjecture conditional_prop_example :
 
 (** The first version of this material was developed in collaboration
     with Nicolas Koh. *)
+
+(* Sat Jan 26 15:19:30 UTC 2019 *)

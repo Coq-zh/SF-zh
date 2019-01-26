@@ -44,8 +44,9 @@ Proof.
     相比于直接使用 [nat_ind] 这样的归纳原理，在实践中使用 [induction] 更加方便。
     但重要的是认识到除了这一点变量名的管理工作，我们在做的其实就是应用 [nat_ind]。 *)
 
-(** **** 练习：2 星, optional (plus_one_r')  *)
-(** 请不使用 [induction] 策略来完成这个证明。 *)
+(** **** 练习：2 星, standard, optional (plus_one_r')  
+
+    请不使用 [induction] 策略来完成这个证明。 *)
 
 Theorem plus_one_r' : forall n:nat,
   n + 1 = S n.
@@ -79,8 +80,9 @@ Check yesno_ind.
                       P no  ->
                       forall y : yesno, P y *)
 
-(** **** 练习：1 星, optional (rgb)  *)
-(** 请写出对这个数据类型 Coq 将会生成的归纳原理。在纸上或注释中写下你的答案，
+(** **** 练习：1 星, standard, optional (rgb)  
+
+    请写出对这个数据类型 Coq 将会生成的归纳原理。在纸上或注释中写下你的答案，
     然后同 Coq 打印的结果比较。 *)
 
 Inductive rgb : Type :=
@@ -105,15 +107,17 @@ Check natlist_ind.
             P l -> P (ncons n l)) ->
          forall n : natlist, P n *)
 
-(** **** 练习：1 星, optional (natlist1)  *)
-(** 假设我们写下的定义和上面的有一些区别： *)
+(** **** 练习：1 星, standard, optional (natlist1)  
+
+    假设我们写下的定义和上面的有一些区别： *)
 
 Inductive natlist1 : Type :=
   | nnil1
   | nsnoc1 (l : natlist1) (n : nat).
 
-(** 现在归纳原理会是什么呢？ *)
-(** [] *)
+(** 现在归纳原理会是什么呢？ 
+
+    [] *)
 
 (** 对于这些例子，我们可以总结出一般的规则：
 
@@ -127,8 +131,9 @@ Inductive natlist1 : Type :=
           成立”。
 *)
 
-(** **** 练习：1 星, optional (byntree_ind)  *)
-(** 请写出对这个数据类型 Coq 将会生成的归纳原理。（与之前一样，在纸上或注释中写下你的答案，
+(** **** 练习：1 星, standard, optional (byntree_ind)  
+
+    请写出对这个数据类型 Coq 将会生成的归纳原理。（与之前一样，在纸上或注释中写下你的答案，
     然后同 Coq 打印的结果比较。） *)
 
 Inductive byntree : Type :=
@@ -137,8 +142,9 @@ Inductive byntree : Type :=
  | nbranch (yn : yesno) (t1 t2 : byntree).
 (** [] *)
 
-(** **** 练习：1 星, optional (ex_set)  *)
-(** 这是对一个归纳定义的集合的归纳原理。
+(** **** 练习：1 星, standard, optional (ex_set)  
+
+    这是对一个归纳定义的集合的归纳原理。
 
       ExSet_ind :
          forall P : ExSet -> Prop,
@@ -178,8 +184,9 @@ Inductive ExSet : Type :=
     请注意_'全部的'_归纳原理都被 [X] 所参数化。也即，[list_ind] 可认为是一个
     多态函数，当被应用类型 [X] 时，返回特化在类型 [list X] 上的归纳原理。 *)
 
-(** **** 练习：1 星, optional (tree)  *)
-(** 请写出对这个数据类型 Coq 将会生成的归纳原理。同 Coq 打印的结果比较你的答案。*)
+(** **** 练习：1 星, standard, optional (tree)  
+
+    请写出对这个数据类型 Coq 将会生成的归纳原理。同 Coq 打印的结果比较你的答案。*)
 
 Inductive tree (X:Type) : Type :=
   | leaf (x : X)
@@ -187,8 +194,9 @@ Inductive tree (X:Type) : Type :=
 Check tree_ind.
 (** [] *)
 
-(** **** 练习：1 星, optional (mytype)  *)
-(** 请找到对应于以下归纳原理的归纳定义：
+(** **** 练习：1 星, standard, optional (mytype)  
+
+    请找到对应于以下归纳原理的归纳定义：
 
       mytype_ind :
         forall (X : Type) (P : mytype X -> Prop),
@@ -200,8 +208,9 @@ Check tree_ind.
 *) 
 (** [] *)
 
-(** **** 练习：1 星, optional (foo)  *)
-(** 请找到对应于以下归纳原理的归纳定义：
+(** **** 练习：1 星, standard, optional (foo)  
+
+    请找到对应于以下归纳原理的归纳定义：
 
       foo_ind :
         forall (X Y : Type) (P : foo X Y -> Prop),
@@ -213,8 +222,9 @@ Check tree_ind.
 *) 
 (** [] *)
 
-(** **** 练习：1 星, optional (foo')  *)
-(** 请考虑以下归纳定义： *)
+(** **** 练习：1 星, standard, optional (foo')  
+
+    请考虑以下归纳定义： *)
 
 Inductive foo' (X:Type) : Type :=
   | C1 (l : list X) (f : foo' X)
@@ -343,47 +353,49 @@ Proof.
   - (* m = S m' *) simpl. rewrite <- IHm'.
     rewrite <- plus_n_Sm. reflexivity.  Qed.
 
-(** **** 练习：1 星, optional (plus_explicit_prop)  *)
-(** 以上面 [mult_0_r''] 的方式来重写 [plus_assoc']，[plus_comm'] 和它们的证明——
+(** **** 练习：1 星, standard, optional (plus_explicit_prop)  
+
+    以上面 [mult_0_r''] 的方式来重写 [plus_assoc']，[plus_comm'] 和它们的证明——
     也即，对于每个定理，给出一个明确的命题的 [Definition]，陈述定理并用归纳法证明这个
     定义的命题。 *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ################################################################# *)
 (** * [Prop] 中的归纳原理 *)
 
-(** 之前，我们仔细学习了 Coq 为归纳定义的_'集合'_生成的归纳原理。 像 [ev]
+(** 之前，我们仔细学习了 Coq 为归纳定义的_'集合'_生成的归纳原理。 像 [even]
     这样的归纳定义_'命题'_的归纳原理会复杂一点点。就全部归纳原理来说，我们想要
-    通过使用 [ev] 的归纳原理并归纳地考虑 [ev] 中所有可能的形式来证明一些东西。
+    通过使用 [even] 的归纳原理并归纳地考虑 [even] 中所有可能的形式来证明一些东西。
     然而，直观地讲，我们想要证明的东西并不是关于_'证据'_的陈述，而是关于
     _'数字'_的陈述：因此，我们想要让归纳原理允许通过对证据进行归纳来
     证明关于数字的性质。
 
-    比如，根据我们前面所讲，你可能会期待这样归纳定义的 [ev]……
+    比如，根据我们前面所讲，你可能会期待这样归纳定义的 [even]……
 
-      Inductive ev : nat -> Prop :=
-      | ev_0 : ev 0
-      | ev_SS : forall n : nat, ev n -> ev (S (S n)).
+      Inductive even : nat -> Prop :=
+      | ev_0 : even 0
+      | ev_SS : forall n : nat, even n -> even (S (S n)).
 
     ……并给我们下面这样的归纳原理……
 
-    ev_ind_max : forall P : (forall n : nat, ev n -> Prop),
+    ev_ind_max : forall P : (forall n : nat, even n -> Prop),
          P O ev_0 ->
-         (forall (m : nat) (E : ev m),
+         (forall (m : nat) (E : even m),
             P m E ->
             P (S (S m)) (ev_SS m E)) ->
-         forall (n : nat) (E : ev n),
+         forall (n : nat) (E : even n),
          P n E
 
      ……因为：
 
-     - 因为 [ev] 被数字 [n] 所索引（任何 [ev] 的对象 [E] 都是某个数字 [n]
+     - 因为 [even] 被数字 [n] 所索引（任何 [even] 的对象 [E] 都是某个数字 [n]
        是偶数的证据），命题 [P] 同时被 [n] 和 [E] 所参数化——也即，被用于证明断言的
        归纳原理涉同时及到数字和这个数字是偶数的证据。
 
-     - 由于有两种方法来给出偶数性质的证据（因为 [ev] 有两个构造子），应用归纳原理生成
+     - 由于有两种方法来给出偶数性质的证据（因为 [even] 有两个构造子），应用归纳原理生成
        了两个子目标：
 
          - 我们必须证明 [P] 对 [0] 和 [ev_0] 成立。
@@ -404,15 +416,15 @@ Proof.
        forall n : nat,
        even n -> P n
 
-    出于这样的原因，Coq 实际上为 [ev] 生成了简化过的归纳原理： *)
+    出于这样的原因，Coq 实际上为 [even] 生成了简化过的归纳原理： *)
 
-Check ev_ind.
+Check even_ind.
 (* ===> ev_ind
         : forall P : nat -> Prop,
           P 0 ->
-          (forall n : nat, ev n -> P n -> P (S (S n))) ->
+          (forall n : nat, even n -> P n -> P (S (S n))) ->
           forall n : nat,
-          ev n -> P n *)
+          even n -> P n *)
 
 (** 请特别注意，Coq 丢弃了命题 [P] 参数中的证据项 [E]。 *)
 
@@ -426,17 +438,17 @@ Check ev_ind.
       - 对任意 [n]，如果 [n] 是偶数且 [P] 对 [n] 成立，那么 [P] 对 [S (S n)] 成立。 *)
 
 (** 正如期待的那样，我们可以不使用 [induction] 而直接应用 [ev_ind]。
-    比如，我们可以使用它来证明 [ev']（那个在 [IndProp] 一章的练习中有点笨拙的偶数性质的定义）
-    等价于更简洁的归纳定义 [ev]： *)
-Theorem ev_ev' : forall n, ev n -> ev' n.
+    比如，我们可以使用它来证明 [even']（那个在 [IndProp] 一章的练习中有点笨拙的偶数性质的定义）
+    等价于更简洁的归纳定义 [even]： *)
+Theorem ev_ev' : forall n, even n -> even' n.
 Proof.
-  apply ev_ind.
+  apply even_ind.
   - (* ev_0 *)
-    apply ev'_0.
+    apply even'_0.
   - (* ev_SS *)
     intros m Hm IH.
-    apply (ev'_sum 2 m).
-    + apply ev'_2.
+    apply (even'_sum 2 m).
+    + apply even'_2.
     + apply IH.
 Qed.
 
@@ -580,3 +592,4 @@ Check le_ind.
 
             因此，根据 [le_S]，[n <= S o']。  [] *)
 
+(* Sat Jan 26 15:14:46 UTC 2019 *)

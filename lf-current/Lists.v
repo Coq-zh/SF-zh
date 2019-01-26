@@ -123,14 +123,14 @@ Proof.
 (** 注意：不同于解构自然数产生两个子目标，[destruct] 在此只产生
     一个子目标。这是因为 [natprod] 只有一种构造方法。 *)
 
-(** **** 练习：1 星 (snd_fst_is_swap)  *)
+(** **** 练习：1 星, standard (snd_fst_is_swap)  *)
 Theorem snd_fst_is_swap : forall (p : natprod),
   (snd p, fst p) = swap_pair p.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星, optional (fst_swap_is_snd)  *)
+(** **** 练习：1 星, standard, optional (fst_swap_is_snd)  *)
 Theorem fst_swap_is_snd : forall (p : natprod),
   fst (swap_pair p) = snd p.
 Proof.
@@ -261,8 +261,9 @@ Proof. reflexivity.  Qed.
 (* ----------------------------------------------------------------- *)
 (** *** 练习 *)
 
-(** **** 练习：2 星, recommended (list_funs)  *)
-(** 完成以下 [nonzeros]、[oddmembers] 和 [countoddmembers] 的定义，
+(** **** 练习：2 星, standard, recommended (list_funs)  
+
+    完成以下 [nonzeros]、[oddmembers] 和 [countoddmembers] 的定义，
     你可以查看测试函数来理解这些函数应该做什么。 *)
 
 Fixpoint nonzeros (l:natlist) : natlist
@@ -295,8 +296,9 @@ Example test_countoddmembers3:
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced (alternate)  *)
-(** 完成 [alternate] 的定义，它从两个列表中交替地取出元素并合并为一个列表，
+(** **** 练习：3 星, advanced (alternate)  
+
+    完成 [alternate] 的定义，它从两个列表中交替地取出元素并合并为一个列表，
     就像把拉链“拉”起来一样。更多具体示例见后面的测试。
 
     （注意：[alternate] 有一种自然而优雅的定义，但是这一定义无法满足 Coq
@@ -332,8 +334,9 @@ Example test_alternate4:
 
 Definition bag := natlist.
 
-(** **** 练习：3 星, recommended (bag_functions)  *)
-(** 为袋子完成以下 [count]、[sum]、[add]、和 [member] 函数的定义。 *)
+(** **** 练习：3 星, standard, recommended (bag_functions)  
+
+    为袋子完成以下 [count]、[sum]、[add]、和 [member] 函数的定义。 *)
 
 Fixpoint count (v:nat) (s:bag) : nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -381,8 +384,9 @@ Example test_member2:             member 2 [1;4;1] = false.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, optional (bag_more_functions)  *)
-(** 你可以把下面这些和 [bag] 有关的函数当作额外的练习 *)
+(** **** 练习：3 星, standard, optional (bag_more_functions)  
+
+    你可以把下面这些和 [bag] 有关的函数当作额外的练习 *)
 
 (** 倘若某口袋不包含所要移除的数字，那么将 [remove_one] 作用其上不应改变其内容。
     （本练习为选做，但高级班的学生为了完成后面的练习，需要写出 [remove_one]
@@ -428,8 +432,9 @@ Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, recommended (bag_theorem)  *)
-(** 写一个你认为有趣的关于袋子的定理 [bag_theorem]，然后证明它；
+(** **** 练习：2 星, standard, recommended (bag_theorem)  
+
+    写一个你认为有趣的关于袋子的定理 [bag_theorem]，然后证明它；
     这个定理需要用到 [count] 和 [add]。注意，这是个开放性问题。
     也许你写下的定理是正确的，但它可能会涉及到你尚未学过的技巧因而无法证明。
     如果你遇到麻烦了，欢迎提问！ *)
@@ -445,8 +450,9 @@ Qed.
 Definition manual_grade_for_bag_theorem : option (nat*string) := None.
 (* Note to instructors: For silly technical reasons, in this
    file (only) you will need to write [Some (Datatypes.pair 3 ""%string)]
-   rather than [Some (3,""%string)] to enter your grade and comments. *)
-(** [] *)
+   rather than [Some (3,""%string)] to enter your grade and comments. 
+
+    [] *)
 
 (* ################################################################# *)
 (** * 有关列表的论证 *)
@@ -687,7 +693,6 @@ Proof.
     以及当前的证明与读者熟悉的证明之间的相似度都会影响到这一点。
     对于我们现在的目的而言，最好先用更加冗长的方式。 *)
 
-
 (** ** [Search] 搜索*)
 
 (** 我们已经见过很多需要使用之前证明过的结论（例如通过 [rewrite]）来证明的定理了。
@@ -708,8 +713,9 @@ Proof.
 (* ================================================================= *)
 (** ** 列表练习，第一部分 *)
 
-(** **** 练习：3 星 (list_exercises)  *)
-(** 更多有关列表的实践： *)
+(** **** 练习：3 星, standard (list_exercises)  
+
+    更多有关列表的实践： *)
 
 Theorem app_nil_r : forall l : natlist,
   l ++ [] = l.
@@ -742,8 +748,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (eqblist)  *)
-(** 填写 [eqblist] 的定义，它通过比较列表中的数字来判断是否相等。
+(** **** 练习：2 星, standard (eqblist)  
+
+    填写 [eqblist] 的定义，它通过比较列表中的数字来判断是否相等。
     证明对于所有列表 [l]，[eqblist l l] 返回 [true]。 *)
 
 Fixpoint eqblist (l1 l2 : natlist) : bool
@@ -772,7 +779,7 @@ Proof.
 
 (** 下面这组简单的定理用于证明你之前关于袋子的定义。 *)
 
-(** **** 练习：1 星 (count_member_nonzero)  *)
+(** **** 练习：1 星, standard (count_member_nonzero)  *)
 Theorem count_member_nonzero : forall (s : bag),
   1 <=? (count 1 (1 :: s)) = true.
 Proof.
@@ -799,14 +806,17 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, optional (bag_count_sum)  *)
-(** 写下一个用到函数 [count] 和 [sum] 的，关于袋子的有趣定理 [bag_count_sum]，
-    然后证明它。（你可能会发现该证明的难度取决于你如何定义 [count]！） *)
-(* 请在此处解答 *)
-(** [] *)
+(** **** 练习：3 星, standard, optional (bag_count_sum)  
 
-(** **** 练习：4 星, advanced (rev_injective)  *)
-(** 求证 [rev] 是单射函数，即：
+    写下一个用到函数 [count] 和 [sum] 的，关于袋子的有趣定理 [bag_count_sum]，
+    然后证明它。（你可能会发现该证明的难度取决于你如何定义 [count]！） *)
+(* 请在此处解答 
+
+    [] *)
+
+(** **** 练习：4 星, advanced (rev_injective)  
+
+    求证 [rev] 是单射函数，即：
 
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
 
@@ -867,7 +877,6 @@ Proof. reflexivity. Qed.
 
     本例也是个介绍 Coq 编程语言更多细微特性的机会，比如条件表达式... *)
 
-
 Fixpoint nth_error' (l:natlist) (n:nat) : natoption :=
   match l with
   | nil => None
@@ -889,7 +898,7 @@ Definition option_elim (d : nat) (o : natoption) : nat :=
   | None => d
   end.
 
-(** **** 练习：2 星 (hd_error)  *)
+(** **** 练习：2 星, standard (hd_error)  *)
  (** 用同样的思路修正之前的 [hd] 函数，使我们无需为 [nil] 的情况提供默认元素。  *)
 
 Definition hd_error (l : natlist) : natoption
@@ -905,7 +914,7 @@ Example test_hd_error3 : hd_error [5;6] = Some 5.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星, optional (option_elim_hd)  *)
+(** **** 练习：1 星, standard, optional (option_elim_hd)  *)
  (** 此练习能帮助你在新的 [hd_error] 和旧的 [hd] 之间建立联系。 *)
 
 Theorem option_elim_hd : forall (l:natlist) (default:nat),
@@ -937,7 +946,7 @@ Definition eqb_id (x1 x2 : id) :=
   | Id n1, Id n2 => n1 =? n2
   end.
 
-(** **** 练习：1 星 (eqb_id_refl)  *)
+(** **** 练习：1 星, standard (eqb_id_refl)  *)
 Theorem eqb_id_refl : forall x, true = eqb_id x x.
 Proof.
   (* 请在此处解答 *) Admitted.
@@ -976,7 +985,7 @@ Fixpoint find (x : id) (d : partial_map) : natoption :=
                      else find x d'
   end.
 
-(** **** 练习：1 星 (update_eq)  *)
+(** **** 练习：1 星, standard (update_eq)  *)
 Theorem update_eq :
   forall (d : partial_map) (x : id) (v: nat),
     find x (update d x v) = Some v.
@@ -984,7 +993,7 @@ Proof.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (update_neq)  *)
+(** **** 练习：1 星, standard (update_neq)  *)
 Theorem update_neq :
   forall (d : partial_map) (x y : id) (o: nat),
     eqb_id x y = false -> find x (update d y o) = find x d.
@@ -993,8 +1002,9 @@ Proof.
 (** [] *)
 End PartialMap.
 
-(** **** 练习：2 星 (baz_num_elts)  *)
-(** 考虑以下归纳定义： *)
+(** **** 练习：2 星, standard (baz_num_elts)  
+
+    考虑以下归纳定义： *)
 
 Inductive baz : Type :=
   | Baz1 (x : baz)
@@ -1008,3 +1018,4 @@ Inductive baz : Type :=
 Definition manual_grade_for_baz_num_elts : option (nat*string) := None.
 (** [] *)
 
+(* Sat Jan 26 15:14:45 UTC 2019 *)

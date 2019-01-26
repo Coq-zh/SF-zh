@@ -37,7 +37,7 @@ idtac " ".
 
 idtac "#> ev_8".
 idtac "Possible points: 1".
-check_type @ev_8 ((ev 8)).
+check_type @ev_8 ((even 8)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions ev_8.
@@ -46,7 +46,7 @@ idtac " ".
 
 idtac "#> ev_8'".
 idtac "Possible points: 1".
-check_type @ev_8' ((ev 8)).
+check_type @ev_8' ((even 8)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions ev_8'.
@@ -84,3 +84,5 @@ Print Assumptions MyEquality.equality__leibniz_equality.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:14:56 UTC 2019 *)

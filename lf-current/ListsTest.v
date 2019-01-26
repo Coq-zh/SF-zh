@@ -472,3 +472,5 @@ Print Assumptions NatList.remove_does_not_increase_count.
 idtac "---------- rev_injective ---------".
 idtac "MANUAL".
 Abort.
+
+(* Sat Jan 26 15:14:49 UTC 2019 *)

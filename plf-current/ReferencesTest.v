@@ -89,7 +89,7 @@ idtac "Possible points: 2".
 check_type @STLCRef.RefsAndNontermination.factorial_type (
 (STLCRef.has_type (@Maps.empty STLCRef.ty) (@nil STLCRef.ty)
    STLCRef.RefsAndNontermination.factorial
-   (STLCRef.TArrow STLCRef.TNat STLCRef.TNat))).
+   (STLCRef.Arrow STLCRef.Nat STLCRef.Nat))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions STLCRef.RefsAndNontermination.factorial_type.
@@ -121,3 +121,5 @@ Print Assumptions STLCRef.RefsAndNontermination.factorial_type.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:16:30 UTC 2019 *)

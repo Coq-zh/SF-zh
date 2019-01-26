@@ -192,3 +192,5 @@ Print Assumptions hoare_asgn_fwd.
 idtac "---------- hoare_repeat ---------".
 idtac "MANUAL".
 Abort.
+
+(* Sat Jan 26 15:15:55 UTC 2019 *)

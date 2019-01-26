@@ -1,8 +1,8 @@
 (** * Typeclasses: A Tutorial on Typeclasses in Coq *)
 
-Require Import Coq.Bool.Bool.
-Require Import Coq.Strings.String.
-Require Import Coq.Arith.Arith.
+From Coq Require Import Bool.Bool.
+From Coq Require Import Strings.String.
+From Coq Require Import Arith.Arith.
 Require Import Omega.
 Require Import List. Import ListNotations.
 Local Open Scope string.
@@ -147,11 +147,13 @@ Instance showNat : Show nat :=
 
 Compute (show 42).
 
-(** **** 练习：1 星 (showNatBool)  *)
-(** Write a [Show] instance for pairs of a nat and a bool. *)
+(** **** 练习：1 星, standard (showNatBool)  
 
-(* 请在此处解答 *)
-(** [] *)
+    Write a [Show] instance for pairs of a nat and a bool. *)
+
+(* 请在此处解答 
+
+    [] *)
 
 (** Next, we can define functions that use the overloaded function
     [show] like this: *)
@@ -186,11 +188,13 @@ Compute (showTwo Red Green).
     instance of [show] determines which of the implicitly supplied
     show functions (for [A] or [B]) gets invoked. *)
 
-(** **** 练习：1 星 (missingConstraint)  *)
-(** What happens if we forget the class constraints in the definitions
+(** **** 练习：1 星, standard (missingConstraint)  
+
+    What happens if we forget the class constraints in the definitions
     of [showOne] or [showTwo]?  Try deleting them and see what
-    happens. *)
-(** [] *)    
+    happens. 
+
+    [] *)    
 
 (** Of course, [Show] is not the only interesting typeclass.  There
     are many other situations where it is useful to be able to
@@ -235,13 +239,15 @@ Instance eqNat : Eq nat :=
     types.  In particular, equality at types like [nat->nat] is
     undecidable. *)
 
-(** **** 练习：3 星, optional (boolArrowBool)  *)
-(** There are some function types, like [bool->bool], for which
+(** **** 练习：3 星, standard, optional (boolArrowBool)  
+
+    There are some function types, like [bool->bool], for which
     checking equality makes perfect sense.  Write an [Eq] instance for
     this type. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ================================================================= *)
 (** ** Parameterized Instances: New Typeclasses from Old *)
@@ -285,20 +291,24 @@ Instance showList {A : Type} `{Show A} : Show (list A) :=
     show l := append "[" (append (showListAux show l) "]")
   }.
 
-(** **** 练习：3 星 (eqEx)  *)
-(** Write an [Eq] instance for lists and [Show] and [Eq] instances for
+(** **** 练习：3 星, standard (eqEx)  
+
+    Write an [Eq] instance for lists and [Show] and [Eq] instances for
     the [option] type constructor. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
 
-(** **** 练习：3 星, optional (boolArrowA)  *)
-(** Generalize your solution to the [boolArrowBool] exercise to build
+    [] *)
+
+(** **** 练习：3 星, standard, optional (boolArrowA)  
+
+    Generalize your solution to the [boolArrowBool] exercise to build
     an equality instance for any type of the form [bool->A], where [A]
     itself is an [Eq] type.  Show that it works for [bool->bool->nat]. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ================================================================= *)
 (** ** Class Hierarchies *)
@@ -353,22 +363,28 @@ Instance natOrd : Ord nat :=
 Definition max {A: Type} `{Eq A} `{Ord A} (x y : A) : A :=
   if le x y then y else x.
 
-(** **** 练习：1 星 (missingConstraintAgain)  *)
-(** What does Coq say if the [Ord] class constraint is left out of the
-    definition of [max]?  What about the [Eq] class constraint? *)
-(** [] *)    
+(** **** 练习：1 星, standard (missingConstraintAgain)  
 
-(** **** 练习：3 星 (ordMisc)  *)
-(** Define [Ord] instances for options and pairs. *)
+    What does Coq say if the [Ord] class constraint is left out of the
+    definition of [max]?  What about the [Eq] class constraint? 
 
-(* 请在此处解答 *)
-(** [] *)
+    [] *)    
 
-(** **** 练习：3 星 (ordList)  *)
-(** For a little more practice, define an [Ord] instance for lists. *)
+(** **** 练习：3 星, standard (ordMisc)  
 
-(* 请在此处解答 *)
-(** [] *)
+    Define [Ord] instances for options and pairs. *)
+
+(* 请在此处解答 
+
+    [] *)
+
+(** **** 练习：3 星, standard (ordList)  
+
+    For a little more practice, define an [Ord] instance for lists. *)
+
+(* 请在此处解答 
+
+    [] *)
 
 (* ################################################################# *)
 (** * How It Works *)
@@ -621,10 +637,12 @@ Check {| lx:=2; ly:=4; label:="hello" |}.
         : LabeledPoint string
 *)
 
-(** **** 练习：1 星 (rcdParens)  *)
-(** Note that the [A] parameter in the definition of [LabeledPoint] is
-    bound with parens, not curly braces. Why is this a better choice? *)
-(** [] *)
+(** **** 练习：1 星, standard (rcdParens)  
+
+    Note that the [A] parameter in the definition of [LabeledPoint] is
+    bound with parens, not curly braces. Why is this a better choice? 
+
+    [] *)
 
 (* ================================================================= *)
 (** ** Typeclasses are Records *)
@@ -711,13 +729,15 @@ Unset Printing Implicit.
     value using a variant of the [eauto] proof search procedure that
     refers to a "hint database" called [typeclass_instances]. *)
 
-(** **** 练习：1 星 (HintDb)  *)
-(** Uncomment and execute the following command.  Search for "For
+(** **** 练习：1 星, standard (HintDb)  
+
+    Uncomment and execute the following command.  Search for "For
     Show" in the output and have a look at the entries for [showNat]
     and [showPair]. *)
 
-(* Print HintDb typeclass_instances. *)
-(** [] *)
+(* Print HintDb typeclass_instances. 
+
+    [] *)
 
 (** We can see what's happening during the instance inference process
     if we issue the [Set Typeclasses Debug] command. *)
@@ -767,7 +787,6 @@ Unset Typeclasses Debug.
        ===>   { Proof search for Show Nat returns showNat }
     @show nat showNat 42
 *)
-
 
 (* ################################################################# *)
 (** * Typeclasses and Proofs *)
@@ -852,7 +871,7 @@ Proof.
     members of other typeclasses: these are called _substructures_.
     Here is an example adapted from the Coq Reference Manual. *)
 
-Require Import Coq.Relations.Relation_Definitions.
+From Coq Require Import Relations.Relation_Definitions.
 
 Class Reflexive (A : Type) (R : relation A) :=
   { 
@@ -938,15 +957,18 @@ Proof.
       right; intro; destruct H; contradiction.
 Defined.
 
-(** **** 练习：3 星 (dec_neg_disj)  *)
-(** Give instance declarations showing that, if [P] and [Q] are
+(** **** 练习：3 星, standard (dec_neg_disj)  
+
+    Give instance declarations showing that, if [P] and [Q] are
     decidable propositions, then so are [~P] and [P\/Q]. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
 
-(** **** 练习：4 星 (Dec_All)  *)
-(** The following function converts a list into a proposition claiming
+    [] *)
+
+(** **** 练习：4 星, standard (Dec_All)  
+
+    The following function converts a list into a proposition claiming
     that every element of that list satiesfies some proposition
     [P]: *)
 
@@ -959,8 +981,9 @@ Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop :=
 (** Create an instance of [Dec] for [All P l], given that [P a] is
     decidable for every [a]. *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (** One reason for doing all this is that it makes it easy to move
     back and forth between the boolean and propositional worlds,
@@ -1039,10 +1062,11 @@ Open Scope monad_scope.
          ret : forall {T : Type}, T -> M T ;
          bind : forall {T U : Type}, M T -> (T -> M U) -> M U
        }.
-*)
-(** That is, a type family [M] is an instance of the [Monad] class if
-    we can define functions [ret] and [bind] of the appropriate types. *)
-(** (If you [Print] the actual definition, you'll see something more
+
+    That is, a type family [M] is an instance of the [Monad] class if
+    we can define functions [ret] and [bind] of the appropriate types. 
+
+    (If you [Print] the actual definition, you'll see something more
     complicated, involving [Polymorphic Record bla bla]...  The
     [Polymorphic] part refers to Coq's "universe polymorphism," which
     does not concern us here.) *)
@@ -1146,7 +1170,6 @@ Definition sum3opt' (n1 n2 : option nat) :=
     repository (https://github.com/coq-ext-lib/coq-ext-lib) includes
     some further examples of using monads in Coq. *)
 
-
 (* ================================================================= *)
 (** ** Others *)
 
@@ -1162,7 +1185,6 @@ Definition sum3opt' (n1 n2 : option nat) :=
     Theory_, by Bas Spitters and Eelis van der
     Weegen. https://arxiv.org/pdf/1102.1323.pdf
 *)
-
 
 (* ################################################################# *)
 (** * Controlling Instantiation *)
@@ -1209,9 +1231,11 @@ Fail Check (foo true).
     The lesson is that it matters a great deal _exactly_ what problems
     are posed to the instance search engine. *)
 
-(** **** 练习：1 星 (debugDefaulting)  *)
-(** Do [Set Typeclasses Debug] and verify that this is what happened. *)
-(** [] *)
+(** **** 练习：1 星, standard (debugDefaulting)  
+
+    Do [Set Typeclasses Debug] and verify that this is what happened. 
+
+    [] *)
 
 (* ================================================================= *)
 (** ** Manipulating the Hint Database *)
@@ -1316,7 +1340,6 @@ Compute (show (Baz 42)).
 (* ==> 
      = "Baz: 42"
      : string    *)
-
 
 (* ################################################################# *)
 (** * Debugging *)
@@ -1447,8 +1470,9 @@ Compute e3.
 Definition e4 : list nat := mymap false.
 *)
 
-(** **** 练习：1 星 (nonterm)  *)
-(** Why, exactly, did the search diverge?  Enable typeclass debugging,
+(** **** 练习：1 星, standard (nonterm)  
+
+    Why, exactly, did the search diverge?  Enable typeclass debugging,
     uncomment the above [Definition], and see what gets printed.  (You
     may want to do this from the command line rather than from inside
     an IDE, to make it easier to kill.) *)
@@ -1719,7 +1743,6 @@ Definition e4 : list nat := mymap false.
     items of the interface they actually use, and not on a big
     bundle. *)
 
-
 (* ################################################################# *)
 (** * Further Reading *)
 
@@ -1748,3 +1771,4 @@ Definition e4 : list nat := mymap false.
        http://learnyouahaskell.com/making-our-own-types-and-typeclasses
 *)
 
+(* Sat Jan 26 15:19:29 UTC 2019 *)

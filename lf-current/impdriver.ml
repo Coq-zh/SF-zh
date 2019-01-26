@@ -10,9 +10,9 @@ let test s =
   let parse_res = parse (explode s) in
   (match parse_res with
     NoneE _ -> print_endline ("Syntax error");
-  | SomeE (c, _) ->
+  | SomeE c ->
       let fuel = 1000 in
-      match (ceval_step empty_state c fuel) with
+      match (ceval_step empty_st c fuel) with
         None ->
           print_endline
             ("Still running after " ^ string_of_int fuel ^ " steps")

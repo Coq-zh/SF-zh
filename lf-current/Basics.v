@@ -6,7 +6,7 @@
           ###  请勿公开发布习题解答  ###
           ##############################
 
-   （原因见 [Preface]。)
+   （原因见 [Preface]。）
 *)
 
 (* ################################################################# *)
@@ -17,7 +17,6 @@
     —— 也就是说，我们只需将它视作一种计算数学函数的具体方法即可。这也是
     “函数式编程”中“函数式”一词的含义之一。程序与简单数学对象之间这种直接的联系，
     同时支撑了对程序行为进行形式化证明的正确性以及非形式化论证的可靠性。
-
 
     函数式编程中“函数式”一词的另一个含义是它强调把函数（或方法）
     作为_'一等'_的值 —— 即，这类值可以作为参数传递给其它函数，可以作为结果返回，
@@ -221,8 +220,9 @@ Proof. simpl. reflexivity. Qed.
     我们会在练习中用它来表示留给你的部分。你的练习作业就是将 [Admitted]
     替换为具体的证明。 *)
 
-(** **** 练习：1 星 (nandb)  *)
-(** 移除“[Admitted.]”并补完以下函数的定义，然后确保下列每一个 [Example]
+(** **** 练习：1 星, standard (nandb)  
+
+    移除“[Admitted.]”并补完以下函数的定义，然后确保下列每一个 [Example]
     中的断言都能被 Coq 验证通过。（即仿照上文 [orb] 测试的模式补充证明。）
     此函数应在两个输入中包含 [false] 时返回 [true] 。  *)
 
@@ -239,8 +239,9 @@ Example test_nandb4:               (nandb true true) = false.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (andb3)  *)
-(** 与此前相同，完成下面的 [andb3] 函数。
+(** **** 练习：1 星, standard (andb3)  
+
+    与此前相同，完成下面的 [andb3] 函数。
     此函数应在所有输入均为 [true] 时返回 [true]，否则返回 [false]。 *)
 
 Definition andb3 (b1:bool) (b2:bool) (b3:bool) : bool
@@ -299,8 +300,9 @@ Inductive color : Type :=
 
     每个归纳定义的类型（如 [day]、[bool]、[rgb]、[color] 等）包含一个由构造子
     （如 [red]、[primary]、[true]、[false]、[monday] 等）构建的
-    _'构造子表达式'_ 的集合。 *)
-(** [rgb] 和 [color] 的定义描述了如何构造这两个集合中的元素（即表达式）：
+    _'构造子表达式'_ 的集合。 
+
+    [rgb] 和 [color] 的定义描述了如何构造这两个集合中的元素（即表达式）：
 
     - [red]、[green] 和 [blue] 是 [rgb] 的构造子；
     - [black]、[white] 和 [primary] 是 [color] 的构造子；
@@ -343,7 +345,7 @@ Definition isred (c : color) : bool :=
     a datatype [bit] that resembles [bool] (using the
     constructors [B0] and [B1] for the two possible bit values),
     and then define the datatype [nybble], which is essentially
-    a tuple of four bits.*)
+    a tuple of four bits. *)
 
 Inductive bit : Type :=
   | B0
@@ -359,8 +361,7 @@ Check (bits B1 B0 B1 B0).
     Unwrapping can be done by pattern-matching, as in the [all_zero]
     function which tests a nybble to see if all its bits are O.
     Note that we are using underscore (_) as a _wildcard pattern_ to
-    avoid inventing variable names that will not be used.*)
-
+    avoid inventing variable names that will not be used. *)
 
 Definition all_zero (nb : nybble) : bool :=
   match nb with
@@ -450,7 +451,6 @@ Inductive nat : Type :=
     即一种写下它们的方式。名称 [O] 和 [S] 是任意的，在这一点上它们没有特殊的意义，
     它们只是我们能用来写下数字的两个不同的记号（以及一个说明了任何 [nat]
     都能写成一串 [S] 后跟一个 [O] 的规则）。如果你喜欢，完全可以将同样的定义写成： *)
-
 
 Inductive nat' : Type :=
   | stop
@@ -578,8 +578,9 @@ Fixpoint exp (base power : nat) : nat :=
     | S p => mult base (exp base p)
   end.
 
-(** **** 练习：1 星 (factorial)  *)
-(** 回想一下标准的阶乘函数：
+(** **** 练习：1 星, standard (factorial)  
+
+    回想一下标准的阶乘函数：
 
        factorial(0)  =  1
        factorial(n)  =  n * factorial(n-1)     (if n>0)
@@ -663,8 +664,9 @@ Notation "x <=? y" := (leb x y) (at level 70) : nat_scope.
 Example test_leb3':             (4 <=? 2) = false.
 Proof. simpl. reflexivity.  Qed.
 
-(** **** 练习：1 星 (ltb)  *)
-(** [ltb] 函数检查自然数间的小于关系，以布尔值表示。
+(** **** 练习：1 星, standard (ltb)  
+
+    [ltb] 函数检查自然数间的小于关系，以布尔值表示。
     利用前文定义的函数写出该定义，不要使用 [Fixpoint] 构造新的递归。
     （只需前文中的一个函数即可实现定义，但亦可两者皆用。） *)
 
@@ -787,8 +789,9 @@ Proof.
     若要从右往左改写，可以使用 [rewrite <-]。在上面的证明中试一试这种改变，
     看看 Coq 的反应有何不同。) *)
 
-(** **** 练习：1 星 (plus_id_exercise)  *)
-(** 删除 "[Admitted.]" 并补完证明。 *)
+(** **** 练习：1 星, standard (plus_id_exercise)  
+
+    删除 "[Admitted.]" 并补完证明。 *)
 
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
@@ -814,15 +817,16 @@ Proof.
   rewrite -> plus_O_n.
   reflexivity.  Qed.
 
-(** **** 练习：2 星 (mult_S_1)  *)
+(** **** 练习：2 星, standard (mult_S_1)  *)
 Theorem mult_S_1 : forall n m : nat,
   m = S n ->
   m * (1 + n) = m * m.
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(* （注意，该命题可用 [rewrite] 以外的策略证明，不过请使用 [rewrite] 来做练习。） *)
-(** [] *)
+(* （注意，该命题可用 [rewrite] 以外的策略证明，不过请使用 [rewrite] 来做练习。） 
+
+    [] *)
 
 (* ################################################################# *)
 (** * 利用情况分析来证明 *)
@@ -878,7 +882,6 @@ Proof.
     documentation, as they can help keep you oriented when working
     with the subgoals.)
 
-
     第二行和第三行中的 [-] 符号叫做_'标号'_，它标明了每个生成的子目标所对应的证明部分。
     （译注：此处的“标号”应理解为一个项目列表中每个 _'条目'_ 前的小标记，如 ‣ 或 •。）
     标号后面的代码是一个子目标的完整证明。在本例中，每个子目标都简单地使用
@@ -903,7 +906,6 @@ Proof.
 
     [destruct] 策略可用于任何归纳定义的数据类型。比如，我们接下来会用它来证明
     布尔值的取反是对合（Involutive）的 —— 即，取反是自身的逆运算。 *)
-
 
 Theorem negb_involutive : forall b : bool,
   negb (negb b) = b.
@@ -1004,8 +1006,9 @@ Proof.
   - reflexivity.
 Qed.
 
-(** **** 练习：2 星 (andb_true_elim2)  *)
-(** 证明以下断言, 当使用 [destruct] 时请用标号标出情况（以及子情况）。 *)
+(** **** 练习：2 星, standard (andb_true_elim2)  
+
+    证明以下断言, 当使用 [destruct] 时请用标号标出情况（以及子情况）。 *)
 
 Theorem andb_true_elim2 : forall b c : bool,
   andb b c = true -> c = true.
@@ -1013,7 +1016,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (zero_nbeq_plus_1)  *)
+(** **** 练习：1 星, standard (zero_nbeq_plus_1)  *)
 Theorem zero_nbeq_plus_1 : forall n : nat,
   0 =? (n + 1) = false.
 Proof.
@@ -1076,8 +1079,9 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     然而，由于 Coq 的“递减分析”不是非常精致，
     因此有时必须用一点不同寻常的方式来编写函数。 *)
 
-(** **** 练习：2 星, optional (decreasing)  *)
-(** To get a concrete sense of this, find a way to write a sensible
+(** **** 练习：2 星, standard, optional (decreasing)  
+
+    To get a concrete sense of this, find a way to write a sensible
     [Fixpoint] definition (of a simple function on numbers, say) that
     _does_ terminate on all inputs, but that Coq will reject because
     of this restriction.  (If you choose to turn in this optional
@@ -1085,8 +1089,9 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     out your solution so that it doesn't cause Coq to reject the whole
     file!) *)
 
-(* 请在此处解答 *)
-(** [] *)
+(* 请在此处解答 
+
+    [] *)
 
 (* ################################################################# *)
 (** * 更多练习 *)
@@ -1096,8 +1101,9 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     [make BasicsTest.vo] in a terminal and check its output to make
     sure you didn't miss anything. *)
 
-(** **** 练习：1 星 (indentity_fn_applied_twice)  *)
-(** 用你学过的策略证明以下关于布尔函数的定理。 *)
+(** **** 练习：1 星, standard (indentity_fn_applied_twice)  
+
+    用你学过的策略证明以下关于布尔函数的定理。 *)
 
 Theorem identity_fn_applied_twice :
   forall (f : bool -> bool),
@@ -1108,8 +1114,9 @@ Proof.
 
 (** [] *)
 
-(** **** 练习：1 星 (negation_fn_applied_twice)  *)
-(** 现在声明并证明定理 [negation_fn_applied_twice]，与上一个类似，
+(** **** 练习：1 星, standard (negation_fn_applied_twice)  
+
+    现在声明并证明定理 [negation_fn_applied_twice]，与上一个类似，
     但是第二个前提说明函数 [f] 有 [f x = negb x] 的性质。 *)
 
 (* 请在此处解答 *)
@@ -1122,8 +1129,9 @@ From Coq Require Export String.
 Definition manual_grade_for_negation_fn_applied_twice : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：3 星, optional (andb_eq_orb)  *)
-(** 请证明下列定理。（提示：此定理的证明可能会有点棘手，取决于你如何证明它。
+(** **** 练习：3 星, standard, optional (andb_eq_orb)  
+
+    请证明下列定理。（提示：此定理的证明可能会有点棘手，取决于你如何证明它。
     或许你需要先证明一到两个辅助引理。或者，你要记得未必要同时引入所有前提。） *)
 
 Theorem andb_eq_orb :
@@ -1135,8 +1143,9 @@ Proof.
 
 (** [] *)
 
-(** **** 练习：3 星 (binary)  *)
-(** We can generalize our unary representation of natural numbers to
+(** **** 练习：3 星, standard (binary)  
+
+    We can generalize our unary representation of natural numbers to
     the more efficient binary representation by treating a binary
     number as a sequence of constructors [A] and [B] (representing 0s
     and 1s), terminated by a [Z]. For comparison, in the unary
@@ -1189,9 +1198,4 @@ Fixpoint bin_to_nat (m:bin) : nat
 Definition manual_grade_for_binary : option (nat*string) := None.
 (** [] *)
 
-(** NEW NAME: The next line is a temporary hack to allow
-    [zero_nbeq_plus_1] to be used as a synonym for the "more
-    up-to-date" (i.e., consistent with the Coq library) name
-    [zero_neqb_plus_1]... *)
-Notation zero_neqb_plus_1 := zero_nbeq_plus_1 (only parsing).
-
+(* Sat Jan 26 15:14:45 UTC 2019 *)

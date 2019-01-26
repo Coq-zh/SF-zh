@@ -182,12 +182,13 @@ Hint Resolve int_ltb_reflect Z_eqb_reflect Z_ltb_reflect : bdestruct.
 (** Let us re-do binary search trees, but with Ocaml integers instead of  Coq nats. *)
 
 (* ================================================================= *)
-(** ** Maps, on [Z] Instead of [nat] *)
-(** Our original proof with nats used [Maps.total_map] in its abstraction relation,
+(** ** Maps, on [Z] Instead of [nat] 
+
+    Our original proof with nats used [Maps.total_map] in its abstraction relation,
      but that won't work here because we need maps over [Z] rather than [nat].
      So, we copy-paste-edit to make [total_map] over [Z]. *)
 
-Require Import Coq.Logic.FunctionalExtensionality.
+From Coq Require Import Logic.FunctionalExtensionality.
 
 Module IntMaps.
 Definition total_map (A:Type) := Z -> A.
@@ -276,14 +277,14 @@ Proof.
 constructor.
 Qed.
 
-(** **** 练习：3 星 (lookup_relate)  *)
+(** **** 练习：3 星, standard (lookup_relate)  *)
 Theorem lookup_relate:
   forall k t cts ,   Abs t cts -> lookup k t =  cts (int2Z k).
 Proof.  (* Copy your proof from SearchTree.v, and adapt it. *)
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (insert_relate)  *)
+(** **** 练习：3 星, standard (insert_relate)  *)
 Theorem insert_relate:
  forall k v t cts,
     Abs t cts ->
@@ -292,7 +293,7 @@ Proof.  (* Copy your proof from SearchTree.v, and adapt it. *)
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (unrealistically_strong_can_relate)  *)
+(** **** 练习：1 星, standard (unrealistically_strong_can_relate)  *)
 Lemma unrealistically_strong_can_relate:
  forall t,  exists cts, Abs t cts.
 Proof.  (* Copy-paste your proof from SearchTree.v; it should work as is. *)
@@ -353,20 +354,16 @@ let _ = run_tests ()
 #use "test_searchtree.ml";;
 run_tests();;
 
-
 On my machine, in the byte-code interpreter this prints,
-
 
 Insert and lookup 1000000 random integers in 1.076 seconds.
 Insert and lookup 20000 random integers in 0.015 seconds.
 Insert and lookup 20000 consecutive integers in 5.054 seconds.
 
-
 You can compile and run this with the ocaml native-code compiler by:
 
 ocamlopt searchtree.mli searchtree.ml -open Searchtree test_searchtree.ml -o test_searchtree
 ./test_searchtree
-
 
 On my machine this prints,
 
@@ -376,8 +373,9 @@ Insert and lookup 20000 consecutive integers in 0.374 seconds.
 *)
 
 (* ################################################################# *)
-(** * Unbalanced Binary Search Trees *)
-(** Why is the performance of the algorithm so much worse when the
+(** * Unbalanced Binary Search Trees 
+
+    Why is the performance of the algorithm so much worse when the
    keys are all inserted consecutively?  To examine this, let's compute
    with some searchtrees inside Coq.  We cannot do this with the search
    trees defined thus far in this file, because they use a key-comparison
@@ -413,3 +411,5 @@ Abort.
     implements that idea. *)
 
 End Experiments.
+
+(* Sat Jan 26 15:18:06 UTC 2019 *)

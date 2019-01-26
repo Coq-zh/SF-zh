@@ -12,8 +12,9 @@
 *)
 
 (* ################################################################# *)
-(** * Recommended Reading *)
-(** The material presented in this short course serves as an
+(** * Recommended Reading 
+
+    The material presented in this short course serves as an
     introduction to property based random testing using
     QuickChick. For the interested reader, we provide a few more
     references for additional reading:
@@ -41,3 +42,5 @@
     - Leo's PhD dissertation.
       https://lemonidas.github.io/pdf/Leo-PhD-Thesis.pdf
  *)
+
+(* Sat Jan 26 15:19:30 UTC 2019 *)

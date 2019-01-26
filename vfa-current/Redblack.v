@@ -47,9 +47,9 @@ _Journal of Functional Programming_, 9(4):471-477, July 1999.
 
 From VFA Require Import Perm.
 From VFA Require Import Extract.
-Require Import Coq.Lists.List. 
+From Coq Require Import Lists.List. 
 Export ListNotations.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Coq Require Import Logic.FunctionalExtensionality.
 Require Import ZArith.
 Open Scope Z_scope.
 
@@ -369,8 +369,9 @@ repeat  match goal with
  repeat (constructor; auto).
 Qed.
 
-(** **** 练习：2 星 (ins_SearchTree)  *)
-(** This one is pretty easy, even without proof automation.
+(** **** 练习：2 星, standard (ins_SearchTree)  
+
+    This one is pretty easy, even without proof automation.
   Copy-paste your proof of insert_SearchTree from Extract.v.
   You will need to apply [balance_SearchTree] in two places.
  *)
@@ -384,7 +385,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (valid)  *)
+(** **** 练习：2 星, standard (valid)  *)
 
 Lemma empty_tree_SearchTree: SearchTree empty_tree.
 (* 请在此处解答 *) Admitted.
@@ -432,7 +433,7 @@ Proof.
 constructor.
 Qed.
 
-(** **** 练习：3 星 (lookup_relate)  *)
+(** **** 练习：3 星, standard (lookup_relate)  *)
 Theorem lookup_relate:
   forall k t cts ,   Abs t cts -> lookup k t =  cts (int2Z k).
 Proof.  (* Copy your proof from Extract.v, and adapt it. *)
@@ -453,8 +454,9 @@ Ltac contents_equivalent_prover :=
  auto;
  omega.
 
-(** **** 练习：4 星 (balance_relate)  *)
-(** You will need proof automation for this one.  Study the methods used
+(** **** 练习：4 星, standard (balance_relate)  
+
+    You will need proof automation for this one.  Study the methods used
   in [ins_not_E] and [balance_SearchTree], and try them here.
   Add one clause at a time to your [match goal]. *)
 
@@ -534,7 +536,7 @@ Definition how_many_subgoals_remaining :=
   ].
 (** [] *)
 
-(** **** 练习：3 星 (ins_relate)  *)
+(** **** 练习：3 星, standard (ins_relate)  *)
 Theorem ins_relate:
  forall k v t cts,
     SearchTree t ->
@@ -579,8 +581,9 @@ Check insert_relate.
      (1) preserves the representation invariant, and
      (2) respects the abstraction relation. *)
 
-(** **** 练习：4 星, optional (elements)  *)
-(** Prove the correctness of the [elements] function.  Because [elements]
+(** **** 练习：4 星, standard, optional (elements)  
+
+    Prove the correctness of the [elements] function.  Because [elements]
     does not pay attention to colors, and does not rebalance the tree,
     then its proof should be a simple copy-paste from SearchTree.v,
     with only minor edits. *)
@@ -624,8 +627,9 @@ Proof.
    stay approximately balanced; this tells us important information about
    their efficiency. *)
 
-(** **** 练习：4 星 (is_redblack_properties)   *)
-(** The relation [is_redblack] ensures that there are exactly [n] black 
+(** **** 练习：4 星, standard (is_redblack_properties)   
+
+    The relation [is_redblack] ensures that there are exactly [n] black 
    nodes in every path from the root to a leaf, and that there are never
    two red nodes in a row. *)
 
@@ -664,7 +668,6 @@ Inductive nearly_redblack : tree -> nat -> Prop :=
          is_redblack tl Black n ->
          is_redblack tr Black n ->
          nearly_redblack (T Black tl k kv tr) (S n).
-
 
 Lemma ins_is_redblack:
   forall x vx s n, 
@@ -707,19 +710,16 @@ Extraction "redblack.ml" empty_tree insert lookup elements.
 #use "test_searchtree.ml";;
 run_tests();;
 
-
 On my machine, in the byte-code interpreter this prints,
 
 Insert and lookup 1000000 random integers in 0.889 seconds.
 Insert and lookup 20000 random integers in 0.016 seconds.
 Insert and lookup 20000 consecutive integers in 0.015 seconds.
 
-
 You can compile and run this with the ocaml native-code compiler by:
 
 ocamlopt redblack.mli redblack.ml -open Redblack test_searchtree.ml -o test_redblack
 ./test_redblack
-
 
 On my machine this prints,
 
@@ -729,8 +729,9 @@ Insert and lookup 20000 consecutive integers in 0. seconds.
 *)
 
 (* ################################################################# *)
-(** * Success! *)
-(** The benchmark measurements above (and in Extract.v) demonstrate that:
+(** * Success! 
+
+    The benchmark measurements above (and in Extract.v) demonstrate that:
   - On random insertions, red-black trees are slightly faster than ordinary BSTs
      (red-black 0.436 seconds, vs ordinary 0.468 seconds)
   - On consecutive insertions, red-black trees are _much_ faster than ordinary BSTs
@@ -739,3 +740,4 @@ Insert and lookup 20000 consecutive integers in 0. seconds.
      consecutive insertions (0.015 seconds) as on the random (0.016 seconds).
 *)
 
+(* Sat Jan 26 15:18:06 UTC 2019 *)

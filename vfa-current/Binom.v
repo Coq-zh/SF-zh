@@ -8,8 +8,7 @@
   Read the [Extract] chapter to see what can be done about that.) *)
 
 (* ################################################################# *)
-(** * Required Reading *)
-(**
+(** * Required Reading 
   Binomial Queues http://www.cs.princeton.edu/~appel/Binom.pdf
   by Andrew W. Appel, 2016.
 
@@ -22,7 +21,7 @@
 (* ################################################################# *)
 (** * The Program *)
 
-Require Import Coq.Strings.String.
+From Coq Require Import Strings.String.
 From VFA Require Import Perm.
 From VFA Require Import Priqueue.
 
@@ -179,30 +178,30 @@ Definition priq (q: priqueue) : Prop := priq' 0 q.
 (** ...that is, the [priq] property, or the closely related property [pow2heap].
 *)
 
-(** **** 练习：1 星 (empty_priq)   *)
+(** **** 练习：1 星, standard (empty_priq)   *)
 Theorem empty_priq: priq empty.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (smash_valid)  *)
+(** **** 练习：2 星, standard (smash_valid)  *)
 Theorem smash_valid:
        forall n t u, pow2heap n t -> pow2heap n u -> pow2heap (S n) (smash t u).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (carry_valid)  *)
+(** **** 练习：3 星, standard (carry_valid)  *)
 Theorem carry_valid:
            forall n q,  priq' n q ->
            forall t, (t=Leaf \/ pow2heap n t) -> priq' n (carry q t).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (insert_valid)  *)
+(** **** 练习：2 星, standard, optional (insert_valid)  *)
 Theorem insert_priq: forall x q, priq q -> priq (insert x q).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, optional (join_valid)  *)
+(** **** 练习：3 星, standard, optional (join_valid)  *)
 (* This proof is rather long, but each step is reasonably straightforward.
     There's just one [induction] to do, right at the beginning. *)
 Theorem join_valid: forall p q c n, priq' n p -> priq' n q -> (c=Leaf \/ pow2heap n c) -> priq' n (join p q c).
@@ -214,7 +213,7 @@ Proof.
  intros. unfold merge. apply join_valid; auto.
 Qed.
 
-(** **** 练习：5 星, optional (delete_max_Some_priq)  *)
+(** **** 练习：5 星, standard, optional (delete_max_Some_priq)  *)
 Theorem delete_max_Some_priq:
       forall p q k, priq p -> delete_max p = Some(k,q) -> priq q.
 (* 请在此处解答 *) Admitted.
@@ -234,8 +233,9 @@ Inductive tree_elems: tree -> list key -> Prop :=
            Permutation b (v::bl++br) ->
            tree_elems (Node v tl tr) b.
 
-(** **** 练习：3 星 (priqueue_elems)  *)
-(** Make an inductive definition, similar to [tree_elems], to relate
+(** **** 练习：3 星, standard (priqueue_elems)  
+
+    Make an inductive definition, similar to [tree_elems], to relate
   a priority queue  "l"  to a list of all its elements.
 
   As you can see in the definition of [tree_elems],  a [tree] relates to
@@ -256,22 +256,24 @@ Definition Abs (p: priqueue) (al: list key) := priqueue_elems p al.
 (* ================================================================= *)
 (** ** Sanity Checks on the Abstraction Relation *)
 
-(** **** 练习：2 星 (tree_elems_ext)  *)
-(** Extensionality theorem for the tree_elems relation *)
+(** **** 练习：2 星, standard (tree_elems_ext)  
+
+    Extensionality theorem for the tree_elems relation *)
 
 Theorem tree_elems_ext: forall t e1 e2,
   Permutation e1 e2 -> tree_elems t e1 -> tree_elems t e2.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (tree_perm)  *)
+(** **** 练习：2 星, standard (tree_perm)  *)
 Theorem tree_perm: forall t e1 e2,
   tree_elems t e1 -> tree_elems t e2 -> Permutation e1 e2.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (priqueue_elems_ext)  *)
-(** To prove [priqueue_elems_ext], you should almost be able to cut-and-paste the
+(** **** 练习：2 星, standard (priqueue_elems_ext)  
+
+    To prove [priqueue_elems_ext], you should almost be able to cut-and-paste the
    proof of [tree_elems_ext], with just a few edits.  *)
 
 Theorem priqueue_elems_ext: forall q e1 e2,
@@ -279,14 +281,14 @@ Theorem priqueue_elems_ext: forall q e1 e2,
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (abs_perm)  *)
+(** **** 练习：2 星, standard (abs_perm)  *)
 Theorem abs_perm: forall p al bl,
    priq p -> Abs p al -> Abs p bl -> Permutation al bl.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星 (can_relate)  *)
+(** **** 练习：2 星, standard (can_relate)  *)
 Lemma tree_can_relate: forall t, exists al, tree_elems t al.
 Proof.
 (* 请在此处解答 *) Admitted.
@@ -298,14 +300,15 @@ Proof.
 
 (* ================================================================= *)
 (** ** Various Functions Preserve the Abstraction Relation *)
-(** **** 练习：1 星 (empty_relate)  *)
+(** **** 练习：1 星, standard (empty_relate)  *)
 Theorem empty_relate:  Abs empty nil.
 Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星 (smash_elems)  *)
-(**  Warning:  This proof is rather long. *)
+(** **** 练习：3 星, standard (smash_elems)  
+
+     Warning:  This proof is rather long. *)
 
 Theorem smash_elems: forall n t u bt bu,
                      pow2heap n t -> pow2heap n u ->
@@ -319,7 +322,7 @@ Theorem smash_elems: forall n t u bt bu,
 
 (**  Some of these proofs are quite long, but they're not especially tricky. *)
 
-(** **** 练习：4 星, optional (carry_elems)  *)
+(** **** 练习：4 星, standard, optional (carry_elems)  *)
 Theorem carry_elems:
       forall n q,  priq' n q ->
       forall t, (t=Leaf \/ pow2heap n t) ->
@@ -329,13 +332,13 @@ Theorem carry_elems:
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (insert_elems)  *)
+(** **** 练习：2 星, standard, optional (insert_elems)  *)
 Theorem insert_relate:
         forall p al k, priq p -> Abs p al -> Abs (insert k p) (k::al).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, optional (join_elems)  *)
+(** **** 练习：4 星, standard, optional (join_elems)  *)
 Theorem join_elems:
                 forall p q c n,
                       priq' n p ->
@@ -349,7 +352,7 @@ Theorem join_elems:
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, optional (merge_relate)  *)
+(** **** 练习：2 星, standard, optional (merge_relate)  *)
 Theorem merge_relate:
     forall p q pl ql al,
        priq p -> priq q ->
@@ -359,13 +362,13 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：5 星, optional (delete_max_None_relate)  *)
+(** **** 练习：5 星, standard, optional (delete_max_None_relate)  *)
 Theorem delete_max_None_relate:
         forall p, priq p -> (Abs p nil <-> delete_max p = None).
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：5 星, optional (delete_max_Some_relate)  *)
+(** **** 练习：5 星, standard, optional (delete_max_Some_relate)  *)
 Theorem delete_max_Some_relate:
   forall (p q: priqueue) k (pl ql: list key), priq p ->
    Abs p pl ->
@@ -382,14 +385,16 @@ Theorem delete_max_Some_relate:
 
 End BinomQueue.
 
-
 (* ################################################################# *)
 (** * Measurement. *)
 
-(** **** 练习：5 星, optional (binom_measurement)  *)
-(** Adapt the program (but not necessarily the proof) to use Ocaml integers
+(** **** 练习：5 星, standard, optional (binom_measurement)  
+
+    Adapt the program (but not necessarily the proof) to use Ocaml integers
   as keys, in the style shown in [Extract].   Write an ML program to
   exercise it with random inputs.  Compare the runtime to the implementation
   from [Priqueue], also adapted for Ocaml integers.
-*)
-(** [] *)
+
+    [] *)
+
+(* Sat Jan 26 15:18:06 UTC 2019 *)

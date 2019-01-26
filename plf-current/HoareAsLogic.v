@@ -27,7 +27,7 @@ Inductive hoare_proof : Assertion -> com -> Assertion -> Type :=
   | H_If : forall P Q b c1 c2,
     hoare_proof (fun st => P st /\ bassn b st) c1 Q ->
     hoare_proof (fun st => P st /\ ~(bassn b st)) c2 Q ->
-    hoare_proof P (IFB b THEN c1 ELSE c2 FI) Q
+    hoare_proof P (TEST b THEN c1 ELSE c2 FI) Q
   | H_While : forall P b c,
     hoare_proof (fun st => P st /\ bassn b st) c P ->
     hoare_proof P (WHILE b DO c END) (fun st => P st /\ ~ (bassn b st))
@@ -94,8 +94,9 @@ Print sample_proof.
 (* ################################################################# *)
 (** * 性质 *)
 
-(** **** 练习：2 星 (hoare_proof_sound)  *)
-(** 证明这些证明对象是正确的断言。 *)
+(** **** 练习：2 星, standard (hoare_proof_sound)  
+
+    证明这些证明对象是正确的断言。 *)
 
 Theorem hoare_proof_sound : forall P c Q,
   hoare_proof P c Q -> {{P}} c {{Q}}.
@@ -132,7 +133,7 @@ Proof.
     apply (IHc1 (fun _ => True)).
     apply IHc2.
     intros. apply I.
-  - (* IFB *)
+  - (* TEST *)
     apply H_Consequence_pre with (fun _ => True).
     apply H_If.
     apply IHc1.
@@ -167,7 +168,7 @@ Proof.
   - (* SKIP *) pre_false_helper H_Skip.
   - (* ::= *) pre_false_helper H_Asgn.
   - (* ;; *) pre_false_helper H_Seq. apply IHc1. apply IHc2.
-  - (* IFB *)
+  - (* TEST *)
     apply H_If; eapply H_Consequence_pre.
     apply IHc1. intro. eapply False_and_P_imp.
     apply IHc2. intro. eapply False_and_P_imp.
@@ -195,16 +196,16 @@ Qed.
     [P' -> P]。我们可以更加直接地将其定义为： *)
 
 Definition wp (c:com) (Q:Assertion) : Assertion :=
-  fun s => forall s', c / s \\ s' -> Q s'.
+  fun s => forall s', s =[ c ]=> s' -> Q s'.
 
-(** **** 练习：1 星 (wp_is_precondition)  *)
+(** **** 练习：1 星, standard (wp_is_precondition)  *)
 
 Lemma wp_is_precondition: forall c Q,
   {{wp c Q}} c {{Q}}.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星 (wp_is_weakest)  *)
+(** **** 练习：1 星, standard (wp_is_weakest)  *)
 
 Lemma wp_is_weakest: forall c Q P',
    {{P'}} c {{Q}} -> forall st, P' st -> wp c Q st.
@@ -220,8 +221,9 @@ Proof.
 Qed.
 (** [] *)
 
-(** **** 练习：5 星 (hoare_proof_complete)  *)
-(** 完成如下定理的证明。 *)
+(** **** 练习：5 星, standard (hoare_proof_complete)  
+
+    完成如下定理的证明。 *)
 
 Theorem hoare_proof_complete: forall P c Q,
   {{P}} c {{Q}} -> hoare_proof P c Q.
@@ -262,3 +264,4 @@ Proof.
     满意：这太冗长了。在 [Hoare2] 一章中的关于形式化修饰程序的章节会向我们展
     示如何做的更好。 *)
 
+(* Sat Jan 26 15:15:43 UTC 2019 *)

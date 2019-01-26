@@ -54,8 +54,9 @@ Proof.
   intros n m eq1 eq2.
   apply eq2. apply eq1.  Qed.
 
-(** **** 练习：2 星, optional (silly_ex)  *)
-(** 请完成以下证明，不要使用 [simpl]。 *)
+(** **** 练习：2 星, standard, optional (silly_ex)  
+
+    请完成以下证明，不要使用 [simpl]。 *)
 
 Theorem silly_ex :
      (forall n, evenb n = true -> oddb (S n) = true) ->
@@ -81,8 +82,9 @@ Proof.
   simpl. (** （此处的 [simpl] 是可选的，因为 [apply] 会在需要时先进行化简。） *)
   apply H.  Qed.
 
-(** **** 练习：3 星 (apply_exercise1)  *)
-(** （_'提示'_：你可以配合之前定义的引理来使用 [apply]，不仅限于当前上下文中的前提。
+(** **** 练习：3 星, standard (apply_exercise1)  
+
+    （_'提示'_：你可以配合之前定义的引理来使用 [apply]，不仅限于当前上下文中的前提。
     记住 [Search] 是你的朋友。） *)
 
 Theorem rev_exercise1 : forall (l l' : list nat),
@@ -92,11 +94,13 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星, optional (apply_rewrite)  *)
-(** 简述 [apply] 与 [rewrite] 策略之区别。哪些情况下二者均可有效利用？ *)
+(** **** 练习：1 星, standard, optional (apply_rewrite)  
 
-(* 请在此处解答 *)
-(** [] *)
+    简述 [apply] 与 [rewrite] 策略之区别。哪些情况下二者均可有效利用？ *)
+
+(* 请在此处解答 
+
+    [] *)
 
 (* ################################################################# *)
 (** * [apply with] 策略 *)
@@ -143,7 +147,7 @@ Proof.
     一般足够聪明来确定我们给出的实例。我们也可以写成：
     [apply trans_eq with [c;d]]。 *)
 
-(** **** 练习：3 星, optional (apply_with_exercise)  *)
+(** **** 练习：3 星, standard, optional (apply_with_exercise)  *)
 Example trans_eq_exercise : forall (n m o p : nat),
      m = (minustwo o) ->
      (n + p) = m ->
@@ -236,7 +240,7 @@ Proof.
   injection H as Hnm. rewrite Hnm.
   reflexivity. Qed.
 
-(** **** 练习：1 星 (injection_ex3)  *)
+(** **** 练习：1 星, standard (injection_ex3)  *)
 Example injection_ex3 : forall (X : Type) (x y z : X) (l j : list X),
   x :: y :: l = z :: j ->
   y :: l = x :: j ->
@@ -306,7 +310,7 @@ Proof.
     then the nonsensical conclusion would follow.  We'll explore the
     principle of explosion of more detail in the next chapter. *)
 
-(** **** 练习：1 星 (discriminate_ex3)  *)
+(** **** 练习：1 星, standard (discriminate_ex3)  *)
 Example discriminate_ex3 :
   forall (X : Type) (x y z : X) (l j : list X),
     x :: y :: l = [] ->
@@ -366,8 +370,9 @@ Proof.
     它们使用的应该是正向推理。通常，Coq 习惯上倾向于使用反向推理，
     但在某些情况下，正向推理更易于思考。 *)
 
-(** **** 练习：3 星, recommended (plus_n_n_injective)  *)
-(** 请在此证明中练习使用“in”形式的变体。（提示：使用 [plus_n_Sm]。） *)
+(** **** 练习：3 星, standard, recommended (plus_n_n_injective)  
+
+    请在此证明中练习使用“in”形式的变体。（提示：使用 [plus_n_Sm]。） *)
 
 Theorem plus_n_n_injective : forall n m,
      n + n = m + m ->
@@ -512,15 +517,16 @@ Proof.
 
 (** 以下练习需要同样的模式。 *)
 
-(** **** 练习：2 星 (eqb_true)  *)
+(** **** 练习：2 星, standard (eqb_true)  *)
 Theorem eqb_true : forall n m,
     n =? m = true -> n = m.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, advanced (eqb_true_informal)  *)
-(** 给出一个详细的 [eqb_true] 的非形式化证明，量词要尽可能明确。 *)
+(** **** 练习：2 星, advanced (eqb_true_informal)  
+
+    给出一个详细的 [eqb_true] 的非形式化证明，量词要尽可能明确。 *)
 
 (* 请在此处解答 *)
 
@@ -617,8 +623,9 @@ Proof.
   rewrite H'. reflexivity.
 Qed.
 
-(** **** 练习：3 星, recommended (gen_dep_practice)  *)
-(** 通过对 [l] 进行归纳来证明它。 *)
+(** **** 练习：3 星, standard, recommended (gen_dep_practice)  
+
+    通过对 [l] 进行归纳来证明它。 *)
 
 Theorem nth_error_after_last: forall (n : nat) (X : Type) (l : list X),
      length l = n ->
@@ -762,8 +769,9 @@ Proof.
     [c]，[destruct e] 都会生成一个子目标，其中（即目标和上下文中）所有的
     [e] 都会被替换成 [c]。*)
 
-(** **** 练习：3 星, optional (combine_split)  *)
-(** 以下是 [Poly] 一章中出现过的 [split] 函数的实现： *)
+(** **** 练习：3 星, standard, optional (combine_split)  
+
+    以下是 [Poly] 一章中出现过的 [split] 函数的实现： *)
 
 Fixpoint split {X Y : Type} (l : list (X*Y))
                : (list X) * (list Y) :=
@@ -791,8 +799,9 @@ Proof.
     When [destruct]ing compound expressions, however, the information
     recorded by the [eqn:] can actually be critical: if we leave it
     out, then [destruct] can sometimes erase information we need to
-    complete a proof. *)
-(** 例如，假设函数 [sillyfun1] 定义如下： *)
+    complete a proof. 
+
+    例如，假设函数 [sillyfun1] 定义如下： *)
 
 Definition sillyfun1 (n : nat) : bool :=
   if n =? 3 then true
@@ -846,7 +855,7 @@ Proof.
           rewrite -> Heqe5. reflexivity.
         + (* e5 = false *) discriminate eq.  Qed.
 
-(** **** 练习：2 星 (destruct_eqn_practice)  *)
+(** **** 练习：2 星, standard (destruct_eqn_practice)  *)
 Theorem bool_fn_applied_thrice :
   forall (f : bool -> bool) (b : bool),
   f (f (f b)) = f b.
@@ -911,23 +920,25 @@ Proof.
 (* ################################################################# *)
 (** * 附加练习 *)
 
-(** **** 练习：3 星 (eqb_sym)  *)
+(** **** 练习：3 星, standard (eqb_sym)  *)
 Theorem eqb_sym : forall (n m : nat),
   (n =? m) = (m =? n).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced, optional (eqb_sym_informal)  *)
-(** 根据前面你对该引理的形式化证明，给出与它对应的非形式化证明：
+(** **** 练习：3 星, advanced, optional (eqb_sym_informal)  
+
+    根据前面你对该引理的形式化证明，给出与它对应的非形式化证明：
 
    定理：对于任何自然数 [n] [m]，[n =? m = m =? n].
 
    证明： *)
-   (* 请在此处解答 *)
-(** [] *)
+   (* 请在此处解答 
 
-(** **** 练习：3 星, optional (eqb_trans)  *)
+    [] *)
+
+(** **** 练习：3 星, standard, optional (eqb_trans)  *)
 Theorem eqb_trans : forall n m p,
   n =? m = true ->
   m =? p = true ->
@@ -936,8 +947,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced (split_combine)  *)
-(** 在前面的练习中，我们证明了对于所有序对的列表，[combine] 是 [split]
+(** **** 练习：3 星, advanced (split_combine)  
+
+    在前面的练习中，我们证明了对于所有序对的列表，[combine] 是 [split]
     的反函数。你如何形式化陈述 [split] 是 [combine] 的反函数？何时此性质成立？
 
     请完成下面 [split_combine_statement] 的定义，其性质指出 [split]
@@ -958,8 +970,9 @@ Proof.
 Definition manual_grade_for_split_combine : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：3 星, advanced (filter_exercise)  *)
-(** 本练习有点难度。为你的归纳假设的形式花点心思。 *)
+(** **** 练习：3 星, advanced (filter_exercise)  
+
+    本练习有点难度。为你的归纳假设的形式花点心思。 *)
 
 Theorem filter_exercise : forall (X : Type) (test : X -> bool)
                              (x : X) (l lf : list X),
@@ -969,8 +982,9 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced, recommended (forall_exists_challenge)  *)
-(** 定义两个递归的 [Fixpoints]，[forallb] 和 [existsb]。
+(** **** 练习：4 星, advanced, recommended (forall_exists_challenge)  
+
+    定义两个递归的 [Fixpoints]，[forallb] 和 [existsb]。
     第一个检查列表中的每一个元素是否均满足给定的断言：
 
       forallb oddb [1;3;5;7;9] = true
@@ -1036,3 +1050,4 @@ Proof. (* 请在此处解答 *) Admitted.
 
 
 
+(* Sat Jan 26 15:14:45 UTC 2019 *)

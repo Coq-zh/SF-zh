@@ -6,18 +6,18 @@ Preface.vo Preface.glob Preface.v.beautified: Preface.v
 Preface.vio: Preface.v
 Equiv.vo Equiv.glob Equiv.v.beautified: Equiv.v Maps.vo Imp.vo
 Equiv.vio: Equiv.v Maps.vio Imp.vio
-Hoare.vo Hoare.glob Hoare.v.beautified: Hoare.v Imp.vo Maps.vo
-Hoare.vio: Hoare.v Imp.vio Maps.vio
-Hoare2.vo Hoare2.glob Hoare2.v.beautified: Hoare2.v Maps.vo Imp.vo Hoare.vo
-Hoare2.vio: Hoare2.v Maps.vio Imp.vio Hoare.vio
+Hoare.vo Hoare.glob Hoare.v.beautified: Hoare.v Maps.vo Imp.vo
+Hoare.vio: Hoare.v Maps.vio Imp.vio
+Hoare2.vo Hoare2.glob Hoare2.v.beautified: Hoare2.v Maps.vo Hoare.vo Imp.vo
+Hoare2.vio: Hoare2.v Maps.vio Hoare.vio Imp.vio
 HoareAsLogic.vo HoareAsLogic.glob HoareAsLogic.v.beautified: HoareAsLogic.v Imp.vo Hoare.vo
 HoareAsLogic.vio: HoareAsLogic.v Imp.vio Hoare.vio
 Smallstep.vo Smallstep.glob Smallstep.v.beautified: Smallstep.v Maps.vo Imp.vo
 Smallstep.vio: Smallstep.v Maps.vio Imp.vio
 Types.vo Types.glob Types.v.beautified: Types.v Maps.vo Imp.vo Smallstep.vo
 Types.vio: Types.v Maps.vio Imp.vio Smallstep.vio
-Stlc.vo Stlc.glob Stlc.v.beautified: Stlc.v Maps.vo Smallstep.vo Types.vo
-Stlc.vio: Stlc.v Maps.vio Smallstep.vio Types.vio
+Stlc.vo Stlc.glob Stlc.v.beautified: Stlc.v Maps.vo Smallstep.vo
+Stlc.vio: Stlc.v Maps.vio Smallstep.vio
 StlcProp.vo StlcProp.glob StlcProp.v.beautified: StlcProp.v Maps.vo Types.vo Stlc.vo Smallstep.vo
 StlcProp.vio: StlcProp.v Maps.vio Types.vio Stlc.vio Smallstep.vio
 MoreStlc.vo MoreStlc.glob MoreStlc.v.beautified: MoreStlc.v Maps.vo Types.vo Smallstep.vo Stlc.vo
@@ -40,8 +40,8 @@ UseTactics.vo UseTactics.glob UseTactics.v.beautified: UseTactics.v Maps.vo Imp.
 UseTactics.vio: UseTactics.v Maps.vio Imp.vio Types.vio Smallstep.vio LibTactics.vio Stlc.vio Equiv.vio References.vio Hoare.vio Sub.vio
 UseAuto.vo UseAuto.glob UseAuto.v.beautified: UseAuto.v Maps.vo Smallstep.vo Stlc.vo LibTactics.vo Imp.vo StlcProp.vo References.vo Sub.vo
 UseAuto.vio: UseAuto.v Maps.vio Smallstep.vio Stlc.vio LibTactics.vio Imp.vio StlcProp.vio References.vio Sub.vio
-PE.vo PE.glob PE.v.beautified: PE.v Maps.vo Imp.vo Smallstep.vo
-PE.vio: PE.v Maps.vio Imp.vio Smallstep.vio
+PE.vo PE.glob PE.v.beautified: PE.v Maps.vo Smallstep.vo Imp.vo
+PE.vio: PE.v Maps.vio Smallstep.vio Imp.vio
 Postscript.vo Postscript.glob Postscript.v.beautified: Postscript.v
 Postscript.vio: Postscript.v
 Bib.vo Bib.glob Bib.v.beautified: Bib.v

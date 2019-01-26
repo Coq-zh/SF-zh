@@ -64,8 +64,8 @@ idtac " ".
 idtac "#> ceval_example2".
 idtac "Possible points: 2".
 check_type @ceval_example2 (
-((X ::= 0;; Y ::= 1;; Z ::= 2) / @Maps.t_empty nat 0 \\
- {X --> 0; Y --> 1; Z --> 2})).
+(empty_st =[ X ::= 0;; Y ::= 1;; Z ::= 2
+ ]=> @Maps.t_update nat (@Maps.t_update nat (X !-> 0) Y 1) Z 2)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions ceval_example2.
@@ -85,7 +85,7 @@ idtac " ".
 
 idtac "#> loop_never_stops".
 idtac "Possible points: 3".
-check_type @loop_never_stops ((forall st st' : state, ~ loop / st \\ st')).
+check_type @loop_never_stops ((forall st st' : state, ~ st =[ loop ]=> st')).
 idtac "Assumptions:".
 Abort.
 Print Assumptions loop_never_stops.
@@ -118,7 +118,7 @@ idtac " ".
 idtac "#> s_execute1".
 idtac "Possible points: 0.5".
 check_type @s_execute1 (
-(s_execute (@Maps.t_empty nat 0) (@nil nat)
+(s_execute empty_st (@nil nat)
    (SPush 5 :: (SPush 3 :: SPush 1 :: SMinus :: @nil sinstr)%list) =
  (2 :: 5 :: @nil nat)%list)).
 idtac "Assumptions:".
@@ -130,7 +130,7 @@ idtac " ".
 idtac "#> s_execute2".
 idtac "Possible points: 0.5".
 check_type @s_execute2 (
-(s_execute {X --> 3} (3 :: (4 :: @nil nat)%list)
+(s_execute (X !-> 3) (3 :: (4 :: @nil nat)%list)
    (SPush 4 :: (SLoad X :: SMult :: SPlus :: @nil sinstr)%list) =
  (15 :: 4 :: @nil nat)%list)).
 idtac "Assumptions:".
@@ -245,3 +245,5 @@ Print Assumptions BreakImp.while_continue.
 idtac "---------- BreakImp.while_stops_on_break ---------".
 Print Assumptions BreakImp.while_stops_on_break.
 Abort.
+
+(* Sat Jan 26 15:15:50 UTC 2019 *)

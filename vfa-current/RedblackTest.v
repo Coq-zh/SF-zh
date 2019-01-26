@@ -202,3 +202,5 @@ Print Assumptions insert_is_redblack.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
+
+(* Sat Jan 26 15:18:43 UTC 2019 *)
