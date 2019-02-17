@@ -5,21 +5,16 @@ cache:
   directories:
   - "$HOME/.opam"
   - "$HOME/Library/Caches/Homebrew"
-addons:
-  apt:
-    sources:
-    - avsm
-    packages:
-    - opam
-    - aspcud
+  timeout: 1000
 env:
   global:
   - OPAMYES=true
+  - OCAML_VERSION=4.04
+  - OPAMVERBOSE=1
+  - OPAMKEEPBUILDDIR=true
   matrix:
-  - COQ="coq.8.7.0"
-  - COQ="coq.8.7.1"
-  - COQ="coq.8.7.2"
-  - COQ="coq.8.8.0"
+  - COQ="8.7.0"
+  - COQ="8.8.2"
 matrix:
   fast_finish: true
   allow_failures:
@@ -27,14 +22,16 @@ matrix:
 os:
 - linux
 - osx
-before_install: if [ $TRAVIS_OS_NAME = osx ]; then brew update; brew install --ignore-dependencies
-  ocaml opam; fi
+before_install: curl -L https://raw.githubusercontent.com/ocaml/ocaml-ci-scripts/master/.travis-ocaml.sh | sh
 install:
-- "[ -e ~/.opam ] || opam init"
 - eval $(opam config env)
 - opam config var root
 - ocamlc -v
-- opam install $COQ
+- opam repo add coq-released https://coq.inria.fr/opam/released || true
+- opam repo add coq-extra-dev https://coq.inria.fr/opam/extra-dev || true
+- opam update
+- opam pin add coq $COQ
+- opam upgrade
 - opam list
 script:
 - set -e
@@ -49,3 +46,4 @@ script:
 notifications:
   slack:
     secure: qwnWa6Dyj5//Hc+O74qsAT/vtoMWDv8wLcljt+tUDw0m+YWNB1umrvmSI3++/Fe4f0EEQhz/E2pzaNGyEF8oddhsCn8JoH9DzpaDWk/dNwbcMUvRVIHbnq0V+d4+AHTBD05eZgMlmPC8DYPNOSv7wJLJXtAmbHtl0G1F961bbZY39WDLAQFqa71trnTEX8hxIG0nrF8W3hCrGg6LFH+Mk1rzG5zBQqxSwnlxsr3Uj6utuYXeidaTShrGb3hqcRlg5N/CyAqN0ZzGkl2W9ng59dStTNyTsDeuUANOBmuB0V95W5c7zSXRMuOk/N/apKXVRGu+DKXirSjCZNZyE/kCNDS40+0JnZn8la4em806rQa0cp+ck+0yfV8TvoCOulHnvq0XAaAZzWLVqgB6wjTuDhNDuI9FpULRGnmQ5fkWVo3ozFrFdNqud1EMJkqJlfUL/F3xuyuHRLR0Z5RHGuTYURIKA/En3Do1oPl3rHubTTL4KeGIiOlBJiKsom0/AV8q15trwCF57aK3o1q6n8Zcp1gYOrZjMDv5MXlhnkKvQzkSkeaYRoOiMEhVe0h0dRgfT/uf/ugIXiWkbMhlrFuSlk2vXM5g0PEimw+Zjl2mySQgu4okawGJI/zRuVQr1xBX30uEOMcevEv/FN8RqgjGlVl/DArUqx6pYWRgWfac6gE=
+    on_success: :change
