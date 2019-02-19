@@ -2351,9 +2351,415 @@ The inversion lemmas for typing and for subtyping between arrow
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">by</span> <span class="id" type="tactic">apply</span> (<span class="id" type="var">typing_inversion_unit</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span>  <span class="id" type="var">Htypt</span>)...<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
+</div>
 
-<br/>
-<span class="comment">(*&nbsp;Sun&nbsp;Feb&nbsp;17&nbsp;18:25:08&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
+<div class="doc">
+<a name="lab332"></a><h2 class="section">Preservation</h2>
+
+<div class="paragraph"> </div>
+
+ The proof of preservation now proceeds pretty much as in earlier
+    chapters, using the substitution lemma at the appropriate point
+    and again using inversion lemmas from above to extract structural
+    information from typing assumptions. 
+<div class="paragraph"> </div>
+
+ _Theorem_ (Preservation): If <span class="inlinecode"><span class="id" type="var">t</span></span>, <span class="inlinecode"><span class="id" type="var">t'</span></span> are terms and <span class="inlinecode"><span class="id" type="var">T</span></span> is a type
+    such that <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>, then <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span>
+    <span class="inlinecode"><span class="id" type="var">T</span></span>.
+
+<div class="paragraph"> </div>
+
+    _Proof_: Let <span class="inlinecode"><span class="id" type="var">t</span></span> and <span class="inlinecode"><span class="id" type="var">T</span></span> be given such that <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.  We
+    proceed by induction on the structure of this typing derivation,
+    leaving <span class="inlinecode"><span class="id" type="var">t'</span></span> general.  The cases <span class="inlinecode"><span class="id" type="var">T_Abs</span></span>, <span class="inlinecode"><span class="id" type="var">T_Unit</span></span>, <span class="inlinecode"><span class="id" type="var">T_True</span></span>, and
+    <span class="inlinecode"><span class="id" type="var">T_False</span></span> cases are vacuous because abstractions and constants
+    don't step.  Case <span class="inlinecode"><span class="id" type="var">T_Var</span></span> is vacuous as well, since the context is
+    empty.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If the final step of the derivation is by <span class="inlinecode"><span class="id" type="var">T_App</span></span>, then there
+       are terms <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> and types <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span> such that
+       <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>, <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span>, <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span>, and
+       <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span>.
+
+<div class="paragraph"> </div>
+
+       By the definition of the step relation, there are three ways
+       <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> can step.  Cases <span class="inlinecode"><span class="id" type="var">ST_App1</span></span> and <span class="inlinecode"><span class="id" type="var">ST_App2</span></span> follow
+       immediately by the induction hypotheses for the typing
+       subderivations and a use of <span class="inlinecode"><span class="id" type="var">T_App</span></span>.
+
+<div class="paragraph"> </div>
+
+       Suppose instead <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> steps by <span class="inlinecode"><span class="id" type="var">ST_AppAbs</span></span>.  Then <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span>
+       <span class="inlinecode">\<span class="id" type="var">x</span>:<span class="id" type="var">S.t12</span></span> for some type <span class="inlinecode"><span class="id" type="var">S</span></span> and term <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span>, and <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span>
+       <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">t<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span></span>.
+
+<div class="paragraph"> </div>
+
+       By lemma <span class="inlinecode"><span class="id" type="var">abs_arrow</span></span>, we have <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span> <span class="inlinecode">&lt;:</span> <span class="inlinecode"><span class="id" type="var">S</span></span> and <span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">S<sub>1</sub></span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">s<sub>2</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span>.
+       It then follows by the substitution lemma
+       (<span class="inlinecode"><span class="id" type="var">substitution_preserves_typing</span></span>) that <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">t<sub>2</sub></span>]</span>
+       <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span> as desired.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If the final step of the derivation uses rule <span class="inlinecode"><span class="id" type="var">T_Test</span></span>, then
+        there are terms <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>, <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>, and <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> such that <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">test</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span>
+        <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>, with <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span> and with <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+        <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.  Moreover, by the induction
+        hypothesis, if <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> steps to <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> then <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>.
+        There are three cases to consider, depending on which rule was
+        used to show <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> If <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> by rule <span class="inlinecode"><span class="id" type="var">ST_Test</span></span>, then <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">test</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>
+             <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span> with <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>.  By the induction hypothesis,
+             <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Bool</span></span>, and so <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span> by
+             <span class="inlinecode"><span class="id" type="var">T_Test</span></span>.
+
+<div class="paragraph"> </div>
+
+
+</li>
+<li> If <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> by rule <span class="inlinecode"><span class="id" type="var">ST_TestTrue</span></span> or <span class="inlinecode"><span class="id" type="var">ST_TestFalse</span></span>, then
+             either <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> or <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>3</sub></span></span>, and <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">T</span></span>
+             follows by assumption.
+
+<div class="paragraph"> </div>
+
+
+</li>
+</ul>
+
+</li>
+</ul>
+
+</li>
+<li> If the final step of the derivation is by <span class="inlinecode"><span class="id" type="var">T_Sub</span></span>, then there
+       is a type <span class="inlinecode"><span class="id" type="var">S</span></span> such that <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">&lt;:</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">S</span></span>.  The
+       result is immediate by the induction hypothesis for the typing
+       subderivation and an application of <span class="inlinecode"><span class="id" type="var">T_Sub</span></span>.  <span class="proofbox">&#9744;</span> 
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<span class="id" type="keyword">Theorem</span> <span class="id" type="var">preservation</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">empty</span> &#x22A2; <span class="id" type="var">t</span> &#x2208; <span class="id" type="var">T</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">t'</span>  →<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">empty</span> &#x22A2; <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
+<div class="togglescript" id="proofcontrol17" onclick="toggleDisplay('proof17');toggleDisplay('proofcontrol17')"><span class="show"></span></div>
+<div class="proofscript" id="proof17" onclick="toggleDisplay('proof17');toggleDisplay('proofcontrol17')">
+<span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="var">remember</span> <span class="id" type="var">empty</span> <span class="id" type="keyword">as</span> <span class="id" type="var">Gamma</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">HeqGamma</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">t'</span>.<br/>
+&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">HT</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t'</span> <span class="id" type="var">HeqGamma</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;T_App&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>...<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_AppAbs&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">abs_arrow</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">HT<sub>1</sub></span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">HA<sub>1</sub></span> <span class="id" type="var">HA<sub>2</sub></span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">substitution_preserves_typing</span> <span class="id" type="keyword">with</span> <span class="id" type="var">T</span>...<br/>
+<span class="id" type="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div class="doc">
+<a name="lab333"></a><h2 class="section">Records, via Products and Top</h2>
+
+<div class="paragraph"> </div>
+
+ This formalization of the STLC with subtyping omits record
+    types for brevity.  If we want to deal with them more seriously,
+    we have two choices.
+
+<div class="paragraph"> </div>
+
+    First, we can treat them as part of the core language, writing
+    down proper syntax, typing, and subtyping rules for them.  Chapter
+    <span class="inlinecode"><span class="id" type="var">RecordSub</span></span> shows how this extension works.
+
+<div class="paragraph"> </div>
+
+    On the other hand, if we are treating them as a derived form that
+    is desugared in the parser, then we shouldn't need any new rules:
+    we should just check that the existing rules for subtyping product
+    and <span class="inlinecode"><span class="id" type="var">Unit</span></span> types give rise to reasonable rules for record
+    subtyping via this encoding. To do this, we just need to make one
+    small change to the encoding described earlier: instead of using
+    <span class="inlinecode"><span class="id" type="var">Unit</span></span> as the base case in the encoding of tuples and the "don't
+    care" placeholder in the encoding of records, we use <span class="inlinecode"><span class="id" type="var">Top</span></span>.  So:
+<pre>
+    {a:Nat, b:Nat} --<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> {Nat,Nat}       i.e., (Nat,(Nat,Top))
+    {c:Nat, a:Nat} --<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> {Nat,Top,Nat}   i.e., (Nat,(Top,(Nat,Top)))
+</pre>
+    The encoding of record values doesn't change at all.  It is
+    easy (and instructive) to check that the subtyping rules above are
+    validated by the encoding. 
+</div>
+
+<div class="doc">
+<a name="lab334"></a><h2 class="section">Exercises</h2>
+
+<div class="paragraph"> </div>
+
+<a name="lab335"></a><h4 class="section">练习：2 星, standard (variations)</h4>
+ Each part of this problem suggests a different way of changing the
+    definition of the STLC with Unit and subtyping.  (These changes
+    are not cumulative: each part starts from the original language.)
+    In each part, list which properties (Progress, Preservation, both,
+    or neither) become false.  If a property becomes false, give a
+    counterexample.
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Suppose we add the following typing rule:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">Gamma&nbsp;&#x22A2;&nbsp;t&nbsp;&#x2208;&nbsp;S<sub>1</sub><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>S<sub>2</sub></td>
+  <td></td>
+</td>
+<tr class="infruleassumption">
+  <td class="infrule">S<sub>1</sub>&nbsp;<:&nbsp;T<sub>1</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T<sub>1</sub>&nbsp;<:&nbsp;S<sub>1</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S<sub>2</sub>&nbsp;<:&nbsp;T<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_Funny1) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Gamma&nbsp;&#x22A2;&nbsp;t&nbsp;&#x2208;&nbsp;T<sub>1</sub><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>T<sub>2</sub></td>
+  <td></td>
+</td>
+</table></center>
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Suppose we add the following reduction rule:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_Funny21) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">unit&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;(\x:Top.&nbsp;x)</td>
+  <td></td>
+</td>
+</table></center>
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Suppose we add the following subtyping rule:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (S_Funny3) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Unit&nbsp;<:&nbsp;Top<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>Top</td>
+  <td></td>
+</td>
+</table></center>
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Suppose we add the following subtyping rule:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (S_Funny4) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">Top<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>Top&nbsp;<:&nbsp;Unit</td>
+  <td></td>
+</td>
+</table></center>
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Suppose we add the following reduction rule:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_Funny5) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">(unit&nbsp;t)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;(t&nbsp;unit)</td>
+  <td></td>
+</td>
+</table></center>
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Suppose we add the same reduction rule _and_ a new typing rule:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (ST_Funny5) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">(unit&nbsp;t)&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;(t&nbsp;unit)</td>
+  <td></td>
+</td>
+</table></center><center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">&nbsp;&nbsp;</td>
+  <td class="infrulenamecol" rowspan="3">
+    (T_Funny6) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">empty&nbsp;&#x22A2;&nbsp;unit&nbsp;&#x2208;&nbsp;Top<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>Top</td>
+  <td></td>
+</td>
+</table></center>
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Suppose we _change_ the arrow subtyping rule to:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">S<sub>1</sub>&nbsp;<:&nbsp;T<sub>1</sub>&nbsp;S<sub>2</sub>&nbsp;<:&nbsp;T<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (S_Arrow') &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">S<sub>1</sub><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>S<sub>2</sub>&nbsp;<:&nbsp;T<sub>1</sub><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>T<sub>2</sub></td>
+  <td></td>
+</td>
+</table></center>
+</li>
+</ul>
+
+<div class="paragraph"> </div>
+
+
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_variations</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+
+<div class="doc">
+<a name="lab336"></a><h1 class="section">Exercise: Adding Products</h1>
+
+<div class="paragraph"> </div>
+
+<a name="lab337"></a><h4 class="section">练习：5 星, standard (products)</h4>
+ Adding pairs, projections, and product types to the system we have
+    defined is a relatively straightforward matter.  Carry out this
+    extension by modifying the definitions and proofs above:
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> Add constructors for pairs, first and second projections,
+      and product types to the definitions of <span class="inlinecode"><span class="id" type="var">ty</span></span> and <span class="inlinecode"><span class="id" type="var">tm</span></span>, and
+      extend the surrounding definitions accordingly
+      (refer to chapter <a href="MoreSTLC.html"><span class="inlineref">MoreSTLC</span></a>):
+
+<div class="paragraph"> </div>
+
+<ul class="doclist">
+<li> value relation
+
+</li>
+<li> substitution
+
+</li>
+<li> operational semantics
+
+</li>
+<li> typing relation
+
+<div class="paragraph"> </div>
+
+
+</li>
+</ul>
+
+</li>
+<li> Extend the subtyping relation with this rule:
+<center><table class="infrule">
+<tr class="infruleassumption">
+  <td class="infrule">S<sub>1</sub>&nbsp;<:&nbsp;T<sub>1</sub>&nbsp;&nbsp;&nbsp;&nbsp;S<sub>2</sub>&nbsp;<:&nbsp;T<sub>2</sub></td>
+  <td class="infrulenamecol" rowspan="3">
+    (S_Prod) &nbsp;
+  </td></tr>
+<tr class="infrulemiddle">
+  <td class="infrule"><hr /></td>
+</tr>
+<tr class="infruleassumption">
+  <td class="infrule">S<sub>1</sub>&nbsp;*&nbsp;S<sub>2</sub>&nbsp;<:&nbsp;T<sub>1</sub>&nbsp;*&nbsp;T<sub>2</sub></td>
+  <td></td>
+</td>
+</table></center>
+<div class="paragraph"> </div>
+
+
+</li>
+<li> Extend the proofs of progress, preservation, and all their
+      supporting lemmas to deal with the new constructs.  (You'll also
+      need to add a couple of completely new lemmas.) 
+</li>
+</ul>
+
+</div>
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
+<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_products</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+</div>
+
+<span class="proofbox">&#9744;</span> 
+<div class="code code-tight">
+
+<span class="comment">(*&nbsp;Tue&nbsp;Feb&nbsp;19&nbsp;03:04:34&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
 </div>
 </div>
 

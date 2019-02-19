@@ -1448,4 +1448,202 @@ Proof with eauto.
       by apply (typing_inversion_unit _ _  Htypt)... 
 Qed.
 
-(* Sun Feb 17 18:25:08 UTC 2019 *)
+(* ================================================================= *)
+(** ** Preservation *)
+
+(** The proof of preservation now proceeds pretty much as in earlier
+    chapters, using the substitution lemma at the appropriate point
+    and again using inversion lemmas from above to extract structural
+    information from typing assumptions. *)
+
+(** _Theorem_ (Preservation): If [t], [t'] are terms and [T] is a type
+    such that [empty |- t \in T] and [t --> t'], then [empty |- t' \in
+    T].
+
+    _Proof_: Let [t] and [T] be given such that [empty |- t \in T].  We
+    proceed by induction on the structure of this typing derivation,
+    leaving [t'] general.  The cases [T_Abs], [T_Unit], [T_True], and
+    [T_False] cases are vacuous because abstractions and constants
+    don't step.  Case [T_Var] is vacuous as well, since the context is
+    empty.
+
+     - If the final step of the derivation is by [T_App], then there
+       are terms [t1] and [t2] and types [T1] and [T2] such that
+       [t = t1 t2], [T = T2], [empty |- t1 \in T1 -> T2], and
+       [empty |- t2 \in T1].
+
+       By the definition of the step relation, there are three ways
+       [t1 t2] can step.  Cases [ST_App1] and [ST_App2] follow
+       immediately by the induction hypotheses for the typing
+       subderivations and a use of [T_App].
+
+       Suppose instead [t1 t2] steps by [ST_AppAbs].  Then [t1 =
+       \x:S.t12] for some type [S] and term [t12], and [t' =
+       [x:=t2]t12].
+
+       By lemma [abs_arrow], we have [T1 <: S] and [x:S1 |- s2 \in T2].
+       It then follows by the substitution lemma
+       ([substitution_preserves_typing]) that [empty |- [x:=t2]
+       t12 \in T2] as desired.
+
+      - If the final step of the derivation uses rule [T_Test], then
+        there are terms [t1], [t2], and [t3] such that [t = test t1 then
+        t2 else t3], with [empty |- t1 \in Bool] and with [empty |- t2
+        \in T] and [empty |- t3 \in T].  Moreover, by the induction
+        hypothesis, if [t1] steps to [t1'] then [empty |- t1' : Bool].
+        There are three cases to consider, depending on which rule was
+        used to show [t --> t'].
+
+           - If [t --> t'] by rule [ST_Test], then [t' = test t1' then t2
+             else t3] with [t1 --> t1'].  By the induction hypothesis,
+             [empty |- t1' \in Bool], and so [empty |- t' \in T] by
+             [T_Test].
+
+           - If [t --> t'] by rule [ST_TestTrue] or [ST_TestFalse], then
+             either [t' = t2] or [t' = t3], and [empty |- t' \in T]
+             follows by assumption.
+
+     - If the final step of the derivation is by [T_Sub], then there
+       is a type [S] such that [S <: T] and [empty |- t \in S].  The
+       result is immediate by the induction hypothesis for the typing
+       subderivation and an application of [T_Sub].  [] *)
+
+Theorem preservation : forall t t' T,
+     empty |- t \in T  ->
+     t --> t'  ->
+     empty |- t' \in T.
+Proof with eauto.
+  intros t t' T HT.
+  remember empty as Gamma. generalize dependent HeqGamma.
+  generalize dependent t'.
+  induction HT;
+    intros t' HeqGamma HE; subst; inversion HE; subst...
+  - (* T_App *)
+    inversion HE; subst...
+    + (* ST_AppAbs *)
+      destruct (abs_arrow _ _ _ _ _ HT1) as [HA1 HA2].
+      apply substitution_preserves_typing with T... 
+Qed.
+
+(* ================================================================= *)
+(** ** Records, via Products and Top *)
+
+(** This formalization of the STLC with subtyping omits record
+    types for brevity.  If we want to deal with them more seriously,
+    we have two choices.
+
+    First, we can treat them as part of the core language, writing
+    down proper syntax, typing, and subtyping rules for them.  Chapter
+    [RecordSub] shows how this extension works.
+
+    On the other hand, if we are treating them as a derived form that
+    is desugared in the parser, then we shouldn't need any new rules:
+    we should just check that the existing rules for subtyping product
+    and [Unit] types give rise to reasonable rules for record
+    subtyping via this encoding. To do this, we just need to make one
+    small change to the encoding described earlier: instead of using
+    [Unit] as the base case in the encoding of tuples and the "don't
+    care" placeholder in the encoding of records, we use [Top].  So:
+
+    {a:Nat, b:Nat} ----> {Nat,Nat}       i.e., (Nat,(Nat,Top))
+    {c:Nat, a:Nat} ----> {Nat,Top,Nat}   i.e., (Nat,(Top,(Nat,Top)))
+
+    The encoding of record values doesn't change at all.  It is
+    easy (and instructive) to check that the subtyping rules above are
+    validated by the encoding. *)
+
+(* ================================================================= *)
+(** ** Exercises *)
+
+(** **** 练习：2 星, standard (variations)  
+
+    Each part of this problem suggests a different way of changing the
+    definition of the STLC with Unit and subtyping.  (These changes
+    are not cumulative: each part starts from the original language.)
+    In each part, list which properties (Progress, Preservation, both,
+    or neither) become false.  If a property becomes false, give a
+    counterexample.
+
+    - Suppose we add the following typing rule:
+
+                           Gamma |- t \in S1->S2
+                    S1 <: T1     T1 <: S1      S2 <: T2
+                    -----------------------------------    (T_Funny1)
+                           Gamma |- t \in T1->T2
+
+    - Suppose we add the following reduction rule:
+
+                             --------------------         (ST_Funny21)
+                             unit --> (\x:Top. x)
+
+    - Suppose we add the following subtyping rule:
+
+                               ----------------          (S_Funny3)
+                               Unit <: Top->Top
+
+    - Suppose we add the following subtyping rule:
+
+                               ----------------          (S_Funny4)
+                               Top->Top <: Unit
+
+    - Suppose we add the following reduction rule:
+
+                             ---------------------      (ST_Funny5)
+                             (unit t) --> (t unit)
+
+    - Suppose we add the same reduction rule _and_ a new typing rule:
+
+                             ---------------------       (ST_Funny5)
+                             (unit t) --> (t unit)
+
+                           --------------------------    (T_Funny6)
+                           empty |- unit \in Top->Top
+
+    - Suppose we _change_ the arrow subtyping rule to:
+
+                          S1 <: T1 S2 <: T2
+                          -----------------              (S_Arrow')
+                          S1->S2 <: T1->T2
+
+*)
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_variations : option (nat*string) := None.
+(** [] *)
+
+(* ################################################################# *)
+(** * Exercise: Adding Products *)
+
+(** **** 练习：5 星, standard (products)  
+
+    Adding pairs, projections, and product types to the system we have
+    defined is a relatively straightforward matter.  Carry out this
+    extension by modifying the definitions and proofs above:
+
+    - Add constructors for pairs, first and second projections,
+      and product types to the definitions of [ty] and [tm], and
+      extend the surrounding definitions accordingly
+      (refer to chapter [MoreSTLC]):
+
+        - value relation
+        - substitution
+        - operational semantics
+        - typing relation
+
+    - Extend the subtyping relation with this rule:
+
+                        S1 <: T1    S2 <: T2
+                        --------------------   (S_Prod)
+                         S1 * S2 <: T1 * T2
+
+    - Extend the proofs of progress, preservation, and all their
+      supporting lemmas to deal with the new constructs.  (You'll also
+      need to add a couple of completely new lemmas.) *)
+
+(* 请在此处解答 *)
+
+(* 请勿修改下面这一行： *)
+Definition manual_grade_for_products : option (nat*string) := None.
+(** [] *)
+
+(* Tue Feb 19 03:04:34 UTC 2019 *)

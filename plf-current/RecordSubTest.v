@@ -64,8 +64,8 @@ idtac " ".
 idtac "#> Examples.subtyping_example_3".
 idtac "Possible points: 1".
 check_type @Examples.subtyping_example_3 (
-(Arrow RNil (RCons "j" Examples.A RNil) <:
- Arrow (RCons "k" Examples.B RNil) RNil)).
+(Arrow RNil (RCons Examples.j Examples.A RNil) <:
+ Arrow (RCons Examples.k Examples.B RNil) RNil)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples.subtyping_example_3.
@@ -78,8 +78,10 @@ idtac " ".
 idtac "#> Examples.subtyping_example_4".
 idtac "Possible points: 2".
 check_type @Examples.subtyping_example_4 (
-(RCons "x" Examples.A (RCons "y" Examples.B (RCons "z" Examples.C RNil)) <:
- RCons "z" Examples.C (RCons "y" Examples.B (RCons "x" Examples.A RNil)))).
+(RCons Examples.x Examples.A
+   (RCons Examples.y Examples.B (RCons Examples.z Examples.C RNil)) <:
+ RCons Examples.z Examples.C
+   (RCons Examples.y Examples.B (RCons Examples.x Examples.A RNil)))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples.subtyping_example_4.
@@ -101,8 +103,9 @@ idtac "#> Examples2.typing_example_0".
 idtac "Possible points: 1".
 check_type @Examples2.typing_example_0 (
 (@Maps.empty ty
- |- rcons "k" (abs "z" Examples.A (var "z"))
-      (rcons "j" (abs "z" Examples.B (var "z")) rnil) \in Examples.TRcd_kj)).
+ |- rcons Examples.k (abs Examples.z Examples.A (var Examples.z))
+      (rcons Examples.j (abs Examples.z Examples.B (var Examples.z)) rnil) \in
+ Examples.TRcd_kj)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples2.typing_example_0.
@@ -116,8 +119,8 @@ idtac "#> Examples2.typing_example_1".
 idtac "Possible points: 2".
 check_type @Examples2.typing_example_1 (
 (@Maps.empty ty
- |- app (abs "x" Examples.TRcd_j (rproj (var "x") "j")) Examples2.trcd_kj \in
- Arrow Examples.B Examples.B)).
+ |- app (abs Examples.x Examples.TRcd_j (rproj (var Examples.x) Examples.j))
+      Examples2.trcd_kj \in Arrow Examples.B Examples.B)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples2.typing_example_1.
@@ -167,4 +170,4 @@ idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Feb 17 18:25:57 UTC 2019 *)
+(* Tue Feb 19 03:05:22 UTC 2019 *)

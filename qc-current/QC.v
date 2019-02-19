@@ -217,7 +217,6 @@ Inductive color := Red | Green | Blue | Yellow.
 (** In order for commands like [Sample] to display colors, we should
     make [color] an instance of the [Show] typeclass: *)
 
-Require Import String. Open Scope string.
 Instance show_color : Show color :=
   {| show c :=
        match c with
@@ -1646,4 +1645,4 @@ Definition insertBST_spec' (low high : nat) (x : nat) (t : Tree nat) :=
 
     [] *)
 
-(* Sun Feb 17 18:28:53 UTC 2019 *)
+(* Tue Feb 19 03:08:18 UTC 2019 *)

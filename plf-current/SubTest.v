@@ -135,10 +135,26 @@ Print Assumptions sub_inversion_arrow.
 Goal True.
 idtac " ".
 
+idtac "-------------------  variations  --------------------".
 idtac " ".
 
-idtac "Max points - standard: 23".
-idtac "Max points - advanced: 23".
+idtac "#> Manually graded: variations".
+idtac "Possible points: 2".
+print_manual_grade manual_grade_for_variations.
+idtac " ".
+
+idtac "-------------------  products  --------------------".
+idtac " ".
+
+idtac "#> Manually graded: products".
+idtac "Possible points: 5".
+print_manual_grade manual_grade_for_products.
+idtac " ".
+
+idtac " ".
+
+idtac "Max points - standard: 30".
+idtac "Max points - advanced: 30".
 idtac "".
 idtac "********** Summary **********".
 idtac "".
@@ -167,8 +183,12 @@ idtac "---------- pair_permutation ---------".
 idtac "MANUAL".
 idtac "---------- sub_inversion_arrow ---------".
 Print Assumptions sub_inversion_arrow.
+idtac "---------- variations ---------".
+idtac "MANUAL".
+idtac "---------- products ---------".
+idtac "MANUAL".
 idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Feb 17 18:25:42 UTC 2019 *)
+(* Tue Feb 19 03:05:08 UTC 2019 *)

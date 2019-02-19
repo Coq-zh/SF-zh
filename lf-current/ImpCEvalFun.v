@@ -369,4 +369,4 @@ Proof.
   rewrite E1 in E2. inversion E2. reflexivity.
   omega. omega.  Qed.
 
-(* Sun Feb 17 18:24:13 UTC 2019 *)
+(* Tue Feb 19 03:03:43 UTC 2019 *)

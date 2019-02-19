@@ -587,5 +587,4 @@ Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
 Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
 (** [] *)
 
-
-(* Sun Feb 17 18:24:11 UTC 2019 *)
+(* Tue Feb 19 03:03:41 UTC 2019 *)
