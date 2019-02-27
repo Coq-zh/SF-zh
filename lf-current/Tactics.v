@@ -303,12 +303,9 @@ Theorem discriminate_ex2 : forall (n m : nat),
 Proof.
   intros n m contra. discriminate contra. Qed.
 
-(** If you find the principle of explosion confusing, remember
-    that these proofs are _not_ showing that the conclusion of the
-    statement holds.  Rather, they are showing that, if the
-    nonsensical situation described by the premise did somehow arise,
-    then the nonsensical conclusion would follow.  We'll explore the
-    principle of explosion of more detail in the next chapter. *)
+(** 爆炸原理可能令你费解，那么请记住上述证明并不肯定其后件，
+    而是说明：倘若荒谬的前件成立，则会得出荒谬的结论。
+    下一章将进一步讨论爆炸原理。 *)
 
 (** **** 练习：1 星, standard (discriminate_ex3)  *)
 Example discriminate_ex3 :
@@ -1050,4 +1047,4 @@ Proof. (* 请在此处解答 *) Admitted.
 
 
 
-(* Tue Feb 19 03:03:41 UTC 2019 *)
+(* Wed Feb 27 15:26:42 UTC 2019 *)

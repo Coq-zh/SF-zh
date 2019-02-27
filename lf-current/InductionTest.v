@@ -177,4 +177,4 @@ idtac "---------- binary_inverse_c ---------".
 idtac "MANUAL".
 Abort.
 
-(* Tue Feb 19 03:03:45 UTC 2019 *)
+(* Wed Feb 27 15:26:46 UTC 2019 *)
