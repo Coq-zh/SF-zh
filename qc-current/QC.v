@@ -194,6 +194,7 @@ Module DefineG.
 
 Inductive G (A:Type) : Type :=
 | MkG : (nat -> RandomSeed -> A) -> G A.
+Arguments MkG {A}.
 
 End DefineG.
 
@@ -742,7 +743,7 @@ Instance showResult : Show Result :=
   {
     show r := match r with
                 Success => "Success"
-              | Failure A showA a => "Failure: " ++ show a
+              | Failure a => "Failure: " ++ show a
               end
   }.
 
@@ -783,7 +784,7 @@ Definition forAll {A B : Type} `{Show A} `{Checkable B}
   r <- checker (f a) ;;
   match r with
     Success => ret Success
-  | Failure B showB b => ret (Failure (a,b))
+  | Failure b => ret (Failure (a,b))
   end.
 
 (** Note that, rather than just returning [Failure a], we package up
@@ -1210,7 +1211,7 @@ Module DefineSized.
 Import DefineG.
 
 Definition sized {A : Type} (f : nat -> G A) : G A :=
-  MkG _
+  MkG
       (fun n r =>
          match f n with
            MkG g => g n r
@@ -1645,4 +1646,4 @@ Definition insertBST_spec' (low high : nat) (x : nat) (t : Tree nat) :=
 
     [] *)
 
-(* Wed Feb 27 15:31:29 UTC 2019 *)
+(* Fri Mar 8 16:41:08 UTC 2019 *)

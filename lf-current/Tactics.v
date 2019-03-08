@@ -182,8 +182,8 @@ Proof.
     因为 [true] 和 [false] 二者都不接受任何参数，它们的单射性并不有趣。
     其它归纳类型亦是如此。 *)
 
-(** For example, we can prove the injectivity of [S] by using the
-    [pred] function defined in [Basics.v]. *)
+(** 例如，我们可以使用定义在 [Basics.v] 中的 [pred] 函数来证明 [S] 的单射性。
+. *)
 
 Theorem S_injective : forall (n m : nat),
   S n = S m ->
@@ -194,13 +194,12 @@ Proof.
   rewrite H2. rewrite H1. reflexivity.
 Qed.
 
-(** This technique can be generalized to any constructor by
-    writing the equivalent of [pred] for that constructor -- i.e.,
-    writing a function that "undoes" one application of the
-    constructor. As a more convenient alternative, Coq provides a
-    tactic called [injection] that allows us to exploit the
-    injectivity of any constructor.  Here is an alternate proof of the
-    above theorem using [injection]: *)
+(**
+    这个技巧可以通过编写构造子的等价的 [pred] 来推广到任意的构造子上 ——
+    即编写一个 “撤销” 一次构造子调用的函数。
+    作为一种更加简便的替代品， Coq提供了叫做 [injection] 的策略来让我们利用任意构造子的单射性。
+    此处是使用 [injection] 对上面定理的另一种证法。
+*)
 
 Theorem S_injective' : forall (n m : nat),
   S n = S m ->
@@ -208,17 +207,17 @@ Theorem S_injective' : forall (n m : nat),
 Proof.
   intros n m H.
 
-(** By writing [injection H] at this point, we are asking Coq to
-    generate all equations that it can infer from [H] using the
-    injectivity of constructors. Each such equation is added as a
-    premise to the goal. In the present example, adds the premise
-    [n = m]. *)
+(** 通过在此处编写 [injection H] ，
+    我们命令Coq使用构造子的单射性来产生所有它能从 [H] 所推出的等式。
+    每一个产生的等式都作为一个前件附加在目标上。
+    在这个例子中，附加了前件 [n = m] 。
+*)
 
   injection H. intros Hnm. apply Hnm.
 Qed.
 
-(** Here's a more interesting example that shows how [injection] can
-    derive multiple equations at once. *)
+(** 此处展示了一个 [injection] 如何直接得出多个等式的有趣例子。
+*)
 
 Theorem injection_ex1 : forall (n m o : nat),
   [n; m] = [o; o] ->
@@ -229,8 +228,8 @@ Proof.
   rewrite H1. rewrite H2. reflexivity.
 Qed.
 
-(** The "[as]" variant of [injection] permits us to choose names for
-    the introduced equations rather than letting Coq do it. *)
+(** [injection] 的 "[as]" 变体允许我们而非Coq来为引入的等式选择名称。
+*)
 
 Theorem injection_ex2 : forall (n m : nat),
   [n] = [m] ->
@@ -281,9 +280,9 @@ Proof.
   - (* n = S n' *)
     simpl.
 
-(** If we use [discriminate] on this hypothesis, Coq confirms
-    that the subgoal we are working on is impossible and removes it
-    from further consideration. *)
+(** 
+    如果我们对这个假设使用 [discriminate] ，
+    Coq便会确认我们当前正在证明的目标不可行，并同时移除它，不再考虑。 *)
 
     intros H. discriminate H.
 Qed.
@@ -1047,4 +1046,4 @@ Proof. (* 请在此处解答 *) Admitted.
 
 
 
-(* Wed Feb 27 15:26:42 UTC 2019 *)
+(* Fri Mar 8 16:36:34 UTC 2019 *)

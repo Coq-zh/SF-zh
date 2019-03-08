@@ -405,7 +405,7 @@ Module Repeat.
 
 Inductive com : Type :=
   | CSkip
-  | CAsgn (x : string) (a : aexp)
+  | CAss (x : string) (a : aexp)
   | CSeq (c1 c2 : com)
   | CIf (b : bexp) (c1 c2 : com)
   | CWhile (b : bexp) (c : com)
@@ -416,56 +416,58 @@ Inductive com : Type :=
     因此，循环体至少会被执行一次。 *)
 
 Notation "'SKIP'" :=
-  CSkip.
-Notation "c1 ; c2" :=
+   CSkip.
+Notation "x '::=' a" :=
+  (CAss x a) (at level 60).
+Notation "c1 ;; c2" :=
   (CSeq c1 c2) (at level 80, right associativity).
-Notation "X '::=' a" :=
-  (CAsgn X a) (at level 60).
 Notation "'WHILE' b 'DO' c 'END'" :=
   (CWhile b c) (at level 80, right associativity).
-Notation "'TEST' e1 'THEN' e2 'ELSE' e3 'FI'" :=
-  (CIf e1 e2 e3) (at level 80, right associativity).
-Notation "'REPEAT' e1 'UNTIL' b2 'END'" :=
-  (CRepeat e1 b2) (at level 80, right associativity).
+Notation "'TEST' c1 'THEN' c2 'ELSE' c3 'FI'" :=
+  (CIf c1 c2 c3) (at level 80, right associativity).
+Notation "'REPEAT' c 'UNTIL' b 'END'" :=
+  (CRepeat c b) (at level 80, right associativity).
 
-Inductive ceval : state -> com -> state -> Prop :=
+Reserved Notation "st '=[' c ']=>' st'"
+                  (at level 40).
+
+Inductive ceval : com -> state -> state -> Prop :=
   | E_Skip : forall st,
-      ceval st SKIP st
-  | E_Ass  : forall st a1 n X,
+      st =[ SKIP ]=> st
+  | E_Ass  : forall st a1 n x,
       aeval st a1 = n ->
-      ceval st (X ::= a1) (t_update st X n)
+      st =[ x ::= a1 ]=> (x !-> n ; st)
   | E_Seq : forall c1 c2 st st' st'',
-      ceval st c1 st' ->
-      ceval st' c2 st'' ->
-      ceval st (c1 ; c2) st''
-  | E_IfTrue : forall st st' b1 c1 c2,
-      beval st b1 = true ->
-      ceval st c1 st' ->
-      ceval st (TEST b1 THEN c1 ELSE c2 FI) st'
-  | E_IfFalse : forall st st' b1 c1 c2,
-      beval st b1 = false ->
-      ceval st c2 st' ->
-      ceval st (TEST b1 THEN c1 ELSE c2 FI) st'
-  | E_WhileFalse : forall b1 st c1,
-      beval st b1 = false ->
-      ceval st (WHILE b1 DO c1 END) st
-  | E_WhileTrue : forall st st' st'' b1 c1,
-      beval st b1 = true ->
-      ceval st c1 st' ->
-      ceval st' (WHILE b1 DO c1 END) st'' ->
-      ceval st (WHILE b1 DO c1 END) st''
-  | E_RepeatEnd : forall st st' b1 c1,
-      ceval st c1 st' ->
-      beval st' b1 = true ->
-      ceval st (CRepeat c1 b1) st'
-  | E_RepeatLoop : forall st st' st'' b1 c1,
-      ceval st c1 st' ->
-      beval st' b1 = false ->
-      ceval st' (CRepeat c1 b1) st'' ->
-      ceval st (CRepeat c1 b1) st''.
+      st  =[ c1 ]=> st'  ->
+      st' =[ c2 ]=> st'' ->
+      st  =[ c1 ;; c2 ]=> st''
+  | E_IfTrue : forall st st' b c1 c2,
+      beval st b = true ->
+      st =[ c1 ]=> st' ->
+      st =[ TEST b THEN c1 ELSE c2 FI ]=> st'
+  | E_IfFalse : forall st st' b c1 c2,
+      beval st b = false ->
+      st =[ c2 ]=> st' ->
+      st =[ TEST b THEN c1 ELSE c2 FI ]=> st'
+  | E_WhileFalse : forall b st c,
+      beval st b = false ->
+      st =[ WHILE b DO c END ]=> st
+  | E_WhileTrue : forall st st' st'' b c,
+      beval st b = true ->
+      st  =[ c ]=> st' ->
+      st' =[ WHILE b DO c END ]=> st'' ->
+      st  =[ WHILE b DO c END ]=> st''
+  | E_RepeatEnd : forall st st' b c,
+      st  =[ c ]=> st' ->
+      beval st' b = true ->
+      st  =[ REPEAT c UNTIL b END ]=> st'
+  | E_RepeatLoop : forall st st' st'' b c,
+      st  =[ c ]=> st' ->
+      beval st' b = false ->
+      st' =[ REPEAT c UNTIL b END ]=> st'' ->
+      st  =[ REPEAT c UNTIL b END ]=> st''
 
-Notation "st '=[' c ']=>' st'" := (ceval st c st')
-                                 (at level 40).
+  where "st =[ c ]=> st'" := (ceval c st st').
 
 (** 我们对确定性证明的第一次尝试并不成功：[E_RepeatEnd] 和 [E_RepeatLoop]
     这两种情况并没有被之前的自动化处理。 *)
@@ -601,4 +603,4 @@ Proof. eauto. Qed.
     [e] 开头的变体。 *)
 
 
-(* Wed Feb 27 15:26:44 UTC 2019 *)
+(* Fri Mar 8 16:36:35 UTC 2019 *)

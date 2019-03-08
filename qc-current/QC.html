@@ -283,7 +283,8 @@
 
 <span class="id" type="keyword">Module</span> <span class="id" type="var">DefineG</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Inductive</span> <span class="id" type="var">G</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) : <span class="id" type="keyword">Type</span> :=<br/>
-| <span class="id" type="var">MkG</span> : (<span class="id" type="var">nat</span> → <span class="id" type="var">RandomSeed</span> → <span class="id" type="var">A</span>) → <span class="id" type="var">G</span> <span class="id" type="var">A</span>.<br/><hr class='doublespaceincode'/>
+| <span class="id" type="var">MkG</span> : (<span class="id" type="var">nat</span> → <span class="id" type="var">RandomSeed</span> → <span class="id" type="var">A</span>) → <span class="id" type="var">G</span> <span class="id" type="var">A</span>.<br/>
+<span class="id" type="var">Arguments</span> <span class="id" type="var">MkG</span> {<span class="id" type="var">A</span>}.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">End</span> <span class="id" type="var">DefineG</span>.<br/>
 </div>
 
@@ -1028,7 +1029,7 @@ Sample&nbsp;(CheckerPlayground3.forAll<br/>
 &nbsp;&nbsp;{<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">show</span> <span class="id" type="var">r</span> := <span class="id" type="keyword">match</span> <span class="id" type="var">r</span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Success</span> ⇒ "Success"<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Failure</span> <span class="id" type="var">A</span> <span class="id" type="var">showA</span> <span class="id" type="var">a</span> ⇒ "Failure: " ++ <span class="id" type="var">show</span> <span class="id" type="var">a</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Failure</span> <span class="id" type="var">a</span> ⇒ "Failure: " ++ <span class="id" type="var">show</span> <span class="id" type="var">a</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
 &nbsp;&nbsp;}.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">Checker</span> := <span class="id" type="var">G</span> <span class="id" type="var">Result</span>.<br/><hr class='doublespaceincode'/>
@@ -1073,7 +1074,7 @@ The interesting case is the <span class="inlinecode"><span class="id" type="var"
 &nbsp;&nbsp;<span class="id" type="var">r</span> &lt;- <span class="id" type="var">checker</span> (<span class="id" type="var">f</span> <span class="id" type="var">a</span>) ;;<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">r</span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Success</span> ⇒ <span class="id" type="var">ret</span> <span class="id" type="var">Success</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">Failure</span> <span class="id" type="var">B</span> <span class="id" type="var">showB</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="var">ret</span> (<span class="id" type="var">Failure</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>))<br/>
+&nbsp;&nbsp;| <span class="id" type="var">Failure</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="var">ret</span> (<span class="id" type="var">Failure</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>))<br/>
 &nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
 </div>
 
@@ -1654,7 +1655,7 @@ Putting it all together:
 <span class="id" type="keyword">Module</span> <span class="id" type="var">DefineSized</span>.<br/>
 <span class="id" type="keyword">Import</span> <span class="id" type="var">DefineG</span>.<br/><hr class='doublespaceincode'/>
 <span class="id" type="keyword">Definition</span> <span class="id" type="var">sized</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">f</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">G</span> <span class="id" type="var">A</span>) : <span class="id" type="var">G</span> <span class="id" type="var">A</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">MkG</span> <span class="id" type="var">_</span><br/>
+&nbsp;&nbsp;<span class="id" type="var">MkG</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">n</span> <span class="id" type="var">r</span> ⇒<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">f</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">MkG</span> <span class="id" type="var">g</span> ⇒ <span class="id" type="var">g</span> <span class="id" type="var">n</span> <span class="id" type="var">r</span><br/>
@@ -2232,7 +2233,7 @@ We would expect that if we insert an element that is within
 <span class="proofbox">&#9744;</span> 
 <div class="code code-tight">
 
-<span class="comment">(*&nbsp;Wed&nbsp;Feb&nbsp;27&nbsp;15:31:29&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;Fri&nbsp;Mar&nbsp;8&nbsp;16:41:08&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
 </div>
 </div>
 
