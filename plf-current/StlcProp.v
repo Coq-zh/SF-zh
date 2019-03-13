@@ -905,4 +905,4 @@ Definition manual_grade_for_stlc_arith : option (nat*string) := None.
 
 End STLCArith.
 
-(* Fri Mar 8 16:37:29 UTC 2019 *)
+(* Wed Mar 13 15:33:55 UTC 2019 *)

@@ -813,4 +813,4 @@ Qed.
 
 End STLCExtendedRecords.
 
-(* Fri Mar 8 16:37:30 UTC 2019 *)
+(* Wed Mar 13 15:33:55 UTC 2019 *)

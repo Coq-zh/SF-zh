@@ -1060,4 +1060,4 @@ End Church.
 End Exercises.
 
 
-(* Fri Mar 8 16:36:34 UTC 2019 *)
+(* Wed Mar 13 15:32:55 UTC 2019 *)

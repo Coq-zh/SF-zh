@@ -322,7 +322,7 @@ Inductive clos_refl_trans_1n {A : Type}
       clos_refl_trans_1n R x z.
 
 (** 这一新的定义将 [rt_step] 和 [rt_trans] 合并成一条。在此规则的假设中
-    [R] 只用了一次，这会上归纳法则更简单。
+    [R] 只用了一次，这会让归纳法则更简单。
 
     在使用这一定义并继续之前，我们需要检查这两个定义确实定义了相同的关系...
 
@@ -356,4 +356,4 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(* Fri Mar 8 16:36:35 UTC 2019 *)
+(* Wed Mar 13 15:32:56 UTC 2019 *)
