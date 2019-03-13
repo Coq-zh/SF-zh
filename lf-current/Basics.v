@@ -1198,4 +1198,4 @@ Fixpoint bin_to_nat (m:bin) : nat
 Definition manual_grade_for_binary : option (nat*string) := None.
 (** [] *)
 
-(* Wed Mar 13 15:32:54 UTC 2019 *)
+(* Wed Mar 13 15:41:08 UTC 2019 *)

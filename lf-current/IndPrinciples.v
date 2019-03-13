@@ -592,4 +592,4 @@ Check le_ind.
 
             因此，根据 [le_S]，[n <= S o']。  [] *)
 
-(* Wed Mar 13 15:32:56 UTC 2019 *)
+(* Wed Mar 13 15:41:09 UTC 2019 *)

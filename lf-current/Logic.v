@@ -1164,8 +1164,8 @@ Proof.
 Qed.
 
 (** 相等性补充了另一个例子。在涉及 [n] 和 [m] 的证明中，知道 [n =? m = true]
-    通常会有一点直接的帮助。然而如果我们将该语句转换为等价的 [n = m] 形式，
-    那么我们可以对它进行改写。
+    通常没什么直接的帮助。然而如果我们将该语句转换为等价的 [n = m] 形式，
+    则可利用该等式改写证明目标。
  *)
 
 Lemma plus_eqb_example : forall n m p : nat,
@@ -1389,4 +1389,4 @@ Definition implies_to_or := forall P Q:Prop,
 
     [] *)
 
-(* Wed Mar 13 15:32:55 UTC 2019 *)
+(* Wed Mar 13 15:41:09 UTC 2019 *)
