@@ -51,23 +51,19 @@
 
 <div class="paragraph"> </div>
 
- The beauty of Hoare Logic is that it is _compositional_: the
-    structure of proofs exactly follows the structure of programs.
+ 霍尔逻辑的美妙之处在于它是 <b>可组合的</b>: 证明的结构完全遵循程序的结构。
 
 <div class="paragraph"> </div>
 
-    This suggests that we can record the essential ideas of a
-    proof (informally, and leaving out some low-level calculational
-    details) by "decorating" a program with appropriate assertions on
-    each of its commands.
+    这表明我们可以通过在每个命令上使用适当的断言“装饰”程序来记录证明的基本思想
+    （非正式地，并省略一些底层的计算细节）。
 
 <div class="paragraph"> </div>
 
-    Such a _decorated program_ carries within it an argument for its
-    own correctness. 
+    这样一个 <b>带装饰的程序（Decorated Program）</b> 自带一个关于它自身正确性的证明。
 <div class="paragraph"> </div>
 
- For example, consider the program: 
+ 例如，考虑以下程序：
 
 <div class="paragraph"> </div>
 
@@ -81,10 +77,9 @@
 <div class="paragraph"> </div>
 
 </div>
-   (Note the _parameters_ <span class="inlinecode"><span class="id" type="var">m</span></span> and <span class="inlinecode"><span class="id" type="var">p</span></span>, which stand for
-   fixed-but-arbitrary numbers.  Formally, they are simply Coq
-   variables of type <span class="inlinecode"><span class="id" type="var">nat</span></span>.)
- Here is one possible specification for this program:
+   (注意 <b>参数</b> <span class="inlinecode"><span class="id" type="var">m</span></span> 和 <span class="inlinecode"><span class="id" type="var">p</span></span>，它们代表任意给定数字（fixed-but-arbitrary numbers）。
+   形式上，它们只是 <span class="inlinecode"><span class="id" type="var">nat</span></span> 类型的 Coq 变量)
+ 这是这个程序的一个可能的规格说明：
 
 <div class="paragraph"> </div>
 
@@ -100,8 +95,7 @@
 <div class="paragraph"> </div>
 
 </div>
- Here is a decorated version of the program, embodying a
-    proof of this specification: 
+ 这是该程序的装饰版本，体现了该规格说明的证明：
 
 <div class="paragraph"> </div>
 
@@ -130,22 +124,17 @@
 
 <div class="paragraph"> </div>
 
- Concretely, a decorated program consists of the program text
-    interleaved with assertions (either a single assertion or possibly
-    two assertions separated by an implication). 
+ 具体地说，一个带装饰的程序包括与断言交错的程序文本（单个断言或可能由蕴含符号分隔的两个断言）。
 <div class="paragraph"> </div>
 
- To check that a decorated program represents a valid proof, we
-    check that each individual command is _locally consistent_ with
-    its nearby assertions in the following sense: 
+ 要检查一个带装饰的程序是否代表一个有效的证明，我们只需检查每个单独的命令是否与其附近的断言在以下各个场景下 <b>局部一致（Locally Consistent）</b>：
 <div class="paragraph"> </div>
 
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> <span class="inlinecode"><span class="id" type="var">SKIP</span></span> is locally consistent if its precondition and
-      postcondition are the same:
+<li> 如果 <span class="inlinecode"><span class="id" type="var">SKIP</span></span> 的前置条件和后置条件相同，则它是局部一致的:
 
 <div class="paragraph"> </div>
 
@@ -164,10 +153,9 @@
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> The sequential composition of <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> and <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> is locally
-      consistent (with respect to assertions <span class="inlinecode"><span class="id" type="var">P</span></span> and <span class="inlinecode"><span class="id" type="var">R</span></span>) if <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> is
-      locally consistent (with respect to <span class="inlinecode"><span class="id" type="var">P</span></span> and <span class="inlinecode"><span class="id" type="var">Q</span></span>) and <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> is
-      locally consistent (with respect to <span class="inlinecode"><span class="id" type="var">Q</span></span> and <span class="inlinecode"><span class="id" type="var">R</span></span>):
+<li> 我们说 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> 的顺序组合是局部一致的（相对于断言 <span class="inlinecode"><span class="id" type="var">P</span></span> 和 <span class="inlinecode"><span class="id" type="var">R</span></span>），
+    如果 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> 是局部一致的（相对于断言 <span class="inlinecode"><span class="id" type="var">P</span></span> 和 <span class="inlinecode"><span class="id" type="var">Q</span></span>）并且
+       <span class="inlinecode"><span class="id" type="var">c<sub>2</sub></span></span> 是局部一致的（相对于断言 <span class="inlinecode"><span class="id" type="var">Q</span></span> 和 <span class="inlinecode"><span class="id" type="var">R</span></span>）：
 
 <div class="paragraph"> </div>
 
@@ -186,8 +174,7 @@
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> An assignment is locally consistent if its precondition is the
-      appropriate substitution of its postcondition:
+<li> 如果赋值语句的前置条件是其后置条件的适当替换，则该赋值语句是局部一致的：
 
 <div class="paragraph"> </div>
 
@@ -208,12 +195,10 @@
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> A conditional is locally consistent (with respect to assertions
-      <span class="inlinecode"><span class="id" type="var">P</span></span> and <span class="inlinecode"><span class="id" type="var">Q</span></span>) if the assertions at the top of its "then" and
-      "else" branches are exactly <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">b</span></span> and <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode">¬<span class="id" type="var">b</span></span> and if its
-      "then" branch is locally consistent (with respect to <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">b</span></span>
-      and <span class="inlinecode"><span class="id" type="var">Q</span></span>) and its "else" branch is locally consistent (with
-      respect to <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode">¬<span class="id" type="var">b</span></span> and <span class="inlinecode"><span class="id" type="var">Q</span></span>):
+<li> 我们说一个条件语句是局部一致的 (相对于断言 <span class="inlinecode"><span class="id" type="var">P</span></span> 和 <span class="inlinecode"><span class="id" type="var">Q</span></span>) ，
+    如果它的 "then" 和 "else" 两个分支顶部的断言恰好是 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">b</span></span> 和 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode">¬<span class="id" type="var">b</span></span>，
+     并且 "then" 分支是局部一致的 (相对于断言 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">b</span></span> 和 <span class="inlinecode"><span class="id" type="var">Q</span></span>)
+    且 "else" 分支是局部一致的 (相对于断言 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode">¬<span class="id" type="var">b</span></span> 和 <span class="inlinecode"><span class="id" type="var">Q</span></span>)：
 
 <div class="paragraph"> </div>
 
@@ -242,10 +227,10 @@
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> A while loop with precondition <span class="inlinecode"><span class="id" type="var">P</span></span> is locally consistent if its
-      postcondition is <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode">¬<span class="id" type="var">b</span></span>, if the pre- and postconditions of
-      its body are exactly <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">b</span></span> and <span class="inlinecode"><span class="id" type="var">P</span></span>, and if its body is
-      locally consistent:
+<li> 我们说一个前置条件为 <span class="inlinecode"><span class="id" type="var">P</span></span> 的 while 循环是局部一致的，
+    如果它的后置条件是 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode">¬<span class="id" type="var">b</span></span>，
+    并且如果它循环体的前置条件和后置条件是 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∧</span> <span class="inlinecode"><span class="id" type="var">b</span></span> 和 <span class="inlinecode"><span class="id" type="var">P</span></span>，
+    并且它的循环体是局部一致的：
 
 <div class="paragraph"> </div>
 
@@ -270,8 +255,7 @@
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> A pair of assertions separated by <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span><span style='letter-spacing:-.2em;'>></span>></span></span></span> is locally consistent if
-      the first implies the second:
+<li> 由蕴含符号 <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span><span style='letter-spacing:-.2em;'>></span>></span></span></span> 分隔的一对断言是局部一致的，如果前者蕴含后者：
 
 <div class="paragraph"> </div>
 
@@ -281,39 +265,35 @@
 <div class="paragraph"> </div>
 
 </div>
-      This corresponds to the application of <span class="inlinecode"><span class="id" type="var">hoare_consequence</span></span>, and it
-      is the _only_ place in a decorated program where checking whether
-      decorations are correct is not fully mechanical and syntactic,
-      but rather may involve logical and/or arithmetic reasoning. 
+      这对应于 <span class="inlinecode"><span class="id" type="var">hoare_consequence</span></span> 的应用, 并且在一段带装饰的程序中，
+      这是 <b>唯一</b> 一个不是完全根据语法机械进行，而是
+      需要涉及到逻辑和算术推理 来检查装饰正确性的地方。
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- These local consistency conditions essentially describe a
-    procedure for _verifying_ the correctness of a given proof.
-    This verification involves checking that every single command is
-    locally consistent with the accompanying assertions.
+ 这些局部一致性条件实质上描述了<b>验证</b>给定证明的正确性的过程。
+    此验证涉及检查每个命令是否与所附断言局部一致。
 
 <div class="paragraph"> </div>
 
-    If we are instead interested in _finding_ a proof for a given
-    specification, we need to discover the right assertions.  This can
-    be done in an almost mechanical way, with the exception of finding
-    loop invariants, which is the subject of the next section.  In the
-    remainder of this section we explain in detail how to construct
-    decorations for several simple programs that don't involve
-    non-trivial loop invariants. 
+    如果我们对<b>找到</b>关于给定规格说明的证明感兴趣，我们需要发现正确的断言。
+    这可以用几乎机械的方式完成，除了找到循环不变量比较特殊外，这是下一节
+    的主题。在本节的其余部分，我们将详细解释如何为几个不涉及非平凡
+    循环不变量的简单程序构造装饰。
 </div>
 
 <div class="doc">
-<a name="lab81"></a><h2 class="section">Example: Swapping Using Addition and Subtraction</h2>
+<a name="lab81"></a><h2 class="section">示例：使用加法和减法实现交换操作</h2>
 
 <div class="paragraph"> </div>
 
- Here is a program that swaps the values of two variables using
-    addition and subtraction (instead of by assigning to a temporary
-    variable).
+ 这是一个运用加法和减法（而不是通过赋值给临时
+    变量）交换两个变量的值的程序。
+
+<div class="paragraph"> </div>
+
 
 <div class="paragraph"> </div>
 
@@ -324,8 +304,7 @@
 <div class="paragraph"> </div>
 
 </div>
-    We can prove (informally) using decorations that this program is 
-    correct &mdash; i.e., it always swaps the values of variables <span class="inlinecode"><span class="id" type="var">X</span></span> and <span class="inlinecode"><span class="id" type="var">Y</span></span>. 
+    我们可以使用装饰来 (非形式化地) 证明这个程序是正确的 —— 也就是说，它总是交换变量<span class="inlinecode"><span class="id" type="var">X</span></span>和<span class="inlinecode"><span class="id" type="var">Y</span></span>的值。
 <div class="paragraph"> </div>
 
 
@@ -343,33 +322,29 @@
 <div class="paragraph"> </div>
 
 </div>
-    These decorations can be constructed as follows:
+    这些装饰可以通过以下方式构造:
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> We begin with the undecorated program (the unnumbered lines).
+<li> 我们以未装饰的程序开始 (即: 所有不带数字编号的行).
 
 </li>
-<li> We add the specification &mdash; i.e., the outer precondition (1)
-        and postcondition (5). In the precondition, we use parameters
-        <span class="inlinecode"><span class="id" type="var">m</span></span> and <span class="inlinecode"><span class="id" type="var">n</span></span> to remember the initial values of variables <span class="inlinecode"><span class="id" type="var">X</span></span>
-        and <span class="inlinecode"><span class="id" type="var">Y</span></span> so that we can refer to them in the postcondition (5).
+<li> 我们添加规格说明 &mdash; 即: 最外部的前置条件 (1) 和后置条件 (5).
+        在前置条件中, 我们使用参数 <span class="inlinecode"><span class="id" type="var">m</span></span> 和 <span class="inlinecode"><span class="id" type="var">n</span></span> 来记住变量 <span class="inlinecode"><span class="id" type="var">X</span></span> 和 <span class="inlinecode"><span class="id" type="var">Y</span></span> 的初始值,
+        以便我们可以在后置条件中引用它们.
 
 </li>
-<li> We work backwards, mechanically, starting from (5) and
-        proceeding until we get to (2). At each step, we obtain the
-        precondition of the assignment from its postcondition by
-        substituting the assigned variable with the right-hand-side of
-        the assignment. For instance, we obtain (4) by substituting
-        <span class="inlinecode"><span class="id" type="var">X</span></span> with <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> in (5), and we obtain (3) by substituting <span class="inlinecode"><span class="id" type="var">Y</span></span>
-        with <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> in (4).
+<li> 我们机械地从后向前进行, 从 (5) 开始处理直到 (2).
+        在每一步中, 我们从赋值语句的后置条件获得它的前置条件,
+        方式是将被赋值的变量替换为赋值语句的右值.
+        例如, 我们通过替换 (5) 中的 <span class="inlinecode"><span class="id" type="var">X</span></span> 为 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> 而获得 (4),
+        然后, 我们通过替换 (4) 中的 <span class="inlinecode"><span class="id" type="var">Y</span></span> 为 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> 而获得 (3).
 
 </li>
-<li> Finally, we verify that (1) logically implies (2) &mdash; i.e.,
-        that the step from (1) to (2) is a valid use of the law of
-        consequence. For this we substitute <span class="inlinecode"><span class="id" type="var">X</span></span> by <span class="inlinecode"><span class="id" type="var">m</span></span> and <span class="inlinecode"><span class="id" type="var">Y</span></span> by <span class="inlinecode"><span class="id" type="var">n</span></span>
-        and calculate as follows:
+<li> 最终, 我们验证 (1) 逻辑上蕴含 (2) &mdash; 即: 由 (1) 到 (2) 的步骤
+        是对 <b>后果法则 (law of consequence)</b> 的合法运用.
+        为此我们替换 <span class="inlinecode"><span class="id" type="var">X</span></span> 为 <span class="inlinecode"><span class="id" type="var">m</span></span>, <span class="inlinecode"><span class="id" type="var">Y</span></span> 为 <span class="inlinecode"><span class="id" type="var">n</span></span> 并计算如下:
 
 <div class="paragraph"> </div>
 
@@ -383,10 +358,8 @@
 
 </li>
 </ul>
-    Note that, since we are working with natural numbers rather than
-    fixed-width machine integers, we don't need to worry about the
-    possibility of arithmetic overflow anywhere in this argument.
-    This makes life quite a bit simpler! 
+    请注意, 由于我们在使用 <b>自然数</b> 而不是 <b>定宽的机器整数</b>,
+    因此我们并不需要担心算术溢出的可能性, 这让事情简单了很多. 
 </div>
 
 <div class="doc">
@@ -394,7 +367,7 @@
 
 <div class="paragraph"> </div>
 
- Here is a simple decorated program using conditionals:
+ 这是一个使用了条件语句的简单的带装饰的程序:
 
 <div class="paragraph"> </div>
 
@@ -415,34 +388,30 @@
 <div class="paragraph"> </div>
 
 </div>
-These decorations were constructed as follows:
+这些装饰的构造过程如下:
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> We start with the outer precondition (1) and postcondition (8).
+<li> 我们从最外部的前置条件 (1) 和后置条件 (8) 开始.
 
 </li>
-<li> We follow the format dictated by the <span class="inlinecode"><span class="id" type="var">hoare_if</span></span> rule and copy the
-    postcondition (8) to (4) and (7). We conjoin the precondition (1)
-    with the guard of the conditional to obtain (2). We conjoin (1)
-    with the negated guard of the conditional to obtain (5).
+<li> 我们依据 <span class="inlinecode"><span class="id" type="var">hoare_if</span></span> 规则所描述的形式, 将后置条件 (8) 拷贝到 (4) 和 (7).
+    我们合取前置条件 (1) 与分支条件以得到 (2).
+    我们合取前置条件 (1) 与否定分支条件以得到 (5).
 
 </li>
-<li> In order to use the assignment rule and obtain (3), we substitute
-    <span class="inlinecode"><span class="id" type="var">Z</span></span> by <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">X</span></span> in (4). To obtain (6) we substitute <span class="inlinecode"><span class="id" type="var">Z</span></span> by <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span>
-    in (7).
+<li> 为了使用赋值规则得到 (3), 我们替换 (4) 中的 <span class="inlinecode"><span class="id" type="var">Z</span></span> 为 <span class="inlinecode"><span class="id" type="var">Y</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">X</span></span>.
+    为了得到 (6) 我们替换 (7) 中的 <span class="inlinecode"><span class="id" type="var">Z</span></span> 为 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">Y</span></span>.
 
 </li>
-<li> Finally, we verify that (2) implies (3) and (5) implies (6). Both
-    of these implications crucially depend on the ordering of <span class="inlinecode"><span class="id" type="var">X</span></span> and
-    <span class="inlinecode"><span class="id" type="var">Y</span></span> obtained from the guard. For instance, knowing that <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">Y</span></span>
-    ensures that subtracting <span class="inlinecode"><span class="id" type="var">X</span></span> from <span class="inlinecode"><span class="id" type="var">Y</span></span> and then adding back <span class="inlinecode"><span class="id" type="var">X</span></span>
-    produces <span class="inlinecode"><span class="id" type="var">Y</span></span>, as required by the first disjunct of (3). Similarly,
-    knowing that <span class="inlinecode">¬</span> <span class="inlinecode">(<span class="id" type="var">X</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">Y</span>)</span> ensures that subtracting <span class="inlinecode"><span class="id" type="var">Y</span></span> from <span class="inlinecode"><span class="id" type="var">X</span></span>
-    and then adding back <span class="inlinecode"><span class="id" type="var">Y</span></span> produces <span class="inlinecode"><span class="id" type="var">X</span></span>, as needed by the second
-    disjunct of (6). Note that <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">n</span></span> does _not_ hold for
-    arbitrary natural numbers <span class="inlinecode"><span class="id" type="var">n</span></span> and <span class="inlinecode"><span class="id" type="var">m</span></span> (for example, <span class="inlinecode">3</span> <span class="inlinecode">-</span> <span class="inlinecode">5</span> <span class="inlinecode">+</span> <span class="inlinecode">5</span> <span class="inlinecode">=</span>
+<li> 最终, 我们验证 (2) 蕴含 (3) 并且 (5) 蕴含 (6).
+    这两个蕴含关系都关键地依赖分支条件中提到的 <span class="inlinecode"><span class="id" type="var">X</span></span> 和 <span class="inlinecode"><span class="id" type="var">Y</span></span> 的顺序.
+    比如, 如果我们知道 <span class="inlinecode"><span class="id" type="var">X</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">Y</span></span> 那么就能确保在 <span class="inlinecode"><span class="id" type="var">Y</span></span> 中 减去 <span class="inlinecode"><span class="id" type="var">X</span></span> 再加回 <span class="inlinecode"><span class="id" type="var">X</span></span> 仍然得到 <span class="inlinecode"><span class="id" type="var">Y</span></span>,
+    这正是合取式 (3) 的左边.
+    类似的, 知道 <span class="inlinecode">¬</span> <span class="inlinecode">(<span class="id" type="var">X</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">Y</span>)</span> 能确保在 <span class="inlinecode"><span class="id" type="var">X</span></span> 中 减去 <span class="inlinecode"><span class="id" type="var">Y</span></span> 再加回 <span class="inlinecode"><span class="id" type="var">Y</span></span> 仍然得到 <span class="inlinecode"><span class="id" type="var">X</span></span>,
+    这正是合取式 (6) 的右边.
+    请注意 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">-</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">n</span></span> 并 _不是_ 对任意的自然数 <span class="inlinecode"><span class="id" type="var">n</span></span> 和 <span class="inlinecode"><span class="id" type="var">m</span></span> 总成立的 (比如: <span class="inlinecode">3</span> <span class="inlinecode">-</span> <span class="inlinecode">5</span> <span class="inlinecode">+</span> <span class="inlinecode">5</span> <span class="inlinecode">=</span>
     <span class="inlinecode">5</span>). 
 </li>
 </ul>
@@ -450,7 +419,7 @@ These decorations were constructed as follows:
 <div class="paragraph"> </div>
 
 <a name="lab83"></a><h4 class="section">练习：2 星, standard (if_minus_plus_reloaded)</h4>
- Fill in valid decorations for the following program:
+ 为以下程序填上合法的装饰:
 
 <div class="paragraph"> </div>
 
@@ -2773,7 +2742,7 @@ Prove that <span class="inlinecode"><span class="id" type="var">fib</span></span
 <span class="proofbox">&#9744;</span> 
 <div class="code code-tight">
 
-<span class="comment">(*&nbsp;Wed&nbsp;Mar&nbsp;13&nbsp;15:42:07&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;Fri&nbsp;Mar&nbsp;15&nbsp;15:02:58&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
 </div>
 </div>
 

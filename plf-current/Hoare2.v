@@ -14,18 +14,14 @@ From PLF Require Import Imp.
 (* ################################################################# *)
 (** * Decorated Programs *)
 
-(** The beauty of Hoare Logic is that it is _compositional_: the
-    structure of proofs exactly follows the structure of programs.
+(** 霍尔逻辑的美妙之处在于它是 _'可组合的'_: 证明的结构完全遵循程序的结构。
 
-    This suggests that we can record the essential ideas of a
-    proof (informally, and leaving out some low-level calculational
-    details) by "decorating" a program with appropriate assertions on
-    each of its commands.
+    这表明我们可以通过在每个命令上使用适当的断言“装饰”程序来记录证明的基本思想
+    （非正式地，并省略一些底层的计算细节）。
 
-    Such a _decorated program_ carries within it an argument for its
-    own correctness. *)
+    这样一个 _'带装饰的程序（Decorated Program）'_ 自带一个关于它自身正确性的证明。*)
 
-(** For example, consider the program: 
+(** 例如，考虑以下程序：
 
     X ::= m;;
     Z ::= p;
@@ -34,11 +30,10 @@ From PLF Require Import Imp.
       X ::= X - 1
     END
 
-   (Note the _parameters_ [m] and [p], which stand for
-   fixed-but-arbitrary numbers.  Formally, they are simply Coq
-   variables of type [nat].)
+   (注意 _'参数'_ [m] 和 [p]，它们代表任意给定数字（fixed-but-arbitrary numbers）。
+   形式上，它们只是 [nat] 类型的 Coq 变量)
 
-    Here is one possible specification for this program:
+    这是这个程序的一个可能的规格说明：
 
       {{ True }}
     X ::= m;;
@@ -49,8 +44,7 @@ From PLF Require Import Imp.
     END
       {{ Z = p - m }}
 
-    Here is a decorated version of the program, embodying a
-    proof of this specification: 
+    这是该程序的装饰版本，体现了该规格说明的证明：
 
       {{ True }} ->>
       {{ m = m }}
@@ -72,42 +66,33 @@ From PLF Require Import Imp.
       {{ Z = p - m }}
 *)
 
-(** Concretely, a decorated program consists of the program text
-    interleaved with assertions (either a single assertion or possibly
-    two assertions separated by an implication). *)
+(** 具体地说，一个带装饰的程序包括与断言交错的程序文本（单个断言或可能由蕴含符号分隔的两个断言）。*)
 
-(** To check that a decorated program represents a valid proof, we
-    check that each individual command is _locally consistent_ with
-    its nearby assertions in the following sense: *)
+(** 要检查一个带装饰的程序是否代表一个有效的证明，我们只需检查每个单独的命令是否与其附近的断言在以下各个场景下 _'局部一致（Locally Consistent）'_：*)
 
-(** - [SKIP] is locally consistent if its precondition and
-      postcondition are the same:
+(** - 如果 [SKIP] 的前置条件和后置条件相同，则它是局部一致的:
 
           {{ P }} SKIP {{ P }}
 *)
 
-(** - The sequential composition of [c1] and [c2] is locally
-      consistent (with respect to assertions [P] and [R]) if [c1] is
-      locally consistent (with respect to [P] and [Q]) and [c2] is
-      locally consistent (with respect to [Q] and [R]):
+(** - 我们说 [c1] 和 [c2] 的顺序组合是局部一致的（相对于断言 [P] 和 [R]），
+    如果 [c1] 是局部一致的（相对于断言 [P] 和 [Q]）并且
+       [c2] 是局部一致的（相对于断言 [Q] 和 [R]）：
 
           {{ P }} c1;; {{ Q }} c2 {{ R }}
 *)
 
-(** - An assignment is locally consistent if its precondition is the
-      appropriate substitution of its postcondition:
+(** - 如果赋值语句的前置条件是其后置条件的适当替换，则该赋值语句是局部一致的：
 
           {{ P [X |-> a] }}
           X ::= a
           {{ P }}
 *)
 
-(** - A conditional is locally consistent (with respect to assertions
-      [P] and [Q]) if the assertions at the top of its "then" and
-      "else" branches are exactly [P /\ b] and [P /\ ~b] and if its
-      "then" branch is locally consistent (with respect to [P /\ b]
-      and [Q]) and its "else" branch is locally consistent (with
-      respect to [P /\ ~b] and [Q]):
+(** - 我们说一个条件语句是局部一致的 (相对于断言 [P] 和 [Q]) ，
+    如果它的 "then" 和 "else" 两个分支顶部的断言恰好是 [P /\ b] 和 [P /\ ~b]，
+     并且 "then" 分支是局部一致的 (相对于断言 [P /\ b] 和 [Q])
+    且 "else" 分支是局部一致的 (相对于断言 [P /\ ~b] 和 [Q])：
 
           {{ P }}
           TEST b THEN
@@ -122,10 +107,10 @@ From PLF Require Import Imp.
           {{ Q }}
 *)
 
-(** - A while loop with precondition [P] is locally consistent if its
-      postcondition is [P /\ ~b], if the pre- and postconditions of
-      its body are exactly [P /\ b] and [P], and if its body is
-      locally consistent:
+(** - 我们说一个前置条件为 [P] 的 while 循环是局部一致的，
+    如果它的后置条件是 [P /\ ~b]，
+    并且如果它循环体的前置条件和后置条件是 [P /\ b] 和 [P]，
+    并且它的循环体是局部一致的：
 
           {{ P }}
           WHILE b DO
@@ -136,43 +121,34 @@ From PLF Require Import Imp.
           {{ P /\ ~b }}
 *)
 
-(** - A pair of assertions separated by [->>] is locally consistent if
-      the first implies the second:
+(** - 由蕴含符号 [->>] 分隔的一对断言是局部一致的，如果前者蕴含后者：
 
           {{ P }} ->>
           {{ P' }}
 
-      This corresponds to the application of [hoare_consequence], and it
-      is the _only_ place in a decorated program where checking whether
-      decorations are correct is not fully mechanical and syntactic,
-      but rather may involve logical and/or arithmetic reasoning. *)
+      这对应于 [hoare_consequence] 的应用, 并且在一段带装饰的程序中，
+      这是 _'唯一'_ 一个不是完全根据语法机械进行，而是
+      需要涉及到逻辑和算术推理 来检查装饰正确性的地方。*)
 
-(** These local consistency conditions essentially describe a
-    procedure for _verifying_ the correctness of a given proof.
-    This verification involves checking that every single command is
-    locally consistent with the accompanying assertions.
+(** 这些局部一致性条件实质上描述了_'验证'_给定证明的正确性的过程。
+    此验证涉及检查每个命令是否与所附断言局部一致。
 
-    If we are instead interested in _finding_ a proof for a given
-    specification, we need to discover the right assertions.  This can
-    be done in an almost mechanical way, with the exception of finding
-    loop invariants, which is the subject of the next section.  In the
-    remainder of this section we explain in detail how to construct
-    decorations for several simple programs that don't involve
-    non-trivial loop invariants. *)
+    如果我们对_'找到'_关于给定规格说明的证明感兴趣，我们需要发现正确的断言。
+    这可以用几乎机械的方式完成，除了找到循环不变量比较特殊外，这是下一节
+    的主题。在本节的其余部分，我们将详细解释如何为几个不涉及非平凡
+    循环不变量的简单程序构造装饰。*)
 
 (* ================================================================= *)
-(** ** Example: Swapping Using Addition and Subtraction *)
+(** ** 示例：使用加法和减法实现交换操作 *)
 
-(** Here is a program that swaps the values of two variables using
-    addition and subtraction (instead of by assigning to a temporary
-    variable).
+(** 这是一个运用加法和减法（而不是通过赋值给临时
+    变量）交换两个变量的值的程序。
 
        X ::= X + Y;;
        Y ::= X - Y;;
        X ::= X - Y
 
-    We can prove (informally) using decorations that this program is 
-    correct -- i.e., it always swaps the values of variables [X] and [Y]. 
+    我们可以使用装饰来 (非形式化地) 证明这个程序是正确的 —— 也就是说，它总是交换变量[X]和[Y]的值。
 
     (1)     {{ X = m /\ Y = n }} ->>
     (2)     {{ (X + Y) - ((X + Y) - Y) = n /\ (X + Y) - Y = m }}
@@ -183,37 +159,31 @@ From PLF Require Import Imp.
            X ::= X - Y
     (5)     {{ X = n /\ Y = m }}
 
-    These decorations can be constructed as follows:
-      - We begin with the undecorated program (the unnumbered lines).
-      - We add the specification -- i.e., the outer precondition (1)
-        and postcondition (5). In the precondition, we use parameters
-        [m] and [n] to remember the initial values of variables [X]
-        and [Y] so that we can refer to them in the postcondition (5).
-      - We work backwards, mechanically, starting from (5) and
-        proceeding until we get to (2). At each step, we obtain the
-        precondition of the assignment from its postcondition by
-        substituting the assigned variable with the right-hand-side of
-        the assignment. For instance, we obtain (4) by substituting
-        [X] with [X - Y] in (5), and we obtain (3) by substituting [Y]
-        with [X - Y] in (4).
-      - Finally, we verify that (1) logically implies (2) -- i.e.,
-        that the step from (1) to (2) is a valid use of the law of
-        consequence. For this we substitute [X] by [m] and [Y] by [n]
-        and calculate as follows:
+    这些装饰可以通过以下方式构造:
+      - 我们以未装饰的程序开始 (即: 所有不带数字编号的行).
+      - 我们添加规格说明 -- 即: 最外部的前置条件 (1) 和后置条件 (5).
+        在前置条件中, 我们使用参数 [m] 和 [n] 来记住变量 [X] 和 [Y] 的初始值,
+        以便我们可以在后置条件中引用它们.
+      - 我们机械地从后向前进行, 从 (5) 开始处理直到 (2).
+        在每一步中, 我们从赋值语句的后置条件获得它的前置条件,
+        方式是将被赋值的变量替换为赋值语句的右值.
+        例如, 我们通过替换 (5) 中的 [X] 为 [X - Y] 而获得 (4),
+        然后, 我们通过替换 (4) 中的 [Y] 为 [X - Y] 而获得 (3).
+      - 最终, 我们验证 (1) 逻辑上蕴含 (2) -- 即: 由 (1) 到 (2) 的步骤
+        是对 _'后果法则 (law of consequence)'_ 的合法运用.
+        为此我们替换 [X] 为 [m], [Y] 为 [n] 并计算如下:
 
             (m + n) - ((m + n) - n) = n /\ (m + n) - n = m
             (m + n) - m = n /\ m = m
             n = n /\ m = m
 
-    Note that, since we are working with natural numbers rather than
-    fixed-width machine integers, we don't need to worry about the
-    possibility of arithmetic overflow anywhere in this argument.
-    This makes life quite a bit simpler! *)
+    请注意, 由于我们在使用 _'自然数'_ 而不是 _'定宽的机器整数'_,
+    因此我们并不需要担心算术溢出的可能性, 这让事情简单了很多. *)
 
 (* ================================================================= *)
 (** ** Example: Simple Conditionals *)
 
-(** Here is a simple decorated program using conditionals:
+(** 这是一个使用了条件语句的简单的带装饰的程序:
 
       (1)     {{True}}
             TEST X <= Y THEN
@@ -229,29 +199,25 @@ From PLF Require Import Imp.
             FI
       (8)     {{Z + X = Y \/ Z + Y = X}}
 
-These decorations were constructed as follows:
-  - We start with the outer precondition (1) and postcondition (8).
-  - We follow the format dictated by the [hoare_if] rule and copy the
-    postcondition (8) to (4) and (7). We conjoin the precondition (1)
-    with the guard of the conditional to obtain (2). We conjoin (1)
-    with the negated guard of the conditional to obtain (5).
-  - In order to use the assignment rule and obtain (3), we substitute
-    [Z] by [Y - X] in (4). To obtain (6) we substitute [Z] by [X - Y]
-    in (7).
-  - Finally, we verify that (2) implies (3) and (5) implies (6). Both
-    of these implications crucially depend on the ordering of [X] and
-    [Y] obtained from the guard. For instance, knowing that [X <= Y]
-    ensures that subtracting [X] from [Y] and then adding back [X]
-    produces [Y], as required by the first disjunct of (3). Similarly,
-    knowing that [~ (X <= Y)] ensures that subtracting [Y] from [X]
-    and then adding back [Y] produces [X], as needed by the second
-    disjunct of (6). Note that [n - m + m = n] does _not_ hold for
-    arbitrary natural numbers [n] and [m] (for example, [3 - 5 + 5 =
+这些装饰的构造过程如下:
+  - 我们从最外部的前置条件 (1) 和后置条件 (8) 开始.
+  - 我们依据 [hoare_if] 规则所描述的形式, 将后置条件 (8) 拷贝到 (4) 和 (7).
+    我们合取前置条件 (1) 与分支条件以得到 (2).
+    我们合取前置条件 (1) 与否定分支条件以得到 (5).
+  - 为了使用赋值规则得到 (3), 我们替换 (4) 中的 [Z] 为 [Y - X].
+    为了得到 (6) 我们替换 (7) 中的 [Z] 为 [X - Y].
+  - 最终, 我们验证 (2) 蕴含 (3) 并且 (5) 蕴含 (6).
+    这两个蕴含关系都关键地依赖分支条件中提到的 [X] 和 [Y] 的顺序.
+    比如, 如果我们知道 [X <= Y] 那么就能确保在 [Y] 中 减去 [X] 再加回 [X] 仍然得到 [Y],
+    这正是合取式 (3) 的左边.
+    类似的, 知道 [~ (X <= Y)] 能确保在 [X] 中 减去 [Y] 再加回 [Y] 仍然得到 [X],
+    这正是合取式 (6) 的右边.
+    请注意 [n - m + m = n] 并 _不是_ 对任意的自然数 [n] 和 [m] 总成立的 (比如: [3 - 5 + 5 =
     5]). *)
 
 (** **** 练习：2 星, standard (if_minus_plus_reloaded)  
 
-    Fill in valid decorations for the following program:
+    为以下程序填上合法的装饰:
 
        {{ True }}
       TEST X <= Y THEN
@@ -2103,4 +2069,4 @@ Theorem dfib_correct : forall n,
 
     [] *)
 
-(* Wed Mar 13 15:42:07 UTC 2019 *)
+(* Fri Mar 15 15:02:58 UTC 2019 *)
