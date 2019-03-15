@@ -1,4 +1,4 @@
-(** * Records: Adding Records to STLC *)
+(** * Records: 为 STLC 添加记录体 *)
 
 Set Warnings "-notation-overridden,-parsing".
 From Coq Require Import Strings.String.
@@ -8,38 +8,35 @@ From PLF Require Import Smallstep.
 From PLF Require Import Stlc.
 
 (* ################################################################# *)
-(** * Adding Records *)
+(** * 添加记录体 *)
 
-(** We saw in chapter [MoreStlc] how records can be treated as just
-    syntactic sugar for nested uses of products.  This is OK for
-    simple examples, but the encoding is informal (in reality, if we
-    actually treated records this way, it would be carried out in the
-    parser, which we are eliding here), and anyway it is not very
-    efficient.  So it is also interesting to see how records can be
-    treated as first-class citizens of the language.  This chapter
-    shows how.
+(** 在 [MoreStlc] 一章中，我们了解到记录体（Record）
+    可被视作嵌套使用的积类型的语法糖。对于简单的例子来说这样还行，
+    然而其编码是非形式化的（实际上，如果我们真的以这种方式来对待记录体，
+    那么它应该在解析器中处理，我们这里暂不考虑），总之它不太高效。
+    因此了解如何将记录体作为语言中的一等公民仍然十分有趣。本章中展示了这种方法。
 
-    Recall the informal definitions we gave before: *)
+    请回忆我们之前给出的非形式化定义： *)
 
 (**
-    Syntax:
+    语法：
 
-       t ::=                          Terms:
-           | {i1=t1, ..., in=tn}         record
-           | t.i                         projection
+       t ::=                          项：
+           | {i1=t1, ..., in=tn}         记录
+           | t.i                         投影
            | ...
 
-       v ::=                          Values:
-           | {i1=v1, ..., in=vn}         record value
+       v ::=                          值：
+           | {i1=v1, ..., in=vn}         记录值
            | ...
 
-       T ::=                          Types:
-           | {i1:T1, ..., in:Tn}         record type
+       T ::=                          类型：
+           | {i1:T1, ..., in:Tn}         记录类型
            | ...
 
-   Reduction:
+   归约：
 
-                               ti ==> ti'                            
+                               ti ==> ti'
   -------------------------------------------------------------------- (ST_Rcd)
   {i1=v1, ..., im=vm, in=tn, ...} ==> {i1=v1, ..., im=vm, in=tn', ...}
 
@@ -50,7 +47,7 @@ From PLF Require Import Stlc.
                           -------------------------                (ST_ProjRcd)
                           {..., i=vi, ...}.i ==> vi
 
-   Typing:
+   定型：
 
                Gamma |- t1 : T1     ...     Gamma |- tn : Tn
              --------------------------------------------------         (T_Rcd)
@@ -62,15 +59,14 @@ From PLF Require Import Stlc.
 *)
 
 (* ################################################################# *)
-(** * Formalizing Records *)
+(** * 形式化记录体 *)
 
 Module STLCExtendedRecords.
 
 (* ----------------------------------------------------------------- *)
-(** *** Syntax and Operational Semantics *)
+(** *** 语法和操作语义 *)
 
-(** The most obvious way to formalize the syntax of record types would
-    be this: *)
+(** 要将记录体的语法形式化，最显然的方式是这样的： *)
 
 Module FirstTry.
 
@@ -81,18 +77,16 @@ Inductive ty : Type :=
   | Arrow    : ty -> ty -> ty
   | TRcd      : (alist ty) -> ty.
 
-(** Unfortunately, we encounter here a limitation in Coq: this type
-    does not automatically give us the induction principle we expect:
-    the induction hypothesis in the [TRcd] case doesn't give us
-    any information about the [ty] elements of the list, making it
-    useless for the proofs we want to do.  *)
+(** 然而，我们在这里遇到了 Coq 的限制：该类型无法自动给出我们期望的归纳法则，
+    也就是说，[TRcd] 的情况中的归纳假设并未给出关于列表中的 [ty] 元素的任何信息，
+    因此它对我们想要做的证明毫无用处。 *)
 
 (* Check ty_ind.
    ====>
     ty_ind :
       forall P : ty -> Prop,
         (forall i : id, P (Base i)) ->
-        (forall t : ty, P t -> forall t0 : ty, P t0 
+        (forall t : ty, P t -> forall t0 : ty, P t0
                             -> P (Arrow t t0)) ->
         (forall a : alist ty, P (TRcd a)) ->    (* ??? *)
         forall t : ty, P t
@@ -100,15 +94,12 @@ Inductive ty : Type :=
 
 End FirstTry.
 
-(** It is possible to get a better induction principle out of Coq, but
-    the details of how this is done are not very pretty, and the
-    principle we obtain is not as intuitive to use as the ones Coq
-    generates automatically for simple [Inductive] definitions.
+(** 让 Coq 为我们生成更好的归纳法则是可能的，但是实现它的具体细节并不是很漂亮，
+    我们得到的法则也不如 Coq 为简单的 [Inductive] 定义生成的法则那么直观易用。
 
-    Fortunately, there is a different way of formalizing records that
-    is, in some ways, even simpler and more natural: instead of using
-    the standard Coq [list] type, we can essentially incorporate its
-    constructors ("nil" and "cons") in the syntax of our types. *)
+    幸好，我们还能用另一种方式来形式化记录体，某种意义上说，它甚至更加简单和自然：
+    我们并不使用 Coq 的标准 [list] 类型，而是在类型的语法中直接包含它的构造子
+    （“nil”和“cons”）。 *)
 
 Inductive ty : Type :=
   | Base : string -> ty
@@ -116,20 +107,19 @@ Inductive ty : Type :=
   | RNil : ty
   | RCons : string -> ty -> ty -> ty.
 
-(** Similarly, at the level of terms, we have constructors [trnil],
-    for the empty record, and [rcons], which adds a single field to
-    the front of a list of fields. *)
+(** 与此类似，在“项”这一层上，我们有空记录体构造子 [trnil]，
+    以及将单个字段添加到字段列表之首的构造子 [rcons]。 *)
 
 Inductive tm : Type :=
   | var : string -> tm
   | app : tm -> tm -> tm
   | abs : string -> ty -> tm -> tm
-  (* records *)
+  (* 记录体 *)
   | rproj : tm -> string -> tm
   | trnil :  tm
   | rcons : string -> tm -> tm -> tm.
 
-(** Some examples... *)
+(** 一些例子…… *)
 Open Scope string_scope.
 
 Notation a := "a".
@@ -152,24 +142,20 @@ Notation i2 := "i2".
            (RCons i2 A RNil)). *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Well-Formedness *)
+(** *** 良构性 *)
 
-(** One issue with generalizing the abstract syntax for records from
-    lists to the nil/cons presentation is that it introduces the
-    possibility of writing strange types like this... *)
+(** 在将记录体的抽象语法从列表推广为用 nil/cons 表示时会引入一个问题：
+    我们可能写出如下这种奇怪的类型…… *)
 
 Definition weird_type := RCons X A B.
 
-(** where the "tail" of a record type is not actually a record type! *)
+(** 该记录类型的「尾部（tail）」并不是一个真正的记录类型！ *)
 
-(** We'll structure our typing judgement so that no ill-formed types
-    like [weird_type] are ever assigned to terms.  To support this, we
-    define predicates [record_ty] and [record_tm], which identify
-    record types and terms, and [well_formed_ty] which rules out the
-    ill-formed types. *)
+(** 我们要重构我们的类型断言，让 [weird_type] 这种病态的（ill-formed）类型不能被赋项。
+    为此，我们定义了断言 [record_ty] 和 [record_tm] 来刻画了记录体的类型和项，
+    以及 [well_formed_ty] 用于排除劣构的类型。 *)
 
-(** First, a type is a record type if it is built with just [RNil]
-    and [RCons] at the outermost level. *)
+(** 首先，如果某个类型在最外层只用 [RNil] 和 [RCons] 构造，那么它是一个记录。 *)
 
 Inductive record_ty : ty -> Prop :=
   | RTnil :
@@ -177,7 +163,7 @@ Inductive record_ty : ty -> Prop :=
   | RTcons : forall i T1 T2,
         record_ty (RCons i T1 T2).
 
-(** With this, we can define well-formed types. *)
+(** 据此，我们可以定义良构的（well-formed）类型。 *)
 
 Inductive well_formed_ty : ty -> Prop :=
   | wfBase : forall i,
@@ -196,18 +182,14 @@ Inductive well_formed_ty : ty -> Prop :=
 
 Hint Constructors record_ty well_formed_ty.
 
-(** Note that [record_ty] is not recursive -- it just checks the
-    outermost constructor.  The [well_formed_ty] property, on the
-    other hand, verifies that the whole type is well formed in the
-    sense that the tail of every record (the second argument to
-    [RCons]) is a record.
+(** 需注意 [record_ty] 不是递归的：它只检查最外层的构造子。另一方面，
+    [well_formed_ty] 这一性质就其“每个记录体的尾部（即 [RCons] 的第二个参数）
+    都是记录体”的意义而言，保证了整个类型是良构的。
 
-    Of course, we should also be concerned about ill-formed terms, not
-    just types; but typechecking can rule those out without the help
-    of an extra [well_formed_tm] definition because it already
-    examines the structure of terms.  All we need is an analog of
-    [record_ty] saying that a term is a record term if it is built
-    with [trnil] and [rcons]. *)
+    当然，除了类型以外，我们还要考虑劣构的项。不过类型检查无需一个额外的
+    [well_formed_tm] 定义就能排除它们，因为项的结构是经过了检查的。
+    我们需要的只是类似 [record_ty] 的定义，即如果某个项以 [trnil] 和 [rcons]
+    构造，那么它就是记录项。 *)
 
 Inductive record_tm : tm -> Prop :=
   | rtnil :
@@ -218,9 +200,9 @@ Inductive record_tm : tm -> Prop :=
 Hint Constructors record_tm.
 
 (* ----------------------------------------------------------------- *)
-(** *** Substitution *)
+(** *** 代换 *)
 
-(** Substitution extends easily. *)
+(** 代换很容易扩展。 *)
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
@@ -236,9 +218,9 @@ Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 (* ----------------------------------------------------------------- *)
-(** *** Reduction *)
+(** *** 归约 *)
 
-(** A record is a value if all of its fields are. *)
+(** 如果一个记录体的所有字段都是值，那么它本身也是值。 *)
 
 Inductive value : tm -> Prop :=
   | v_abs : forall x T11 t12,
@@ -251,8 +233,7 @@ Inductive value : tm -> Prop :=
 
 Hint Constructors value.
 
-(** To define reduction, we'll need a utility function for extracting
-    one field from record term: *)
+(** 为了定义归约，我们需要一个辅助函数来提取记录项中的某个字段： *)
 
 Fixpoint tlookup (i:string) (tr:tm) : option tm :=
   match tr with
@@ -260,8 +241,7 @@ Fixpoint tlookup (i:string) (tr:tm) : option tm :=
   | _ => None
   end.
 
-(** The [step] function uses this term-level lookup function in the
-    projection rule. *)
+(** [step] 函数会在投影规则中使用该项一级的查找函数。 *)
 
 Reserved Notation "t1 '-->' t2" (at level 40).
 
@@ -299,28 +279,20 @@ Notation "t1 '-->*' t2" := (multistep t1 t2) (at level 40).
 Hint Constructors step.
 
 (* ----------------------------------------------------------------- *)
-(** *** Typing *)
+(** *** 定型 *)
 
-(** Next we define the typing rules.  These are nearly direct
-    transcriptions of the inference rules shown above: the only
-    significant difference is the use of [well_formed_ty].  In the
-    informal presentation we used a grammar that only allowed
-    well-formed record types, so we didn't have to add a separate
-    check.
+(** 接着我们定义定型规则。这些规则基本上直接转写自前面的推理规则，
+    唯一明显的区别是对 [well_formed_ty] 的使用。在非形式化的表述中，
+    我们使用了只允许良构记录类型的语法，因此我们无需添加单独的检查。
 
-    One sanity condition that we'd like to maintain is that, whenever
-    [has_type Gamma t T] holds, will also be the case that
-    [well_formed_ty T], so that [has_type] never assigns ill-formed
-    types to terms.  In fact, we prove this theorem below.  However,
-    we don't want to clutter the definition of [has_type] with
-    unnecessary uses of [well_formed_ty].  Instead, we place
-    [well_formed_ty] checks only where needed: where an inductive call
-    to [has_type] won't already be checking the well-formedness of a
-    type.  For example, we check [well_formed_ty T] in the [T_Var]
-    case, because there is no inductive [has_type] call that would
-    enforce this.  Similarly, in the [T_Abs] case, we require a proof
-    of [well_formed_ty T11] because the inductive call to [has_type]
-    only guarantees that [T12] is well-formed. *)
+    我们需要维持一个合理的条件，就是只要 [has_type Gamma t T] 成立，那么
+    [well_formed_ty T] 也应当成立，这样 [has_type] 就不会将劣构的类型赋予项了。
+    我们后面会证明此定理。然而，我们并不想将 [has_type] 的定义和不必要的
+    [well_formed_ty] 混在一起，而是只在需要的地方使用 [well_formed_ty] 检查：
+    即在归纳调用 [has_type] 时不会检查类型良构性的地方使用它。例如，我们会在
+    [T_Var] 的情况下检查 [well_formed_ty T]，因为这里没有归纳的 [has_type]
+    调用来执行此操作。同样，在 [T_Abs] 的情况下，我们需要一个 [well_formed_ty T11]
+    的证明，因为对 [has_type] 的归纳调用只能保证 [T12] 是良构的。 *)
 
 Fixpoint Tlookup (i:string) (Tr:ty) : option ty :=
   match Tr with
@@ -365,17 +337,14 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 Hint Constructors has_type.
 
 (* ================================================================= *)
-(** ** Examples *)
+(** ** 示例 *)
 
 (** **** 练习：2 星, standard (examples)  
 
-    Finish the proofs below.  Feel free to use Coq's automation
-    features in this proof.  However, if you are not confident about
-    how the type system works, you may want to carry out the proofs
-    first using the basic features ([apply] instead of [eapply], in
-    particular) and then perhaps compress it using automation.  Before
-    starting to prove anything, make sure you understand what it is
-    saying. *)
+    完成下面的证明。在此证明中可随意使用 Coq 的自动化特性。然而，
+    如果你不熟悉类型系统是如何工作的，那么应该先用基本策略来完成证明
+    （比如使用 [apply] 而非 [eapply]），再试着用自动化特性来简化它。
+    在证明之前，请先确保你理解它的意思。 *)
 
 Lemma typing_example_2 :
   empty |-
@@ -410,14 +379,13 @@ Proof.
   (* 请在此处解答 *) Admitted.
 
 (* ================================================================= *)
-(** ** Properties of Typing *)
+(** ** 定型的性质 *)
 
-(** The proofs of progress and preservation for this system are
-    essentially the same as for the pure simply typed lambda-calculus,
-    but we need to add some technical lemmas involving records. *)
+(** 对该系统可进性和保型性的证明与对纯粹的简单类型 λ-演算的基本相同，
+    不过我们需要引入一些涉及记录体的引理来作的技术上处理。 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Well-Formedness *)
+(** *** 良构性 *)
 
 Lemma wf_rcd_lookup : forall i T Ti,
   well_formed_ty T ->
@@ -451,40 +419,34 @@ Proof with eauto.
     eapply wf_rcd_lookup...
 Qed.
 
-(* ----------------------------------------------------------------- *)
-(** *** Field Lookup *)
+(** *** 依字段查表*)
 
-(** Lemma: If [empty |- v : T] and [Tlookup i T] returns [Some Ti],
-     then [tlookup i v] returns [Some ti] for some term [ti] such
-     that [empty |- ti \in Ti].
+(** 引理：若 [empty |- v : T] 和 [Tlookup i T] 返回 [Some Ti]，
+      则对于 [empty |- ti \in Ti] 的项 [ti]，[tlookup i v] 会返回 [Some ti]。
 
-    Proof: By induction on the typing derivation [Htyp].  Since
-      [Tlookup i T = Some Ti], [T] must be a record type, this and
-      the fact that [v] is a value eliminate most cases by inspection,
-      leaving only the [T_RCons] case.
+    证明：对定型导出式 [Htyp] 来归纳。由于 [Tlookup i T = Some Ti]，因此
+      [T] 必为记录类型，据此以及 [v] 为值的观察，可以消除了部分情况，
+      剩下的只有 [T_RCons] 的情况。
 
-      If the last step in the typing derivation is by [T_RCons], then
-      [t = rcons i0 t tr] and [T = RCons i0 T Tr] for some [i0],
-      [t], [tr], [T] and [Tr].
+      定型导出式的最后一步是根据 [T_RCons] 得来的，那么对于某些 [i0]、[t]、[tr]、[T]
+      和 [Tr] 来说，[t = rcons i0 t tr] 且 [T = RCons i0 T Tr]。
 
-      This leaves two possiblities to consider - either [i0 = i] or
-      not.
+      现在还剩下两种情况需要考虑，即 [i0 = i] 是否成立。
 
-      - If [i = i0], then since [Tlookup i (RCons i0 T Tr) = Some
-        Ti] we have [T = Ti].  It follows that [t] itself satisfies
-        the theorem.
+      - 若 [i = i0]，那么根据 [Tlookup i (RCons i0 T Tr) = Some Ti]，我们有
+        [T = Ti]。它根据 [t] 本身满足此定理得出。
 
-      - On the other hand, suppose [i <> i0].  Then
+      - 另一方面，假设 [i <> i0]。那么
 
         Tlookup i T = Tlookup i Tr
 
-        and
+        且
 
         tlookup i t = tlookup i tr,
 
-        so the result follows from the induction hypothesis. [] 
+        则结果由归纳假设得出。 []
 
-    Here is the formal statement:
+    以下为形式化证明：
 *)
 
 Lemma lookup_field_in_value : forall v T i Ti,
@@ -506,105 +468,92 @@ Proof with eauto.
       inversion Hval... Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Progress *)
+(** *** 可进性 *)
 
 Theorem progress : forall t T,
      empty |- t \in T ->
      value t \/ exists t', t --> t'.
 Proof with eauto.
-  (* Theorem: Suppose empty |- t : T.  Then either
-       1. t is a value, or
-       2. t --> t' for some t'.
-     Proof: By induction on the given typing derivation. *)
+  (* 定理：假设 empty |- t : T。那么以下二者之一成立：
+       1. t 为值，或者
+       2. 对某个 t'，有 t --> t'。
+     证明：对给定的定型导出式作归纳。 *)
   intros t T Ht.
   remember (@empty ty) as Gamma.
   generalize dependent HeqGamma.
   induction Ht; intros HeqGamma; subst.
   - (* T_Var *)
-    (* The final rule in the given typing derivation cannot be 
-       [T_Var], since it can never be the case that 
-       [empty |- x : T] (since the context is empty). *)
+    (* 一给定的定型导出式的最后一条规则不能为 [T_Var]，因为它不应是
+       [empty |- x : T] 的情况（因为上下文为空）。 *)
     inversion H.
   - (* T_Abs *)
-    (* If the [T_Abs] rule was the last used, then 
-       [t = abs x T11 t12], which is a value. *)
+    (* 若最后应用的规则为 [T_Abs]，则有 [t = abs x T11 t12]，它是一个值。 *)
     left...
   - (* T_App *)
-    (* If the last rule applied was T_App, then [t = t1 t2], 
-       and we know from the form of the rule that
+    (* 若最后应用的规则为 T_App，则有 [t = t1 t2]。这点可由以下规则的形式得到：
          [empty |- t1 : T1 -> T2]
          [empty |- t2 : T1]
-       By the induction hypothesis, each of t1 and t2 either is a value
-       or can take a step. *)
+       根据归纳假设，t1 和 t2 要么是值，要么可再推进一步。 *)
     right.
     destruct IHHt1; subst...
-    + (* t1 is a value *)
+    + (* t1 为值 *)
       destruct IHHt2; subst...
-      * (* t2 is a value *)
-      (* If both [t1] and [t2] are values, then we know that
-         [t1 = abs x T11 t12], since abstractions are the only 
-         values that can have an arrow type.  But
-         [(abs x T11 t12) t2 --> [x:=t2]t12] by [ST_AppAbs]. *)
+      * (* t2 为值 *)
+      (* 若 [t1] 和 [t2] 均为值，那么我们知道
+         [t1 = abs x T11 t12]，因为“抽象”是唯一具有箭头类型的值。
+         然而根据 [ST_AppAbs]，[(abs x T11 t12) t2 --> [x:=t2]t12]。 *)
         inversion H; subst; try solve_by_invert.
         exists ([x:=t2]t12)...
-      * (* t2 steps *)
-        (* If [t1] is a value and [t2 --> t2'], then
-           [t1 t2 --> t1 t2'] by [ST_App2]. *)
+      * (* t2 推进一步 *)
+        (* 若 [t1] 为值且 [t2 --> t2']，那么根据 [ST_App2]，
+           [t1 t2 --> t1 t2']。 *)
         destruct H0 as [t2' Hstp]. exists (app t1 t2')...
-    + (* t1 steps *)
-      (* Finally, If [t1 --> t1'], then [t1 t2 --> t1' t2]
-         by [ST_App1]. *)
+    + (* t1 推进一步 *)
+      (* 最后，若 [t1 --> t1']，那么根据 [ST_App1]，[t1 t2 --> t1' t2]。 *)
       destruct H as [t1' Hstp]. exists (app t1' t2)...
   - (* T_Proj *)
-    (* If the last rule in the given derivation is [T_Proj], then
-       [t = rproj t i] and
-           [empty |- t : (TRcd Tr)]
-       By the IH, [t] either is a value or takes a step. *)
+    (* 若给定导出式的最后一条规则为 [T_Proj]，那么
+       [t = rproj t i] 且 [empty |- t : (TRcd Tr)]
+       根据归纳假设，[t] 要么是值，要么可以推进一步。 *)
     right. destruct IHHt...
-    + (* rcd is value *)
-      (* If [t] is a value, then we may use lemma
-         [lookup_field_in_value] to show [tlookup i t = Some ti] 
-         for some [ti] which gives us [rproj i t --> ti] by
-         [ST_ProjRcd]. *)
+    + (* rcd 为值 *)
+      (* 若 [t] 为值，那么我们可使用引理 [lookup_field_in_value]
+         来证明对某个 [ti] 而言 [tlookup i t = Some ti]。根据
+         [ST_ProjRcd] 可得 [rproj i t --> ti]。 *)
       destruct (lookup_field_in_value _ _ _ _ H0 Ht H)
         as [ti [Hlkup _]].
       exists ti...
-    + (* rcd_steps *)
-      (* On the other hand, if [t --> t'], then
-         [rproj t i --> rproj t' i] by [ST_Proj1]. *)
+    + (* rcd 推进一步 *)
+      (* 另一方面，若 [t --> t']，那么根据 [ST_Proj1] 可得
+         [rproj t i --> rproj t' i]。 *)
       destruct H0 as [t' Hstp]. exists (rproj t' i)...
   - (* T_RNil *)
-    (* If the last rule in the given derivation is [T_RNil], 
-       then [t = trnil], which is a value. *)
+    (* 若给定导出式中的最后一条规则为 [T_RNil]，那么 [t = trnil]，为值。 *)
     left...
   - (* T_RCons *)
-    (* If the last rule is [T_RCons], then [t = rcons i t tr] and
+    (* 若最后一条规则为 [T_RCons]，那么 [t = rcons i t tr] 且
          [empty |- t : T]
          [empty |- tr : Tr]
-       By the IH, each of [t] and [tr] either is a value or can 
-       take a step. *)
+       根据归纳法则，[t] 和 [tr] 要么是值，要么可再推进一步。 *)
     destruct IHHt1...
-    + (* head is a value *)
+    + (* head 为值 *)
       destruct IHHt2; try reflexivity.
-      * (* tail is a value *)
-      (* If [t] and [tr] are both values, then [rcons i t tr]
-         is a value as well. *)
+      * (* tail 为值 *)
+      (* 若 [t] 和 [tr] 均为值，那么 [rcons i t tr] 也为值。 *)
         left...
-      * (* tail steps *)
-        (* If [t] is a value and [tr --> tr'], then
-           [rcons i t tr --> rcons i t tr'] by
-           [ST_Rcd_Tail]. *)
+      * (* tail 推进一步 *)
+        (* 若 [t] 为值且 [tr --> tr']，那么根据 [ST_Rcd_Tail]，
+           [rcons i t tr --> rcons i t tr']。 *)
         right. destruct H2 as [tr' Hstp].
         exists (rcons i t tr')...
-    + (* head steps *)
-      (* If [t --> t'], then
-         [rcons i t tr --> rcons i t' tr]
-         by [ST_Rcd_Head]. *)
+    + (* head 推进一步 *)
+      (* 若 [t --> t']，那么根据 [ST_Rcd_Head]，
+         [rcons i t tr --> rcons i t' tr]。 *)
       right. destruct H1 as [t' Hstp].
       exists (rcons i t' tr)...  Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Context Invariance *)
+(** *** 上下文不变性 *)
 
 Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
@@ -661,43 +610,38 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Preservation *)
+(** *** 保型性 *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
      (update Gamma x U) |- t \in S  ->
      empty |- v \in U   ->
      Gamma |- ([x:=v]t) \in S.
 Proof with eauto.
-  (* Theorem: If x|->U;Gamma |- t : S and empty |- v : U, then
-     Gamma |- ([x:=v]t) S. *)
+  (* 定理：若 x|->U;Gamma |- t : S 且 empty |- v : U，则
+     Gamma |- ([x:=v]t) S。 *)
   intros Gamma x U v t S Htypt Htypv.
   generalize dependent Gamma. generalize dependent S.
-  (* Proof: By induction on the term t.  Most cases follow 
-     directly from the IH, with the exception of var, 
-     abs, rcons. The former aren't automatic because we 
-     must reason about how the variables interact. In the 
-     case of rcons, we must do a little extra work to show 
-     that substituting into a term doesn't change whether 
-     it is a record term. *)
+  (* 证明：通过对项 t 作归纳可得。大部分情况下，结论可以从归纳假设直接得到，
+     只有 var、abs 和 rcons 的情况需要额外证明。无法自动得到前两者，
+     是因为我们必须处理变量之间的相互作用。对于 rcons 的情况，
+     我们必须额外证明在项中作代换不改变它是否为一个记录项。 *)
   induction t;
     intros S Gamma Htypt; simpl; inversion Htypt; subst...
   - (* var *)
     simpl. rename s into y.
-    (* If t = y, we know that
-         [empty |- v : U] and
+    (* 若 t = y，我们知道
+         [empty |- v : U] 且
          [x|->U; Gamma |- y : S]
-       and, by inversion, [update Gamma x U y = Some S].  
-       We want to show that [Gamma |- [x:=v]y : S].
+       经反演可得 [update Gamma x U y = Some S]。
+       我们需要证明 [Gamma |- [x:=v]y : S]。
 
-       There are two cases to consider: either [x=y] or [x<>y]. *)
+       有两种情况需要考虑：[x=y] 或 [x<>y]。 *)
     unfold update, t_update in H0.
     destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
-    (* If [x = y], then we know that [U = S], and that 
-       [[x:=v]y = v]. So what we really must show is that 
-       if [empty |- v : U] then [Gamma |- v : U].  We have
-        already proven a more general version of this theorem, 
-        called context invariance! *)
+    (* 若 [x = y]，那么我们知道 [U = S]，以及 [[x:=v]y = v]。
+       因此我们必须证明若 [empty |- v : U] 则 [Gamma |- v : U]。
+       我们已经证明了此定理更一般的版本，即上下文不变性！ *)
       subst.
       inversion H0; subst. clear H0.
       eapply context_invariance...
@@ -706,39 +650,36 @@ Proof with eauto.
         as [T' HT']...
       inversion HT'.
     + (* x<>y *)
-    (* If [x <> y], then [Gamma y = Some S] and the substitution
-       has no effect.  We can show that [Gamma |- y : S] by 
-       [T_Var]. *)
+    (* 若 [x <> y]，则 [Gamma y = Some S] 且代换没有效果。我们可以根据
+       [T_Var] 证明 [Gamma |- y : S]。 *)
       apply T_Var...
   - (* abs *)
     rename s into y. rename t into T11.
-    (* If [t = abs y T11 t0], then we know that
+    (* 若 [t = abs y T11 t0]，那么我们知道
          [x|->U; Gamma |- abs y T11 t0 : T11->T12]
          [x|->U; y|->T11; Gamma |- t0 : T12]
          [empty |- v : U]
-       As our IH, we know that forall S Gamma,
+       根据归纳假设，我们知道对于所有的 S Gamma，
          [x|->U; Gamma |- t0 : S -> Gamma |- [x:=v]t0 S].
 
-       We can calculate that
-       [ [x:=v]t = abs y T11 (if eqb_string x y then t0 else [x:=v]t0) ],
-       and we must show that [Gamma |- [x:=v]t : T11->T12].  We know
-       we will do so using [T_Abs], so it remains to be shown that:
+       我们可以计算出
+       [ [x:=v]t = abs y T11 (if eqb_string x y then t0 else [x:=v]t0) ]，
+       此时我们必须证明 [Gamma |- [x:=v]t : T11->T12]。我们知道可以用
+       [T_Abs] 来证明它，因此接下来需要证明的就是：
          [y|->T11; Gamma |- if eqb_string x y then t0 else [x:=v]t0 : T12]
-       We consider two cases: [x = y] and [x <> y]. *)
+       我们考虑两种情况：[x = y] 和 [x <> y]。 *)
     apply T_Abs...
     destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
-      (* If [x = y], then the substitution has no effect.  Context
-         invariance shows that [y:U,y:T11] and [Gamma,y:T11] are
-         equivalent.  Since [t0 : T12] under the former context, 
-         this is also the case under the latter. *)
+      (* 若 [x = y]，则代换没有作用。上下文不变性保证了
+         [y:U,y:T11] 和 [Gamma,y:T11] 等价。在前者的上下文中有 [t0 : T12] ，
+         那么在后者中也是这样。 *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
       destruct (eqb_string y x)...
     + (* x<>y *)
-      (* If [x <> y], then the IH and context invariance allow 
-         us to show that
+      (* 若 [x <> y]，那么归纳假设和上下文不变性能让我们证明
            [x|->U; y|->T11; Gamma |- t0 : T12]       =>
            [y|->T11; x|->U; Gamma |- t0 : T12]       =>
            [y|->T11; Gamma |- [x:=v]t0 : T12] *)
@@ -756,61 +697,56 @@ Theorem preservation : forall t t' T,
      empty |- t' \in T.
 Proof with eauto.
   intros t t' T HT.
-  (* Theorem: If [empty |- t : T] and [t --> t'], then
+  (* 定理：若 [empty |- t : T] 且 [t --> t']，则
      [empty |- t' : T]. *)
   remember (@empty ty) as Gamma. generalize dependent HeqGamma.
   generalize dependent t'.
-  (* Proof: By induction on the given typing derivation.  
-     Many cases are contradictory ([T_Var], [T_Abs]) or follow 
-     directly from the IH ([T_RCons]).  We show just the 
-     interesting ones. *)
+  (* 证明：对给定的定型导出式来归纳。很多情况是矛盾的（[T_Var]、[T_Abs]）
+     或可直接从归纳假设得出（[T_RCons]），我们只需证明那些“有趣”的情况。 *)
   induction HT;
     intros t' HeqGamma HE; subst; inversion HE; subst...
   - (* T_App *)
-    (* If the last rule used was [T_App], then [t = t1 t2], 
-       and three rules could have been used to show [t --> t']:
-       [ST_App1], [ST_App2], and [ST_AppAbs]. In the first two 
-       cases, the result follows directly from the IH. *)
+    (* 若使用的最后一条规则为 [T_App]，那么 [t = t1 t2]。
+       证明 [t --> t'] 可能用到的三条规则是 [ST_App1]、[ST_App2] 和 [ST_AppAbs]。
+       在前两种情况下，结果可直接从归纳假设得出。 *)
     inversion HE; subst...
     + (* ST_AppAbs *)
-      (* For the third case, suppose
+      (* 对于第三种情况，假设
            [t1 = abs x T11 t12]
-         and
-           [t2 = v2].  We must show that [empty |- [x:=v2]t12 : T2].
-         We know by assumption that
+         且
+           [t2 = v2]。我们必须证明 [empty |- [x:=v2]t12 : T2]。
+         根据假设我们知道
              [empty |- abs x T11 t12 : T1->T2]
-         and by inversion
+         经反演可得
              [x:T1 |- t12 : T2]
-         We have already proven that substitution_preserves_typing and
+         我们已经证明了 substitution_preserves_typing，又根据假设，有
              [empty |- v2 : T1]
-         by assumption, so we are done. *)
+         故此分支证明完毕。 *)
       apply substitution_preserves_typing with T1...
       inversion HT1...
   - (* T_Proj *)
-    (* If the last rule was [T_Proj], then [t = rproj t1 i].  
-       Two rules could have caused [t --> t']: [T_Proj1] and
-       [T_ProjRcd].  The typing of [t'] follows from the IH 
-       in the former case, so we only consider [T_ProjRcd].
+    (* 若 [T_Proj]，则 [t = rproj t1 i]。
+       证明 [t --> t'] 需要两条规则：[T_Proj1] 和 [T_ProjRcd]。
+       [t'] 的定型可从前面情况中的归纳假设得出，因此我们只需考虑
+       [T_ProjRcd]  即可。
 
-       Here we have that [t] is a record value.  Since rule 
-       [T_Proj] was used, we know [empty |- t \in Tr] and 
-       [Tlookup i Tr = Some Ti] for some [i] and [Tr].  
-       We may therefore apply lemma [lookup_field_in_value] 
-       to find the record element this projection steps to. *)
+       这里我们知道 [t] 为记录体值。由于使用了规则 [T_Proj]，
+       我们知道对于某些 [i] 和 [Tr] 有 [empty |- t \in Tr] 且
+       [Tlookup i Tr = Some Ti]。接着可以应用引理 [lookup_field_in_value]
+       来查找该投影步骤所得的记录元素。 *)
     destruct (lookup_field_in_value _ _ _ _ H2 HT H)
       as [vi [Hget Htyp]].
     rewrite H4 in Hget. inversion Hget. subst...
   - (* T_RCons *)
-    (* If the last rule was [T_RCons], then [t = rcons i t tr] 
-       for some [i], [t] and [tr] such that [record_tm tr].  If 
-       the step is by [ST_Rcd_Head], the result is immediate by 
-       the IH.  If the step is by [ST_Rcd_Tail], [tr --> tr2']
-       for some [tr2'] and we must also use lemma [step_preserves_record_tm] 
-       to show [record_tm tr2']. *)
+    (* 若最后一条规则为 [T_RCons]，那么对于某些 [i]、[t] 和满足
+       [record_tm tr] 的 [tr]，有 [t = rcons i t tr]。若该步骤为
+       [ST_Rcd_Head]，则结果可由归纳假设直接得出。若该步骤为
+       [ST_Rcd_Tail]，那么对于某些 [tr2'] 有 [tr --> tr2']，
+       我们还需要使用引理 [step_preserves_record_tm] 来证明 [record_tm tr2']。 *)
     apply T_RCons... eapply step_preserves_record_tm...
 Qed.
 (** [] *)
 
 End STLCExtendedRecords.
 
-(* Fri Mar 15 15:03:00 UTC 2019 *)
+(* Fri Mar 15 16:37:19 UTC 2019 *)

@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
-<title>Records: Adding Records to STLC</title>
+<title>Records: 为 STLC 添加记录体</title>
 </head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
 
-<h1 class="libtitle">Records<span class="subtitle">Adding Records to STLC</span></h1>
+<h1 class="libtitle">Records<span class="subtitle">为 STLC 添加记录体</span></h1>
 
 
 <div class="code code-tight">
@@ -43,43 +43,40 @@
 </div>
 
 <div class="doc">
-<a name="lab346"></a><h1 class="section">Adding Records</h1>
+<a name="lab346"></a><h1 class="section">添加记录体</h1>
 
 <div class="paragraph"> </div>
 
- We saw in chapter <a href="MoreStlc.html"><span class="inlineref">MoreStlc</span></a> how records can be treated as just
-    syntactic sugar for nested uses of products.  This is OK for
-    simple examples, but the encoding is informal (in reality, if we
-    actually treated records this way, it would be carried out in the
-    parser, which we are eliding here), and anyway it is not very
-    efficient.  So it is also interesting to see how records can be
-    treated as first-class citizens of the language.  This chapter
-    shows how.
+ 在 <a href="MoreStlc.html"><span class="inlineref">MoreStlc</span></a> 一章中，我们了解到记录体（Record）
+    可被视作嵌套使用的积类型的语法糖。对于简单的例子来说这样还行，
+    然而其编码是非形式化的（实际上，如果我们真的以这种方式来对待记录体，
+    那么它应该在解析器中处理，我们这里暂不考虑），总之它不太高效。
+    因此了解如何将记录体作为语言中的一等公民仍然十分有趣。本章中展示了这种方法。
 
 <div class="paragraph"> </div>
 
-    Recall the informal definitions we gave before: 
+    请回忆我们之前给出的非形式化定义： 
 <div class="paragraph"> </div>
 
 
 <div class="paragraph"> </div>
 
-    Syntax:
+    语法：
 <pre>
-       t <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          Terms:
-           | {i<sub>1</sub>=t<sub>1</sub>, ..., in=tn}         record
-           | t.i                         projection
+       t <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          项：
+           | {i<sub>1</sub>=t<sub>1</sub>, ..., in=tn}         记录
+           | t.i                         投影
            | ...
 
-       v <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          Values:
-           | {i<sub>1</sub>=v<sub>1</sub>, ..., in=vn}         record value
+       v <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          值：
+           | {i<sub>1</sub>=v<sub>1</sub>, ..., in=vn}         记录值
            | ...
 
-       T <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          Types:
-           | {i<sub>1</sub>:T<sub>1</sub>, ..., in:Tn}         record type
+       T <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>                          类型：
+           | {i<sub>1</sub>:T<sub>1</sub>, ..., in:Tn}         记录类型
            | ...
 </pre>
-   Reduction:
+   归约：
 <center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">ti&nbsp;==>&nbsp;ti'</td>
@@ -119,7 +116,7 @@
   <td class="infrule">{...,&nbsp;i=vi,&nbsp;...}.i&nbsp;==>&nbsp;vi</td>
   <td></td>
 </td>
-</table></center>   Typing:
+</table></center>   定型：
 <center><table class="infrule">
 <tr class="infruleassumption">
   <td class="infrule">Gamma&nbsp;&#x22A2;&nbsp;t<sub>1</sub>&nbsp;:&nbsp;T<sub>1</sub>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gamma&nbsp;&#x22A2;&nbsp;tn&nbsp;:&nbsp;Tn</td>
@@ -150,7 +147,7 @@
 </div>
 
 <div class="doc">
-<a name="lab347"></a><h1 class="section">Formalizing Records</h1>
+<a name="lab347"></a><h1 class="section">形式化记录体</h1>
 
 </div>
 <div class="code code-space">
@@ -160,12 +157,11 @@
 </div>
 
 <div class="doc">
-<a name="lab348"></a><h3 class="section">Syntax and Operational Semantics</h3>
+<a name="lab348"></a><h3 class="section">语法和操作语义</h3>
 
 <div class="paragraph"> </div>
 
- The most obvious way to formalize the syntax of record types would
-    be this: 
+ 要将记录体的语法形式化，最显然的方式是这样的： 
 </div>
 <div class="code code-tight">
 
@@ -178,11 +174,9 @@
 </div>
 
 <div class="doc">
-Unfortunately, we encounter here a limitation in Coq: this type
-    does not automatically give us the induction principle we expect:
-    the induction hypothesis in the <span class="inlinecode"><span class="id" type="var">TRcd</span></span> case doesn't give us
-    any information about the <span class="inlinecode"><span class="id" type="var">ty</span></span> elements of the list, making it
-    useless for the proofs we want to do.  
+然而，我们在这里遇到了 Coq 的限制：该类型无法自动给出我们期望的归纳法则，
+    也就是说，<span class="inlinecode"><span class="id" type="var">TRcd</span></span> 的情况中的归纳假设并未给出关于列表中的 <span class="inlinecode"><span class="id" type="var">ty</span></span> 元素的任何信息，
+    因此它对我们想要做的证明毫无用处。 
 </div>
 <div class="code code-tight">
 
@@ -191,7 +185,7 @@ Unfortunately, we encounter here a limitation in Coq: this type
 &nbsp;&nbsp;&nbsp;&nbsp;ty_ind&nbsp;:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forall&nbsp;P&nbsp;:&nbsp;ty&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(forall&nbsp;i&nbsp;:&nbsp;id,&nbsp;P&nbsp;(Base&nbsp;i))&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(forall&nbsp;t&nbsp;:&nbsp;ty,&nbsp;P&nbsp;t&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;forall&nbsp;t<sub>0</sub>&nbsp;:&nbsp;ty,&nbsp;P&nbsp;t<sub>0</sub>&nbsp;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(forall&nbsp;t&nbsp;:&nbsp;ty,&nbsp;P&nbsp;t&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;forall&nbsp;t<sub>0</sub>&nbsp;:&nbsp;ty,&nbsp;P&nbsp;t<sub>0</sub><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;P&nbsp;(Arrow&nbsp;t&nbsp;t<sub>0</sub>))&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(forall&nbsp;a&nbsp;:&nbsp;alist&nbsp;ty,&nbsp;P&nbsp;(TRcd&nbsp;a))&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;???&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;forall&nbsp;t&nbsp;:&nbsp;ty,&nbsp;P&nbsp;t<br/>
@@ -200,17 +194,14 @@ Unfortunately, we encounter here a limitation in Coq: this type
 </div>
 
 <div class="doc">
-It is possible to get a better induction principle out of Coq, but
-    the details of how this is done are not very pretty, and the
-    principle we obtain is not as intuitive to use as the ones Coq
-    generates automatically for simple <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> definitions.
+让 Coq 为我们生成更好的归纳法则是可能的，但是实现它的具体细节并不是很漂亮，
+    我们得到的法则也不如 Coq 为简单的 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 定义生成的法则那么直观易用。
 
 <div class="paragraph"> </div>
 
-    Fortunately, there is a different way of formalizing records that
-    is, in some ways, even simpler and more natural: instead of using
-    the standard Coq <span class="inlinecode"><span class="id" type="var">list</span></span> type, we can essentially incorporate its
-    constructors ("nil" and "cons") in the syntax of our types. 
+    幸好，我们还能用另一种方式来形式化记录体，某种意义上说，它甚至更加简单和自然：
+    我们并不使用 Coq 的标准 <span class="inlinecode"><span class="id" type="var">list</span></span> 类型，而是在类型的语法中直接包含它的构造子
+    （“nil”和“cons”）。 
 </div>
 <div class="code code-tight">
 
@@ -222,9 +213,8 @@ It is possible to get a better induction principle out of Coq, but
 </div>
 
 <div class="doc">
-Similarly, at the level of terms, we have constructors <span class="inlinecode"><span class="id" type="var">trnil</span></span>,
-    for the empty record, and <span class="inlinecode"><span class="id" type="var">rcons</span></span>, which adds a single field to
-    the front of a list of fields. 
+与此类似，在“项”这一层上，我们有空记录体构造子 <span class="inlinecode"><span class="id" type="var">trnil</span></span>，
+    以及将单个字段添加到字段列表之首的构造子 <span class="inlinecode"><span class="id" type="var">rcons</span></span>。 
 </div>
 <div class="code code-tight">
 
@@ -232,14 +222,14 @@ Similarly, at the level of terms, we have constructors <span class="inlinecode">
 &nbsp;&nbsp;| <span class="id" type="var">var</span> : <span class="id" type="var">string</span> → <span class="id" type="var">tm</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">app</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">abs</span> : <span class="id" type="var">string</span> → <span class="id" type="var">ty</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span><br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;records&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;记录体&nbsp;*)</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">rproj</span> : <span class="id" type="var">tm</span> → <span class="id" type="var">string</span> → <span class="id" type="var">tm</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">trnil</span> :  <span class="id" type="var">tm</span><br/>
 &nbsp;&nbsp;| <span class="id" type="var">rcons</span> : <span class="id" type="var">string</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span> → <span class="id" type="var">tm</span>.<br/>
 </div>
 
 <div class="doc">
-Some examples... 
+一些例子…… 
 </div>
 <div class="code code-tight">
 <span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">string_scope</span>.<br/><hr class='doublespaceincode'/>
@@ -272,13 +262,12 @@ Some examples...
 </div>
 
 <div class="doc">
-<a name="lab349"></a><h3 class="section">Well-Formedness</h3>
+<a name="lab349"></a><h3 class="section">良构性</h3>
 
 <div class="paragraph"> </div>
 
- One issue with generalizing the abstract syntax for records from
-    lists to the nil/cons presentation is that it introduces the
-    possibility of writing strange types like this... 
+ 在将记录体的抽象语法从列表推广为用 nil/cons 表示时会引入一个问题：
+    我们可能写出如下这种奇怪的类型…… 
 </div>
 <div class="code code-tight">
 
@@ -286,18 +275,15 @@ Some examples...
 </div>
 
 <div class="doc">
-where the "tail" of a record type is not actually a record type! 
+该记录类型的「尾部（tail）」并不是一个真正的记录类型！ 
 <div class="paragraph"> </div>
 
- We'll structure our typing judgement so that no ill-formed types
-    like <span class="inlinecode"><span class="id" type="var">weird_type</span></span> are ever assigned to terms.  To support this, we
-    define predicates <span class="inlinecode"><span class="id" type="var">record_ty</span></span> and <span class="inlinecode"><span class="id" type="var">record_tm</span></span>, which identify
-    record types and terms, and <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> which rules out the
-    ill-formed types. 
+ 我们要重构我们的类型断言，让 <span class="inlinecode"><span class="id" type="var">weird_type</span></span> 这种病态的（ill-formed）类型不能被赋项。
+    为此，我们定义了断言 <span class="inlinecode"><span class="id" type="var">record_ty</span></span> 和 <span class="inlinecode"><span class="id" type="var">record_tm</span></span> 来刻画了记录体的类型和项，
+    以及 <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> 用于排除劣构的类型。 
 <div class="paragraph"> </div>
 
- First, a type is a record type if it is built with just <span class="inlinecode"><span class="id" type="var">RNil</span></span>
-    and <span class="inlinecode"><span class="id" type="var">RCons</span></span> at the outermost level. 
+ 首先，如果某个类型在最外层只用 <span class="inlinecode"><span class="id" type="var">RNil</span></span> 和 <span class="inlinecode"><span class="id" type="var">RCons</span></span> 构造，那么它是一个记录。 
 </div>
 <div class="code code-tight">
 
@@ -309,7 +295,7 @@ where the "tail" of a record type is not actually a record type!
 </div>
 
 <div class="doc">
-With this, we can define well-formed types. 
+据此，我们可以定义良构的（well-formed）类型。 
 </div>
 <div class="code code-tight">
 
@@ -331,20 +317,16 @@ With this, we can define well-formed types.
 </div>
 
 <div class="doc">
-Note that <span class="inlinecode"><span class="id" type="var">record_ty</span></span> is not recursive &mdash; it just checks the
-    outermost constructor.  The <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> property, on the
-    other hand, verifies that the whole type is well formed in the
-    sense that the tail of every record (the second argument to
-    <span class="inlinecode"><span class="id" type="var">RCons</span></span>) is a record.
+需注意 <span class="inlinecode"><span class="id" type="var">record_ty</span></span> 不是递归的：它只检查最外层的构造子。另一方面，
+    <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> 这一性质就其“每个记录体的尾部（即 <span class="inlinecode"><span class="id" type="var">RCons</span></span> 的第二个参数）
+    都是记录体”的意义而言，保证了整个类型是良构的。
 
 <div class="paragraph"> </div>
 
-    Of course, we should also be concerned about ill-formed terms, not
-    just types; but typechecking can rule those out without the help
-    of an extra <span class="inlinecode"><span class="id" type="var">well_formed_tm</span></span> definition because it already
-    examines the structure of terms.  All we need is an analog of
-    <span class="inlinecode"><span class="id" type="var">record_ty</span></span> saying that a term is a record term if it is built
-    with <span class="inlinecode"><span class="id" type="var">trnil</span></span> and <span class="inlinecode"><span class="id" type="var">rcons</span></span>. 
+    当然，除了类型以外，我们还要考虑劣构的项。不过类型检查无需一个额外的
+    <span class="inlinecode"><span class="id" type="var">well_formed_tm</span></span> 定义就能排除它们，因为项的结构是经过了检查的。
+    我们需要的只是类似 <span class="inlinecode"><span class="id" type="var">record_ty</span></span> 的定义，即如果某个项以 <span class="inlinecode"><span class="id" type="var">trnil</span></span> 和 <span class="inlinecode"><span class="id" type="var">rcons</span></span>
+    构造，那么它就是记录项。 
 </div>
 <div class="code code-tight">
 
@@ -357,11 +339,11 @@ Note that <span class="inlinecode"><span class="id" type="var">record_ty</span><
 </div>
 
 <div class="doc">
-<a name="lab350"></a><h3 class="section">Substitution</h3>
+<a name="lab350"></a><h3 class="section">代换</h3>
 
 <div class="paragraph"> </div>
 
- Substitution extends easily. 
+ 代换很容易扩展。 
 </div>
 <div class="code code-tight">
 
@@ -379,11 +361,11 @@ Note that <span class="inlinecode"><span class="id" type="var">record_ty</span><
 </div>
 
 <div class="doc">
-<a name="lab351"></a><h3 class="section">Reduction</h3>
+<a name="lab351"></a><h3 class="section">归约</h3>
 
 <div class="paragraph"> </div>
 
- A record is a value if all of its fields are. 
+ 如果一个记录体的所有字段都是值，那么它本身也是值。 
 </div>
 <div class="code code-tight">
 
@@ -399,8 +381,7 @@ Note that <span class="inlinecode"><span class="id" type="var">record_ty</span><
 </div>
 
 <div class="doc">
-To define reduction, we'll need a utility function for extracting
-    one field from record term: 
+为了定义归约，我们需要一个辅助函数来提取记录项中的某个字段： 
 </div>
 <div class="code code-tight">
 
@@ -412,8 +393,7 @@ To define reduction, we'll need a utility function for extracting
 </div>
 
 <div class="doc">
-The <span class="inlinecode"><span class="id" type="var">step</span></span> function uses this term-level lookup function in the
-    projection rule. 
+<span class="inlinecode"><span class="id" type="var">step</span></span> 函数会在投影规则中使用该项一级的查找函数。 
 </div>
 <div class="code code-tight">
 
@@ -451,32 +431,24 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 </div>
 
 <div class="doc">
-<a name="lab352"></a><h3 class="section">Typing</h3>
+<a name="lab352"></a><h3 class="section">定型</h3>
 
 <div class="paragraph"> </div>
 
- Next we define the typing rules.  These are nearly direct
-    transcriptions of the inference rules shown above: the only
-    significant difference is the use of <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span>.  In the
-    informal presentation we used a grammar that only allowed
-    well-formed record types, so we didn't have to add a separate
-    check.
+ 接着我们定义定型规则。这些规则基本上直接转写自前面的推理规则，
+    唯一明显的区别是对 <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> 的使用。在非形式化的表述中，
+    我们使用了只允许良构记录类型的语法，因此我们无需添加单独的检查。
 
 <div class="paragraph"> </div>
 
-    One sanity condition that we'd like to maintain is that, whenever
-    <span class="inlinecode"><span class="id" type="var">has_type</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> holds, will also be the case that
-    <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span>, so that <span class="inlinecode"><span class="id" type="var">has_type</span></span> never assigns ill-formed
-    types to terms.  In fact, we prove this theorem below.  However,
-    we don't want to clutter the definition of <span class="inlinecode"><span class="id" type="var">has_type</span></span> with
-    unnecessary uses of <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span>.  Instead, we place
-    <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> checks only where needed: where an inductive call
-    to <span class="inlinecode"><span class="id" type="var">has_type</span></span> won't already be checking the well-formedness of a
-    type.  For example, we check <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> in the <span class="inlinecode"><span class="id" type="var">T_Var</span></span>
-    case, because there is no inductive <span class="inlinecode"><span class="id" type="var">has_type</span></span> call that would
-    enforce this.  Similarly, in the <span class="inlinecode"><span class="id" type="var">T_Abs</span></span> case, we require a proof
-    of <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> because the inductive call to <span class="inlinecode"><span class="id" type="var">has_type</span></span>
-    only guarantees that <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span> is well-formed. 
+    我们需要维持一个合理的条件，就是只要 <span class="inlinecode"><span class="id" type="var">has_type</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> 成立，那么
+    <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> 也应当成立，这样 <span class="inlinecode"><span class="id" type="var">has_type</span></span> 就不会将劣构的类型赋予项了。
+    我们后面会证明此定理。然而，我们并不想将 <span class="inlinecode"><span class="id" type="var">has_type</span></span> 的定义和不必要的
+    <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> 混在一起，而是只在需要的地方使用 <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> 检查：
+    即在归纳调用 <span class="inlinecode"><span class="id" type="var">has_type</span></span> 时不会检查类型良构性的地方使用它。例如，我们会在
+    <span class="inlinecode"><span class="id" type="var">T_Var</span></span> 的情况下检查 <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span>，因为这里没有归纳的 <span class="inlinecode"><span class="id" type="var">has_type</span></span>
+    调用来执行此操作。同样，在 <span class="inlinecode"><span class="id" type="var">T_Abs</span></span> 的情况下，我们需要一个 <span class="inlinecode"><span class="id" type="var">well_formed_ty</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span>
+    的证明，因为对 <span class="inlinecode"><span class="id" type="var">has_type</span></span> 的归纳调用只能保证 <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span> 是良构的。 
 </div>
 <div class="code code-tight">
 
@@ -520,18 +492,15 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 </div>
 
 <div class="doc">
-<a name="lab353"></a><h2 class="section">Examples</h2>
+<a name="lab353"></a><h2 class="section">示例</h2>
 
 <div class="paragraph"> </div>
 
 <a name="lab354"></a><h4 class="section">练习：2 星, standard (examples)</h4>
- Finish the proofs below.  Feel free to use Coq's automation
-    features in this proof.  However, if you are not confident about
-    how the type system works, you may want to carry out the proofs
-    first using the basic features (<span class="inlinecode"><span class="id" type="tactic">apply</span></span> instead of <span class="inlinecode"><span class="id" type="tactic">eapply</span></span>, in
-    particular) and then perhaps compress it using automation.  Before
-    starting to prove anything, make sure you understand what it is
-    saying. 
+ 完成下面的证明。在此证明中可随意使用 Coq 的自动化特性。然而，
+    如果你不熟悉类型系统是如何工作的，那么应该先用基本策略来完成证明
+    （比如使用 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> 而非 <span class="inlinecode"><span class="id" type="tactic">eapply</span></span>），再试着用自动化特性来简化它。
+    在证明之前，请先确保你理解它的意思。 
 </div>
 <div class="code code-tight">
 
@@ -567,17 +536,16 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 </div>
 
 <div class="doc">
-<a name="lab355"></a><h2 class="section">Properties of Typing</h2>
+<a name="lab355"></a><h2 class="section">定型的性质</h2>
 
 <div class="paragraph"> </div>
 
- The proofs of progress and preservation for this system are
-    essentially the same as for the pure simply typed lambda-calculus,
-    but we need to add some technical lemmas involving records. 
+ 对该系统可进性和保型性的证明与对纯粹的简单类型 λ-演算的基本相同，
+    不过我们需要引入一些涉及记录体的引理来作的技术上处理。 
 </div>
 
 <div class="doc">
-<a name="lab356"></a><h3 class="section">Well-Formedness</h3>
+<a name="lab356"></a><h3 class="section">良构性</h3>
 
 </div>
 <div class="code code-space">
@@ -628,44 +596,39 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 </div>
 
 <div class="doc">
-<a name="lab357"></a><h3 class="section">Field Lookup</h3>
+<a name="lab357"></a><h3 class="section">依字段查表</h3>
 
 <div class="paragraph"> </div>
 
- Lemma: If <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> returns <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>,
-     then <span class="inlinecode"><span class="id" type="var">tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">v</span></span> returns <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">ti</span></span> for some term <span class="inlinecode"><span class="id" type="var">ti</span></span> such
-     that <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">ti</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>.
+ 引理：若 <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span> 和 <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> 返回 <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>，
+      则对于 <span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">ti</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Ti</span></span> 的项 <span class="inlinecode"><span class="id" type="var">ti</span></span>，<span class="inlinecode"><span class="id" type="var">tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">v</span></span> 会返回 <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">ti</span></span>。
 
 <div class="paragraph"> </div>
 
-    Proof: By induction on the typing derivation <span class="inlinecode"><span class="id" type="var">Htyp</span></span>.  Since
-      <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>, <span class="inlinecode"><span class="id" type="var">T</span></span> must be a record type, this and
-      the fact that <span class="inlinecode"><span class="id" type="var">v</span></span> is a value eliminate most cases by inspection,
-      leaving only the <span class="inlinecode"><span class="id" type="var">T_RCons</span></span> case.
+    证明：对定型导出式 <span class="inlinecode"><span class="id" type="var">Htyp</span></span> 来归纳。由于 <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>，因此
+      <span class="inlinecode"><span class="id" type="var">T</span></span> 必为记录类型，据此以及 <span class="inlinecode"><span class="id" type="var">v</span></span> 为值的观察，可以消除了部分情况，
+      剩下的只有 <span class="inlinecode"><span class="id" type="var">T_RCons</span></span> 的情况。
 
 <div class="paragraph"> </div>
 
-      If the last step in the typing derivation is by <span class="inlinecode"><span class="id" type="var">T_RCons</span></span>, then
-      <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> and <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">RCons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span></span> for some <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>,
-      <span class="inlinecode"><span class="id" type="var">t</span></span>, <span class="inlinecode"><span class="id" type="var">tr</span></span>, <span class="inlinecode"><span class="id" type="var">T</span></span> and <span class="inlinecode"><span class="id" type="var">Tr</span></span>.
+      定型导出式的最后一步是根据 <span class="inlinecode"><span class="id" type="var">T_RCons</span></span> 得来的，那么对于某些 <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>、<span class="inlinecode"><span class="id" type="var">t</span></span>、<span class="inlinecode"><span class="id" type="var">tr</span></span>、<span class="inlinecode"><span class="id" type="var">T</span></span>
+      和 <span class="inlinecode"><span class="id" type="var">Tr</span></span> 来说，<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> 且 <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">RCons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span></span>。
 
 <div class="paragraph"> </div>
 
-      This leaves two possiblities to consider - either <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">i</span></span> or
-      not.
+      现在还剩下两种情况需要考虑，即 <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">i</span></span> 是否成立。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> If <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>, then since <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">(<span class="id" type="var">RCons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span>
-        <span class="inlinecode"><span class="id" type="var">Ti</span></span> we have <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>.  It follows that <span class="inlinecode"><span class="id" type="var">t</span></span> itself satisfies
-        the theorem.
+<li> 若 <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>，那么根据 <span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">(<span class="id" type="var">RCons</span></span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>，我们有
+        <span class="inlinecode"><span class="id" type="var">T</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>。它根据 <span class="inlinecode"><span class="id" type="var">t</span></span> 本身满足此定理得出。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> On the other hand, suppose <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>.  Then
+<li> 另一方面，假设 <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">i<sub>0</sub></span></span>。那么
 
 <div class="paragraph"> </div>
 
@@ -674,7 +637,7 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 <div class="paragraph"> </div>
 
 </div>
-        and
+        且
 
 <div class="paragraph"> </div>
 
@@ -683,14 +646,14 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 <div class="paragraph"> </div>
 
 </div>
-        so the result follows from the induction hypothesis. <span class="proofbox">&#9744;</span> 
+        则结果由归纳假设得出。 <span class="proofbox">&#9744;</span>
 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    Here is the formal statement:
+    以下为形式化证明：
 
 </div>
 <div class="code code-tight">
@@ -718,7 +681,7 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 </div>
 
 <div class="doc">
-<a name="lab358"></a><h3 class="section">Progress</h3>
+<a name="lab358"></a><h3 class="section">可进性</h3>
 
 </div>
 <div class="code code-space">
@@ -730,101 +693,88 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 <div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
 <div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
 <span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;Theorem:&nbsp;Suppose&nbsp;empty&nbsp;&#x22A2;&nbsp;t&nbsp;:&nbsp;T.&nbsp;&nbsp;Then&nbsp;either<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.&nbsp;t&nbsp;is&nbsp;a&nbsp;value,&nbsp;or<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.&nbsp;t&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;t'&nbsp;for&nbsp;some&nbsp;t'.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Proof:&nbsp;By&nbsp;induction&nbsp;on&nbsp;the&nbsp;given&nbsp;typing&nbsp;derivation.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;定理：假设&nbsp;empty&nbsp;&#x22A2;&nbsp;t&nbsp;:&nbsp;T。那么以下二者之一成立：<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.&nbsp;t&nbsp;为值，或者<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.&nbsp;对某个&nbsp;t'，有&nbsp;t&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;t'。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;证明：对给定的定型导出式作归纳。&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">T</span> <span class="id" type="var">Ht</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="var">remember</span> (@<span class="id" type="var">empty</span> <span class="id" type="var">ty</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">Gamma</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">HeqGamma</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Ht</span>; <span class="id" type="tactic">intros</span> <span class="id" type="var">HeqGamma</span>; <span class="id" type="tactic">subst</span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Var&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;The&nbsp;final&nbsp;rule&nbsp;in&nbsp;the&nbsp;given&nbsp;typing&nbsp;derivation&nbsp;cannot&nbsp;be&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_Var</span></span>,&nbsp;since&nbsp;it&nbsp;can&nbsp;never&nbsp;be&nbsp;the&nbsp;case&nbsp;that&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span>&nbsp;(since&nbsp;the&nbsp;context&nbsp;is&nbsp;empty).&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;一给定的定型导出式的最后一条规则不能为&nbsp;<span class="inlinecode"><span class="id" type="var">T_Var</span></span>，因为它不应是<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span>&nbsp;的情况（因为上下文为空）。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Abs&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>&nbsp;rule&nbsp;was&nbsp;the&nbsp;last&nbsp;used,&nbsp;then&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span>,&nbsp;which&nbsp;is&nbsp;a&nbsp;value.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若最后应用的规则为&nbsp;<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>，则有&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span>，它是一个值。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_App&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;applied&nbsp;was&nbsp;T_App,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>,&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;we&nbsp;know&nbsp;from&nbsp;the&nbsp;form&nbsp;of&nbsp;the&nbsp;rule&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若最后应用的规则为&nbsp;T_App，则有&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>。这点可由以下规则的形式得到：<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By&nbsp;the&nbsp;induction&nbsp;hypothesis,&nbsp;each&nbsp;of&nbsp;t<sub>1</sub>&nbsp;and&nbsp;t<sub>2</sub>&nbsp;either&nbsp;is&nbsp;a&nbsp;value<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;can&nbsp;take&nbsp;a&nbsp;step.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据归纳假设，t<sub>1</sub>&nbsp;和&nbsp;t<sub>2</sub>&nbsp;要么是值，要么可再推进一步。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt1</span>; <span class="id" type="tactic">subst</span>...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;为值&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt2</span>; <span class="id" type="tactic">subst</span>...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;t<sub>2</sub>&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;both&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>&nbsp;are&nbsp;values,&nbsp;then&nbsp;we&nbsp;know&nbsp;that<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span>,&nbsp;since&nbsp;abstractions&nbsp;are&nbsp;the&nbsp;only&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;values&nbsp;that&nbsp;can&nbsp;have&nbsp;an&nbsp;arrow&nbsp;type.&nbsp;&nbsp;But<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode">(<span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span>)</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">t<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span></span>&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_AppAbs</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;t<sub>2</sub>&nbsp;为值&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>&nbsp;均为值，那么我们知道<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span>，因为“抽象”是唯一具有箭头类型的值。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;然而根据&nbsp;<span class="inlinecode"><span class="id" type="var">ST_AppAbs</span></span>，<span class="inlinecode">(<span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span>)</span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">t<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">try</span> <span class="id" type="var">solve_by_invert</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span>([<span class="id" type="var">x</span>:=<span class="id" type="var">t<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span>)...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;t<sub>2</sub>&nbsp;steps&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>&nbsp;is&nbsp;a&nbsp;value&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>,&nbsp;then<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App2</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;t<sub>2</sub>&nbsp;推进一步&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span>&nbsp;为值且&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>，那么根据&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App2</span></span>，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub>'</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t<sub>2</sub>'</span> <span class="id" type="var">Hstp</span>]. <span style='font-size:120%;'>&exist;</span>(<span class="id" type="var">app</span> <span class="id" type="var">t<sub>1</sub></span> <span class="id" type="var">t<sub>2</sub>'</span>)...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;steps&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Finally,&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App1</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;t<sub>1</sub>&nbsp;推进一步&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;最后，若&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span>，那么根据&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App1</span></span>，<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub>'</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">Hstp</span>]. <span style='font-size:120%;'>&exist;</span>(<span class="id" type="var">app</span> <span class="id" type="var">t<sub>1</sub>'</span> <span class="id" type="var">t<sub>2</sub></span>)...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Proj&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;in&nbsp;the&nbsp;given&nbsp;derivation&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>,&nbsp;then<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>&nbsp;and<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode">(<span class="id" type="var">TRcd</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span>)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By&nbsp;the&nbsp;IH,&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;either&nbsp;is&nbsp;a&nbsp;value&nbsp;or&nbsp;takes&nbsp;a&nbsp;step.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若给定导出式的最后一条规则为&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>，那么<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>&nbsp;且&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode">(<span class="id" type="var">TRcd</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span>)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据归纳假设，<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;要么是值，要么可以推进一步。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt</span>...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rcd&nbsp;is&nbsp;value&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;is&nbsp;a&nbsp;value,&nbsp;then&nbsp;we&nbsp;may&nbsp;use&nbsp;lemma<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">lookup_field_in_value</span></span>&nbsp;to&nbsp;show&nbsp;<span class="inlinecode"><span class="id" type="var">tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">ti</span></span>&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;some&nbsp;<span class="inlinecode"><span class="id" type="var">ti</span></span>&nbsp;which&nbsp;gives&nbsp;us&nbsp;<span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">ti</span></span>&nbsp;by<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_ProjRcd</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rcd&nbsp;为值&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;为值，那么我们可使用引理&nbsp;<span class="inlinecode"><span class="id" type="var">lookup_field_in_value</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;来证明对某个&nbsp;<span class="inlinecode"><span class="id" type="var">ti</span></span>&nbsp;而言&nbsp;<span class="inlinecode"><span class="id" type="var">tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">ti</span></span>。根据<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_ProjRcd</span></span>&nbsp;可得&nbsp;<span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">ti</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">lookup_field_in_value</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="var">Ht</span> <span class="id" type="var">H</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> [<span class="id" type="var">ti</span> [<span class="id" type="var">Hlkup</span> <span class="id" type="var">_</span>]].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span><span class="id" type="var">ti</span>...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rcd_steps&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;On&nbsp;the&nbsp;other&nbsp;hand,&nbsp;if&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>,&nbsp;then<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Proj1</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;rcd&nbsp;推进一步&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;另一方面，若&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>，那么根据&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Proj1</span></span>&nbsp;可得<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>0</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t'</span> <span class="id" type="var">Hstp</span>]. <span style='font-size:120%;'>&exist;</span>(<span class="id" type="var">rproj</span> <span class="id" type="var">t'</span> <span class="id" type="var">i</span>)...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_RNil&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;in&nbsp;the&nbsp;given&nbsp;derivation&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="var">T_RNil</span></span>,&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">trnil</span></span>,&nbsp;which&nbsp;is&nbsp;a&nbsp;value.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若给定导出式中的最后一条规则为&nbsp;<span class="inlinecode"><span class="id" type="var">T_RNil</span></span>，那么&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">trnil</span></span>，为值。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_RCons&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;is&nbsp;<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若最后一条规则为&nbsp;<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>，那么&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;且<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">Tr</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By&nbsp;the&nbsp;IH,&nbsp;each&nbsp;of&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;either&nbsp;is&nbsp;a&nbsp;value&nbsp;or&nbsp;can&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;take&nbsp;a&nbsp;step.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据归纳法则，<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;要么是值，要么可再推进一步。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt1</span>...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;head&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;head&nbsp;为值&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">IHHt2</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;tail&nbsp;is&nbsp;a&nbsp;value&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;are&nbsp;both&nbsp;values,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is&nbsp;a&nbsp;value&nbsp;as&nbsp;well.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;tail&nbsp;为值&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;均为值，那么&nbsp;<span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;也为值。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">left</span>...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;tail&nbsp;steps&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;is&nbsp;a&nbsp;value&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">tr'</span></span>,&nbsp;then<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr'</span></span>&nbsp;by<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Tail</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;tail&nbsp;推进一步&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;为值且&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">tr'</span></span>，那么根据&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Tail</span></span>，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr'</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">tr'</span> <span class="id" type="var">Hstp</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span>(<span class="id" type="var">rcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span> <span class="id" type="var">tr'</span>)...<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;head&nbsp;steps&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>,&nbsp;then<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Head</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;head&nbsp;推进一步&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>，那么根据&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Head</span></span>，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">right</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">H<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">t'</span> <span class="id" type="var">Hstp</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span>(<span class="id" type="var">rcons</span> <span class="id" type="var">i</span> <span class="id" type="var">t'</span> <span class="id" type="var">tr</span>)... <span class="id" type="keyword">Qed</span>.<br/>
 </div>
 </div>
 
 <div class="doc">
-<a name="lab359"></a><h3 class="section">Context Invariance</h3>
+<a name="lab359"></a><h3 class="section">上下文不变性</h3>
 
 </div>
 <div class="code code-space">
@@ -891,7 +841,7 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 </div>
 
 <div class="doc">
-<a name="lab360"></a><h3 class="section">Preservation</h3>
+<a name="lab360"></a><h3 class="section">保型性</h3>
 
 </div>
 <div class="code code-space">
@@ -902,36 +852,31 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">empty</span> &#x22A2; <span class="id" type="var">v</span> &#x2208; <span class="id" type="var">U</span>   →<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Gamma</span> &#x22A2; ([<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t</span>) &#x2208; <span class="id" type="var">S</span>.<br/>
 <span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;Theorem:&nbsp;If&nbsp;x<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span>U;Gamma&nbsp;&#x22A2;&nbsp;t&nbsp;:&nbsp;S&nbsp;and&nbsp;empty&nbsp;&#x22A2;&nbsp;v&nbsp;:&nbsp;U,&nbsp;then<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gamma&nbsp;&#x22A2;&nbsp;(<span class="inlinecode"><span class="id" type="var">x</span>:=<span class="id" type="var">v</span></span>t)&nbsp;S.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;定理：若&nbsp;x<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span>U;Gamma&nbsp;&#x22A2;&nbsp;t&nbsp;:&nbsp;S&nbsp;且&nbsp;empty&nbsp;&#x22A2;&nbsp;v&nbsp;:&nbsp;U，则<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Gamma&nbsp;&#x22A2;&nbsp;(<span class="inlinecode"><span class="id" type="var">x</span>:=<span class="id" type="var">v</span></span>t)&nbsp;S。&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">x</span> <span class="id" type="var">U</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span> <span class="id" type="var">S</span> <span class="id" type="var">Htypt</span> <span class="id" type="var">Htypv</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">Gamma</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">S</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;Proof:&nbsp;By&nbsp;induction&nbsp;on&nbsp;the&nbsp;term&nbsp;t.&nbsp;&nbsp;Most&nbsp;cases&nbsp;follow&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directly&nbsp;from&nbsp;the&nbsp;IH,&nbsp;with&nbsp;the&nbsp;exception&nbsp;of&nbsp;var,&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;abs,&nbsp;rcons.&nbsp;The&nbsp;former&nbsp;aren't&nbsp;automatic&nbsp;because&nbsp;we&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;must&nbsp;reason&nbsp;about&nbsp;how&nbsp;the&nbsp;variables&nbsp;interact.&nbsp;In&nbsp;the&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;case&nbsp;of&nbsp;rcons,&nbsp;we&nbsp;must&nbsp;do&nbsp;a&nbsp;little&nbsp;extra&nbsp;work&nbsp;to&nbsp;show&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that&nbsp;substituting&nbsp;into&nbsp;a&nbsp;term&nbsp;doesn't&nbsp;change&nbsp;whether&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;is&nbsp;a&nbsp;record&nbsp;term.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;证明：通过对项&nbsp;t&nbsp;作归纳可得。大部分情况下，结论可以从归纳假设直接得到，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;只有&nbsp;var、abs&nbsp;和&nbsp;rcons&nbsp;的情况需要额外证明。无法自动得到前两者，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;是因为我们必须处理变量之间的相互作用。对于&nbsp;rcons&nbsp;的情况，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们必须额外证明在项中作代换不改变它是否为一个记录项。&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">t</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">S</span> <span class="id" type="var">Gamma</span> <span class="id" type="var">Htypt</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">Htypt</span>; <span class="id" type="tactic">subst</span>...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;var&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">y</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;t&nbsp;=&nbsp;y,&nbsp;we&nbsp;know&nbsp;that<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;t&nbsp;=&nbsp;y，我们知道<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>&nbsp;且<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">x</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">U</span>;</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and,&nbsp;by&nbsp;inversion,&nbsp;<span class="inlinecode"><span class="id" type="var">update</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">U</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>.&nbsp;&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;want&nbsp;to&nbsp;show&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;经反演可得&nbsp;<span class="inlinecode"><span class="id" type="var">update</span></span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">U</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们需要证明&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span>。<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;There&nbsp;are&nbsp;two&nbsp;cases&nbsp;to&nbsp;consider:&nbsp;either&nbsp;<span class="inlinecode"><span class="id" type="var">x</span>=<span class="id" type="var">y</span></span>&nbsp;or&nbsp;<span class="inlinecode"><span class="id" type="var">x</span>≠<span class="id" type="var">y</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;有两种情况需要考虑：<span class="inlinecode"><span class="id" type="var">x</span>=<span class="id" type="var">y</span></span>&nbsp;或&nbsp;<span class="inlinecode"><span class="id" type="var">x</span>≠<span class="id" type="var">y</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>, <span class="id" type="var">t_update</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">eqb_stringP</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">Hxy</span>|<span class="id" type="var">Hxy</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x=y&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>,&nbsp;then&nbsp;we&nbsp;know&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">U</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">S</span></span>,&nbsp;and&nbsp;that&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">v</span></span>.&nbsp;So&nbsp;what&nbsp;we&nbsp;really&nbsp;must&nbsp;show&nbsp;is&nbsp;that&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>.&nbsp;&nbsp;We&nbsp;have<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;already&nbsp;proven&nbsp;a&nbsp;more&nbsp;general&nbsp;version&nbsp;of&nbsp;this&nbsp;theorem,&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;called&nbsp;context&nbsp;invariance!&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>，那么我们知道&nbsp;<span class="inlinecode"><span class="id" type="var">U</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">S</span></span>，以及&nbsp;<span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">v</span></span>。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;因此我们必须证明若&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>&nbsp;则&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span>。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们已经证明了此定理更一般的版本，即上下文不变性！&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H<sub>0</sub></span>; <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">clear</span> <span class="id" type="var">H<sub>0</sub></span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">context_invariance</span>...<br/>
@@ -940,39 +885,36 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> [<span class="id" type="var">T'</span> <span class="id" type="var">HT'</span>]...<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HT'</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x&lt;&gt;y&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>&nbsp;and&nbsp;the&nbsp;substitution<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;has&nbsp;no&nbsp;effect.&nbsp;&nbsp;We&nbsp;can&nbsp;show&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span>&nbsp;by&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_Var</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>，则&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>&nbsp;且代换没有效果。我们可以根据<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_Var</span></span>&nbsp;证明&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_Var</span>...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;abs&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rename</span> <span class="id" type="var">s</span> <span class="id" type="var">into</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">rename</span> <span class="id" type="var">t</span> <span class="id" type="var">into</span> <span class="id" type="var">T<sub>11</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span>,&nbsp;then&nbsp;we&nbsp;know&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span>，那么我们知道<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">x</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">U</span>;</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span>→<span class="id" type="var">T<sub>12</sub></span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">x</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">U</span>;</span> <span class="inlinecode"><span class="id" type="var">y</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">T<sub>11</sub></span>;</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">U</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;As&nbsp;our&nbsp;IH,&nbsp;we&nbsp;know&nbsp;that&nbsp;forall&nbsp;S&nbsp;Gamma,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据归纳假设，我们知道对于所有的&nbsp;S&nbsp;Gamma，<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">x</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">U</span>;</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="var">S</span></span>.<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;can&nbsp;calculate&nbsp;that<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode">(<span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">eqb_string</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span>)</span> <span class="inlinecode"></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;we&nbsp;must&nbsp;show&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span>→<span class="id" type="var">T<sub>12</sub></span></span>.&nbsp;&nbsp;We&nbsp;know<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;we&nbsp;will&nbsp;do&nbsp;so&nbsp;using&nbsp;<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>,&nbsp;so&nbsp;it&nbsp;remains&nbsp;to&nbsp;be&nbsp;shown&nbsp;that:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们可以计算出<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode">(<span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">eqb_string</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span>)</span> <span class="inlinecode"></span>，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;此时我们必须证明&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span>→<span class="id" type="var">T<sub>12</sub></span></span>。我们知道可以用<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>&nbsp;来证明它，因此接下来需要证明的就是：<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">y</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">T<sub>11</sub></span>;</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="keyword">if</span></span> <span class="inlinecode"><span class="id" type="var">eqb_string</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">y</span></span> <span class="inlinecode"><span class="id" type="keyword">then</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode"><span class="id" type="keyword">else</span></span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;consider&nbsp;two&nbsp;cases:&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们考虑两种情况：<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_Abs</span>...<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">eqb_stringP</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">Hxy</span>|<span class="id" type="var">Hxy</span>].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x=y&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>,&nbsp;then&nbsp;the&nbsp;substitution&nbsp;has&nbsp;no&nbsp;effect.&nbsp;&nbsp;Context<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;invariance&nbsp;shows&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">y</span>:<span class="id" type="var">U</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span>&nbsp;are<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;equivalent.&nbsp;&nbsp;Since&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;under&nbsp;the&nbsp;former&nbsp;context,&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this&nbsp;is&nbsp;also&nbsp;the&nbsp;case&nbsp;under&nbsp;the&nbsp;latter.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span></span>，则代换没有作用。上下文不变性保证了<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">y</span>:<span class="id" type="var">U</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">Gamma</span>,<span class="id" type="var">y</span>:<span class="id" type="var">T<sub>11</sub></span></span>&nbsp;等价。在前者的上下文中有&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;那么在后者中也是这样。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">eapply</span> <span class="id" type="var">context_invariance</span>...<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">subst</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">Hafi</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>, <span class="id" type="var">t_update</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">eqb_string</span> <span class="id" type="var">y</span> <span class="id" type="var">x</span>)...<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;x&lt;&gt;y&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>,&nbsp;then&nbsp;the&nbsp;IH&nbsp;and&nbsp;context&nbsp;invariance&nbsp;allow&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;us&nbsp;to&nbsp;show&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span></span>，那么归纳假设和上下文不变性能让我们证明<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">x</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">U</span>;</span> <span class="inlinecode"><span class="id" type="var">y</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">T<sub>11</sub></span>;</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">y</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">T<sub>11</sub></span>;</span> <span class="inlinecode"><span class="id" type="var">x</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">U</span>;</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&gt;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">y</span><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span><span class="id" type="var">T<sub>11</sub></span>;</span> <span class="inlinecode"><span class="id" type="var">Gamma</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v</span>]<span class="id" type="var">t<sub>0</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>12</sub></span></span>&nbsp;*)</span><br/>
@@ -989,57 +931,52 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">empty</span> &#x22A2; <span class="id" type="var">t'</span> &#x2208; <span class="id" type="var">T</span>.<br/>
 <span class="id" type="keyword">Proof</span> <span class="id" type="keyword">with</span> <span class="id" type="tactic">eauto</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t</span> <span class="id" type="var">t'</span> <span class="id" type="var">T</span> <span class="id" type="var">HT</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;Theorem:&nbsp;If&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>,&nbsp;then<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;定理：若&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span>&nbsp;且&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>，则<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t'</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T</span></span>.&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="var">remember</span> (@<span class="id" type="var">empty</span> <span class="id" type="var">ty</span>) <span class="id" type="keyword">as</span> <span class="id" type="var">Gamma</span>. <span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">HeqGamma</span>.<br/>
 &nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">t'</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;Proof:&nbsp;By&nbsp;induction&nbsp;on&nbsp;the&nbsp;given&nbsp;typing&nbsp;derivation.&nbsp;&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Many&nbsp;cases&nbsp;are&nbsp;contradictory&nbsp;(<span class="inlinecode"><span class="id" type="var">T_Var</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>)&nbsp;or&nbsp;follow&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directly&nbsp;from&nbsp;the&nbsp;IH&nbsp;(<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>).&nbsp;&nbsp;We&nbsp;show&nbsp;just&nbsp;the&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;interesting&nbsp;ones.&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;证明：对给定的定型导出式来归纳。很多情况是矛盾的（<span class="inlinecode"><span class="id" type="var">T_Var</span></span>、<span class="inlinecode"><span class="id" type="var">T_Abs</span></span>）<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;或可直接从归纳假设得出（<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>），我们只需证明那些“有趣”的情况。&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">HT</span>;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">t'</span> <span class="id" type="var">HeqGamma</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_App&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;used&nbsp;was&nbsp;<span class="inlinecode"><span class="id" type="var">T_App</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>,&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;three&nbsp;rules&nbsp;could&nbsp;have&nbsp;been&nbsp;used&nbsp;to&nbsp;show&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App1</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App2</span></span>,&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">ST_AppAbs</span></span>.&nbsp;In&nbsp;the&nbsp;first&nbsp;two&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cases,&nbsp;the&nbsp;result&nbsp;follows&nbsp;directly&nbsp;from&nbsp;the&nbsp;IH.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若使用的最后一条规则为&nbsp;<span class="inlinecode"><span class="id" type="var">T_App</span></span>，那么&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span>。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;证明&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>&nbsp;可能用到的三条规则是&nbsp;<span class="inlinecode"><span class="id" type="var">ST_App1</span></span>、<span class="inlinecode"><span class="id" type="var">ST_App2</span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">ST_AppAbs</span></span>。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在前两种情况下，结果可直接从归纳假设得出。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HE</span>; <span class="id" type="tactic">subst</span>...<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;ST_AppAbs&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;For&nbsp;the&nbsp;third&nbsp;case,&nbsp;suppose<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;对于第三种情况，假设<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span>.&nbsp;&nbsp;We&nbsp;must&nbsp;show&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;know&nbsp;by&nbsp;assumption&nbsp;that<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;且<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t<sub>2</sub></span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span>。我们必须证明&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode">[<span class="id" type="var">x</span>:=<span class="id" type="var">v<sub>2</sub></span>]<span class="id" type="var">t<sub>12</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span>。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据假设我们知道<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">abs</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode"><span class="id" type="var">T<sub>11</sub></span></span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span>→<span class="id" type="var">T<sub>2</sub></span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;by&nbsp;inversion<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;经反演可得<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">T<sub>1</sub></span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t<sub>12</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>2</sub></span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;have&nbsp;already&nbsp;proven&nbsp;that&nbsp;substitution_preserves_typing&nbsp;and<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们已经证明了&nbsp;substitution_preserves_typing，又根据假设，有<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">T<sub>1</sub></span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by&nbsp;assumption,&nbsp;so&nbsp;we&nbsp;are&nbsp;done.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;故此分支证明完毕。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">substitution_preserves_typing</span> <span class="id" type="keyword">with</span> <span class="id" type="var">T<sub>1</sub></span>...<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">HT<sub>1</sub></span>...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_Proj&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;was&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>.&nbsp;&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Two&nbsp;rules&nbsp;could&nbsp;have&nbsp;caused&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>:&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj1</span></span>&nbsp;and<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_ProjRcd</span></span>.&nbsp;&nbsp;The&nbsp;typing&nbsp;of&nbsp;<span class="inlinecode"><span class="id" type="var">t'</span></span>&nbsp;follows&nbsp;from&nbsp;the&nbsp;IH&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;the&nbsp;former&nbsp;case,&nbsp;so&nbsp;we&nbsp;only&nbsp;consider&nbsp;<span class="inlinecode"><span class="id" type="var">T_ProjRcd</span></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>，则&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rproj</span></span> <span class="inlinecode"><span class="id" type="var">t<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">i</span></span>。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;证明&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">t'</span></span>&nbsp;需要两条规则：<span class="inlinecode"><span class="id" type="var">T_Proj1</span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">T_ProjRcd</span></span>。<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">t'</span></span>&nbsp;的定型可从前面情况中的归纳假设得出，因此我们只需考虑<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_ProjRcd</span></span>&nbsp;&nbsp;即可。<br/>
 <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Here&nbsp;we&nbsp;have&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;is&nbsp;a&nbsp;record&nbsp;value.&nbsp;&nbsp;Since&nbsp;rule&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>&nbsp;was&nbsp;used,&nbsp;we&nbsp;know&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Tr</span></span>&nbsp;and&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>&nbsp;for&nbsp;some&nbsp;<span class="inlinecode"><span class="id" type="var">i</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">Tr</span></span>.&nbsp;&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We&nbsp;may&nbsp;therefore&nbsp;apply&nbsp;lemma&nbsp;<span class="inlinecode"><span class="id" type="var">lookup_field_in_value</span></span>&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;find&nbsp;the&nbsp;record&nbsp;element&nbsp;this&nbsp;projection&nbsp;steps&nbsp;to.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这里我们知道&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;为记录体值。由于使用了规则&nbsp;<span class="inlinecode"><span class="id" type="var">T_Proj</span></span>，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们知道对于某些&nbsp;<span class="inlinecode"><span class="id" type="var">i</span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">Tr</span></span>&nbsp;有&nbsp;<span class="inlinecode"><span class="id" type="var">empty</span></span> <span class="inlinecode">&#x22A2;</span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">&#x2208;</span> <span class="inlinecode"><span class="id" type="var">Tr</span></span>&nbsp;且<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">Tlookup</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">Tr</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">Some</span></span> <span class="inlinecode"><span class="id" type="var">Ti</span></span>。接着可以应用引理&nbsp;<span class="inlinecode"><span class="id" type="var">lookup_field_in_value</span></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;来查找该投影步骤所得的记录元素。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">lookup_field_in_value</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>2</sub></span> <span class="id" type="var">HT</span> <span class="id" type="var">H</span>)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> [<span class="id" type="var">vi</span> [<span class="id" type="var">Hget</span> <span class="id" type="var">Htyp</span>]].<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>4</sub></span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hget</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hget</span>. <span class="id" type="tactic">subst</span>...<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;T_RCons&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;If&nbsp;the&nbsp;last&nbsp;rule&nbsp;was&nbsp;<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>,&nbsp;then&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;some&nbsp;<span class="inlinecode"><span class="id" type="var">i</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;and&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;such&nbsp;that&nbsp;<span class="inlinecode"><span class="id" type="var">record_tm</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>.&nbsp;&nbsp;If&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;step&nbsp;is&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Head</span></span>,&nbsp;the&nbsp;result&nbsp;is&nbsp;immediate&nbsp;by&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;IH.&nbsp;&nbsp;If&nbsp;the&nbsp;step&nbsp;is&nbsp;by&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Tail</span></span>,&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for&nbsp;some&nbsp;<span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span>&nbsp;and&nbsp;we&nbsp;must&nbsp;also&nbsp;use&nbsp;lemma&nbsp;<span class="inlinecode"><span class="id" type="var">step_preserves_record_tm</span></span>&nbsp;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;show&nbsp;<span class="inlinecode"><span class="id" type="var">record_tm</span></span> <span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span>.&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;若最后一条规则为&nbsp;<span class="inlinecode"><span class="id" type="var">T_RCons</span></span>，那么对于某些&nbsp;<span class="inlinecode"><span class="id" type="var">i</span></span>、<span class="inlinecode"><span class="id" type="var">t</span></span>&nbsp;和满足<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">record_tm</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>&nbsp;的&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span>，有&nbsp;<span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">rcons</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode"><span class="id" type="var">tr</span></span>。若该步骤为<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Head</span></span>，则结果可由归纳假设直接得出。若该步骤为<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" type="var">ST_Rcd_Tail</span></span>，那么对于某些&nbsp;<span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span>&nbsp;有&nbsp;<span class="inlinecode"><span class="id" type="var">tr</span></span> <span class="inlinecode"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span> <span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span>，<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们还需要使用引理&nbsp;<span class="inlinecode"><span class="id" type="var">step_preserves_record_tm</span></span>&nbsp;来证明&nbsp;<span class="inlinecode"><span class="id" type="var">record_tm</span></span> <span class="inlinecode"><span class="id" type="var">tr<sub>2</sub>'</span></span>。&nbsp;*)</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">T_RCons</span>... <span class="id" type="tactic">eapply</span> <span class="id" type="var">step_preserves_record_tm</span>...<br/>
 <span class="id" type="keyword">Qed</span>.<br/>
 </div>
@@ -1048,7 +985,7 @@ The <span class="inlinecode"><span class="id" type="var">step</span></span> func
 <div class="code code-tight">
 
 <span class="id" type="keyword">End</span> <span class="id" type="var">STLCExtendedRecords</span>.<br/><hr class='doublespaceincode'/>
-<span class="comment">(*&nbsp;Fri&nbsp;Mar&nbsp;15&nbsp;15:03:00&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;Fri&nbsp;Mar&nbsp;15&nbsp;16:37:19&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
 </div>
 </div>
 

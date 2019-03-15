@@ -148,4 +148,4 @@ idtac "---------- STLCProp.progress' ---------".
 Print Assumptions STLCProp.progress'.
 Abort.
 
-(* Fri Mar 15 15:03:27 UTC 2019 *)
+(* Fri Mar 15 16:37:44 UTC 2019 *)
