@@ -36,7 +36,7 @@
 
 <div class="paragraph"> </div>
 
- 理解了柯里-霍华德同构及其 Coq 实现之后，我们可以深入学习归纳法则。 
+ 在理解了柯里-霍华德同构及其 Coq 实现之后，我们就可以深入学习归纳法则了。 
 </div>
 <div class="code code-tight">
 
@@ -49,9 +49,9 @@
 
 <div class="paragraph"> </div>
 
- 每次我们使用 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 来声明数据类型时，Coq 会自动为这个类型生成
-    <b>归纳法则</b>。这个归纳法则也是定理：如果归纳地定义了 <span class="inlinecode"><span class="id" type="var">t</span></span>，那么对应的
-    归纳法则是 <span class="inlinecode"><span class="id" type="var">t_ind</span></span>。这个自然数的归纳法则： 
+ 每当我们使用 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 来声明数据类型时，Coq 就会自动为该类型生成
+    <b>归纳法则</b>。这个归纳法则也是定理：如果 <span class="inlinecode"><span class="id" type="var">t</span></span> 是归纳定义的，那么对应的
+    归纳法则被称作 <span class="inlinecode"><span class="id" type="var">t_ind</span></span>。这是自然数的归纳法则： 
 </div>
 <div class="code code-tight">
 
@@ -64,10 +64,9 @@
 </div>
 
 <div class="doc">
-<span class="inlinecode"><span class="id" type="tactic">induction</span></span> 策略是对归纳法则的直接包装，其内核，仅仅是执行 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">t_ind</span></span>。
+<span class="inlinecode"><span class="id" type="tactic">induction</span></span> 利用归纳法则，执行 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">t_ind</span></span> 等策略。
     为了清楚地理解这一点，让我们直接使用 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">nat_ind</span></span> 而非 <span class="inlinecode"><span class="id" type="tactic">induction</span></span>
-    策略来做一些证明。比如说，这是我们在章节 <a href="Basics.html"><span class="inlineref">Basics</span></a>
-    中见过的一个定理的另一种证明。 
+    策略来证明。<a href="Basics.html"><span class="inlineref">Basics</span></a> 一章中 <span class="inlinecode"><span class="id" type="var">mult_0_r'</span></span> 定理的另一种证明如下所示。 
 </div>
 <div class="code code-tight">
 
@@ -91,8 +90,8 @@
 <div class="paragraph"> </div>
 
     其次，在应用 <span class="inlinecode"><span class="id" type="var">nat_ind</span></span> 之前我们没有在上下文中引入 <span class="inlinecode"><span class="id" type="var">n</span></span> —— <span class="inlinecode"><span class="id" type="var">nat_ind</span></span> 的结论
-    是一个量化的公式，<span class="inlinecode"><span class="id" type="tactic">apply</span></span> 需要这个结论精确地匹配目标状态的形状，包括量词。
-    相反，<span class="inlinecode"><span class="id" type="tactic">induction</span></span> 策略对于上下文中的变量或目标中量化的变量都适用。
+    是一个带有量词的公式，<span class="inlinecode"><span class="id" type="tactic">apply</span></span> 需要这个结论精确地匹配当前证明目标状态的形状，包括其中的量词。
+    相反，<span class="inlinecode"><span class="id" type="tactic">induction</span></span> 策略对于上下文中的变量或目标中由量词引入的变量都适用。
 
 <div class="paragraph"> </div>
 
@@ -116,13 +115,13 @@
 <div class="paragraph"> </div>
 
  Coq 为每一个 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 定义的数据类型生成了归纳法则，包括那些非递归的。
-    尽管我们不需要使用归纳来证明非递归数据类型的性质，但归纳法则的概念仍然适用于它们：
-    它提供了一种方法来证明对于这个类型所有值都成立的性质。
+    尽管我们不需要归纳便可证明非递归数据结构的性质，但归纳法则仍然适用：
+    它提供了一种方法来证明关于某个类型的所有值的性质。
 
 <div class="paragraph"> </div>
 
     这些生成的原则都具有类似的模式。如果我们定义了类型 <span class="inlinecode"><span class="id" type="var">t</span></span> 及其构造子 <span class="inlinecode"><span class="id" type="var">c<sub>1</sub></span></span> ... <span class="inlinecode"><span class="id" type="var">cn</span></span>，
-    Coq 生成以下形状的定理：
+    Coq 会生成形如下文的定理：
 
 <div class="paragraph"> </div>
 
@@ -135,8 +134,8 @@
 <div class="paragraph"> </div>
 
 </div>
-    每个情形具体的形状取决于对应构造子的参数。在写下一般的规则之前，
-    让我们看看更多的例子。首先是一个无参数构造子的例子： 
+    每个情形具体的形状取决于对应构造子的参数。在尝试总结出一般规律前，
+    让我们先来看看更多的例子。首先是一个无参数构造子的例子： 
 </div>
 <div class="code code-tight">
 
@@ -152,8 +151,8 @@
 
 <div class="doc">
 <a name="lab283"></a><h4 class="section">练习：1 星, standard, optional (rgb)</h4>
- 请写出对这个数据类型 Coq 将会生成的归纳法则。在纸上或注释中写下你的答案，
-    然后同 Coq 打印的结果比较。 
+ 对如下数据类型，请写出 Coq 将会生成的归纳法则。
+    先在纸上或注释内写下你的答案，然后同 Coq 打印出的结果比较。 
 </div>
 <div class="code code-tight">
 
@@ -168,7 +167,7 @@
 <div class="doc less-space">
 <div class="paragraph"> </div>
 
- 这是另一个例子，这一次其中一个构造子含有多个参数。
+ 下文例子中，有一个构造子调取多个参数。
 </div>
 <div class="code code-tight">
 
@@ -232,8 +231,8 @@
 <div class="paragraph"> </div>
 
 <a name="lab285"></a><h4 class="section">练习：1 星, standard, optional (byntree_ind)</h4>
- 请写出对这个数据类型 Coq 将会生成的归纳法则。（与之前一样，在纸上或注释中写下你的答案，
-    然后同 Coq 打印的结果比较。） 
+ 对如下数据类型，请写出 Coq 将会生成的归纳法则。
+   （与之前一样，先在纸上或注释内写下你的答案，然后同 Coq 打印出的结果比较。） 
 </div>
 <div class="code code-tight">
 
@@ -293,9 +292,9 @@
 <div class="paragraph"> </div>
 
 </div>
-    同 <span class="inlinecode"><span class="id" type="var">natlist</span></span> 是十分相似的。主要的区别是，这里，全部的定义是由集合 <span class="inlinecode"><span class="id" type="var">X</span></span> <b>参数化</b>的：
-    也即，对于每个 <span class="inlinecode"><span class="id" type="var">X</span></span> 我们定义了<b>一族</b>归纳类型 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>。
-    （请注意，当 <span class="inlinecode"><span class="id" type="var">list</span></span> 出现在声明体中时，它总是被应用参数 <span class="inlinecode"><span class="id" type="var">x</span></span>。）
+    同 <span class="inlinecode"><span class="id" type="var">natlist</span></span> 是十分相似的。主要的区别是，这里全部的定义是由集合 <span class="inlinecode"><span class="id" type="var">X</span></span> 所<b>参数化</b>的：
+    也即，我们定义了<b>一族</b>归纳类型 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span>，对于每个 <span class="inlinecode"><span class="id" type="var">X</span></span> 有其对应的类型在此族中。
+    （请注意，当 <span class="inlinecode"><span class="id" type="var">list</span></span> 出现在声明体中时，它总是被应用参数 <span class="inlinecode"><span class="id" type="var">X</span></span>。）
     归纳法则同样被 <span class="inlinecode"><span class="id" type="var">X</span></span> 所参数化：
 
 <div class="paragraph"> </div>
@@ -309,12 +308,12 @@
 <div class="paragraph"> </div>
 
 </div>
-    请注意<b>全部的</b>归纳法则都被 <span class="inlinecode"><span class="id" type="var">X</span></span> 所参数化。也即，<span class="inlinecode"><span class="id" type="var">list_ind</span></span> 可认为是一个
+    请注意归纳法则的<b>所有部分</b>都被 <span class="inlinecode"><span class="id" type="var">X</span></span> 所参数化。也即，<span class="inlinecode"><span class="id" type="var">list_ind</span></span> 可认为是一个
     多态函数，当被应用类型 <span class="inlinecode"><span class="id" type="var">X</span></span> 时，返回特化在类型 <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">X</span></span> 上的归纳法则。 
 <div class="paragraph"> </div>
 
 <a name="lab288"></a><h4 class="section">练习：1 星, standard, optional (tree)</h4>
- 请写出对这个数据类型 Coq 将会生成的归纳法则。同 Coq 打印的结果比较你的答案。
+ 对如下数据类型，请写出 Coq 将会生成的归纳法则，并与 Coq 打印出的结果比较。
 </div>
 <div class="code code-tight">
 
@@ -419,9 +418,9 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 <div class="paragraph"> </div>
 
 </div>
-  是一个对于所有命题 <span class="inlinecode"><span class="id" type="var">P</span></span> （或者，严格来说，对于被数字 <span class="inlinecode"><span class="id" type="var">n</span></span> 索引的全部命题 <span class="inlinecode"><span class="id" type="var">P</span></span>）
-  成立的泛化陈述。每次我们使用这个原理，我们选择一个类型为 <span class="inlinecode"><span class="id" type="var">nat</span>→<span class="id" type="keyword">Prop</span></span>
-  的表达式为 <span class="inlinecode"><span class="id" type="var">P</span></span>。
+  是一个对于所有命题 <span class="inlinecode"><span class="id" type="var">P</span></span> （或更严格地说，对由数字 <span class="inlinecode"><span class="id" type="var">n</span></span> 索引的所有命题 <span class="inlinecode"><span class="id" type="var">P</span></span>）
+  都成立的泛化陈述。每次使用这个原理，我们将 <span class="inlinecode"><span class="id" type="var">P</span></span> 特化为一个类型为 <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>
+  的表达式。
 
 <div class="paragraph"> </div>
 
@@ -436,7 +435,7 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 </div>
 
 <div class="doc">
-…… 或等价地： 
+……或等价地： 
 </div>
 <div class="code code-tight">
 
@@ -445,7 +444,7 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 </div>
 
 <div class="doc">
-现在看看 <span class="inlinecode"><span class="id" type="var">P_m0r</span></span> 在证明中的哪里出现。 
+现在看看 <span class="inlinecode"><span class="id" type="var">P_m0r</span></span> 在证明中出现在哪里。 
 </div>
 <div class="code code-tight">
 
@@ -461,13 +460,13 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 </div>
 
 <div class="doc">
-这一步额外的命名步骤并不是我们在证明中通常会做的，但对一两个例子显式地
-    做这件事是由好处的，帮助我们清晰地看到哪个是归纳假设。
+通常我们并不会在证明中额外地为命题命名，但有意地进行一两个练习
+    可以帮助我们清晰地看到哪个是归纳假设。
     如果对 <span class="inlinecode"><span class="id" type="var">n</span></span> 归纳来证明 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">n</span>,</span> <span class="inlinecode"><span class="id" type="var">P_m0r</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>（使用 <span class="inlinecode"><span class="id" type="tactic">induction</span></span>
     或 <span class="inlinecode"><span class="id" type="tactic">apply</span></span> <span class="inlinecode"><span class="id" type="var">nat_ind</span></span>），可以看到第一个子目标要求我们证明 <span class="inlinecode"><span class="id" type="var">P_m0r</span></span> <span class="inlinecode">0</span>
     （“<span class="inlinecode"><span class="id" type="var">P</span></span> 对零成立”），而第二个子目标要求我们证明 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">n'</span>,</span> <span class="inlinecode"><span class="id" type="var">P_m0r</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">P_m0r</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span>)</span>
-    （也即，“<span class="inlinecode"><span class="id" type="var">P</span></span> 对 <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span> 成立如果其对 <span class="inlinecode"><span class="id" type="var">n'</span></span> 成立”，或者说，“<span class="inlinecode"><span class="id" type="var">P</span></span> 被 <span class="inlinecode"><span class="id" type="var">S</span></span> 保持”）。
-    <b>归纳假设</b>是后一个蕴含式中的前提——假设 <span class="inlinecode"><span class="id" type="var">P</span></span> 对 <span class="inlinecode"><span class="id" type="var">n'</span></span> 成立，这是我们在证明 <span class="inlinecode"><span class="id" type="var">P</span></span>
+    （也即，“<span class="inlinecode"><span class="id" type="var">P</span></span> 对 <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span> 成立仅当其对 <span class="inlinecode"><span class="id" type="var">n'</span></span> 成立”，或者说，“<span class="inlinecode"><span class="id" type="var">P</span></span> 被 <span class="inlinecode"><span class="id" type="var">S</span></span> 保持”）。
+    <b>归纳假设</b>是后一个蕴含式中的前提部分，即假设 <span class="inlinecode"><span class="id" type="var">P</span></span> 对 <span class="inlinecode"><span class="id" type="var">n'</span></span> 成立，这是我们在证明 <span class="inlinecode"><span class="id" type="var">P</span></span>
     对 <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span> 的过程中允许使用的。 
 </div>
 
@@ -501,24 +500,24 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 
 </li>
 </ul>
-    因此，当我们以 <span class="inlinecode"><span class="id" type="tactic">intros</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 开始一个证明，我们首先在告诉 Coq
+    因此，当以 <span class="inlinecode"><span class="id" type="tactic">intros</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 开始一个证明时，我们首先在告诉 Coq
     考虑一个<b>特殊的</b> <span class="inlinecode"><span class="id" type="var">n</span></span>（通过引入到上下文中），然后告诉它证明一些关于
     <b>全体</b>数字的性质（通过使用归纳）。
 
 <div class="paragraph"> </div>
 
     在这种情况下，Coq 事实上在内部“二次一般化（re-generalize）”了我们归纳的变量。
-    比如说，在原始的 <span class="inlinecode"><span class="id" type="var">plus</span></span> 结合性的证明中……  
+    比如说，起初证明 <span class="inlinecode"><span class="id" type="var">plus</span></span> 的结合性时……  
 </div>
 <div class="code code-tight">
 
 <span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_assoc'</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
 &nbsp;&nbsp;<span class="id" type="var">n</span> + (<span class="id" type="var">m</span> + <span class="id" type="var">p</span>) = (<span class="id" type="var">n</span> + <span class="id" type="var">m</span>) + <span class="id" type="var">p</span>.<br/>
 <span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;……我们首先引入全部3个变量到上下文中，或者说是<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;……首先，我们引入全部&nbsp;3&nbsp;个变量到上下文中，或者说是<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“考虑任意的&nbsp;<span class="inlinecode"><span class="id" type="var">n</span></span>，<span class="inlinecode"><span class="id" type="var">m</span></span>&nbsp;和&nbsp;<span class="inlinecode"><span class="id" type="var">p</span></span>……”&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;……&nbsp;我们现在使用&nbsp;<span class="inlinecode"><span class="id" type="tactic">induction</span></span>&nbsp;策略来证明&nbsp;<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;……现在，我们用&nbsp;<span class="inlinecode"><span class="id" type="tactic">induction</span></span>&nbsp;策略来证明&nbsp;<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（也即，<span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode">(<span class="id" type="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">p</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode">(<span class="id" type="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">m</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">p</span></span>）对全体的&nbsp;<span class="inlinecode"><span class="id" type="var">n</span></span>&nbsp;成立，<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;也因此对于当前上下文中特殊的&nbsp;<span class="inlinecode"><span class="id" type="var">n</span></span>&nbsp;也成立。&nbsp;*)</span><br/>
 &nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">n</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">n'</span>].<br/>
@@ -532,7 +531,7 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 </div>
 
 <div class="doc">
-对目标中量化的变量应用 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> 同样可以工作。
+对目标中含有量词的变量应用 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> 同样可以工作。
 </div>
 <div class="code code-tight">
 
@@ -546,8 +545,8 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 </div>
 
 <div class="doc">
-请注意 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> 留下 <span class="inlinecode"><span class="id" type="var">m</span></span> 仍然绑定在目标中——也即，我们在归纳证明的陈述
-    仍然是以 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> 开始的。
+请注意，使用 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> 后 <span class="inlinecode"><span class="id" type="var">m</span></span> 在目标中仍然是绑定的，
+    也即，归纳证明的陈述是以 <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">m</span></span> 开始的。
 
 <div class="paragraph"> </div>
 
@@ -568,8 +567,8 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 
 <div class="doc">
 <a name="lab294"></a><h4 class="section">练习：1 星, standard, optional (plus_explicit_prop)</h4>
- 以上面 <span class="inlinecode"><span class="id" type="var">mult_0_r''</span></span> 的方式来重写 <span class="inlinecode"><span class="id" type="var">plus_assoc'</span></span>，<span class="inlinecode"><span class="id" type="var">plus_comm'</span></span> 和它们的证明——
-    也即，对于每个定理，给出一个明确的命题的 <span class="inlinecode"><span class="id" type="keyword">Definition</span></span>，陈述定理并用归纳法证明这个
+ 以类似 <span class="inlinecode"><span class="id" type="var">mult_0_r''</span></span> 的方式来重写 <span class="inlinecode"><span class="id" type="var">plus_assoc'</span></span>，<span class="inlinecode"><span class="id" type="var">plus_comm'</span></span> 和它们的证明——
+    对于每个定理，给出一个明确的命题的 <span class="inlinecode"><span class="id" type="keyword">Definition</span></span>，陈述定理并用归纳法证明这个
     定义的命题。 
 </div>
 <div class="code code-tight">
@@ -588,7 +587,7 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
     这样的归纳定义<b>命题</b>的归纳法则会复杂一点点。就全部归纳法则来说，我们想要
     通过使用 <span class="inlinecode"><span class="id" type="var">even</span></span> 的归纳法则并归纳地考虑 <span class="inlinecode"><span class="id" type="var">even</span></span> 中所有可能的形式来证明一些东西。
     然而，直观地讲，我们想要证明的东西并不是关于<b>证据</b>的陈述，而是关于
-    <b>数字</b>的陈述：因此，我们想要让归纳法则允许通过对证据进行归纳来
+    <b>自然数</b>的陈述：因此，我们想要让归纳法则允许通过对证据进行归纳来
     证明关于数字的性质。
 
 <div class="paragraph"> </div>
@@ -624,27 +623,27 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 因为 <span class="inlinecode"><span class="id" type="var">even</span></span> 被数字 <span class="inlinecode"><span class="id" type="var">n</span></span> 所索引（任何 <span class="inlinecode"><span class="id" type="var">even</span></span> 的对象 <span class="inlinecode"><span class="id" type="var">E</span></span> 都是某个数字 <span class="inlinecode"><span class="id" type="var">n</span></span>
-       是偶数的证据），命题 <span class="inlinecode"><span class="id" type="var">P</span></span> 同时被 <span class="inlinecode"><span class="id" type="var">n</span></span> 和 <span class="inlinecode"><span class="id" type="var">E</span></span> 所参数化——也即，被用于证明断言的
-       归纳法则涉同时及到数字和这个数字是偶数的证据。
+<li> 由于 <span class="inlinecode"><span class="id" type="var">even</span></span> 被自然数 <span class="inlinecode"><span class="id" type="var">n</span></span> 所索引（任何 <span class="inlinecode"><span class="id" type="var">even</span></span> 对象 <span class="inlinecode"><span class="id" type="var">E</span></span> 都是某个自然数 <span class="inlinecode"><span class="id" type="var">n</span></span>
+       是偶数的证据），且命题 <span class="inlinecode"><span class="id" type="var">P</span></span> 同时被 <span class="inlinecode"><span class="id" type="var">n</span></span> 和 <span class="inlinecode"><span class="id" type="var">E</span></span> 所参数化——因此，被用于证明断言的
+       归纳法则同时涉及到一个偶数和这个数是偶数的证据。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 由于有两种方法来给出偶数性质的证据（因为 <span class="inlinecode"><span class="id" type="var">even</span></span> 有两个构造子），应用归纳法则生成
+<li> 由于有两种方法来给出偶数性质的证据（因为 <span class="inlinecode"><span class="id" type="var">even</span></span> 有两个构造子），我们应用归纳法则生成
        了两个子目标：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> 我们必须证明 <span class="inlinecode"><span class="id" type="var">P</span></span> 对 <span class="inlinecode">0</span> 和 <span class="inlinecode"><span class="id" type="var">ev_0</span></span> 成立。
+<li> 须证明 <span class="inlinecode"><span class="id" type="var">P</span></span> 对 <span class="inlinecode">0</span> 和 <span class="inlinecode"><span class="id" type="var">ev_0</span></span> 成立。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 我们必须证明，当 <span class="inlinecode"><span class="id" type="var">n</span></span> 是一个数字且 <span class="inlinecode"><span class="id" type="var">E</span></span> 是其偶数性质的证据，如果 <span class="inlinecode"><span class="id" type="var">P</span></span>
+<li> 须证明，当 <span class="inlinecode"><span class="id" type="var">n</span></span> 是一个自然数且 <span class="inlinecode"><span class="id" type="var">E</span></span> 是其偶数性质的证据，如果 <span class="inlinecode"><span class="id" type="var">P</span></span>
            对 <span class="inlinecode"><span class="id" type="var">n</span></span> 和 <span class="inlinecode"><span class="id" type="var">E</span></span> 成立，那么它也对 <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> 和 <span class="inlinecode"><span class="id" type="var">ev_SS</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode"><span class="id" type="var">E</span></span> 成立。
 
 <div class="paragraph"> </div>
@@ -662,9 +661,9 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 
 <div class="paragraph"> </div>
 
-    这比我们通常需要或想要的更灵活一点：它为我们提供了一种方式证明逻辑断言，
-    其断言涉及到一些关于偶数的证据的性质，然而我们真正想要的是证明<b>数字</b>
-    是偶数这样的性质——我们感兴趣的是关于数字的断言，而非关于证据。如果对于命题 <span class="inlinecode"><span class="id" type="var">P</span></span>
+    这比我们通常需要的或想要的更灵活一点：它为我们提供了一种方式证明逻辑断言，
+    其断言涉及到一些关于偶数的证据的性质，然而我们真正想要的是证明某些<b>自然数</b>
+    是偶数这样的性质——我们感兴趣的是关于自然数的断言，而非关于证据。如果对于命题 <span class="inlinecode"><span class="id" type="var">P</span></span>
     的归纳法则仅仅被 <span class="inlinecode"><span class="id" type="var">n</span></span> 所参数化，且其结论是 <span class="inlinecode"><span class="id" type="var">P</span></span> 对所有偶数 <span class="inlinecode"><span class="id" type="var">n</span></span> 成立，那会方便许多：
 
 <div class="paragraph"> </div>
@@ -694,13 +693,13 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 请特别注意，Coq 丢弃了命题 <span class="inlinecode"><span class="id" type="var">P</span></span> 参数中的证据项 <span class="inlinecode"><span class="id" type="var">E</span></span>。 
 <div class="paragraph"> </div>
 
- 用中文表达 <span class="inlinecode"><span class="id" type="var">ev_ind</span></span> 是说：
+ 若用自然语言来表述 <span class="inlinecode"><span class="id" type="var">ev_ind</span></span>，则是说：
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
 <li> 假设，<span class="inlinecode"><span class="id" type="var">P</span></span> 是关于自然数的一个性质（也即，<span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 是一个在全体 <span class="inlinecode"><span class="id" type="var">n</span></span> 上的 <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>）。
-      为了证明当 <span class="inlinecode"><span class="id" type="var">n</span></span> 是偶数时 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 成立，需要展示：
+      为了证明当 <span class="inlinecode"><span class="id" type="var">n</span></span> 是偶数时 <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 成立，需要证明：
 
 <div class="paragraph"> </div>
 
@@ -822,7 +821,7 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
   在现实世界的数学交流中，证明的书写既有冗长的，也有非常简洁的。
   尽管理想状态是二者中间的某种形式，但从有一点冗长的证明开始学习是有好处的。
   同时，在学习的过程中，有一个明确的标准来进行比较也是有益的。为此，
-  我们提供了两份模板——一份用于归纳证明<b>数据</b>（也即，<span class="inlinecode"><span class="id" type="keyword">Type</span></span> 中我们进行归纳的东西），
+  我们提供了两份模板：一份用于归纳证明<b>数据</b>（也即，<span class="inlinecode"><span class="id" type="keyword">Type</span></span> 中我们进行归纳的东西），
   另一份用于归纳证明<b>证据</b>（也即，<span class="inlinecode"><span class="id" type="keyword">Prop</span></span> 中归纳定义的东西）。
 <div class="paragraph"> </div>
 
@@ -982,7 +981,7 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> <b>定理</b>: <span class="inlinecode">≤</span> 关系是传递的——也即，对任意数字 <span class="inlinecode"><span class="id" type="var">n</span></span>，<span class="inlinecode"><span class="id" type="var">m</span></span> 和 <span class="inlinecode"><span class="id" type="var">o</span></span>，如果
+<li> <b>定理</b>: <span class="inlinecode">≤</span> 关系是传递的，也即，对任意数字 <span class="inlinecode"><span class="id" type="var">n</span></span>，<span class="inlinecode"><span class="id" type="var">m</span></span> 和 <span class="inlinecode"><span class="id" type="var">o</span></span>，如果
          <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">m</span></span> 且 <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">o</span></span> 那么 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">o</span></span>。
 
 <div class="paragraph"> </div>
@@ -1015,7 +1014,7 @@ Coq 会为 <span class="inlinecode"><span class="id" type="var">foo'</span></spa
 </div>
 <div class="code code-tight">
 
-<span class="comment">(*&nbsp;Fri&nbsp;Mar&nbsp;15&nbsp;16:36:26&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;Fri&nbsp;Mar&nbsp;15&nbsp;17:06:29&nbsp;UTC&nbsp;2019&nbsp;*)</span><br/>
 </div>
 </div>
 
