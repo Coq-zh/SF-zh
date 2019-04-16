@@ -663,7 +663,6 @@ From Coq Require Import Strings.String.
 
                       -------------------------                    (ST_ProjRcd)
                       {..., i=vi, ...}.i --> vi
-]]] 
 
     再次提醒，这些规则是非形式化的。比如说，第一个规则应当被读做“如果 [ti]
    是最左边的非值字段，且如果 [ti] 前进一步归约到 [ti']，那么整个字段组归约为……”。
@@ -2094,4 +2093,4 @@ Definition manual_grade_for_preservation : option (nat*string) := None.
 
 End STLCExtended.
 
-(* Sat Mar 16 17:48:29 UTC 2019 *)
+(* Tue Apr 16 06:37:44 UTC 2019 *)
