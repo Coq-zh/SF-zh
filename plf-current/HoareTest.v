@@ -193,4 +193,4 @@ idtac "---------- hoare_repeat ---------".
 idtac "MANUAL".
 Abort.
 
-(* Tue Apr 16 06:37:55 UTC 2019 *)
+(* Wed Jun 12 13:48:51 UTC 2019 *)

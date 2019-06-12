@@ -2093,4 +2093,4 @@ Definition manual_grade_for_preservation : option (nat*string) := None.
 
 End STLCExtended.
 
-(* Tue Apr 16 06:37:44 UTC 2019 *)
+(* Wed Jun 12 13:48:40 UTC 2019 *)

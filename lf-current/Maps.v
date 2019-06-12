@@ -42,6 +42,7 @@ Import ListNotations.
 (** 为了比较字符串，我们定义了 [eqb_string] 函数，它在内部使用 Coq
     字符串库中的 [string_dec] 函数。 *)
 
+
 Definition eqb_string (x y : string) : bool :=
   if string_dec x y then true else false.
 
@@ -341,4 +342,4 @@ Proof.
   apply t_update_permute.
 Qed.
 
-(* Tue Apr 16 06:36:47 UTC 2019 *)
+(* Wed Jun 12 13:47:43 UTC 2019 *)

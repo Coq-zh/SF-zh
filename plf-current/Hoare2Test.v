@@ -129,4 +129,4 @@ idtac "---------- factorial_dec ---------".
 idtac "MANUAL".
 Abort.
 
-(* Tue Apr 16 06:37:59 UTC 2019 *)
+(* Wed Jun 12 13:48:56 UTC 2019 *)
