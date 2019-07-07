@@ -601,7 +601,7 @@ Proof. reflexivity.  Qed.
 
 (** 表达式 [(fun n => n * n)] 可读作“一个给定 [n] 并返回 [n * n] 的函数。” *)
 
-(** 下面是一个使用匿名函数重写的 [filter]：*)
+(** 以下为使用匿名函数重写的 [filter] 示例：*)
 
 Example test_filter2':
     filter (fun l => (length l) =? 1)
@@ -689,7 +689,7 @@ Proof. reflexivity.  Qed.
 
 (** **** 练习：3 星, standard (map_rev)  
 
-    请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引力 *)
+    请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引理 *)
 
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
@@ -1060,4 +1060,4 @@ End Church.
 End Exercises.
 
 
-(* Sun Jul 7 07:47:59 UTC 2019 *)
+(* Sun Jul 7 18:59:00 UTC 2019 *)

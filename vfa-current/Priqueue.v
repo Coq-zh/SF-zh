@@ -270,4 +270,4 @@ Proof.
 
 End List_Priqueue.
 
-(* Sun Jul 7 07:51:07 UTC 2019 *)
+(* Sun Jul 7 19:02:15 UTC 2019 *)
