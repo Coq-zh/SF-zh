@@ -786,7 +786,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 下面这条关于 [ble] 的引理可助你完成下一个证明。 *)
+(** 下面这条关于 [leb] 的引理可助你完成下一个证明。 *)
 
 Theorem leb_n_Sn : forall n,
   n <=? (S n) = true.
@@ -1018,4 +1018,4 @@ Inductive baz : Type :=
 Definition manual_grade_for_baz_num_elts : option (nat*string) := None.
 (** [] *)
 
-(* Wed Jun 12 13:47:42 UTC 2019 *)
+(* Sun Jul 7 07:47:59 UTC 2019 *)

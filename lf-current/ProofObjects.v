@@ -531,4 +531,4 @@ End MyEquality.
     略会将这个事实加入到上下文中。 *)
 
 
-(* Wed Jun 12 13:47:43 UTC 2019 *)
+(* Sun Jul 7 07:48:00 UTC 2019 *)
