@@ -1032,7 +1032,7 @@ Proof.
      optimize_0plus_com
 
    请证明这三个函数都具有可靠性，就像之前证明 [fold_constants_*] 那样。在
-   [optimize_0plus_com] 的证明中你需要一致性引理 -- 否则证明过程会_'很长‘_！
+   [optimize_0plus_com] 的证明中你需要一致性引理 -- 否则证明过程会_'很长'_！
 
    接下来为指令定义一个优化器，它首先使用常量折叠（[fold_constants_com]）然后优化掉
    [0 + n] 项（使用 [optimize_0plus_com]）。
@@ -1534,4 +1534,4 @@ Theorem zprop_preserving : forall c c',
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(* Sun Jul 7 18:59:53 UTC 2019 *)
+(* Mon Jul 8 10:07:20 UTC 2019 *)

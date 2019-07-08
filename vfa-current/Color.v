@@ -596,4 +596,4 @@ Compute (M.elements (color palette G)). (* = [(4, 1); (2, 3); (6, 2); (1, 2); (5
   nodes [6] and [1] with [2], and node [5] with color [1]. *)
 
 
-(* Sun Jul 7 19:02:15 UTC 2019 *)
+(* Mon Jul 8 10:10:05 UTC 2019 *)

@@ -390,4 +390,4 @@ idtac "---------- not_exists_dist ---------".
 Print Assumptions not_exists_dist.
 Abort.
 
-(* Sun Jul 7 18:59:08 UTC 2019 *)
+(* Mon Jul 8 10:06:29 UTC 2019 *)

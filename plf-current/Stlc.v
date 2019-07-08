@@ -742,4 +742,4 @@ Proof.
 
 End STLC.
 
-(* Sun Jul 7 18:59:54 UTC 2019 *)
+(* Mon Jul 8 10:07:22 UTC 2019 *)
