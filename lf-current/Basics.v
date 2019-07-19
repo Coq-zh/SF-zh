@@ -334,7 +334,7 @@ Definition isred (c : color) : bool :=
 
 (** 这里的模式 [primary _] 是“[primary] 应用到除 [red] 之外的任何 [rgb] 构造子”
     的简写形式（通配模式 [_] 的效果与 [monochrome] 定义中的哑（dummy）模式变量
-    [p] 相同。） *)
+    [q] 相同。） *)
 
 (* ================================================================= *)
 (** ** Tuples *)
@@ -1198,4 +1198,4 @@ Fixpoint bin_to_nat (m:bin) : nat
 Definition manual_grade_for_binary : option (nat*string) := None.
 (** [] *)
 
-(* Mon Jul 8 10:06:19 UTC 2019 *)
+(* Fri Jul 19 00:32:19 UTC 2019 *)

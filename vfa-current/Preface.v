@@ -115,7 +115,7 @@
 
 (** A tar file containing the full sources for the "release version"
     of this book (as a collection of Coq scripts and HTML files) is
-    available at http://softwarefoundations.cis.upenn.edu.
+    available at https://softwarefoundations.cis.upenn.edu.
 
     (If you are using the book as part of a class, your professor may
     give you access to a locally modified version of the files, which
@@ -144,4 +144,4 @@
     NSF Expeditions grant 1521523, _The Science of Deep
     Specification_. *)
 
-(* Mon Jul 8 10:10:04 UTC 2019 *)
+(* Fri Jul 19 00:35:38 UTC 2019 *)

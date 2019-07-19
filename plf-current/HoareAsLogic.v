@@ -186,7 +186,7 @@ Qed.
     这样的公理集合被称为_'相对完备的（relatively complete）'_。我们的证明的灵感来自
     于：
 
-      http://www.ps.uni-saarland.de/courses/sem-ws11/script/Hoare.html
+      https://www.ps.uni-saarland.de/courses/sem-ws11/script/Hoare.html
 
     为了完成这个证明，我们需要使用一种被称为
     _'最弱前置条件（weakest preconditions）'_的技术装置来创造一些中间的断言。
@@ -264,4 +264,4 @@ Proof.
     满意：这太冗长了。在 [Hoare2] 一章中的关于形式化修饰程序的章节会向我们展
     示如何做的更好。 *)
 
-(* Mon Jul 8 10:07:21 UTC 2019 *)
+(* Fri Jul 19 00:33:14 UTC 2019 *)

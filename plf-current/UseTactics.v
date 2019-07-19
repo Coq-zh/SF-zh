@@ -45,7 +45,7 @@ From PLF Require Sub.
     from the "LibTactics" library. It does not aim at presenting all
     the features of "LibTactics". The detailed specification of tactics
     can be found in the source file [LibTactics.v]. Further documentation
-    as well as demos can be found at http://www.chargueraud.org/softs/tlc/. *)
+    as well as demos can be found at https://www.chargueraud.org/softs/tlc/. *)
 
 (** In this tutorial, tactics are presented using examples taken from
     the core chapters of the "Software Foundations" course. To illustrate
@@ -1025,8 +1025,8 @@ End ExamplesInstantiations.
 
     If you are interested in using [LibTactics.v] in your own developments,
     make sure you get the lastest version from:
-    http://www.chargueraud.org/softs/tlc/.
+    https://www.chargueraud.org/softs/tlc/.
 
 *)
 
-(* Mon Jul 8 10:07:24 UTC 2019 *)
+(* Fri Jul 19 00:33:17 UTC 2019 *)

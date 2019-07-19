@@ -40,7 +40,7 @@ From Coq Require Import Bool.Bool.
 From Coq Require Import Logic.FunctionalExtensionality.
 
 (** Documentation for the standard library can be found at
-    http://coq.inria.fr/library/.  
+    https://coq.inria.fr/library/.
 
     The [Search] command is a good way to look for theorems 
     involving objects of specific types. *)
@@ -281,4 +281,4 @@ Proof.
   apply t_update_permute.
 Qed.
 
-(* Mon Jul 8 10:10:03 UTC 2019 *)
+(* Fri Jul 19 00:35:38 UTC 2019 *)

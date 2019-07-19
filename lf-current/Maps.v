@@ -28,7 +28,7 @@ From Coq Require Import Lists.List.
 Import ListNotations.
 
 (** 标准库的文档见
-    http://coq.inria.fr/library/。
+    https://coq.inria.fr/library/。
 
     [Search] 指令可用于查找涉及具体类型对象的定理。我们花点时间来熟悉一下它。 *)
 
@@ -342,4 +342,4 @@ Proof.
   apply t_update_permute.
 Qed.
 
-(* Mon Jul 8 10:06:20 UTC 2019 *)
+(* Fri Jul 19 00:32:20 UTC 2019 *)

@@ -14,11 +14,11 @@
  (2) an explanation of the particular implementation we use here.
  Red-Black Trees in a Functional Setting, by Chris Okasaki. 
 _Journal of Functional Programming_, 9(4):471-477, July 1999. 
- http://www.westpoint.edu/eecs/SiteAssets/SitePages/Faculty%20Publication%20Documents/Okasaki/jfp99redblack.pdf
+ https://www.cs.tufts.edu/~nr/cs257/archive/chris-okasaki/redblack99.pdf
 
  (3) Optional reading:
   Efficient Verified Red-Black Trees, by Andrew W. Appel, September 2011. 
-  http://www.cs.princeton.edu/~appel/papers/redblack.pdf
+  https://www.cs.princeton.edu/~appel/papers/redblack.pdf
 *)
 
 (** Red-black trees are a form of binary search tree (BST), but with
@@ -740,4 +740,4 @@ Insert and lookup 20000 consecutive integers in 0. seconds.
      consecutive insertions (0.015 seconds) as on the random (0.016 seconds).
 *)
 
-(* Mon Jul 8 10:10:04 UTC 2019 *)
+(* Fri Jul 19 00:35:38 UTC 2019 *)

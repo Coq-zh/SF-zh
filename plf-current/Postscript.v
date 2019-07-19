@@ -149,9 +149,9 @@
     _'深度规范的科学（The Science of Deep Specification）'_ 是一项 NSF
     资助的“远征”研究项目（2016 至 2020 年），目标是为软硬件系统提供完整的功能
     正确性规范和验证。项目同时赞助了讲习班和暑期学校。
-      - 网站：http://deepspec.org/
+      - 网站：https://deepspec.org/
       - 概况介绍：
-          - http://deepspec.org/about/
+          - https://deepspec.org/about/
           - https://www.youtube.com/watch?v=IPNdsnRWBkk *)
 
 (* ----------------------------------------------------------------- *)
@@ -169,7 +169,7 @@
     的数学模型，以及在新的形式化验证研究，系统研究和程序语言研究中如何重用这些模型。
     为了支持这些，我们也正在开发新的规格工具和理论。”
 
-    http://www.cl.cam.ac.uk/~pes20/rems/ *)
+    https://www.cl.cam.ac.uk/~pes20/rems/ *)
 
 (* ----------------------------------------------------------------- *)
 (** *** 其他 *)
@@ -230,4 +230,4 @@
 
 (** $Date$ *)
 
-(* Mon Jul 8 10:07:25 UTC 2019 *)
+(* Fri Jul 19 00:33:18 UTC 2019 *)

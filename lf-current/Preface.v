@@ -235,7 +235,7 @@
 
 (** 本书的“英文发布版”以及所有源代码的压缩包
     （其中包含一组 Coq 脚本和 HTML 文件）可访问
-    http://softwarefoundations.cis.upenn.edu 获取。
+    https://softwarefoundations.cis.upenn.edu 获取。
 
     本书的中文版和压缩包可访问 https://github.com/Coq-zh/SF-zh 获取。
 
@@ -307,4 +307,4 @@
     （National Science Foundation）在 NSF 科研赞助 1521523 号
     _'深度规范科学'_ 下提供支持。 *)
 
-(* Mon Jul 8 10:06:18 UTC 2019 *)
+(* Fri Jul 19 00:32:19 UTC 2019 *)

@@ -522,7 +522,7 @@ Fixpoint slow_elements (s: tree) : list (key * V) :=
 
 (** This one is easier to understand than the [elements] function,
     because it doesn't carry the [base] list around in its recursion.
-    Unfortunately, its running time is quadratic, because at each of
+    Unfortunately, its running time is NlogN, because at each of
     the [T] nodes it does a linear-time list-concatentation.  The
     original [elements] function takes linear time overall; that's
     much more efficient.
@@ -530,7 +530,7 @@ Fixpoint slow_elements (s: tree) : list (key * V) :=
    To prove correctness of [elements], it's actually easier to first
    prove that it's equivalent to [slow_elements], then prove the
    correctness of [slow_elements].  We don't care that [slow_elements]
-   is quadratic, because we're never going to really run it; it's just
+   is a bit slow, because we're never going to really run it; it's just
    there to support the proof. *)
 
 (** **** 练习：3 星, standard, optional (elements_slow_elements)  *)
@@ -903,4 +903,4 @@ rewrite elements_slow_elements.
 
 End TREES.
 
-(* Mon Jul 8 10:10:04 UTC 2019 *)
+(* Fri Jul 19 00:35:38 UTC 2019 *)

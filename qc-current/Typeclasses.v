@@ -1178,7 +1178,7 @@ Definition sum3opt' (n1 n2 : option nat) :=
     [Transitive], etc.) and [Proper].  They are described in the
     second half of _A Gentle Introduction to Type Classes and
     Relations in Coq_, by Castéran and Sozeau.
-    http://www.labri.fr/perso/casteran/CoqArt/TypeClassesTut/typeclassestut.pdf.
+    https://www.labri.fr/perso/casteran/CoqArt/TypeClassesTut/typeclassestut.pdf.
 
     A much larger collection of typeclasses for formalizing
     mathematics is described in _Type Classes for Mathematics in Type
@@ -1726,7 +1726,7 @@ Definition e4 : list nat := mymap false.
     Spitters, Bas, and Eelis Van Der Weegen. “Type Classes for
     Mathematics in Type Theory.” MSCS 21, no. Special Issue 04 (2011):
     795–825. doi:10.1017/S0960129511000119.
-    http://arxiv.org/pdf/1102.1323v1.pdf.
+    https://arxiv.org/pdf/1102.1323v1.pdf.
 
     I think the above paper is missing one argument for unbundling:
     I've seen many libraries that begin by making an interface (say I)
@@ -1750,7 +1750,7 @@ Definition e4 : list nat := mymap false.
       - How to make ad-hoc polymorphism less ad hoc Philip Wadler and
         Stephen Blott. 16'th Symposium on Principles of Programming
         Languages, ACM Press, Austin, Texas, January 1989.
-        http://homepages.inf.ed.ac.uk/wadler/topics/type-classes.html
+        https://homepages.inf.ed.ac.uk/wadler/topics/type-classes.html
 
     The original paper on typeclasses In Coq:
       - Matthieu Sozeau and Nicolas Oury. First-Class Type
@@ -1759,9 +1759,9 @@ Definition e4 : list nat := mymap false.
 
     Sources for this tutorial:
      - Coq Reference Manual:
-       https://coq.inria.fr/refman/Reference-Manual023.html
+       https://coq.inria.fr/refman/
      - Casteran and Sozeau's "Gentle Introduction":
-       http://www.labri.fr/perso/casteran/CoqArt/TypeClassesTut/typeclassestut.pdf
+       https://www.labri.fr/perso/casteran/CoqArt/TypeClassesTut/typeclassestut.pdf
      - Sozeau's slides from a talk at Penn:
        https://www.cis.upenn.edu/~bcpierce/courses/670Fall12/slides.pdf
 
@@ -1771,4 +1771,4 @@ Definition e4 : list nat := mymap false.
        http://learnyouahaskell.com/making-our-own-types-and-typeclasses
 *)
 
-(* Mon Jul 8 10:11:32 UTC 2019 *)
+(* Fri Jul 19 00:37:07 UTC 2019 *)

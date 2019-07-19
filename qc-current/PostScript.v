@@ -20,27 +20,27 @@
     references for additional reading:
 
     - The original QuickCheck paper by Koen Claessen and John Hughes
-      from ICFP 2000. 
-      http://www.cs.tufts.edu/~nr/cs257/archive/john-hughes/quick.pdf
+      from ICFP 2000.
+      https://www.cs.tufts.edu/~nr/cs257/archive/john-hughes/quick.pdf
 
     - The original QuickChick paper that focuses on a framework for
       proving the correctness of QuickChick generators.
-      http://www.cis.upenn.edu/~llamp/pdf/Foundational.pdf
+      https://hal.inria.fr/hal-01162898/document
 
     - A case study that uses QuickCheck to test non-interference for
       information-flow-control abstract machines.
-      http://www.cis.upenn.edu/~llamp/pdf/TestingNonInterferenceQuickly.pdf
+      https://arxiv.org/abs/1409.0393v2
 
     - Code for that case study exists under the QuickChick
       organization of github (https://github.com/QuickChick) for
       both Haskell ("Testing Noninterference") and Coq ("IFC").
 
     - A paper on deriving QuickChick generators for a large class of
-      inductive relations. 
-      http://www.cis.upenn.edu/~llamp/pdf/GeneratingGoodGenerators.pdf
+      inductive relations.
+      https://lemonidas.github.io/pdf/GeneratingGoodGenerators.pdf
 
     - Leo's PhD dissertation.
       https://lemonidas.github.io/pdf/Leo-PhD-Thesis.pdf
  *)
 
-(* Mon Jul 8 10:11:33 UTC 2019 *)
+(* Fri Jul 19 00:37:08 UTC 2019 *)

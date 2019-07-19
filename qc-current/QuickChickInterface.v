@@ -544,8 +544,8 @@ Declare Instance Dec_string (m n : string) : Dec (m = n).
     at:
 
     - A paper on deriving QuickChick generators for a large class of
-      inductive relations. 
-      http://www.cis.upenn.edu/~llamp/pdf/GeneratingGoodGenerators.pdf
+      inductive relations.
+      https://lemonidas.github.io/pdf/GeneratingGoodGenerators.pdf
 
     - Leo's PhD dissertation.
       https://lemonidas.github.io/pdf/Leo-PhD-Thesis.pdf
@@ -713,4 +713,4 @@ End QcDoNotation.
 
 End QuickChickSig.
 
-(* Mon Jul 8 10:11:33 UTC 2019 *)
+(* Fri Jul 19 00:37:08 UTC 2019 *)
