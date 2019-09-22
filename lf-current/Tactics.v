@@ -280,7 +280,7 @@ Proof.
   - (* n = S n' *)
     simpl.
 
-(** 
+(**
     如果我们对这个假设使用 [discriminate] ，
     Coq便会确认我们当前正在证明的目标不可行，并同时移除它，不再考虑。 *)
 
@@ -952,7 +952,7 @@ Proof.
     是 [combine] 的反函数。之后，证明该性质成立。（除必要的 [intros]
     之外，不要进行更多的 [intros]，以此来保证你的归纳假设的一般性。
     提示：你需要 [l1] 和 [l2] 的什么性质来保证
-    [split (combine l1 l2 = (l1,l2)] 成立？） *)
+    [split (combine l1 l2) = (l1,l2)] 成立？） *)
 
 Definition split_combine_statement : Prop
   (* （“[: Prop]” 表示我们在这里给出了一个逻辑命题。） *)
@@ -1046,4 +1046,4 @@ Proof. (* 请在此处解答 *) Admitted.
 
 
 
-(* Fri Jul 19 00:32:20 UTC 2019 *)
+(* Sun Sep 22 15:35:16 UTC 2019 *)
