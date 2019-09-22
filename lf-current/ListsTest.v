@@ -473,4 +473,4 @@ idtac "---------- rev_injective ---------".
 idtac "MANUAL".
 Abort.
 
-(* Sun Sep 22 15:35:20 UTC 2019 *)
+(* Sun Sep 22 20:53:49 UTC 2019 *)

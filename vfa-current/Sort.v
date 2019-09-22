@@ -249,4 +249,4 @@ Theorem sort_sorted': forall l, sorted' (sort l).
    [sorted_sorted']. *)
 
 
-(* Sun Sep 22 15:38:27 UTC 2019 *)
+(* Sun Sep 22 20:56:44 UTC 2019 *)

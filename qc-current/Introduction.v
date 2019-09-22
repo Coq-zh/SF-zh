@@ -124,4 +124,4 @@ Fixpoint insert x l :=
     Finally, the [Postscript] chapter gives some suggestions for
     further reading. *)
 
-(* Sun Sep 22 15:39:48 UTC 2019 *)
+(* Sun Sep 22 20:58:02 UTC 2019 *)
