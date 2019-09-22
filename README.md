@@ -1,4 +1,5 @@
 # 软件基础（中译版）
+[![CircleCI](https://circleci.com/gh/Coq-zh/SF-zh.svg?style=svg)](https://circleci.com/gh/Coq-zh/SF-zh)
 
 Chinese translation of _[Software Foundations](https://softwarefoundations.cis.upenn.edu/)_
 
