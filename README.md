@@ -1,5 +1,4 @@
 # 软件基础（中译版）
-[![Build Status](https://travis-ci.org/Coq-zh/SF-zh.svg?branch=master)](https://travis-ci.org/Coq-zh/SF-zh)
 
 Chinese translation of _[Software Foundations](https://softwarefoundations.cis.upenn.edu/)_
 

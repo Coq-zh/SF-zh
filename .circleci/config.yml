@@ -1,0 +1,55 @@
+defaults: &defaults
+  environment:
+    OPAMVERBOSE: 1
+    OPAMYES: true
+    TERM: xterm
+  steps:
+  - checkout
+  - run:
+      name: Configure environment
+      command: echo . ~/.profile >> $BASH_ENV
+  - run:
+      name: Install QuickChick
+      command: |
+        opam repo add coq-extra-dev https://coq.inria.fr/opam/extra-dev
+        opam update
+        opam pin -n coq-ext-lib 0.10.2
+        opam install coq-quickchick
+  - run:
+      name: List installed packages
+      command: opam list
+  - run:
+      name: 编译《逻辑基础》
+      command: make
+      working_directory: lf-current
+  - run:
+      name: 编译《程序语言基础》
+      command: make
+      working_directory: plf-current
+  - run:
+      name: 编译《函数式算法验证》
+      command: make
+      working_directory: vfa-current
+  - run:
+      name: 编译《QuickChick：软件特性测试》
+      command: make
+      working_directory: qc-current
+  - run:
+      name: 检查压缩包
+      command: |
+        for v in lf plf vfa qc
+        do tar -xf $v-current/$v.tgz
+           make -C $v -j > /dev/null
+        done
+
+jobs:
+  coq.8.9:
+    <<: *defaults
+    docker:
+    - image: coqorg/coq:8.9
+
+workflows:
+  version: 2
+  build:
+    jobs:
+    - coq.8.9
