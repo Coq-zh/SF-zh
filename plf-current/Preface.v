@@ -1,158 +1,104 @@
-(** * Preface *)
+(** * Preface: 前言 *)
 
 (* ################################################################# *)
-(** * Welcome *)
+(** * 欢迎 *)
 
-(** This electronic book is a survey of basic concepts in the
-    mathematical study of programs and programming languages.  Topics
-    include advanced use of the Coq proof assistant, operational
-    semantics, Hoare logic, and static type systems.  The exposition
-    is intended for a broad range of readers, from advanced
-    undergraduates to PhD students and researchers.  No specific
-    background in logic or programming languages is assumed, though a
-    degree of mathematical maturity will be helpful.
+(** 本书概述了程序和编程语言中数学研究的基本概念，主题涵盖 Coq
+    证明助理的高级用法、操作语义、霍尔逻辑以及静态类型系统。
+    本书可供高年级本科生、研究生、科研工作者及同等学力的广大读者学习参考。
+    阅读此书不需具备逻辑学、程序语言等背景知识，但一定的数学基础有助于理解书中内容。
 
-    As with all of the books in the _Software Foundations_ series,
-    this one is one hundred percent formalized and machine-checked:
-    the entire text is literally a script for Coq.  It is intended to
-    be read alongside (or inside) an interactive session with Coq.
-    All the details in the text are fully formalized in Coq, and most
-    of the exercises are designed to be worked using Coq.
+    同_'《软件基础》'_系列其余诸卷，本卷全文均已形式化并由机器检验。
+    换言之，本书内容即为 Coq 脚本，可在 Coq 的交互界面下阅读。
+    书中大部分习题也在 Coq 中完成。
 
-    The files are organized into a sequence of core chapters, covering
-    about one half semester's worth of material and organized into a
-    coherent linear narrative, plus a number of "offshoot" chapters
-    covering additional topics.  All the core chapters are suitable
-    for both upper-level undergraduate and graduate students.
+    本书中的文件都经过了精心组织：核心章节作为主线贯穿始终，涵盖了约半学期的内容；
+    “支线”中则包含附加的主题。所有核心章节都适合高年级本科生和研究生。
 
-    The book builds on the material from _Logical Foundations_
-    (_Software Foundations_, volume 1).  It can be used together with
-    that book for a one-semester course on the theory of programming
-    languages.  Or, for classes where students who are already
-    familiar with some or all of the material in _Logical
-    Foundations_, there is plenty of additional material to fill most
-    of a semester from this book alone. *)
+    本书基于_'《逻辑基础》'_（_'《软件基础》'_第一卷）中的材料构建，
+    可与之一同作为编程语言理论一学期的课程。对于已经熟悉_'《逻辑基础》'_
+    中部分或全部材料的班级，本书中还有大量附加的材料可以填满一个学期。 *)
 
 (* ################################################################# *)
-(** * Overview *)
+(** * 概览 *)
 
-(** The book develops two main conceptual threads:
+(** 本书以两个概念作为两条主线来推进：
 
-    (1) formal techniques for _reasoning about the properties of
-        specific programs_ (e.g., the fact that a sorting function or
-        a compiler obeys some formal specification); and
+    (1) _'论证具体程序的性质'_的形式化技术
+        （例如排序函数的性质或满足某些形式化规范的编译器）。
 
-    (2) the use of _type systems_ for establishing well-behavedness
-        guarantees for _all_ programs in a given programming
-        language (e.g., the fact that well-typed Java programs cannot
-        be subverted at runtime).
+    (2) 用_'类型系统'_来确保给定语言编写的_'所有'_程序都行为良好。
+        （例如良型的 Java 程序不会在运行时被推翻）。
 
-    Each of these is easily rich enough to fill a whole course in its
-    own right, and tackling both together naturally means that much
-    will be left unsaid.  Nevertheless, we hope readers will find that
-    these themes illuminate and amplify each other and that bringing
-    them together creates a good foundation for digging into any of
-    them more deeply.  Some suggestions for further reading can be
-    found in the [Postscript] chapter.  Bibliographic information
-    for all cited works can be found in the file [Bib]. *)
+    二者都丰富到足以轻易填满整个课程，将它们交织在一起也就意味着很多部分不会涉及。
+    尽管如此，我们也希望读者能够发现这些主题之间互相呼应，相辅相成，
+    它们能够为你深入其中任何一个主题打下良好的基础。扩展阅读的建议见
+    [Postscript] 一章。所有引用作品的文献信息见 [Bib] 文件。 *)
 
 (* ================================================================= *)
-(** ** Program Verification *)
+(** ** 程序验证 *)
 
-(** In the first part of the book, we introduce two broad topics of
-    critical importance in building reliable software (and hardware):
-    techniques for proving specific properties of particular
-    _programs_ and for proving general properties of whole programming
-    _languages_.
+(** 本书第一部分介绍了构建可靠的软件（和硬件）时所涉及的两个至关重要的主题：
+    证明_'特定程序'_具体性质的技术，以及证明_'整个编程语言'_一般性质的技术。
 
-    For both of these, the first thing we need is a way of
-    representing programs as mathematical objects, so we can talk
-    about them precisely, plus ways of describing their behavior in
-    terms of mathematical functions or relations.  Our main tools for
-    these tasks are _abstract syntax_ and _operational semantics_, a
-    method of specifying programming languages by writing abstract
-    interpreters.  At the beginning, we work with operational
-    semantics in the so-called "big-step" style, which leads to simple
-    and readable definitions when it is applicable.  Later on, we
-    switch to a lower-level "small-step" style, which helps make some
-    useful distinctions (e.g., between different sorts of
-    nonterminating program behaviors) and which is applicable to a
-    broader range of language features, including concurrency.
+    对于二者而言，首先我们需要将程序表示为数学对象，这样就能准确地讨论它们。
+    此外还需要基于数学函数或关系来描述它们的行为。为此，我们的主要工具是
+    _'抽象语法（Abstract Syntax）'_和_'操作语义（Operational Semantics）'_，
+    一种编写抽象解释器来详述编程语言的方法。首先，我们会使用称作「大步」
+    风格的操作语义，适当使用它可产生简单可读的定义。之后，我们会切换到
+    较为底层的「小步」风格，它有助于做出一些有用的区分（例如，不同种类的
+    不停机程序的行为之间的区别），也适用于更加广泛的语言特性，包括并发。
 
-    The first programming language we consider in detail is _Imp_, a
-    tiny toy language capturing the core features of conventional
-    imperative programming: variables, assignment, conditionals, and
-    loops.
+    我们深入探讨的第一个编程语言是 _Imp_，它是一个小型玩具语言，
+    刻画了常见指令式编程的核心特性：变量、赋值、条件分支和循环。
 
-    We study two different ways of reasoning about the properties of
-    Imp programs.  First, we consider what it means to say that two
-    Imp programs are _equivalent_ in the intuitive sense that they
-    exhibit the same behavior when started in any initial memory
-    state.  This notion of equivalence then becomes a criterion for
-    judging the correctness of _metaprograms_ -- programs that
-    manipulate other programs, such as compilers and optimizers.  We
-    build a simple optimizer for Imp and prove that it is correct.
+    我们会探究两种不同的方式来论证 Imp 程序。首先，我们会直观理解
+    「两个 Imp 程序_'等价（Equivalent）'_」的含义，
+    即它们在任何相同的初始内存状态下运行都会表现出相同的行为。
+    之后「等价」的概念会成为判断_'元程序（Metaprogram）'_正确性的标准。
+    元程序即操纵其它程序（如编译器和优化器）的程序。我们会为 Imp
+    构建一个简单的优化器并证明它的正确性。
 
-    Second, we develop a methodology for proving that a given Imp
-    program satisfies some formal specifications of its behavior.  We
-    introduce the notion of _Hoare triples_ -- Imp programs annotated
-    with pre- and post-conditions describing what they expect to be
-    true about the memory in which they are started and what they
-    promise to make true about the memory in which they terminate --
-    and the reasoning principles of _Hoare Logic_, a domain-specific
-    logic specialized for convenient compositional reasoning about
-    imperative programs, with concepts like "loop invariant" built in.
+    之后，我们发展了一套方法论，用以证明给定 Imp 程序的行为满足某些形式化规范。
+    我们会介绍_'霍尔三元组（Hoare Triple）'_的概念——Imp
+    程序以前置条件和后置条件进行标注，描述了它们在启动时期望内存中的什么为真，
+    以及在它们终止时承诺内存中的什么为真。我们还会介绍_'霍尔逻辑（Hoare Logic）'_
+    的推理法则——它是一种专用于方便地组合命令式程序的推理的领域特定逻辑，
+    其中内建了“循环不变式（Loop Invariant）”等概念。
 
-    This part of the course is intended to give readers a taste of the
-    key ideas and mathematical tools used in a wide variety of
-    real-world software and hardware verification tasks. *)
+    这部分课程旨在让读者领略真实世界中软硬件验证工作所用的关键思想和数学工具。 *)
 
 (* ================================================================= *)
-(** ** Type Systems *)
+(** ** 类型系统 *)
 
-(** Our other major topic, covering approximately the second half of
-    the book, is _type systems_ -- powerful tools for establishing
-    properties of _all_ programs in a given language.
+(** 另一个重要的主题大约涵盖了本书的后半部分，即_'类型系统（Type System）'_，
+    它是一种在给定的语言中为_'所有的'_程序建立属性的强大工具。
+    在被称作_'轻量级形式化方法'_的形式化验证技术中，类型系统是最成功的一类，
+    它也是最完善，最流行的。它们是最合适的推理技术——合适到自动检查器可被内置在
+    编译器、链接器或程序分析器中，因此它甚至可以被不熟悉底层理论的程序员所应用。
+    其它的轻量级形式化方法的例子包括硬件和软件模型检查器，约束检查器和运行时监视器技术。
 
-    Type systems are the best established and most popular example of
-    a highly successful class of formal verification techniques known
-    as _lightweight formal methods_.  These are reasoning techniques
-    of modest power -- modest enough that automatic checkers can be
-    built into compilers, linkers, or program analyzers and thus be
-    applied even by programmers unfamiliar with the underlying
-    theories.  Other examples of lightweight formal methods include
-    hardware and software model checkers, contract checkers, and
-    run-time monitoring techniques.
-
-    This also completes a full circle with the beginning of the book:
-    the language whose properties we study in this part, the _simply
-    typed lambda-calculus_, is essentially a simplified model of the
-    core of Coq itself!
+    它也与本书的开头形成了完整的闭环：我们在这部分中研究的语言的性质，即
+    _'简单类型 λ-演算'_，基本上就是 Coq 核心自身模型的简化版！
 *)
 
 (* ================================================================= *)
-(** ** Further Reading *)
+(** ** 扩展阅读 *)
 
-(** This text is intended to be self contained, but readers looking
-    for a deeper treatment of particular topics will find some
-    suggestions for further reading in the [Postscript]
-    chapter. *)
+(** 本书旨在自成一体，不过想要对特定主题进行深入研究的读者，可以在
+    [Postscript] 一章中找到推荐的扩展阅读。 *)
 
 (* ################################################################# *)
-(** * Note for Instructors *)
+(** * 对授课员的要求 *)
 
-(** If you plan to use these materials in your own course, you will
-    undoubtedly find things you'd like to change, improve, or add.
-    Your contributions are welcome!  Please see the [Preface]
-    to _Logical Foundations_ for instructions. *)
+(** 如果您有意用这些课件授课，那肯定会发现希望改进、提高或增加的材料。
+    我们欢迎您的贡献！授课员要求请参阅_'《逻辑基础》'_中的 [Preface] 一章。 *)
 
 (* ################################################################# *)
-(** * Thanks *)
+(** * 鸣谢 *)
 
-(** Development of the _Software Foundations_ series has been
-    supported, in part, by the National Science Foundation under the
-    NSF Expeditions grant 1521523, _The Science of Deep
-    Specification_. *)
+(** _'《软件基础》'_ 系列的开发，部分由美国国家科学基金会
+    （National Science Foundation）在 NSF 科研赞助 1521523 号
+    _'深度规范科学'_ 下提供支持。 *)
 
-
-(* Sun Sep 22 20:54:35 UTC 2019 *)
+(* Thu Oct 17 13:18:23 UTC 2019 *)
