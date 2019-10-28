@@ -1534,4 +1534,4 @@ Theorem zprop_preserving : forall c c',
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(* Thu Oct 17 13:18:24 UTC 2019 *)
+(* Mon Oct 28 08:15:17 UTC 2019 *)
