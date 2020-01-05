@@ -250,4 +250,4 @@ Proof.
 Eval compute in selsort' [3;1;4;1;5;9;2;6;5].
 
 
-(* Mon Oct 28 08:17:35 UTC 2019 *)
+(* Sun Jan 5 03:20:53 UTC 2020 *)

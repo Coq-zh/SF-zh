@@ -1771,4 +1771,4 @@ Definition e4 : list nat := mymap false.
        http://learnyouahaskell.com/making-our-own-types-and-typeclasses
 *)
 
-(* Mon Oct 28 08:19:01 UTC 2019 *)
+(* Sun Jan 5 03:22:15 UTC 2020 *)

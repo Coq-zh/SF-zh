@@ -421,4 +421,4 @@ idtac "---------- Exercises.Church.exp_3 ---------".
 Print Assumptions Exercises.Church.exp_3.
 Abort.
 
-(* Mon Oct 28 08:14:29 UTC 2019 *)
+(* Sun Jan 5 03:17:40 UTC 2020 *)
