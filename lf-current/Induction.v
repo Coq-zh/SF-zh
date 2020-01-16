@@ -164,7 +164,7 @@ Proof.
 (** （其实在这些证明中我们并不需要 [intros]：当 [induction]
     策略被应用到包含量化变量的目标中时，它会自动将需要的变量移到上下文中。） *)
 
-(** **** 练习：2 星, standard, recommended (basic_induction)  
+(** **** 练习：2 星, standard, recommended (basic_induction) 
 
     用归纳法证明以下命题。你可能需要之前的证明结果。 *)
 
@@ -189,7 +189,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard (double_plus)  
+(** **** 练习：2 星, standard (double_plus) 
 
     考虑以下函数，它将其参数乘以二： *)
 
@@ -206,7 +206,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (evenb_S)  
+(** **** 练习：2 星, standard, optional (evenb_S) 
 
     我们的 [evenb n] 定义对 [n - 2] 的递归调用不大方便。这让证明 [evenb n]
     时更难对 [n] 进行归纳，因此我们需要一个关于 [n - 2] 的归纳假设。
@@ -218,7 +218,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星, standard (destruct_induction)  
+(** **** 练习：1 星, standard, optional (destruct_induction) 
 
     请简要说明一下 [destruct] 策略和 [induction] 策略之间的区别。
 
@@ -289,7 +289,7 @@ Proof.
 (* ################################################################# *)
 (** * 形式化证明 vs. 非形式化证明 *)
 
-(** _'“非形式化证明是算法，形式化证明是代码。”'_ *)
+(** “_'非形式化证明是算法，形式化证明是代码。'_” *)
 
 (** 数学声明的成功证明由什么构成？这个问题已经困扰了哲学家数千年，
     不过这儿有个还算凑合的定义：数学命题 [P] 的证明是一段书面（或口头）的文本，
@@ -375,7 +375,7 @@ Proof.
     但在其它方面则不够明确（特别是 Coq 证明中任何一处的“证明状态”都是完全
     隐含的，而非形式化证明则经常反复告诉读者目前证明进行的状态）。 *)
 
-(** **** 练习：2 星, advanced, recommended (plus_comm_informal)  
+(** **** 练习：2 星, advanced, recommended (plus_comm_informal) 
 
     将你对 [plus_comm] 的解答翻译成非形式化证明：
 
@@ -388,7 +388,7 @@ Proof.
 Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (eqb_refl_informal)  
+(** **** 练习：2 星, standard, optional (eqb_refl_informal) 
 
     以 [plus_assoc] 的非形式化证明为范本，写出以下定理的非形式化证明。
     不要只是用中文来解释 Coq 策略！
@@ -396,13 +396,13 @@ Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
     定理：对于任何 [n]，均有 [true = n =? n]。
 
     证明： (* 请在此处解答 *)
-
-    [] *)
+*)
+(** [] *)
 
 (* ################################################################# *)
 (** * 更多练习 *)
 
-(** **** 练习：3 星, standard, recommended (mult_comm)  
+(** **** 练习：3 星, standard, recommended (mult_comm) 
 
     用 [assert] 来帮助证明此定理。你应该不需要对 [plus_swap] 进行归纳。 *)
 
@@ -411,8 +411,8 @@ Theorem plus_swap : forall n m p : nat,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** 现在证明乘法交换律。（你在证明过程中可能需要定义并证明一个独立的辅助定理。
-    你可能会用上 [plus_swap]。） *)
+(** 现在证明乘法交换律。（你在证明过程中可能想要定义并证明一个辅助定理。
+    提示：[n * (1 + k)] 是什么？） *)
 
 Theorem mult_comm : forall m n : nat,
   m * n = n * m.
@@ -420,7 +420,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (more_exercises)  
+(** **** 练习：3 星, standard, optional (more_exercises) 
 
     找一张纸。对于以下定理，首先请 _'思考'_ (a) 它能否能只用化简和改写来证明，
     (b) 它还需要分类讨论（[destruct]），以及 (c) 它还需要归纳证明。先写下你的
@@ -477,7 +477,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (eqb_refl)  
+(** **** 练习：2 星, standard, optional (eqb_refl) 
 
     证明以下定理。（把 [true] 放在等式左边可能看起来有点奇怪，不过 Coq 标准库中
     就是这样表示的，我们照做就是。无论按哪个方向改写都一样好用，所以无论我们如何
@@ -489,7 +489,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (plus_swap')  
+(** **** 练习：2 星, standard, optional (plus_swap') 
 
     [replace] 策略允许你指定一个具体的要改写的子项和你想要将它改写成的项：
     [replace (t) with (u)] 会将目标中表达式 [t]（的所有副本）替换为表达式 [u]，
@@ -505,7 +505,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, recommended (binary_commute)  
+(** **** 练习：3 星, standard, recommended (binary_commute) 
 
     回忆一下你在 [Basics] 中为练习 [binary] 编写的 [incr] 和 [bin_to_nat]
     函数。证明下图可交换。
@@ -533,7 +533,7 @@ Proof.
 Definition manual_grade_for_binary_commute : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：5 星, advanced (binary_inverse)  
+(** **** 练习：5 星, advanced (binary_inverse) 
 
     This is a further continuation of the previous exercises about
     binary numbers.  You may find you need to go back and change your
@@ -579,7 +579,7 @@ Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
         to prove the main statement, see where you get stuck, and see
         if you can find a lemma -- perhaps requiring its own inductive
         proof -- that will allow the main proof to make progress.) Don't
-        define thi using nat_to_bin and bin_to_nat! *)
+        define this using [nat_to_bin] and [bin_to_nat]! *)
 
 (* 请在此处解答 *)
 
@@ -587,4 +587,4 @@ Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
 Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
 (** [] *)
 
-(* Sun Jan 5 03:17:33 UTC 2020 *)
+(* 2020年1月16日 *)

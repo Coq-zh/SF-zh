@@ -131,8 +131,8 @@ check_type @STLCExtended.Examples.FixTest2.reduces (
 (STLCExtended.multistep
    (STLCExtended.app
       (STLCExtended.app STLCExtended.Examples.FixTest2.map
-         (STLCExtended.abs STLCExtended.Examples.a STLCExtended.Nat
-            (STLCExtended.scc (STLCExtended.var STLCExtended.Examples.a))))
+         (STLCExtended.abs "a" STLCExtended.Nat
+            (STLCExtended.scc (STLCExtended.var "a"))))
       (STLCExtended.tcons (STLCExtended.const 1)
          (STLCExtended.tcons (STLCExtended.const 2)
             (STLCExtended.tnil STLCExtended.Nat))))
@@ -232,7 +232,20 @@ idtac " ".
 idtac "Max points - standard: 17".
 idtac "Max points - advanced: 17".
 idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
+idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- extensions_definition ---------".
@@ -273,4 +286,4 @@ idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Jan 5 03:19:09 UTC 2020 *)
+(* 2020年1月16日 *)

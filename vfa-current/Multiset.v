@@ -35,7 +35,7 @@ Definition union (a b : multiset) : multiset :=
 Definition singleton (v: value) : multiset :=
    fun x => if x =? v then 1 else 0.
 
-(** **** 练习：1 星, standard (union_assoc)  
+(** **** 练习：1 星, standard (union_assoc) 
 
     Since multisets are represented as functions, to prove that one
     multiset equals another we must use the axiom of functional
@@ -97,7 +97,7 @@ Qed.
 Definition is_a_sorting_algorithm' (f: list nat -> list nat) :=
   forall al, contents al = contents (f al) /\ sorted (f al).
 
-(** **** 练习：3 星, standard (insert_contents)  
+(** **** 练习：3 星, standard (insert_contents) 
 
     First, prove the auxiliary lemma [insert_contents], which will be
     useful for proving [sort_contents] below.  Your proof will be by
@@ -108,7 +108,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (sort_contents)  
+(** **** 练习：3 星, standard (sort_contents) 
 
     Now prove that sort preserves contents. *)
 
@@ -124,7 +124,7 @@ Proof.
 split. apply sort_contents. apply sort_sorted.
 Qed.
 
-(** **** 练习：1 星, standard (permutations_vs_multiset)  
+(** **** 练习：1 星, standard (permutations_vs_multiset) 
 
     Compare your proofs of [insert_perm, sort_perm] with your proofs
     of [insert_contents, sort_contents].  Which proofs are simpler?
@@ -152,7 +152,7 @@ Definition manual_grade_for_permutations_vs_multiset : option (nat*string) := No
 
        [Permutation al bl <-> contents al = contents bl.] *)
 
-(** **** 练习：3 星, standard (perm_contents)  
+(** **** 练习：3 星, standard (perm_contents) 
 
     The forward direction is easy, by induction on the evidence for
     [Permutation]: *)
@@ -257,4 +257,4 @@ Proof.
   apply same_contents_iff_perm; auto.
 Qed.
 
-(* Sun Jan 5 03:20:53 UTC 2020 *)
+(* 2020年1月16日 *)

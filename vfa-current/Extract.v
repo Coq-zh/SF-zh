@@ -182,7 +182,7 @@ Hint Resolve int_ltb_reflect Z_eqb_reflect Z_ltb_reflect : bdestruct.
 (** Let us re-do binary search trees, but with Ocaml integers instead of  Coq nats. *)
 
 (* ================================================================= *)
-(** ** Maps, on [Z] Instead of [nat] 
+(** ** Maps, on [Z] Instead of [nat]
 
     Our original proof with nats used [Maps.total_map] in its abstraction relation,
      but that won't work here because we need maps over [Z] rather than [nat].
@@ -373,7 +373,7 @@ Insert and lookup 20000 consecutive integers in 0.374 seconds.
 *)
 
 (* ################################################################# *)
-(** * Unbalanced Binary Search Trees 
+(** * Unbalanced Binary Search Trees
 
     Why is the performance of the algorithm so much worse when the
    keys are all inserted consecutively?  To examine this, let's compute
@@ -412,4 +412,4 @@ Abort.
 
 End Experiments.
 
-(* Sun Jan 5 03:20:54 UTC 2020 *)
+(* 2020年1月16日 *)

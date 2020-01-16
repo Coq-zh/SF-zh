@@ -8,7 +8,12 @@ Require Coq.omega.Omega.
 (** * 归纳定义的命题 *)
 
 (** 在 [Logic] 一章中，我们学习了多种方式来书写命题，包括合取、析取和存在量词。
-    在本章中，我们引入另一种新的方式：_'归纳定义（Inductive Definitions）'_。 *)
+    在本章中，我们引入另一种新的方式：_'归纳定义（Inductive Definitions）'_。
+
+    _'注意'_：为简单起见，本章中的大部分内容都用一个归纳定义的“偶数性”作为展示的例子。
+    你可能会为此感到不解，因为我们已经有一种将偶数性定义为命题的完美方法了（若
+    [n] 等于某个整数的二倍，那么它是是偶数）。尚若如此，那么请放心，
+    在本章末尾和以后的章节中，我们会看到更多引人入胜的归纳定义的命题示例。 *)
 
 (** 在前面的章节中，我们已经见过两种表述 [n] 为偶数的方式了：
 
@@ -26,96 +31,94 @@ Require Coq.omega.Omega.
     我们可继续通过规则 [ev_SS] 确保它成立。而使用规则 [ev_0] 可直接证明 [0] 是偶数。*)
 
 (** 接下来的课程中，我们会看到很多类似方式定义的命题。
-    在非形式化的讨论中，使用轻量化的记法有助于阅读和书写。
-    _'推断规则（Inference Rules）'_是其中的一种： 
+    在非形式化的讨论中，使用简单的记法有助于阅读和书写。
+    _'推断规则（Inference Rules）'_就是其中的一种。
+    （我们为此性质取名为 [ev]，因为 [even] 已经用过了。）
 
                               ------------             (ev_0)
-                                 even 0
+                                 ev 0
 
-                                 even n
+                                 ev n
                             ----------------          (ev_SS)
-                             even (S (S n))
+                             ev (S (S n))
 *)
 
 (**
-    若将前文所述的规则重新排版成推断规则，我们可以这样阅读它，如果线上方的
-    _'前提（premises）'_成立，那么线下方的_'结论（conclusion）'_成立。
+    若将上面的规则重新排版成推断规则，我们可以这样阅读它，如果线上方的
+    _'前提（Premises）'_成立，那么线下方的_'结论（Conclusion）'_成立。
     比如，规则 [ev_SS] 读做如果 [n] 满足 [even]，那么 [S (S n)] 也满足。
     如果一条规则在线上方没有前提，则结论直接成立。
 
-    我们可以通过组合推断规则来展示证明。下面展示如何转译 [4] 是偶数的证明： 
+    我们可以通过组合推断规则来展示证明。下面展示如何转译 [4] 是偶数的证明：
 
                              --------  (ev_0)
-                              even 0
+                              ev 0
                              -------- (ev_SS)
-                              even 2
+                              ev 2
                              -------- (ev_SS)
-                              even 4
+                              ev 4
 *)
 
-(**
-    （为什么我们把这样的证明称之为“树”（而非其他，比如“栈”）？
+(** （为什么我们把这样的证明称之为“树”而非其他，比如“栈”？
     因为一般来说推断规则可以有多个前提。我们很快就会看到一些例子。 *)
 
 (* ================================================================= *)
-(** ** 偶数性的归纳定义 
+(** ** 偶数性的归纳定义
 
     基于上述，可将偶数性质的定义翻译为在 Coq 中使用 [Inductive] 声明的定义，
     声明中每一个构造子对应一个推断规则： *)
 
-Inductive even : nat -> Prop :=
-| ev_0 : even 0
-| ev_SS (n : nat) (H : even n) : even (S (S n)).
+Inductive ev : nat -> Prop :=
+| ev_0 : ev 0
+| ev_SS (n : nat) (H : ev n) : ev (S (S n)).
 
-(** 这个定义同之前其他 [Inductive] 的使用有一个重要的区别：
-    我们所定义的并不是一个 [Type]，而是一个将 [nat] 映射到 [Prop] 的函数——即关于数的性质。
-    我们曾见过结果也是函数的归纳定义，比如 [list]，其类型是 [Type -> Type] 。
-    真正要关注的是，由于 [even] 中出现在冒号_'右侧'_的 [nat] 参数是 _'未命名'_ 的，
-    这允许在不同的构造子类型中使用不同的值：例如 [ev_0] 类型中的 [0] 以及 [ev_SS]
-    类型中的 [S (S n)]。
+(** 这个定义与之前 [Inductive] 定义的用法有一个有趣的区别：一方面，
+    我们定义的并不是一个 [Type]（如 [nat]），而是一个将 [nat] 映射到 [Prop]
+    的函数——即关于数的性质。然而真正要关注的是，由于 [ev] 中的 [nat]
+    参数出现在冒号_'右侧'_，这允许在不同的构造子类型中使用不同的值：例如
+    [ev_0] 类型中的 [0] 以及 [ev_SS] 类型中的 [S (S n)]。与此相应，
+    每个构造子的类型必须在冒号后显式指定，并且对于某个自然数 [n]
+    来说，每个构造子的类型都必须有 [ev n] 的形式。
 
-    相反，[list] 的定义以_'全局方式'_命名了冒号_'左侧'_的参数 [X]，
+    相反，回忆 [list] 的定义：
+
+    Inductive list (X:Type) : Type :=
+      | nil
+      | cons (x : X) (l : list X).
+
+    它以_'全局的方式'_在冒号_'左侧'_引入了参数 [X]，
     强迫 [nil] 和 [cons] 的结果为同一个类型（[list X]）。
-    如果在定义 [even] 时我们将 [nat] 置于冒号左侧，会得到如下错误： *)
+    如果在定义 [ev] 时将 [nat] 置于冒号左侧，就会得到如下错误： *)
 
 Fail Inductive wrong_ev (n : nat) : Prop :=
 | wrong_ev_0 : wrong_ev 0
-| wrong_ev_SS : wrong_ev n -> wrong_ev (S (S n)).
+| wrong_ev_SS (H: wrong_ev n) : wrong_ev (S (S n)).
 (* ===> Error: Last occurrence of "[wrong_ev]" must have "[n]"
         as 1st argument in "[wrong_ev 0]". *)
 
-(** 在 [Inductive] 定义中，类型构造子的冒号左侧的参数叫做形参（Parameter），
-    而右侧的叫做索引（Index）。
+(** 在 [Inductive] 定义中，类型构造子冒号左侧的参数叫做形参（Parameter），
+    而右侧的叫做索引（Index）或注解（Annotation）。
 
     例如，在 [Inductive list (X : Type) := ...] 中，[X] 是一个形参；而在
-    [Inductive even : nat -> Prop := ...] 中，未命名的 [nat] 参数是一个索引。 *)
+    [Inductive ev : nat -> Prop := ...] 中，未命名的 [nat] 参数是一个索引。 *)
 
-(** 在 Coq 中，我们可以认为 [even] 定义了一个性质 [ev : nat -> Prop]，其包括原语定理
-    [ev_0 : even 0] 和 [ev_SS : forall n, even n -> even (S (S n))]。 *)
+(** 在 Coq 中，我们可以认为 [ev] 定义了一个性质 [ev : nat -> Prop]，其包括
+    “证据构造子” [ev_0 : ev 0] 和 [ev_SS : forall n, ev n -> ev (S (S n))]。 *)
 
-(** 该定义也可写作如下形式...
+(** 这些 “证据构造子” 等同于已经证明过的定理。
+    具体来说，我们可以使用 Coq 中的 [apply] 策略和规则名称来证明某个数的 [ev] 性质…… *)
 
-  Inductive even : nat -> Prop :=
-  | ev_0 : even 0
-  | ev_SS : forall n, even n -> even (S (S n)).
-*)
-
-(** ... 以便让 [ev_SS] 的类型更加直白。 *)
-
-(** 这些 “定理构造子” 等同于已经证明过的定理。
-    具体来说，我们可以使用 Coq 中的 [apply] 策略和规则名称来证明某个数的 [even] 性质…… *)
-
-Theorem ev_4 : even 4.
+Theorem ev_4 : ev 4.
 Proof. apply ev_SS. apply ev_SS. apply ev_0. Qed.
 
 (** ……或使用函数应用的语法： *)
 
-Theorem ev_4' : even 4.
+Theorem ev_4' : ev 4.
 Proof. apply (ev_SS 2 (ev_SS 0 ev_0)). Qed.
 
-(** 我们同样可以对前提中使用到 [even] 的定理进行证明。 *)
+(** 我们同样可以对前提中使用到 [ev] 的定理进行证明。 *)
 
-Theorem ev_plus4 : forall n, even n -> even (4 + n).
+Theorem ev_plus4 : forall n, ev n -> ev (4 + n).
 Proof.
   intros n. simpl. intros Hn.
   apply ev_SS. apply ev_SS. apply Hn.
@@ -125,7 +128,7 @@ Qed.
 
 (** **** 练习：1 星, standard (ev_double)  *)
 Theorem ev_double : forall n,
-  even (double n).
+  ev (double n).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -133,20 +136,21 @@ Proof.
 (* ################################################################# *)
 (** * 在证明中使用证据 *)
 
-(** 除了_'构造'_证据（evidence）来表示某个数是偶数，我们还可以对这些证据进行_'推理'_。
+(** 除了_'构造'_证据（evidence）来表示某个数是偶数，我们还可以_'解构'_这样的证据，
+    这等于对它的构造进行论证。
 
-    对 [even] 而言，使用 [Inductive] 声明来引入 [even] 不仅仅表示在 Coq
-    中 [ev_0] 和 [ev_SS] 这样的构造子是合法的方式来构造偶数证明的证据，
-    他们也是_'仅有的'_方式。 *)
+    对 [ev] 而言，使用 [Inductive] 声明来引入 [ev] 会告诉 Coq，
+    [ev_0] 和 [ev_SS] 构造子不仅是构造偶数证明证据的有效方式，
+    还是构造一个数满足 [ev] 的证据的_'唯一'_方式。 *)
 
-(** 换句话说，如果某人展示了对于 [even n] 的证据 [E]，那么我们知道 [E]
+(** 换句话说，如果某人展示了对于 [ev n] 的证据 [E]，那么我们知道 [E]
     必是二者其一：
 
-      - [E] 是 [ev_0]（且 [n] 为 [O]）, 或
-      - [E] 是 [ev_SS n' E']（且 [n] 为 [S (S n')], [E'] 为
-        [even n'] 的证据）. *)
+      - [E] 是 [ev_0]（且 [n] 为 [O]），或
+      - [E] 是 [ev_SS n' E']（且 [n] 为 [S (S n')]，[E'] 为
+        [ev n'] 的证据）. *)
 
-(** 这样的形式暗示着，我们可以像分析归纳定义的数据结构一样分析形如 [even n]
+(** 这样的形式暗示着，我们可以像分析归纳定义的数据结构一样分析形如 [ev n]
     的假设；特别地，对于这类证据使用_'归纳（induction）'_和_'分类讨论（case
     analysis）'_来进行论证也是可行的。让我们通过一些例子来学习实践中如何使用他们。 *)
 
@@ -154,30 +158,30 @@ Proof.
 (** ** 对证据进行反演 *)
 
 (** Suppose we are proving some fact involving a number [n], and
-    we are given [even n] as a hypothesis.  We already know how to
+    we are given [ev n] as a hypothesis.  We already know how to
     perform case analysis on [n] using [destruct] or [induction],
     generating separate subgoals for the case where [n = O] and the
     case where [n = S n'] for some [n'].  But for some proofs we may
-    instead want to analyze the evidence that [even n] _directly_. As
+    instead want to analyze the evidence that [ev n] _directly_. As
     a tool, we can prove our characterization of evidence for
-    [even n], using [destruct]. *)
+    [ev n], using [destruct]. *)
 
 Theorem ev_inversion :
-  forall (n : nat), even n ->
-    (n = 0) \/ (exists n', n = S (S n') /\ even n').
+  forall (n : nat), ev n ->
+    (n = 0) \/ (exists n', n = S (S n') /\ ev n').
 Proof.
   intros n E.
   destruct E as [ | n' E'].
-  - (* E = ev_0 : even 0 *)
+  - (* E = ev_0 : ev 0 *)
     left. reflexivity.
-  - (* E = ev_SS n' E' : even (S (S n')) *)
+  - (* E = ev_SS n' E' : ev (S (S n')) *)
     right. exists n'. split. reflexivity. apply E'.
 Qed.
 
 (** 用 [destruct] 解构证据即可证明下述定理： *)
 
 Theorem ev_minus2 : forall n,
-  even n -> even (pred (pred n)).
+  ev n -> ev (pred (pred n)).
 Proof.
   intros n E.
   destruct E as [| n' E'].
@@ -185,10 +189,11 @@ Proof.
   - (* E = ev_SS n' E' *) simpl. apply E'.
 Qed.
 
-(** However, this variation cannot easily be handled with [destruct]. *)
+(** However, this variation cannot easily be handled with just
+    [destruct]. *)
 
 Theorem evSS_ev : forall n,
-  even (S (S n)) -> even n.
+  ev (S (S n)) -> even n.
 (** 直观来说，我们知道支撑前提的证据不会由 [ev_0] 组成，因为 [0] 和 [S] 是
     [nat] 类型不同的构造子；由此 [ev_SS] 是唯一需要应对的情况（译注：[ev_0] 无条件成立）。
     不幸的是，[destruct] 并没有如此智能，它仍然为我们生成两个子目标。
@@ -196,7 +201,7 @@ Theorem evSS_ev : forall n,
 
 Proof.
   intros n E.
-  destruct E as [| n' E'].
+  destruct E as [| n' E'] eqn:EE.
   - (* E = ev_0. *)
     (* 我们须证明 [n] 是偶数，但没有任何有用的假设信息可以使用！ *)
 Abort.
@@ -205,42 +210,61 @@ Abort.
     这对于证明 [ev_minus2'] 是有帮助的，因为在最终目标中直接使用到了参数 [n]。
     然而，这对于 [evSS_ev] 并没有帮助，因为被替换掉的 [S (S n)] 并没有在其他地方被使用。*)
 
-(** We could patch this proof by replacing the goal [even n],
-    which does not mention the replaced term [S (S n)], by the
-    equivalent goal [even (pred (pred (S (S n))))], which does mention
-    this term, after which [destruct] can make progress. But it is
-    more straightforward to use our inversion lemma. *)
+(** If we [remember] that term [S (S n)], the proof goes
+    through.  (We'll discuss [remember] in more detail below.) *)
 
-Theorem evSS_ev : forall n, even (S (S n)) -> even n.
-Proof. intros n H. apply ev_inversion in H. destruct H.
- - discriminate H.
- - destruct H as [n' [Hnm Hev]]. injection Hnm.
-   intro Heq. rewrite Heq. apply Hev.
+Theorem evSS_ev_remember : forall n,
+  ev (S (S n)) -> ev n.
+Proof.
+  intros n H. remember (S (S n)) as k. destruct H as [|n' E'].
+  - (* E = ev_0 *)
+    (* Now we do have an assumption, in which [k = S (S n)] has been
+       rewritten as [0 = S (S n)] by [destruct]. That assumption
+       gives us a contradiction. *)
+    discriminate Heqk.
+  - (* E = ev_S n' E' *)
+    (* This time [k = S (S n)] has been rewritten as [S (S n') = S (S n)]. *)
+    injection Heqk as Heq. rewrite Heq in E'. apply E'.
 Qed.
 
-(** Coq provides a tactic called [inversion], which does the work of
-    our inversion lemma and more besides. *)
+(** Alternatively, the proof is straightforward using our inversion
+    lemma. *)
 
-(** The [inversion] tactic can detect (1) that the first case
-    ([n = 0]) does not apply and (2) that the [n'] that appears in the
+Theorem evSS_ev : forall n, ev (S (S n)) -> ev n.
+Proof. intros n H. apply ev_inversion in H. destruct H.
+ - discriminate H.
+ - destruct H as [n' [Hnm Hev]]. injection Hnm as Heq.
+   rewrite Heq. apply Hev.
+Qed.
+
+(** Note how both proofs produce two subgoals, which correspond
+    to the two ways of proving [ev].  The first subgoal is a
+    contradiction that is discharged with [discriminate].  The second
+    subgoal makes use of [injection] and [rewrite].  Coq provides a
+    handy tactic called [inversion] that factors out that common
+    pattern.
+
+    The [inversion] tactic can detect (1) that the first case ([n =
+    0]) does not apply and (2) that the [n'] that appears in the
     [ev_SS] case must be the same as [n].  It has an "[as]" variant
     similar to [destruct], allowing us to assign names rather than
     have Coq choose them. *)
 
 Theorem evSS_ev' : forall n,
-  even (S (S n)) -> even n.
+  ev (S (S n)) -> ev n.
 Proof.
   intros n E.
-  inversion E as [| n' E'].
+  inversion E as [| n' E' EQ].
   (* We are in the [E = ev_SS n' E'] case now. *)
   apply E'.
 Qed.
 
 (** The [inversion] tactic can apply the principle of explosion to
-    "obviously contradictory" hypotheses involving inductive
+    "obviously contradictory" hypotheses involving inductively defined
     properties, something that takes a bit more work using our
     inversion lemma. For example: *)
-Theorem one_not_even : ~ even 1.
+
+Theorem one_not_even : ~ ev 1.
 Proof.
   intros H. apply ev_inversion in H.
   destruct H as [ | [m [Hm _]]].
@@ -248,36 +272,39 @@ Proof.
   - discriminate Hm.
 Qed.
 
-Theorem one_not_even' : ~ even 1.
+Theorem one_not_even' : ~ ev 1.
   intros H. inversion H. Qed.
 
-(** **** 练习：1 星, standard (inversion_practice)  
+(** **** 练习：1 星, standard (inversion_practice) 
 
-    利用 [inversion] 策略证明以下结论。如想进一步练习，请使用反演定理证明之。 *)
+    利用 [inversion] 策略证明以下结论。（如想进一步练习，请使用反演定理证明之。） *)
 
 Theorem SSSSev__even : forall n,
-  even (S (S (S (S n)))) -> even n.
+  ev (S (S (S (S n)))) -> ev n.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星, standard (even5_nonsense)  
+(** **** 练习：1 星, standard (ev5_nonsense) 
 
     请使用 [inversion] 策略证明以下结果。 *)
 
-Theorem even5_nonsense :
-  even 5 -> 2 + 2 = 9.
+Theorem ev5_nonsense :
+  ev 5 -> 2 + 2 = 9.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** The [inversion] tactic does quite a bit of work. When
-    applied to equalities, as a special case, it does the work of both
-    [discriminate] and [injection]. In addition, it carries out the
-    [intros] and [rewrite]s that are typically necessary in the case
-    of [injection]. It can also be applied, more generally, to analyze
-    evidence for inductively defined propositions.  As examples, we'll
-    use it to reprove some theorems from [Tactics.v]. *)
+(** The [inversion] tactic does quite a bit of work. For
+    example, when applied to an equality assumption, it does the work
+    of both [discriminate] and [injection]. In addition, it carries
+    out the [intros] and [rewrite]s that are typically necessary in
+    the case of [injection]. It can also be applied, more generally,
+    to analyze evidence for inductively defined propositions.  As
+    examples, we'll use it to reprove some theorems from chapter
+    [Tactics].  (Here we are being a bit lazy by omitting the [as]
+    clause from [inversion], thereby asking Coq to choose names for
+    the variables and hypotheses that it introduces.) *)
 
 Theorem inversion_ex1 : forall (n m o : nat),
   [n; m] = [o; o] ->
@@ -304,27 +331,28 @@ Proof.
     为了展示这三种方式的一致性，我们需要下面的引理： *)
 
 Lemma ev_even_firsttry : forall n,
-  even n -> exists k, n = double k.
+  ev n -> even n.
 Proof.
-(* 课上已完成 *)
+  (* 课上已完成 *)
 
-(** 我们可以尝试使用分类讨论或对 [n] 进行归纳。
-    但由于 [even] 在前提中出现，如同之前章节的一些例子，这种策略或许无法行得通。
-    如此我们似乎可以首先尝试对 [even] 的证据进行反演。
+(** 我们可以尝试使用分类讨论或对 [n] 进行归纳。但由于 [ev]
+    在前提中出现，所以和前面章节的一些例子一样，这种策略行不通，
+    因为如前面提到的，归纳法则会讨论 n-1，而它并不是偶数！
+    如此我们似乎可以先试着对 [ev] 的证据进行反演。
     确实，第一个分类可以被平凡地证明。 *)
 
-  intros n E. inversion E as [| n' E'].
+  intros n E. inversion E as [EQ' | n' E' EQ'].
   - (* E = ev_0 *)
     exists 0. reflexivity.
   - (* E = ev_SS n' E' *) simpl.
 
-(** 不幸地是，第二个分类要困难一些。我们需要证明 [exists k, S (S n') = double k]，
-    但唯一可用的假设是 [E']，也即 [even n'] 成立。但这对证明并没有帮助，
+(** 然而第二个分类要困难一些。我们需要证明 [exists k, S (S n') = double k]，
+    但唯一可用的假设是 [E']，也即 [ev n'] 成立。但这对证明并没有帮助，
     我们似乎被卡住了，而对 [E] 进行分类讨论是徒劳的。
 
     如果仔细观察第二个（子）目标，我们可以发现一些有意思的事情：
     对 [E] 进行分类讨论，我们可以把要证明的原始目标归约到另一个上，
-    其涉及到另一个 [even] 的证据： [E']。
+    其涉及到另一个 [ev] 的证据： [E']。
     形式化地说，我们可以通过展示如下证据来完成证明：
 
         exists k', n' = double k',
@@ -337,31 +365,33 @@ Proof.
     { intros [k' Hk']. rewrite Hk'. exists (S k'). reflexivity. }
     apply I. (* 将原始目标归约到新目标上 *)
 
+    (* However, at this point we can go no further. *)
 Abort.
 
 (* ================================================================= *)
 (** ** 对证据进行归纳 *)
 
-(** 在 [Induction] 一章中，我们曾尝试使用分类讨论来证明其实需要使用归纳才能证明的命题。
-    上面的情形看起来似曾相识，但并不是巧合。这一次，解决方法仍然是使用……归纳！
+(** 上面的情形看起来似曾相识，但这并非巧合。在 [Induction
+    一章中，我们曾试着用分类讨论来证明其实需要归纳才能证明的命题。
+    这一次，解决方法仍然是……使用归纳！ *)
 
-    对证据和对数据使用 [induction] 具有同样的行为：它导致 Coq 对每个可用于构造证据的
-    构造子生成一个子目标，同时对递归出现的问题性质提供了归纳假设。
+(** 对证据和对数据使用 [induction] 具有同样的行为：它导致 Coq
+    对每个可用于构造证据的构造子生成一个子目标，同时对递归出现的问题性质提供了归纳假设。
 
-    To prove a property of [n] holds for all numbers for which [even
-    n] holds, we can use induction on [even n]. This requires us to
-    prove two things, corresponding to the two ways in which [even n]
+    To prove a property of [n] holds for all numbers for which [ev
+    n] holds, we can use induction on [ev n]. This requires us to
+    prove two things, corresponding to the two ways in which [ev n]
     could have been constructed. If it was constructed by [ev_0], then
     [n=0], and the property must hold of [0]. If it was constructed by
-    [ev_SS], then the evidence of [even n] is of the form [ev_SS n'
-    E'], where [n = S (S n')] and [E'] is evidence for [even n']. In
+    [ev_SS], then the evidence of [ev n] is of the form [ev_SS n'
+    E'], where [n = S (S n')] and [E'] is evidence for [ev n']. In
     this case, the inductive hypothesis says that the property we are
     trying to prove holds for [n']. *)
 
 (** 让我们再次尝试证明这个引理： *)
 
 Lemma ev_even : forall n,
-  even n -> exists k, n = double k.
+  ev n -> even n.
 Proof.
   intros n E.
   induction E as [|n' E' IH].
@@ -374,13 +404,13 @@ Proof.
 Qed.
 
 (** 这里我们看到 Coq 对 [E'] 产生了 [IH]，而 [E'] 是唯一递归出现的
-    [even] 命题。 由于 [E'] 中涉及到 [n']，这个归纳假设是关于 [n'] 的，
+    [ev] 命题。 由于 [E'] 中涉及到 [n']，这个归纳假设是关于 [n'] 的，
     而非关于 [n] 或其他数字的。  *)
 
 (** 关于偶数性质的第二个和第三个定义的等价关系如下： *)
 
 Theorem ev_even_iff : forall n,
-  even n <-> exists k, n = double k.
+  ev n <-> even n.
 Proof.
   intros n. split.
   - (* -> *) apply ev_even.
@@ -393,44 +423,46 @@ Qed.
 (** 下面的练习提供了一些简单的例子，来帮助你熟悉这项技术。 *)
 
 (** **** 练习：2 星, standard (ev_sum)  *)
-Theorem ev_sum : forall n m, even n -> even m -> even (n + m).
+Theorem ev_sum : forall n m, ev n -> ev m -> ev (n + m).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced, optional (even'_ev)  
+(** **** 练习：4 星, advanced, optional (ev'_ev) 
 
     一般来说，有很多种方式来归纳地定义一个性质。比如说，下面是关于
-    [even] 的另一种（蹩脚的）定义：*)
+    [ev] 的另一种（蹩脚的）定义：*)
 
-Inductive even' : nat -> Prop :=
-| even'_0 : even' 0
-| even'_2 : even' 2
-| even'_sum n m (Hn : even' n) (Hm : even' m) : even' (n + m).
+Inductive ev' : nat -> Prop :=
+| ev'_0 : ev' 0
+| ev'_2 : ev' 2
+| ev'_sum n m (Hn : ev' n) (Hm : ev' m) : ev' (n + m).
 
-(** 请证明这个定义在逻辑上等同于前述定义。（当进入到归纳步骤时，你可能会想参考一下上一个定理。）*)
+(** 请证明这个定义在逻辑上等同于前述定义。为了精简证明，请使用 \CHAP{Logic]
+    一章中将定理应用到参数的技术，注意同样的技术也可用于归纳定义的命题的构造子。 *)
 
-Theorem even'_ev : forall n, even' n <-> even n.
+Theorem ev'_ev : forall n, ev' n <-> ev n.
 Proof.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced, recommended (ev_ev__ev)  
+(** **** 练习：3 星, advanced, recommended (ev_ev__ev) 
 
-    在本题中找到适合进行归纳的项需要一点技巧： *)
+    这里有两个可以试着在其上进行归纳的证据，一个不行就换另一个。 *)
 
 Theorem ev_ev__ev : forall n m,
-  even (n+m) -> even n -> even m.
+  ev (n+m) -> ev n -> ev m.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (ev_plus_plus)  
+(** **** 练习：3 星, standard, optional (ev_plus_plus) 
 
-    这个练习仅仅需要使用前述引理，而不需要使用归纳或分类讨论，尽管一些重写可能会比较乏味。 *)
+    本练习只需要使用前述引理，而无需使用归纳或分类讨论，
+    虽然一些改写可能会比较乏味。 *)
 
 Theorem ev_plus_plus : forall n m p,
-  even (n+m) -> even (n+p) -> even (m+p).
+  ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -438,25 +470,25 @@ Proof.
 (* ################################################################# *)
 (** * 归纳关系 *)
 
-(** 我们可以认为被一个数所参数化的命题（比如 [even]）是一个_'性质'_，也即，
+(** 我们可以认为被一个数所参数化的命题（比如 [ev]）是一个_'性质'_，也即，
     它定义了 [nat]　的一个子集，其中的数可以被证明满足此命题。
     以同样的方式，我们可认为有两个参数的命题是一个_'关系'_，也即，它定义了一个
     可满足此命题的序对集合。*)
 
 Module Playground.
 
-(** 一个很有用的例子是整数的“小于等于”关系。*)
+(** 和命题一样，关系也可以归纳地定义。一个很有用的例子是整数的“小于等于”关系。*)
 
 (** 下面的定义应当是比较直观的。它提供了两种方法来描述一个数小于等于另一个数的证据：
     要么可观察到两个数相等，或提供证据显示第一个数小于等于第二个数的前继。　*)
 
 Inductive le : nat -> nat -> Prop :=
-  | le_n n : le n n
-  | le_S n m (H : le n m) : le n (S m).
+  | le_n (n : nat)                : le n n
+  | le_S (n m : nat) (H : le n m) : le n (S m).
 
 Notation "m <= n" := (le m n).
 
-(** 类似于证明 [even] 这样的性质，使用 [le_n] 和 [le_S] 构造子来证明关于 [<=]
+(** 类似于证明 [ev] 这样的性质，使用 [le_n] 和 [le_S] 构造子来证明关于 [<=]
     的事实遵循了同样的模式。我们可以对构造子使用 [apply] 策略来证明 [<=] 目标
     （比如证明 [3<=3] 或 [3<=6]），也可以使用 [inversion] 策略来从上下文中 [<=]
     的假设里抽取信息（比如证明 [(2<=1) -> 2+2=5]）。 *)
@@ -499,23 +531,23 @@ Inductive square_of : nat -> nat -> Prop :=
 Inductive next_nat : nat -> nat -> Prop :=
   | nn n : next_nat n (S n).
 
-Inductive next_even : nat -> nat -> Prop :=
-  | ne_1 n : even (S n) -> next_even n (S n)
-  | ne_2 n (H : even (S (S n))) : next_even n (S (S n)).
+Inductive next_ev : nat -> nat -> Prop :=
+  | ne_1 n (H: ev (S n))     : next_ev n (S n)
+  | ne_2 n (H: ev (S (S n))) : next_ev n (S (S n)).
 
-(** **** 练习：2 星, standard, optional (total_relation)  
+(** **** 练习：2 星, standard, optional (total_relation) 
 
     请定一个二元归纳关系 [total_relation] 对每一个自然数的序对成立。 *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：2 星, standard, optional (empty_relation)  
+(** **** 练习：2 星, standard, optional (empty_relation) 
 
     请定一个二元归纳关系 [empty_relation] 对自然数永远为假。 *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -531,7 +563,7 @@ Inductive next_even : nat -> nat -> Prop :=
     will, in the second case, add the induction hypothesis that the
     goal holds when [e2] is replaced with [n']. *)
 
-(** **** 练习：3 星, standard, optional (le_exercises)  
+(** **** 练习：3 星, standard, optional (le_exercises) 
 
     这里展示一些 [<=] 和 [<] 关系的事实，我们在接下来的课程中将会用到他们。
     证明他们将会是非常有益的练习。 *)
@@ -560,18 +592,30 @@ Theorem le_plus_l : forall a b,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-Theorem plus_lt : forall n1 n2 m,
-  n1 + n2 < m ->
-  n1 < m /\ n2 < m.
+Theorem plus_le : forall n1 n2 m,
+  n1 + n2 <= m ->
+  n1 <= m /\ n2 <= m.
 Proof.
- unfold lt.
  (* 请在此处解答 *) Admitted.
+
+(** Hint: the next one may be easiest to prove by induction on [n]. *)
+
+Theorem add_le_cases : forall n m p q,
+    n + m <= p + q -> n <= p \/ m <= q.
+Proof.
+(* 请在此处解答 *) Admitted.
 
 Theorem lt_S : forall n m,
   n < m ->
   n < S m.
 Proof.
   (* 请在此处解答 *) Admitted.
+
+Theorem plus_lt : forall n1 n2 m,
+  n1 + n2 < m ->
+  n1 < m /\ n2 < m.
+Proof.
+(* 请在此处解答 *) Admitted.
 
 Theorem leb_complete : forall n m,
   n <=? m = true -> n <= m.
@@ -586,7 +630,7 @@ Theorem leb_correct : forall n m,
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** 提示：这个定理可以不通过使用 [induction] 来证明。*)
+(** 提示：以下定理可以不使用 [induction] 而证明。*)
 
 Theorem leb_true_trans : forall n m o,
   n <=? m = true -> m <=? o = true -> n <=? o = true.
@@ -603,7 +647,7 @@ Proof.
 
 Module R.
 
-(** **** 练习：3 星, standard, recommended (R_provability)  
+(** **** 练习：3 星, standard, recommended (R_provability) 
 
     通过同样的方式，我们可以定义三元关系、四元关系等。例如，考虑以下定义在自然数上的三元关系： *)
 
@@ -622,16 +666,15 @@ Inductive R : nat -> nat -> nat -> Prop :=
       简要（一句话）解释你的答案。
 
     - 如果在 [R] 的定义中我们丢弃 [c4] 构造子，可被证明的集合会发生变化吗？
-      简要（一句话）解释你的答案。
+      简要（一句话）解释你的答案。 *)
 
 (* 请在此处解答 *)
-*)
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_R_provability : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (R_fact)  
+(** **** 练习：3 星, standard, optional (R_fact) 
 
     关系 [R] 其实编码了一个熟悉的函数。请找出这个函数，定义它并在 Coq 中证明他们等价。*)
 
@@ -645,7 +688,7 @@ Proof.
 
 End R.
 
-(** **** 练习：2 星, advanced (subsequence)  
+(** **** 练习：2 星, advanced (subsequence) 
 
     如果一个列表的所有元素以相同的顺序出现在另一个列表之中（但允许其中出现其他额外的元素），
     我们把第一个列表称作第二个列表的_'子序列'_。 例如：
@@ -699,14 +742,14 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (R_provability2)  
+(** **** 练习：2 星, standard, optional (R_provability2) 
 
     假设我们在 Coq 中有如下定义：
 
     Inductive R : nat -> list nat -> Prop :=
       | c1 : R 0 []
-      | c2 : forall n l, R n l -> R (S n) (n :: l)
-      | c3 : forall n l, R (S n) l -> R n l.
+      | c2 n l (H: R n l) : R (S n) (n :: l)
+      | c3 n l (H: R (S n) l) : R n l.
 
     下列命题哪个是可被证明的？
 
@@ -714,27 +757,34 @@ Proof.
     - [R 1 [1;2;1;0]]
     - [R 6 [3;2;1;0]]  *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
 (* ################################################################# *)
 (** * 案例学习：正则表达式 *)
 
-(** 性质 [even] 提供了一个简单的例子来展示归纳定义和其基础的推理技巧，
+(** 性质 [ev] 提供了一个简单的例子来展示归纳定义和其基础的推理技巧，
     但这还不是什么激动人心的东西——毕竟，[even] 等价于我们之前见过的两个非归纳的定义，
     而看起来归纳定义并没有提供什么好处。为了更好地展示归纳定义的表达能力，
     我们继续使用它来建模计算机科学中的一个经典概念——正则表达式。 *)
 
 (** 正则表达式是用来描述字符串集合的一种简单语言，定义如下： *)
 
-Inductive reg_exp {T : Type} : Type :=
+Inductive reg_exp (T : Type) : Type :=
   | EmptySet
   | EmptyStr
   | Char (t : T)
-  | App (r1 r2 : reg_exp)
-  | Union (r1 r2 : reg_exp)
-  | Star (r : reg_exp).
+  | App (r1 r2 : reg_exp T)
+  | Union (r1 r2 : reg_exp T)
+  | Star (r : reg_exp T).
+
+Arguments EmptySet {T}.
+Arguments EmptyStr {T}.
+Arguments Char {T} _.
+Arguments App {T} _ _.
+Arguments Union {T} _ _.
+Arguments Star {T} _.
 
 (** 请注意这个定义是_'多态的'_：[reg_exp T] 中的正则表达式描述了字符串，
     而其中的字符取自 [T]——也即，[T] 的元素构成的列表。
@@ -758,33 +808,38 @@ Inductive reg_exp {T : Type} : Type :=
         [s = s_1 ++ ... ++ s_k]，且表达式 [re] 匹配其中每一个字符串 [s_i]，那么
         [Star re] 匹配 [s]。
 
-        作为特殊情况，此字符串序列可能为空，因此无论 [re] 是什么 [Star re] 总是匹配空字符串 [[]]。*)
+        特别来说，此字符串序列可能为空，因此无论 [re] 是什么 [Star re]
+        总是匹配空字符串 [[]]。*)
 
-(** 容易把非形式化的定义翻译为使用 [Inductive] 的定义：*)
+(** 容易把非形式化的定义翻译为使用 [Inductive] 的定义。我们用记法
+    [s =~ re] 表示，通过把该记法用 [Reserved] “预留”在 [Inductive]
+    定义之前，我们就能在定义中使用它！ *)
 
-Inductive exp_match {T} : list T -> reg_exp -> Prop :=
-  | MEmpty : exp_match [] EmptyStr
-  | MChar x : exp_match [x] (Char x)
+Reserved Notation "s =~ re" (at level 80).
+
+Inductive exp_match {T} : list T -> reg_exp T -> Prop :=
+  | MEmpty : [] =~ EmptyStr
+  | MChar x : [x] =~ (Char x)
   | MApp s1 re1 s2 re2
-             (H1 : exp_match s1 re1)
-             (H2 : exp_match s2 re2) :
-             exp_match (s1 ++ s2) (App re1 re2)
+             (H1 : s1 =~ re1)
+             (H2 : s2 =~ re2)
+           : (s1 ++ s2) =~ (App re1 re2)
   | MUnionL s1 re1 re2
-                (H1 : exp_match s1 re1) :
-                exp_match s1 (Union re1 re2)
+                (H1 : s1 =~ re1)
+              : s1 =~ (Union re1 re2)
   | MUnionR re1 s2 re2
-                (H2 : exp_match s2 re2) :
-                exp_match s2 (Union re1 re2)
-  | MStar0 re : exp_match [] (Star re)
+                (H2 : s2 =~ re2)
+              : s2 =~ (Union re1 re2)
+  | MStar0 re : [] =~ (Star re)
   | MStarApp s1 s2 re
-                 (H1 : exp_match s1 re)
-                 (H2 : exp_match s2 (Star re)) :
-                 exp_match (s1 ++ s2) (Star re).
+                 (H1 : s1 =~ re)
+                 (H2 : s2 =~ (Star re))
+               : (s1 ++ s2) =~ (Star re)
+  where "s =~ re" := (exp_match s re).
 
-(** 出于可读性的考虑，在此我们也展示使用推断规则表示的定义。
-    于此同时，我们引入可读性更好的中缀表示法。*)
-
-Notation "s =~ re" := (exp_match s re) (at level 80).
+Lemma quiz : forall T (s:list T), ~(s =~ EmptySet).
+Proof. intros T s Hc. inversion Hc. Qed.
+(** 出于可读性的考虑，在此我们也展示使用推断规则表示的定义。*)
 
 (**
 
@@ -874,7 +929,7 @@ Qed.
     任意一个匹配 [re] 的字符串 [s] 也匹配 [Star re]。 *)
 
 Lemma MStar1 :
-  forall T s (re : @reg_exp T) ,
+  forall T s (re : reg_exp T) ,
     s =~ re ->
     s =~ Star re.
 Proof.
@@ -887,7 +942,7 @@ Qed.
 
 (** （请注意对 [app_nil_r] 的使用改变了目标，以此可匹配 [MStarApp] 所需要的形式。）*)
 
-(** **** 练习：3 星, standard (exp_match_ex1)  
+(** **** 练习：3 星, standard (exp_match_ex1) 
 
     下面的引理显示从形式化的归纳定义中可以得到本章开始的非形式化匹配规则。 *)
 
@@ -896,7 +951,7 @@ Lemma empty_is_empty : forall T (s : list T),
 Proof.
   (* 请在此处解答 *) Admitted.
 
-Lemma MUnion' : forall T (s : list T) (re1 re2 : @reg_exp T),
+Lemma MUnion' : forall T (s : list T) (re1 re2 : reg_exp T),
   s =~ re1 \/ s =~ re2 ->
   s =~ Union re1 re2.
 Proof.
@@ -906,14 +961,14 @@ Proof.
     如果 [ss : list (list T)] 表示一个字符串序列 [s1, ..., sn]，那么
     [fold app ss []] 是将所有字符串连接的结果。*)
 
-Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp),
+Lemma MStar' : forall T (ss : list (list T)) (re : reg_exp T),
   (forall s, In s ss -> s =~ re) ->
   fold app ss [] =~ Star re.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, standard, optional (reg_exp_of_list_spec)  
+(** **** 练习：4 星, standard, optional (reg_exp_of_list_spec) 
 
     请证明 [reg_exp_of_list] 满足以下规范： *)
 
@@ -932,7 +987,7 @@ Proof.
     为了表达这个定理，我们首先定义函数 [re_chars] 来列举一个正则表达式中出现的
     所有字符：*)
 
-Fixpoint re_chars {T} (re : reg_exp) : list T :=
+Fixpoint re_chars {T} (re : reg_exp T) : list T :=
   match re with
   | EmptySet => []
   | EmptyStr => []
@@ -944,7 +999,7 @@ Fixpoint re_chars {T} (re : reg_exp) : list T :=
 
 (** 接下来我们这样陈述此定理： *)
 
-Theorem in_re_match : forall T (s : list T) (re : reg_exp) (x : T),
+Theorem in_re_match : forall T (s : list T) (re : reg_exp T) (x : T),
   s =~ re ->
   In x s ->
   In x (re_chars re).
@@ -957,10 +1012,19 @@ Proof.
         | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2].
   (* 课上已完成 *)
   - (* MEmpty *)
-    apply Hin.
+    simpl in Hin. destruct Hin.
   - (* MChar *)
+    simpl. simpl in Hin.
     apply Hin.
-  - simpl. rewrite In_app_iff in *.
+  - (* MApp *)
+    simpl.
+
+(** Something interesting happens in the [MApp] case.  We obtain
+    _two_ induction hypotheses: One that applies when [x] occurs in
+    [s1] (which matches [re1]), and a second one that applies when [x]
+    occurs in [s2] (which matches [re2]). *)
+
+    simpl. rewrite In_app_iff in *.
     destruct Hin as [Hin | Hin].
     + (* In x s1 *)
       left. apply (IH1 Hin).
@@ -974,16 +1038,14 @@ Proof.
     right. apply (IH Hin).
   - (* MStar0 *)
     destruct Hin.
-
-(** 特别关注一下对 [MStarApp] 分类的证明。我们得到了_'两个'_归纳假设：
-    一个适用于 [x] 出现在 [s1] 中（当匹配 [re] 时），另一个则适用于
-    [x] 出现在 [s2] 中（当匹配 [Star re] 时）。
-    这是一个很好的例子来表明为什么我们需要对 [exp_match] 的证据而非 [re]
-    进行归纳：对后者的归纳仅仅提供匹配 [re] 的字符串的归纳假设，却无法允许我们对
-    [In x s2] 分类进行推理。 *)
-
   - (* MStarApp *)
-    simpl. rewrite In_app_iff in Hin.
+    simpl.
+
+(** 我们再次得到了两个归纳假设，它们表明了为什么我们需要对 [exp_match]
+    的证据而非 [re] 进行归纳：对后者的归纳仅仅提供匹配 [re]
+    的字符串的归纳假设，却无法允许我们对 [In x s2] 分类进行推理。 *)
+
+    rewrite In_app_iff in Hin.
     destruct Hin as [Hin | Hin].
     + (* In x s1 *)
       apply (IH1 Hin).
@@ -991,15 +1053,15 @@ Proof.
       apply (IH2 Hin).
 Qed.
 
-(** **** 练习：4 星, standard (re_not_empty)  
+(** **** 练习：4 星, standard (re_not_empty) 
 
     请编写一个递归函数 [re_not_empty] 用来测试某个正则表达式是否会匹配一些字符串。
     并证明你的函数是正确的。*)
 
-Fixpoint re_not_empty {T : Type} (re : @reg_exp T) : bool
+Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
-Lemma re_not_empty_correct : forall T (re : @reg_exp T),
+Lemma re_not_empty_correct : forall T (re : reg_exp T),
   (exists s, s =~ re) <-> re_not_empty re = true.
 Proof.
   (* 请在此处解答 *) Admitted.
@@ -1012,7 +1074,7 @@ Proof.
     即使这个项不够一般（general）。其副作用是会丢失掉一些信息（类似没有 [eqn:]
     从句的 [destruct]），并且使你无法完成证明。比如： *)
 
-Lemma star_app: forall T (s1 s2 : list T) (re : @reg_exp T),
+Lemma star_app: forall T (s1 s2 : list T) (re : reg_exp T),
   s1 =~ Star re ->
   s2 =~ Star re ->
   s1 ++ s2 =~ Star re.
@@ -1022,6 +1084,7 @@ Proof.
 (** 仅仅对 [H1] 反演并不会对处理含有递归的分类有太多帮助。（尝试一下！）
     因此我们需要对证据进行归纳！下面是一个朴素的尝试：*)
 
+  generalize dependent s2.
   induction H1
     as [|x'|s1 re1 s2' re2 Hmatch1 IH1 Hmatch2 IH2
         |s1 re1 re2 Hmatch IH|re1 s2' re2 Hmatch IH
@@ -1034,7 +1097,7 @@ Proof.
     我们仍然可以在一些构造子上继续证明，比如 [MEmpty]…… *)
 
   - (* MEmpty *)
-    simpl. intros H. apply H.
+    simpl. intros s2 H. apply H.
 
 (** ……但有一些分类我们却卡住了。比如，对于 [MChar] 我们需要证明
 
@@ -1042,7 +1105,7 @@ Proof.
 
     这显然是不可能完成的。 *)
 
-  - (* MChar. 卡住了…… *)
+  - (* MChar. *) intros s2 H. simpl. (* 卡住了…… *)
 Abort.
 
 (** 问题是，只有当 [Prop] 的假设是完全一般的时候，对其使用 [induction] 的才会起作用，
@@ -1054,7 +1117,7 @@ Abort.
     解决此问题的一种直接的方式是“手动推广”这个有问题的表达式，
     即为此引理添加一个显式的等式： *)
 
-Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp),
+Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp T),
   re' = Star re ->
   s1 =~ re' ->
   s2 =~ Star re ->
@@ -1072,7 +1135,7 @@ Abort.
     （2）在当前上下文中添加一个等式 [x = e]。我们可以这样使用 [remember]
     来证明上面的结果： *)
 
-Lemma star_app: forall T (s1 s2 : list T) (re : reg_exp),
+Lemma star_app: forall T (s1 s2 : list T) (re : reg_exp T),
   s1 =~ Star re ->
   s2 =~ Star re ->
   s1 ++ s2 =~ Star re.
@@ -1097,7 +1160,7 @@ Proof.
   - (* MUnionR *) discriminate.
 
 (** 值得注意的分类是 [Star]。请注意 [MStarApp] 分类的归纳假设 [IH2]
-    包含到一个额外的前提 [Star re'' = Star re']，这是由 [remember]
+    包含到一个额外的前提 [Star re'' = Star re]，这是由 [remember]
     所添加的等式所产生的。*)
 
   - (* MStar0 *)
@@ -1118,7 +1181,7 @@ Qed.
 (** 下面的引理 [MStar'']（以及它的逆，之前的练习题中的 [MStar']）显示
     [exp_match] 中 [Star] 的定义等价于前面给出的非形式化定义。*)
 
-Lemma MStar'' : forall T (s : list T) (re : reg_exp),
+Lemma MStar'' : forall T (s : list T) (re : reg_exp T),
   s =~ Star re ->
   exists ss : list (list T),
     s = fold app ss []
@@ -1127,29 +1190,67 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：5 星, advanced (pumping)  
+(** **** 练习：5 星, advanced (weak_pumping) 
 
     正则表达式中一个非常有趣的定理叫做_'泵引理（Pumping Lemma）'_，
     非形式化地来讲，它陈述了任意某个足够长的字符串 [s] 若匹配一个正则表达式 [re]，
     则可以被抽取（pumped）——将 [s] 的某个中间部分重复任意次产生的新字符串
     仍然匹配 [re]。
+    （为了简单起见，我们考虑一个比自动机理论课上陈述的定理稍微弱一点的定理。）
 
     我们首先定义什么是“足够长”。由于 Coq 中使用的是构造性逻辑，我们事实上需要计算
-    对于任何一个正则表达式 [re] 其最小的“可被抽取（pumpability）”长度。*)
+    对于任何一个正则表达式 [re] 其最小的“可被抽取（pumpability）”长度。 *)
 
 Module Pumping.
 
-Fixpoint pumping_constant {T} (re : @reg_exp T) : nat :=
+Fixpoint pumping_constant {T} (re : reg_exp T) : nat :=
   match re with
-  | EmptySet => 0
+  | EmptySet => 1
   | EmptyStr => 1
   | Char _ => 2
   | App re1 re2 =>
       pumping_constant re1 + pumping_constant re2
   | Union re1 re2 =>
       pumping_constant re1 + pumping_constant re2
-  | Star _ => 1
+  | Star r => pumping_constant r
   end.
+
+(** 在证明后面的泵引理时，你会发现关于抽取常量的引理十分有用。 *)
+
+Lemma pumping_constant_ge_1 :
+  forall T (re : reg_exp T),
+    pumping_constant re >= 1.
+Proof.
+  intros T re. induction re.
+  - (* Emptyset *)
+    apply le_n.
+  - (* EmptyStr *)
+    apply le_n.
+  - (* Char *)
+    apply le_S. apply le_n.
+  - (* App *)
+    simpl.
+    apply le_trans with (n:=pumping_constant re1).
+    apply IHre1. apply le_plus_l.
+  - (* Union *)
+    simpl.
+    apply le_trans with (n:=pumping_constant re1).
+    apply IHre1. apply le_plus_l.
+  - (* Star *)
+    simpl. apply IHre.
+Qed.
+
+Lemma pumping_constant_0_false :
+  forall T (re : reg_exp T),
+    pumping_constant re = 0 -> False.
+Proof.
+  intros T re H.
+  assert (Hp1 : pumping_constant re >= 1).
+  { apply pumping_constant_ge_1. }
+  inversion Hp1 as [Hp1'| p Hp1' Hp1''].
+  - rewrite H in Hp1'. discriminate Hp1'.
+  - rewrite H in Hp1''. discriminate Hp1''.
+Qed.
 
 (** 接下来，定义辅助函数 [napp] 来重复（连接到它自己）一个字符串特定次数。*)
 
@@ -1158,6 +1259,8 @@ Fixpoint napp {T} (n : nat) (l : list T) : list T :=
   | 0 => []
   | S n' => l ++ napp n' l
   end.
+
+(** 这个辅助引理在你证明泵引理时也非常有用。 *)
 
 Lemma napp_plus: forall T (n m : nat) (l : list T),
   napp (n + m) l = napp n l ++ napp m l.
@@ -1168,12 +1271,26 @@ Proof.
   - simpl. rewrite IHn, app_assoc. reflexivity.
 Qed.
 
-(** 现在，泵引理是说，如果 [s =~ re] 且 [s] 的长度最小是 [re] 的抽取常数（pumping constant），
+Lemma napp_star :
+  forall T m s1 s2 (re : reg_exp T),
+    s1 =~ re -> s2 =~ Star re ->
+    napp m s1 ++ s2 =~ Star re.
+Proof.
+  intros T m s1 s2 re Hs1 Hs2.
+  induction m.
+  - simpl. apply Hs2.
+  - simpl. rewrite <- app_assoc.
+    apply MStarApp.
+    + apply Hs1.
+    + apply IHm.
+Qed.
+
+(** （弱化的）泵引理是说，如果 [s =~ re] 且 [s] 的长度最小是 [re] 的抽取常数（pumping constant），
     那么 [s] 可分割成三个子字符串 [s1 ++ s2 ++ s3]，其中 [s2] 可被重复任意次，
     其结果同 [s1] 和 [s3] 合并后仍然匹配 [re]。由于 [s2] 必须为非空字符串，
     这是一种（构造性的）方式来以我们想要的长度生成匹配 [re] 的字符串。 *)
 
-Lemma pumping : forall T (re : @reg_exp T) s,
+Lemma weak_pumping : forall T (re : reg_exp T) s,
   s =~ re ->
   pumping_constant re <= length s ->
   exists s1 s2 s3,
@@ -1181,13 +1298,9 @@ Lemma pumping : forall T (re : @reg_exp T) s,
     s2 <> [] /\
     forall m, s1 ++ napp m s2 ++ s3 =~ re.
 
-(** 为了简化证明（也就是接下来你需要填写的），我们使用 [Require] 来引入 [omega] 策略，
-    其可用于自动化地完成一些自然数等式和不等式的枯燥证明。
-    我们在后面的章节中会详细解释 [omega]，不过在这里请尝试做一些实验。
-    下面的第一个归纳分类中展示了如何使用它。 *)
-
-Import Coq.omega.Omega.
-
+(** You are to fill in the proof. Several of the lemmas about
+    [le] that were in an optional exercise earlier in this chapter
+    may be useful. *)
 Proof.
   intros T re s Hmatch.
   induction Hmatch
@@ -1195,7 +1308,34 @@ Proof.
        | s1 re1 re2 Hmatch IH | re1 s2 re2 Hmatch IH
        | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2 ].
   - (* MEmpty *)
-    simpl. omega.
+    simpl. intros contra. inversion contra.
+  (* 请在此处解答 *) Admitted.
+(** [] *)
+
+(** **** 练习：5 星, advanced, optional (pumping) 
+
+    Now here is the usual version of the pumping lemma. In addition to
+    requiring that [s2 <> []], it also requires that [length s1 +
+    length s2 <= pumping_constant re]. *)
+
+Lemma pumping : forall T (re : reg_exp T) s,
+  s =~ re ->
+  pumping_constant re <= length s ->
+  exists s1 s2 s3,
+    s = s1 ++ s2 ++ s3 /\
+    s2 <> [] /\
+    length s1 + length s2 <= pumping_constant re /\
+    forall m, s1 ++ napp m s2 ++ s3 =~ re.
+
+(** You may want to copy your proof of weak_pumping below. *)
+Proof.
+  intros T re s Hmatch.
+  induction Hmatch
+    as [ | x | s1 re1 s2 re2 Hmatch1 IH1 Hmatch2 IH2
+       | s1 re1 re2 Hmatch IH | re1 s2 re2 Hmatch IH
+       | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2 ].
+  - (* MEmpty *)
+    simpl. intros contra. inversion contra.
   (* 请在此处解答 *) Admitted.
 
 End Pumping.
@@ -1274,7 +1414,7 @@ Proof.
   intros n m. apply iff_reflect. rewrite eqb_eq. reflexivity.
 Qed.
 
-(** [filter_not_empty_In] 的一种更流畅证明如下所示。请注意对 [destruct] 和 [apply]
+(** [filter_not_empty_In] 的一种更流畅证明如下所示。请注意对 [destruct] 和 [rewrite]
     的使用是如何合并成一个 [destruct] 的使用。 *)
 
 (** （为了更清晰地看到这点，使用 Coq 查看 [filter_not_empty_In]
@@ -1295,7 +1435,7 @@ Proof.
       intros H'. right. apply IHl'. apply H'.
 Qed.
 
-(** **** 练习：3 星, standard, recommended (eqbP_practice)  
+(** **** 练习：3 星, standard, recommended (eqbP_practice) 
 
     使用上面的 [eqbP] 证明以下定理：*)
 
@@ -1323,7 +1463,7 @@ Proof.
 (* ################################################################# *)
 (** * 额外练习 *)
 
-(** **** 练习：3 星, standard, recommended (nostutter_defn)  
+(** **** 练习：3 星, standard, recommended (nostutter_defn) 
 
     写出性质的归纳定义是本课程中你需要的重要技能。请尝试去独立解决以下的练习。
 
@@ -1368,14 +1508,14 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
   repeat match goal with
     h: nostutter _ |- _ => inversion h; clear h; subst
   end.
-  contradiction Hneq0; auto. Qed.
+  contradiction; auto. Qed.
 *)
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_nostutter : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：4 星, advanced (filter_challenge)  
+(** **** 练习：4 星, advanced (filter_challenge) 
 
     让我们证明在 [Poly] 一章中 [filter] 的定义匹配某个抽象的规范。
     可以这样非形式化地描述这个规范：
@@ -1408,16 +1548,16 @@ Definition manual_grade_for_nostutter : option (nat*string) := None.
 Definition manual_grade_for_filter_challenge : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：5 星, advanced, optional (filter_challenge_2)  
+(** **** 练习：5 星, advanced, optional (filter_challenge_2) 
 
     另一种刻画 [filter] 行为的方式是：在 [l] 的所有其元素满足 [test] 的子序列中，
     [filter test l] 是最长的那个。请形式化这个命题并证明它。*)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：4 星, standard, optional (palindromes)  
+(** **** 练习：4 星, standard, optional (palindromes) 
 
     回文是倒序排列与正序排列相同的序列。
 
@@ -1443,18 +1583,18 @@ Definition manual_grade_for_filter_challenge : option (nat*string) := None.
 Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：5 星, standard, optional (palindrome_converse)  
+(** **** 练习：5 星, standard, optional (palindrome_converse) 
 
     由于缺乏证据，反方向的证明要困难许多。使用之前练习中定义的 [pal] 来证明
 
      forall l, l = rev l -> pal l.
 *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：4 星, advanced, optional (NoDup)  
+(** **** 练习：4 星, advanced, optional (NoDup) 
 
     请回忆一下 [Logic] 章节中性质 [In] 的定义，其断言值 [x] 在列表 [l] 中至少出现一次：*)
 
@@ -1484,7 +1624,7 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (nat*string) := Non
 Definition manual_grade_for_NoDup_disjoint_etc : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：4 星, advanced, optional (pigeonhole_principle)  
+(** **** 练习：4 星, advanced, optional (pigeonhole_principle) 
 
     _鸽笼原理（Pigeonhole Principle）'_是一个关于计数的基本事实：
     将超过 [n] 个物体放进 [n] 个鸽笼，则必有鸽笼包含至少两个物体。
@@ -1524,9 +1664,9 @@ Proof.
    intros X l1. induction l1 as [|x l1' IHl1'].
   (* 请在此处解答 *) Admitted.
 
-(* 请勿修改下面这一行： *)
-Definition manual_grade_for_check_repeats : option (nat*string) := None.
-(** [] *)
+(* GRADE_MANUAL 1.5: check_repeats
+
+    [] *)
 
 (* ================================================================= *)
 (** ** 扩展练习：经验证的正则表达式匹配器 *)
@@ -1545,7 +1685,7 @@ Definition manual_grade_for_check_repeats : option (nat*string) := None.
     并验证其值与匹配关系是互映的。 *)
 
 (** 我们将要实现的正则表达式匹配器会匹配由 ASCII 字符构成的列表：*)
-Require Export Coq.Strings.Ascii.
+Require Import Coq.Strings.Ascii.
 
 Definition string := list ascii.
 
@@ -1638,7 +1778,7 @@ Proof.
     rewrite Happ. apply (MApp s0 _ s1 _ Hmat0 Hmat1).
 Qed.
 
-(** **** 练习：3 星, standard, optional (app_ne)  
+(** **** 练习：3 星, standard, optional (app_ne) 
 
     [App re0 re1] 匹配 [a::s] 当且仅当 [re0] 匹配空字符串
     且 [a::s] 匹配 [re1] 或 [s=s0++s1]，其中 [a::s0] 匹配 [re0]
@@ -1667,7 +1807,7 @@ Proof.
     + apply MUnionR. apply H.
 Qed.
 
-(** **** 练习：3 星, standard, optional (star_ne)  
+(** **** 练习：3 星, standard, optional (star_ne) 
 
     [a::s] 匹配 [Star re] 当且仅当 [s = s0 ++ s1]，其中 [a::s0] 匹配
     [re] 且 [s1] 匹配 [Star re]。 同 [app_ne]一样，这个观察很重要，
@@ -1690,16 +1830,16 @@ Proof.
 (** 我们的正则表达式匹配器定义包括两个不动点函数。第一个函数对给定的正则表达式 [re]
     进行求值，结果映射了 [re] 是否匹配空字符串。这个函数满足以下性质： *)
 Definition refl_matches_eps m :=
-  forall re : @reg_exp ascii, reflect ([ ] =~ re) (m re).
+  forall re : reg_exp ascii, reflect ([ ] =~ re) (m re).
 
-(** **** 练习：2 星, standard, optional (match_eps)  
+(** **** 练习：2 星, standard, optional (match_eps) 
 
     完成 [match_eps] 的定义，其测试给定的正则表达式是否匹配空字符串： *)
-Fixpoint match_eps (re: @reg_exp ascii) : bool
+Fixpoint match_eps (re: reg_exp ascii) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (match_eps_refl)  
+(** **** 练习：3 星, standard, optional (match_eps_refl) 
 
     现在，请证明 [match_eps] 确实测试了给定的正则表达式是否匹配空字符串。
     （提示：你会使用到互映引理 [ReflectT] 和 [ReflectF]。） *)
@@ -1723,11 +1863,11 @@ Definition is_der re (a : ascii) re' :=
     它求值为 [re] 在 [a] 上的生成式。也即，[d] 满足以下关系： *)
 Definition derives d := forall a re, is_der re a (d a re).
 
-(** **** 练习：3 星, standard, optional (derive)  
+(** **** 练习：3 星, standard, optional (derive) 
 
     请定义 [derive] 使其生成字符串。一个自然的实现是在某些分类使用
     [match_eps] 来判断正则表达式是否匹配空字符串。 *)
-Fixpoint derive (a : ascii) (re : @reg_exp ascii) : @reg_exp ascii
+Fixpoint derive (a : ascii) (re : reg_exp ascii) : reg_exp ascii
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
@@ -1779,7 +1919,7 @@ Example test_der7 :
 Proof.
   (* 请在此处解答 *) Admitted.
 
-(** **** 练习：4 星, standard, optional (derive_corr)  
+(** **** 练习：4 星, standard, optional (derive_corr) 
 
     请证明 [derive] 确实总是会生成字符串。
 
@@ -1808,14 +1948,14 @@ Proof.
 Definition matches_regex m : Prop :=
   forall (s : string) re, reflect (s =~ re) (m s re).
 
-(** **** 练习：2 星, standard, optional (regex_match)  
+(** **** 练习：2 星, standard, optional (regex_match) 
 
     完成 [regex_match] 的定义，使其可以匹配正则表达式。*)
-Fixpoint regex_match (s : string) (re : @reg_exp ascii) : bool
+Fixpoint regex_match (s : string) (re : reg_exp ascii) : bool
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (regex_refl)  
+(** **** 练习：3 星, standard, optional (regex_refl) 
 
     最后，证明 [regex_match] 确实可以匹配正则表达式。
 
@@ -1831,4 +1971,4 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(* Sun Jan 5 03:17:35 UTC 2020 *)
+(* 2020年1月16日 *)

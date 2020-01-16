@@ -2,42 +2,44 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
 <title>Extract: Running Coq programs in ML</title>
-</head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
 <link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+</head>
 
 <body>
 
 <div id="page">
 
 <div id="header">
-<a href='https://coq-zh.github.io/SF-zh/index.html'>
-<img src='common/media/image/sf_logo_sm.png'></a>
-</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: 函数式算法验证</span><br></br>
+<div id='logoinheader'><a href='https://coq-zh.github.io/SF-zh/'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 3: 函数式算法验证</a></div>
 <ul id='menu'>
-   <a href='toc.html'><li class='section_name'>目录</li></a>
-   <a href='coqindex.html'><li class='section_name'>索引</li></a>
-   <a href='deps.html'><li class='section_name'>路线</li></a>
+   <li class='section_name'><a href='toc.html'>目录</a></li>
+   <li class='section_name'><a href='coqindex.html'>索引</a></li>
+   <li class='section_name'><a href='deps.html'>路线</a></li>
 </ul>
-</a></div>
+</div>
 
 <div id="main">
 
 <h1 class="libtitle">Extract<span class="subtitle">Running Coq programs in ML</span></h1>
 
+<div class="code">
+</div>
 
-<div class="code code-tight">
-<span class="id" type="keyword">Require</span> <span class="id" type="var">Extraction</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Require</span> <a class="idref" href="http://coq.inria.fr/library//Coq.extraction.Extraction.html#"><span class="id" title="library">Extraction</span></a>.<br/>
 </div>
 
 <div class="doc">
-Coq's <span class="inlinecode"><span class="id" type="var">Extraction</span></span> feature allows you to write a functional
+Coq's <span class="inlinecode"><span class="id" title="keyword">Extraction</span></span> feature allows you to write a functional
     program inside Coq; (presumably) use Coq's logic to prove some
     correctness properties about it; then print it out as an ML (or
     Haskell) program that you can compile with your optimizing ML (or
@@ -45,34 +47,36 @@ Coq's <span class="inlinecode"><span class="id" type="var">Extraction</span></sp
 
 <div class="paragraph"> </div>
 
-    The <a href="https://coq-zh.github.io/SF-zh/lf-current/Extraction.html"><span class="inlineref">Extraction</span></a> chapter of _Logical Foundations_ gave a
+    The <a href="https://coq-zh.github.io/SF-zh/lf-current/Extraction.html"><span class="inlineref">Extraction</span></a> chapter of <i>Logical Foundations</i> gave a
     simple example of Coq's program extraction features.  In this
     chapter, we'll take a deeper look. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-extraction-inside-module". <span class="comment">(*&nbsp;turn&nbsp;off&nbsp;a&nbsp;warning&nbsp;message&nbsp;*)</span><br/>
-<span class="id" type="var">From</span> <span class="id" type="var">VFA</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">Sort1</span>.<br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> (<span class="id" type="var">i</span>:<span class="id" type="var">nat</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">i</span>::<span class="id" type="var">nil</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">i</span> &lt;=? <span class="id" type="var">h</span> <span class="id" type="keyword">then</span> <span class="id" type="var">i</span>::<span class="id" type="var">h</span>::<span class="id" type="var">t</span> <span class="id" type="keyword">else</span> <span class="id" type="var">h</span> :: <span class="id" type="var">insert</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span><br/>
-&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">sort</span> (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">nil</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="var">insert</span> <span class="id" type="var">h</span> (<span class="id" type="var">sort</span> <span class="id" type="var">t</span>)<br/>
-<span class="id" type="keyword">end</span>.<br/>
+<br/>
+<span class="id" title="keyword">Set</span> <span class="id" title="var">Warnings</span> "-extraction-inside-module". <span class="comment">(*&nbsp;turn&nbsp;off&nbsp;a&nbsp;warning&nbsp;message&nbsp;*)</span><br/>
+<span class="id" title="var">From</span> <span class="id" title="var">VFA</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Perm.html#"><span class="id" title="library">Perm</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Module</span> <a name="Sort1"><span class="id" title="module">Sort1</span></a>.<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="Sort1.insert"><span class="id" title="definition">insert</span></a> (<span class="id" title="var">i</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">l</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) := <br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Extract.html#l"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a> ⇒ <a class="idref" href="Extract.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a><br/>
+&nbsp;&nbsp;| <span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> ⇒ <span class="id" title="keyword">if</span> <a class="idref" href="Extract.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.PeanoNat.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">&lt;=?</span></a> <span class="id" title="var">h</span> <span class="id" title="keyword">then</span> <a class="idref" href="Extract.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> <span class="id" title="keyword">else</span> <span class="id" title="var">h</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a> <a class="idref" href="Extract.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Extract.html#i"><span class="id" title="variable">i</span></a> <span class="id" title="var">t</span><br/>
+&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Fixpoint</span> <a name="Sort1.sort"><span class="id" title="definition">sort</span></a> (<span class="id" title="var">l</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Extract.html#l"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a><br/>
+&nbsp;&nbsp;| <span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> ⇒ <a class="idref" href="Extract.html#Sort1.insert"><span class="id" title="definition">insert</span></a> <span class="id" title="var">h</span> (<a class="idref" href="Extract.html#sort"><span class="id" title="definition">sort</span></a> <span class="id" title="var">t</span>)<br/>
+<span class="id" title="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
-The <span class="inlinecode"><span class="id" type="var">Extraction</span></span> command prints out a function as Ocaml code. 
+The <span class="inlinecode"><span class="id" title="keyword">Extraction</span></span> command prints out a function as Ocaml code. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Require</span> <span class="id" type="var">Coq.extraction.Extraction</span>.<br/>
-<span class="id" type="var">Extraction</span> <span class="id" type="var">sort</span>.<br/>
+<br/>
+<span class="id" title="keyword">Require</span> <a class="idref" href="http://coq.inria.fr/library//Coq.extraction.Extraction.html#"><span class="id" title="library">Coq.extraction.Extraction</span></a>.<br/>
+<span class="id" title="keyword">Extraction</span> <span class="id" title="var">sort</span>.<br/>
 </div>
 
 <div class="doc">
@@ -82,131 +86,136 @@ You can see the translation of "sort" from Coq to Ocaml,
 
 <div class="paragraph"> </div>
 
-  However, we really want the whole program, including the <span class="inlinecode"><span class="id" type="var">insert</span></span>
+  However, we really want the whole program, including the <span class="inlinecode"><span class="id" title="var">insert</span></span>
   function.  We get that as follows: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Recursive Extraction</span> <span class="id" type="var">sort</span>.<br/>
+<br/>
+<span class="id" title="keyword">Recursive Extraction</span> <span class="id" title="var">sort</span>.<br/>
 </div>
 
 <div class="doc">
-The first thing you see there is a redefinition of the <span class="inlinecode"><span class="id" type="var">bool</span></span> type.
-  But Ocaml already has a <span class="inlinecode"><span class="id" type="var">bool</span></span> type whose inductive structure is
+The first thing you see there is a redefinition of the <span class="inlinecode"><span class="id" title="var">bool</span></span> type.
+  But Ocaml already has a <span class="inlinecode"><span class="id" title="var">bool</span></span> type whose inductive structure is
   isomorphic.  We want our extracted functions to be compatible with,
   callable by, ordinary Ocaml code.  So we want to use Ocaml's standard
-  notation for the inductive definition, <span class="inlinecode"><span class="id" type="var">bool</span></span>.  The following directive
+  notation for the inductive definition, <span class="inlinecode"><span class="id" title="var">bool</span></span>.  The following directive
   accomplishes that: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Extract</span> <span class="id" type="keyword">Inductive</span> <span class="id" type="var">bool</span> ⇒ "bool" [ "true" "false" ].<br/>
-<span class="id" type="var">Extract</span> <span class="id" type="keyword">Inductive</span> <span class="id" type="var">list</span> ⇒ "list" [ "[]" "(::)" ].<br/>
-<span class="id" type="var">Recursive Extraction</span>  <span class="id" type="var">sort</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">End</span> <span class="id" type="var">Sort1</span>.<br/>
+<br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="keyword">Inductive</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> ⇒ "bool" [ "true" "false" ].<br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="keyword">Inductive</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> ⇒ "list" [ "[]" "(::)" ].<br/>
+<span class="id" title="keyword">Recursive Extraction</span>  <span class="id" title="var">sort</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">End</span> <a class="idref" href="Extract.html#Sort1"><span class="id" title="module">Sort1</span></a>.<br/>
 </div>
 
 <div class="doc">
 This is better.  But the program still uses a unary representation of
   natural numbers:  the number 7 is really (S (S (S (S (S (S (S O))))))). which in 
-  Ocaml will be a data structure that's seven pointers deep.  The <span class="inlinecode"><span class="id" type="var">leb</span></span> function
-  takes time proportional to the difference in value between <span class="inlinecode"><span class="id" type="var">n</span></span> and <span class="inlinecode"><span class="id" type="var">m</span></span>,
-  which is terrible.  We'd like natural numbers to be represented as Ocaml <span class="inlinecode"><span class="id" type="var">int</span></span>.
-  Unfortunately, there are only a finite number of <span class="inlinecode"><span class="id" type="var">int</span></span> values in Ocaml
+  Ocaml will be a data structure that's seven pointers deep.  The <span class="inlinecode"><span class="id" title="var">leb</span></span> function
+  takes time proportional to the difference in value between <span class="inlinecode"><span class="id" title="var">n</span></span> and <span class="inlinecode"><span class="id" title="var">m</span></span>,
+  which is terrible.  We'd like natural numbers to be represented as Ocaml <span class="inlinecode"><span class="id" title="var">int</span></span>.
+  Unfortunately, there are only a finite number of <span class="inlinecode"><span class="id" title="var">int</span></span> values in Ocaml
   (2^31, or 2^63, depending on your implementation); so there are things
   you could prove about some programs, in Coq, that wouldn't be true in Ocaml.
 
 <div class="paragraph"> </div>
 
   There are two solutions to this problem:
-
-<div class="paragraph"> </div>
-
 <ul class="doclist">
-<li> Instead of using <span class="inlinecode"><span class="id" type="var">nat</span></span>, use a more efficient constructive type, such as <span class="inlinecode"><span class="id" type="var">Z</span></span>.
+<li> Instead of using <span class="inlinecode"><span class="id" title="var">nat</span></span>, use a more efficient constructive type, such as <span class="inlinecode"><span class="id" title="var">Z</span></span>.
 
 </li>
-<li> Instead of using <span class="inlinecode"><span class="id" type="var">nat</span></span>, use an _abstract type_, and instantiate it with
+<li> Instead of using <span class="inlinecode"><span class="id" title="var">nat</span></span>, use an <i>abstract type</i>, and instantiate it with
        Ocaml integers.
 
 </li>
 </ul>
-  The first alternative uses Coq's <span class="inlinecode"><span class="id" type="var">Z</span></span> type, an inductive type with
-  constructors <span class="inlinecode"><span class="id" type="var">xI</span></span> <span class="inlinecode"><span class="id" type="var">xH</span></span> etc.  <span class="inlinecode"><span class="id" type="var">Z</span></span> represents 7 as <span class="inlinecode"><span class="id" type="var">Zpos</span></span> <span class="inlinecode">(<span class="id" type="var">xI</span></span> <span class="inlinecode">(<span class="id" type="var">xI</span></span> <span class="inlinecode"><span class="id" type="var">xH</span>))</span>,
+
+<div class="paragraph"> </div>
+
+  The first alternative uses Coq's <span class="inlinecode"><span class="id" title="var">Z</span></span> type, an inductive type with
+  constructors <span class="inlinecode"><span class="id" title="var">xI</span></span> <span class="inlinecode"><span class="id" title="var">xH</span></span> etc.  <span class="inlinecode"><span class="id" title="var">Z</span></span> represents 7 as <span class="inlinecode"><span class="id" title="var">Zpos</span></span> <span class="inlinecode">(<span class="id" title="var">xI</span></span> <span class="inlinecode">(<span class="id" title="var">xI</span></span> <span class="inlinecode"><span class="id" title="var">xH</span>))</span>,
   that is,  +(  1+2*(  1+2*  1 )).
-  A number <span class="inlinecode"><span class="id" type="var">n</span></span> is represented as a data structure of size log(n), and
+  A number <span class="inlinecode"><span class="id" title="var">n</span></span> is represented as a data structure of size log(n), and
   the operations (plus, less-than) also take about log(n) each.
 
 <div class="paragraph"> </div>
 
-  <span class="inlinecode"><span class="id" type="var">Z</span></span>'s log-time per operation is much better than linear time; but in
+  <span class="inlinecode"><span class="id" title="var">Z</span></span>'s log-time per operation is much better than linear time; but in
   Ocaml we are used to having constant-time operations.  Thus, here
   we will explore the second alternative: program with abstract types,
   then use an extraction directive to get efficiency. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">ZArith</span>.<br/>
-<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">Z_scope</span>.<br/>
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.ZArith.html#"><span class="id" title="library">ZArith</span></a>.<br/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">Z_scope</span>.<br/>
 </div>
 
 <div class="doc">
-We will be using <span class="inlinecode"><span class="id" type="keyword">Parameter</span></span> and <span class="inlinecode"><span class="id" type="keyword">Axiom</span></span> in Coq.   You already saw
- these keywords, in a <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span>, in the <a href="ADT.html"><span class="inlineref">ADT</span></a> chapter.
+We will be using <span class="inlinecode"><span class="id" title="keyword">Parameter</span></span> and <span class="inlinecode"><span class="id" title="keyword">Axiom</span></span> in Coq.   You already saw
+ these keywords, in a <span class="inlinecode"><span class="id" title="keyword">Module</span></span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span>, in the <a href="ADT.html"><span class="inlineref">ADT</span></a> chapter.
  There, they describe interface components that must be instantiated
- by any <span class="inlinecode"><span class="id" type="keyword">Module</span></span> that satisfies the type.  Here, we will use this
+ by any <span class="inlinecode"><span class="id" title="keyword">Module</span></span> that satisfies the type.  Here, we will use this
  feature in a different (and more dangerous) way:  To axiomatize
  a mathematical theory without actually constructing it.  The reason
  that's dangerous is that if your axioms are inconsistent, then you
- can prove <span class="inlinecode"><span class="id" type="var">False</span></span>, or in fact, you can prove _anything_, so all your
+ can prove <span class="inlinecode"><span class="id" title="var">False</span></span>, or in fact, you can prove <i>anything</i>, so all your
  proofs are worthless.  So we must take care!  
 
 <div class="paragraph"> </div>
 
- Here, we will axiomatize a _very weak_ mathematical theory:  
- We claim that there exists some type <span class="inlinecode"><span class="id" type="var">int</span></span> with a function <span class="inlinecode"><span class="id" type="var">ltb</span></span>, 
- so that <span class="inlinecode"><span class="id" type="var">int</span></span> injects into <span class="inlinecode"><span class="id" type="var">Z</span></span>, and <span class="inlinecode"><span class="id" type="var">ltb</span></span> corresponds to the &lt; relation
- on Z.  That seems true enough (for example, take <span class="inlinecode"><span class="id" type="var">int</span>=<span class="id" type="var">Z</span></span>), but
- we're not _proving_ it here. 
+ Here, we will axiomatize a <i>very weak</i> mathematical theory:  
+ We claim that there exists some type <span class="inlinecode"><span class="id" title="var">int</span></span> with a function <span class="inlinecode"><span class="id" title="var">ltb</span></span>, 
+ so that <span class="inlinecode"><span class="id" title="var">int</span></span> injects into <span class="inlinecode"><span class="id" title="var">Z</span></span>, and <span class="inlinecode"><span class="id" title="var">ltb</span></span> corresponds to the &lt; relation
+ on Z.  That seems true enough (for example, take <span class="inlinecode"><span class="id" title="var">int</span>=<span class="id" title="var">Z</span></span>), but
+ we're not <i>proving</i> it here. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Parameter</span> <span class="id" type="var">int</span> : <span class="id" type="keyword">Type</span>. <span class="comment">(*&nbsp;This&nbsp;is&nbsp;the&nbsp;Ocaml&nbsp;<span class="inlinecode"><span class="id" type="var">int</span></span>&nbsp;type.&nbsp;*)</span><br/>
-<span class="id" type="var">Extract</span> <span class="id" type="var">Inlined</span> <span class="id" type="var">Constant</span> <span class="id" type="var">int</span> ⇒ "int". <span class="comment">(*&nbsp;so,&nbsp;extract&nbsp;it&nbsp;that&nbsp;way!&nbsp;*)</span><br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Parameter</span> <span class="id" type="var">ltb</span>: <span class="id" type="var">int</span> → <span class="id" type="var">int</span> → <span class="id" type="var">bool</span>. <span class="comment">(*&nbsp;This&nbsp;is&nbsp;the&nbsp;Ocaml&nbsp;(&lt;)&nbsp;operator.&nbsp;*)</span><br/>
-<span class="id" type="var">Extract</span> <span class="id" type="var">Inlined</span> <span class="id" type="var">Constant</span> <span class="id" type="var">ltb</span> ⇒ "(&lt;)". <span class="comment">(*&nbsp;so,&nbsp;extract&nbsp;it&nbsp;that&nbsp;way!&nbsp;*)</span><br/>
+<br/>
+<span class="id" title="keyword">Parameter</span> <a name="int"><span class="id" title="axiom">int</span></a> : <span class="id" title="keyword">Type</span>. <span class="comment">(*&nbsp;This&nbsp;is&nbsp;the&nbsp;Ocaml&nbsp;<span class="inlinecode"><span class="id" title="var">int</span></span>&nbsp;type.&nbsp;*)</span><br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="var">Inlined</span> <span class="id" title="var">Constant</span> <span class="id" title="var">int</span> ⇒ "int". <span class="comment">(*&nbsp;so,&nbsp;extract&nbsp;it&nbsp;that&nbsp;way!&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Parameter</span> <a name="ltb"><span class="id" title="axiom">ltb</span></a>: <a class="idref" href="Extract.html#int"><span class="id" title="axiom">int</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Extract.html#int"><span class="id" title="axiom">int</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a>. <span class="comment">(*&nbsp;This&nbsp;is&nbsp;the&nbsp;Ocaml&nbsp;(&lt;)&nbsp;operator.&nbsp;*)</span><br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="var">Inlined</span> <span class="id" title="var">Constant</span> <span class="id" title="var">ltb</span> ⇒ "(&lt;)". <span class="comment">(*&nbsp;so,&nbsp;extract&nbsp;it&nbsp;that&nbsp;way!&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-Now, we need to axiomatize <span class="inlinecode"><span class="id" type="var">ltb</span></span> so that we can reason about 
+Now, we need to axiomatize <span class="inlinecode"><span class="id" title="var">ltb</span></span> so that we can reason about 
   programs that use it.  We need to take great care here: the
   axioms had better be consistent with Ocaml's behavior, otherwise
   our proofs will be meaningless.
 
 <div class="paragraph"> </div>
 
-  One axiomatization of <span class="inlinecode"><span class="id" type="var">ltb</span></span> is just that it's a total order, irreflexive
+  One axiomatization of <span class="inlinecode"><span class="id" title="var">ltb</span></span> is just that it's a total order, irreflexive
   and transitive.  This would work just fine.  But instead, I choose to
   claim that there's an injection from "int" into the mathematical integers,
-  Coq's <span class="inlinecode"><span class="id" type="var">Z</span></span> type.  The reason to do this is then we get to use the <span class="inlinecode"><span class="id" type="tactic">omega</span></span>
+  Coq's <span class="inlinecode"><span class="id" title="var">Z</span></span> type.  The reason to do this is then we get to use the <span class="inlinecode"><span class="id" title="tactic">omega</span></span>
   tactic, and other Coq libraries about integer comparisons. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Parameter</span> <span class="id" type="var">int2Z</span>: <span class="id" type="var">int</span> → <span class="id" type="var">Z</span>.<br/>
-<span class="id" type="keyword">Axiom</span> <span class="id" type="var">ltb_lt</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> : <span class="id" type="var">int</span>, <span class="id" type="var">ltb</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> = <span class="id" type="var">true</span> ↔ <span class="id" type="var">int2Z</span> <span class="id" type="var">n</span> &lt; <span class="id" type="var">int2Z</span> <span class="id" type="var">m</span>.<br/>
+<br/>
+<span class="id" title="keyword">Parameter</span> <a name="int2Z"><span class="id" title="axiom">int2Z</span></a>: <a class="idref" href="Extract.html#int"><span class="id" title="axiom">int</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a>.<br/>
+<span class="id" title="keyword">Axiom</span> <a name="ltb_lt"><span class="id" title="axiom">ltb_lt</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <a class="idref" href="Extract.html#int"><span class="id" title="axiom">int</span></a>, <a class="idref" href="Extract.html#ltb"><span class="id" title="axiom">ltb</span></a> <a class="idref" href="Extract.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="Extract.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#df1ced36fc33ce188051218bca314374"><span class="id" title="notation">↔</span></a> <a class="idref" href="Extract.html#int2Z"><span class="id" title="axiom">int2Z</span></a> <a class="idref" href="Extract.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#273beba4f3453dbb29192b3ac740bb<sub>71</sub>"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Extract.html#int2Z"><span class="id" title="axiom">int2Z</span></a> <a class="idref" href="Extract.html#m"><span class="id" title="variable">m</span></a>.<br/>
 </div>
 
 <div class="doc">
 Both of these axioms are sound.  There does (abstractly) exist a
-  function from "int" to <span class="inlinecode"><span class="id" type="var">Z</span></span>, and that function _is_ consistent with
-  the <span class="inlinecode"><span class="id" type="var">ltb_lt</span></span> axiom.  But you should think about this until you are
+  function from "int" to <span class="inlinecode"><span class="id" title="var">Z</span></span>, and that function <i>is</i> consistent with
+  the <span class="inlinecode"><span class="id" title="var">ltb_lt</span></span> axiom.  But you should think about this until you are
   convinced.
 
 <div class="paragraph"> </div>
 
-  Notice that we do not give extraction directives for <span class="inlinecode"><span class="id" type="var">int2Z</span></span> or <span class="inlinecode"><span class="id" type="var">ltb_lt</span></span>.
-  That's because they will not appear in _programs_, only in proofs that
+  Notice that we do not give extraction directives for <span class="inlinecode"><span class="id" title="var">int2Z</span></span> or <span class="inlinecode"><span class="id" title="var">ltb_lt</span></span>.
+  That's because they will not appear in <i>programs</i>, only in proofs that
   are not meant to be extracted.
 
 <div class="paragraph"> </div>
@@ -215,256 +224,262 @@ Both of these axioms are sound.  There does (abstractly) exist a
 
 <div class="paragraph"> </div>
 
-  <span class="inlinecode"><span class="id" type="keyword">Parameter</span></span> <span class="inlinecode"><span class="id" type="var">ocaml_plus</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" type="var">int</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">int</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">int</span>.</span>
+  <span class="inlinecode"><span class="id" title="keyword">Parameter</span></span> <span class="inlinecode"><span class="id" title="var">ocaml_plus</span></span> <span class="inlinecode">:</span> <span class="inlinecode"><span class="id" title="var">int</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">int</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">int</span>.</span>
 
 <div class="paragraph"> </div>
 
-  <span class="inlinecode"><span class="id" type="var">Extract</span></span> <span class="inlinecode"><span class="id" type="var">Inlined</span></span> <span class="inlinecode"><span class="id" type="var">Constant</span></span> <span class="inlinecode"><span class="id" type="var">ocaml_plus</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode">"(+)".</span>
+  <span class="inlinecode"><span class="id" title="keyword">Extract</span></span> <span class="inlinecode"><span class="id" title="var">Inlined</span></span> <span class="inlinecode"><span class="id" title="var">Constant</span></span> <span class="inlinecode"><span class="id" title="var">ocaml_plus</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode">&quot;(+)&quot;.</span>
 
 <div class="paragraph"> </div>
 
-  <span class="inlinecode"><span class="id" type="keyword">Axiom</span></span> <span class="inlinecode"><span class="id" type="var">ocaml_plus_plus</span>:</span>
-     <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode"><span class="id" type="var">c</span>:</span> <span class="inlinecode"><span class="id" type="var">int</span>,</span>
-       <span class="inlinecode"><span class="id" type="var">ocaml_plus</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">c</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" type="var">int2Z</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">int2Z</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">int2Z</span></span> <span class="inlinecode"><span class="id" type="var">c</span>.</span>
+  <span class="inlinecode"><span class="id" title="keyword">Axiom</span></span> <span class="inlinecode"><span class="id" title="var">ocaml_plus_plus</span>:</span>
+     <span class="inlinecode"><span class="id" title="keyword">∀</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span> <span class="inlinecode"><span class="id" title="var">c</span>:</span> <span class="inlinecode"><span class="id" title="var">int</span>,</span>
+       <span class="inlinecode"><span class="id" title="var">ocaml_plus</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">c</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" title="var">int2Z</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">int2Z</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">int2Z</span></span> <span class="inlinecode"><span class="id" title="var">c</span>.</span>
 
 <div class="paragraph"> </div>
 
   The first two lines are OK:  there really is a "+" function in Ocaml,
-  and its type really is  <span class="inlinecode"><span class="id" type="var">int</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">int</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">int</span></span>.  
+  and its type really is  <span class="inlinecode"><span class="id" title="var">int</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">int</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">int</span></span>.  
 
 <div class="paragraph"> </div>
 
-  But <span class="inlinecode"><span class="id" type="var">ocaml_plus_plus</span></span> is unsound!   From it, you could prove,
+  But <span class="inlinecode"><span class="id" title="var">ocaml_plus_plus</span></span> is unsound!   From it, you could prove,
 
 <div class="paragraph"> </div>
 
-  <span class="inlinecode">(<span class="id" type="var">int2Z</span></span> <span class="inlinecode"><span class="id" type="var">max_int</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">int2Z</span></span> <span class="inlinecode"><span class="id" type="var">max_int</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">int2Z</span></span> <span class="inlinecode">(<span class="id" type="var">ocaml_plus</span></span> <span class="inlinecode"><span class="id" type="var">max_int</span></span> <span class="inlinecode"><span class="id" type="var">max_int</span>)</span>,
+  <span class="inlinecode">(<span class="id" title="var">int2Z</span></span> <span class="inlinecode"><span class="id" title="var">max_int</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">int2Z</span></span> <span class="inlinecode"><span class="id" title="var">max_int</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">int2Z</span></span> <span class="inlinecode">(<span class="id" title="var">ocaml_plus</span></span> <span class="inlinecode"><span class="id" title="var">max_int</span></span> <span class="inlinecode"><span class="id" title="var">max_int</span>)</span>,
 
 <div class="paragraph"> </div>
 
   which is not true in Ocaml, because overflow wraps around, modulo
-  <span class="inlinecode">2^(<span class="id" type="var">wordsize</span>-1)</span>.
+  <span class="inlinecode">2^(<span class="id" title="var">wordsize</span>-1)</span>.
 
 <div class="paragraph"> </div>
 
   So we won't axiomatize Ocaml addition. 
 <div class="paragraph"> </div>
 
-<a name="lab95"></a><h1 class="section">Utilities for OCaml Integer Comparisons</h1>
+<a name="lab96"></a><h1 class="section">Utilities for OCaml Integer Comparisons</h1>
 
 <div class="paragraph"> </div>
 
- Just like in Perm.v, but for <span class="inlinecode"><span class="id" type="var">int</span></span> and <span class="inlinecode"><span class="id" type="var">Z</span></span> instead of <span class="inlinecode"><span class="id" type="var">nat</span></span>. 
+ Just like in Perm.v, but for <span class="inlinecode"><span class="id" title="var">int</span></span> and <span class="inlinecode"><span class="id" title="var">Z</span></span> instead of <span class="inlinecode"><span class="id" title="var">nat</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">int_ltb_reflect</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span>, <span class="id" type="var">reflect</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">x</span> &lt; <span class="id" type="var">int2Z</span> <span class="id" type="var">y</span>) (<span class="id" type="var">ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">iff_reflect</span>. <span class="id" type="tactic">symmetry</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ltb_lt</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Z_eqb_reflect</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span>, <span class="id" type="var">reflect</span> (<span class="id" type="var">x</span>=<span class="id" type="var">y</span>) (<span class="id" type="var">Z.eqb</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">iff_reflect</span>. <span class="id" type="tactic">symmetry</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Z.eqb_eq</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Z_ltb_reflect</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span>, <span class="id" type="var">reflect</span> (<span class="id" type="var">x</span>&lt;<span class="id" type="var">y</span>) (<span class="id" type="var">Z.ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">iff_reflect</span>. <span class="id" type="tactic">symmetry</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Z.ltb_lt</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
-<span class="comment">(*&nbsp;Add&nbsp;these&nbsp;three&nbsp;lemmas&nbsp;to&nbsp;the&nbsp;Hint&nbsp;database&nbsp;for&nbsp;<span class="inlinecode"><span class="id" type="var">bdestruct</span></span>,<br/>
-&nbsp;&nbsp;so&nbsp;the&nbsp;<span class="inlinecode"><span class="id" type="var">bdestruct</span></span>&nbsp;tactic&nbsp;will&nbsp;work&nbsp;with&nbsp;them.&nbsp;*)</span><br/>
-<span class="id" type="keyword">Hint</span> <span class="id" type="keyword">Resolve</span> <span class="id" type="var">int_ltb_reflect</span> <span class="id" type="var">Z_eqb_reflect</span> <span class="id" type="var">Z_ltb_reflect</span> : <span class="id" type="var">bdestruct</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="int_ltb_reflect"><span class="id" title="lemma">int_ltb_reflect</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>, <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#reflect"><span class="id" title="inductive">reflect</span></a> (<a class="idref" href="Extract.html#int2Z"><span class="id" title="axiom">int2Z</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#273beba4f3453dbb29192b3ac740bb<sub>71</sub>"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Extract.html#int2Z"><span class="id" title="axiom">int2Z</span></a> <a class="idref" href="Extract.html#y"><span class="id" title="variable">y</span></a>) (<a class="idref" href="Extract.html#ltb"><span class="id" title="axiom">ltb</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#y"><span class="id" title="variable">y</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#iff_reflect"><span class="id" title="lemma">iff_reflect</span></a>. <span class="id" title="tactic">symmetry</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Extract.html#ltb_lt"><span class="id" title="axiom">ltb_lt</span></a>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Lemma</span> <a name="Z_eqb_reflect"><span class="id" title="lemma">Z_eqb_reflect</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>, <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#reflect"><span class="id" title="inductive">reflect</span></a> (<a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a><a class="idref" href="Extract.html#y"><span class="id" title="variable">y</span></a>) (<a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#Z.eqb"><span class="id" title="definition">Z.eqb</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#y"><span class="id" title="variable">y</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#iff_reflect"><span class="id" title="lemma">iff_reflect</span></a>. <span class="id" title="tactic">symmetry</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#Z.eqb_eq"><span class="id" title="lemma">Z.eqb_eq</span></a>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Lemma</span> <a name="Z_ltb_reflect"><span class="id" title="lemma">Z_ltb_reflect</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>, <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#reflect"><span class="id" title="inductive">reflect</span></a> (<a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#273beba4f3453dbb29192b3ac740bb<sub>71</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Extract.html#y"><span class="id" title="variable">y</span></a>) (<a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#Z.ltb"><span class="id" title="definition">Z.ltb</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#y"><span class="id" title="variable">y</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#iff_reflect"><span class="id" title="lemma">iff_reflect</span></a>. <span class="id" title="tactic">symmetry</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#Z.ltb_lt"><span class="id" title="lemma">Z.ltb_lt</span></a>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;Add&nbsp;these&nbsp;three&nbsp;lemmas&nbsp;to&nbsp;the&nbsp;Hint&nbsp;database&nbsp;for&nbsp;<span class="inlinecode"><span class="id" title="var">bdestruct</span></span>,<br/>
+&nbsp;&nbsp;so&nbsp;the&nbsp;<span class="inlinecode"><span class="id" title="var">bdestruct</span></span>&nbsp;tactic&nbsp;will&nbsp;work&nbsp;with&nbsp;them.&nbsp;*)</span><br/>
+<span class="id" title="keyword">Hint Resolve</span> <span class="id" title="var">int_ltb_reflect</span> <span class="id" title="var">Z_eqb_reflect</span> <span class="id" title="var">Z_ltb_reflect</span> : <span class="id" title="var">bdestruct</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab96"></a><h1 class="section">SearchTrees, Extracted</h1>
+<a name="lab97"></a><h1 class="section">SearchTrees, Extracted</h1>
 
 <div class="paragraph"> </div>
 
  Let us re-do binary search trees, but with Ocaml integers instead of  Coq nats. 
 <div class="paragraph"> </div>
 
-<a name="lab97"></a><h2 class="section">Maps, on <span class="inlinecode"><span class="id" type="var">Z</span></span> Instead of <span class="inlinecode"><span class="id" type="var">nat</span></span></h2>
- Our original proof with nats used <span class="inlinecode"><span class="id" type="var">Maps.total_map</span></span> in its abstraction relation,
-     but that won't work here because we need maps over <span class="inlinecode"><span class="id" type="var">Z</span></span> rather than <span class="inlinecode"><span class="id" type="var">nat</span></span>.
-     So, we copy-paste-edit to make <span class="inlinecode"><span class="id" type="var">total_map</span></span> over <span class="inlinecode"><span class="id" type="var">Z</span></span>. 
+<a name="lab98"></a><h2 class="section">Maps, on <span class="inlinecode"><span class="id" title="var">Z</span></span> Instead of <span class="inlinecode"><span class="id" title="var">nat</span></span></h2>
+ Our original proof with nats used <span class="inlinecode"><span class="id" title="var">Maps.total_map</span></span> in its abstraction relation,
+     but that won't work here because we need maps over <span class="inlinecode"><span class="id" title="var">Z</span></span> rather than <span class="inlinecode"><span class="id" title="var">nat</span></span>.
+     So, we copy-paste-edit to make <span class="inlinecode"><span class="id" title="var">total_map</span></span> over <span class="inlinecode"><span class="id" title="var">Z</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Logic.FunctionalExtensionality</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">IntMaps</span>.<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">total_map</span> (<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>) := <span class="id" type="var">Z</span> → <span class="id" type="var">A</span>.<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">t_empty</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span> :=  (<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">v</span>).<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">t_update</span> {<span class="id" type="var">A</span>:<span class="id" type="keyword">Type</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) (<span class="id" type="var">x</span> : <span class="id" type="var">Z</span>) (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x'</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">Z.eqb</span> <span class="id" type="var">x</span> <span class="id" type="var">x'</span> <span class="id" type="keyword">then</span> <span class="id" type="var">v</span> <span class="id" type="keyword">else</span> <span class="id" type="var">m</span> <span class="id" type="var">x'</span>.<br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">t_update_eq</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">A</span> (<span class="id" type="var">m</span>: <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> <span class="id" type="var">v</span>, (<span class="id" type="var">t_update</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span>) <span class="id" type="var">x</span> = <span class="id" type="var">v</span>.<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Logic.FunctionalExtensionality.html#"><span class="id" title="library">Logic.FunctionalExtensionality</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Module</span> <a name="IntMaps"><span class="id" title="module">IntMaps</span></a>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="IntMaps.total_map"><span class="id" title="definition">total_map</span></a> (<span class="id" title="var">A</span>:<span class="id" title="keyword">Type</span>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="IntMaps.t_empty"><span class="id" title="definition">t_empty</span></a> {<span class="id" title="var">A</span>:<span class="id" title="keyword">Type</span>} (<span class="id" title="var">v</span> : <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a>) : <a class="idref" href="Extract.html#IntMaps.total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a> :=  (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a>).<br/>
+<span class="id" title="keyword">Definition</span> <a name="IntMaps.t_update"><span class="id" title="definition">t_update</span></a> {<span class="id" title="var">A</span>:<span class="id" title="keyword">Type</span>} (<span class="id" title="var">m</span> : <a class="idref" href="Extract.html#IntMaps.total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a>) (<span class="id" title="var">x</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a>) (<span class="id" title="var">v</span> : <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">x'</span> ⇒ <span class="id" title="keyword">if</span> <a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#Z.eqb"><span class="id" title="definition">Z.eqb</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#x'"><span class="id" title="variable">x'</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="Extract.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Extract.html#x'"><span class="id" title="variable">x'</span></a>.<br/>
+<span class="id" title="keyword">Lemma</span> <a name="IntMaps.t_update_eq"><span class="id" title="lemma">t_update_eq</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> (<span class="id" title="var">m</span>: <a class="idref" href="Extract.html#IntMaps.total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x</span> <span class="id" title="var">v</span>, (<a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a> <a class="idref" href="Extract.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a>) <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a>.<br/>
 <div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
 <div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">t_update</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">bdestruct</span> (<span class="id" type="var">x</span>=?<span class="id" type="var">x</span>); <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">omega</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">bdestruct</span> (<span class="id" title="var">x</span><a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#b4b39b4b0d7e7e7359e0985cb2b2cef5"><span class="id" title="notation">=?</span></a><span class="id" title="var">x</span>); <span class="id" title="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">omega</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">t_update_neq</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">X</span>:<span class="id" type="keyword">Type</span>) <span class="id" type="var">v</span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">X</span>),<br/>
-&nbsp;&nbsp;<span class="id" type="var">x<sub>1</sub></span> ≠ <span class="id" type="var">x<sub>2</sub></span> →  (<span class="id" type="var">t_update</span> <span class="id" type="var">m</span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">v</span>) <span class="id" type="var">x<sub>2</sub></span> = <span class="id" type="var">m</span> <span class="id" type="var">x<sub>2</sub></span>.<br/>
+<span class="id" title="keyword">Theorem</span> <a name="IntMaps.t_update_neq"><span class="id" title="lemma">t_update_neq</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">X</span>:<span class="id" title="keyword">Type</span>) <span class="id" title="var">v</span> <span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span> (<span class="id" title="var">m</span> : <a class="idref" href="Extract.html#IntMaps.total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Extract.html#X"><span class="id" title="variable">X</span></a>),<br/>
+&nbsp;&nbsp;<a class="idref" href="Extract.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="Extract.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a>  (<a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a> <a class="idref" href="Extract.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Extract.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a>) <a class="idref" href="Extract.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Extract.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Extract.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a>.<br/>
 <div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
 <div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">t_update</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">bdestruct</span> (<span class="id" type="var">x<sub>1</sub></span>=?<span class="id" type="var">x<sub>2</sub></span>); <span class="id" type="tactic">auto</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">omega</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">bdestruct</span> (<span class="id" title="var">x<sub>1</sub></span><a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#b4b39b4b0d7e7e7359e0985cb2b2cef5"><span class="id" title="notation">=?</span></a><span class="id" title="var">x<sub>2</sub></span>); <span class="id" title="tactic">auto</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">omega</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">t_update_shadow</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">A</span> (<span class="id" type="var">m</span>: <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">x</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t_update</span> (<span class="id" type="var">t_update</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">v<sub>1</sub></span>) <span class="id" type="var">x</span> <span class="id" type="var">v<sub>2</sub></span>  = <span class="id" type="var">t_update</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">v<sub>2</sub></span>.<br/>
+<span class="id" title="keyword">Lemma</span> <a name="IntMaps.t_update_shadow"><span class="id" title="lemma">t_update_shadow</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> (<span class="id" title="var">m</span>: <a class="idref" href="Extract.html#IntMaps.total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">v<sub>1</sub></span> <span class="id" title="var">v<sub>2</sub></span> <span class="id" title="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a> (<a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a> <a class="idref" href="Extract.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#v<sub>1</sub>"><span class="id" title="variable">v<sub>1</sub></span></a>) <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a>  <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a> <a class="idref" href="Extract.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a>.<br/>
 <div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
 <div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">t_update</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">extensionality</span> <span class="id" type="var">x'</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="var">bdestruct</span> (<span class="id" type="var">x</span>=?<span class="id" type="var">x'</span>); <span class="id" type="tactic">auto</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">extensionality</span> <span class="id" title="var">x'</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">bdestruct</span> (<span class="id" title="var">x</span><a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#b4b39b4b0d7e7e7359e0985cb2b2cef5"><span class="id" title="notation">=?</span></a><span class="id" title="var">x'</span>); <span class="id" title="tactic">auto</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">End</span> <span class="id" type="var">IntMaps</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">IntMaps</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="Extract.html#IntMaps"><span class="id" title="module">IntMaps</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Import</span> <span class="id" title="var">IntMaps</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab98"></a><h2 class="section">Trees, on <span class="inlinecode"><span class="id" type="var">int</span></span> Instead of <span class="inlinecode"><span class="id" type="var">nat</span></span></h2>
+<a name="lab99"></a><h2 class="section">Trees, on <span class="inlinecode"><span class="id" title="var">int</span></span> Instead of <span class="inlinecode"><span class="id" title="var">nat</span></span></h2>
 
 </div>
-<div class="code code-space">
+<div class="code">
 
 <br/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">SearchTree2</span>.<br/>
-<span class="id" type="keyword">Section</span> <span class="id" type="var">TREES</span>.<br/>
-<span class="id" type="keyword">Variable</span> <span class="id" type="var">V</span> : <span class="id" type="keyword">Type</span>.<br/>
-<span class="id" type="keyword">Variable</span> <span class="id" type="var">default</span>: <span class="id" type="var">V</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">int</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">tree</span> : <span class="id" type="keyword">Type</span> :=<br/>
-&nbsp;| <span class="id" type="var">E</span> : <span class="id" type="var">tree</span><br/>
-&nbsp;| <span class="id" type="var">T</span>: <span class="id" type="var">tree</span> → <span class="id" type="var">key</span> → <span class="id" type="var">V</span> → <span class="id" type="var">tree</span> → <span class="id" type="var">tree</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty_tree</span> : <span class="id" type="var">tree</span> := <span class="id" type="var">E</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">lookup</span> (<span class="id" type="var">x</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">t</span> : <span class="id" type="var">tree</span>) : <span class="id" type="var">V</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">t</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">E</span> ⇒ <span class="id" type="var">default</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">tl</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">tr</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">k</span> <span class="id" type="keyword">then</span> <span class="id" type="var">lookup</span> <span class="id" type="var">x</span> <span class="id" type="var">tl</span> <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="keyword">if</span> <span class="id" type="var">ltb</span> <span class="id" type="var">k</span> <span class="id" type="var">x</span> <span class="id" type="keyword">then</span> <span class="id" type="var">lookup</span> <span class="id" type="var">x</span> <span class="id" type="var">tr</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">v</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> (<span class="id" type="var">x</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">v</span>: <span class="id" type="var">V</span>) (<span class="id" type="var">s</span>: <span class="id" type="var">tree</span>) : <span class="id" type="var">tree</span> :=<br/>
-&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">s</span> <span class="id" type="keyword">with</span> <br/>
-&nbsp;| <span class="id" type="var">E</span> ⇒ <span class="id" type="var">T</span> <span class="id" type="var">E</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span> <span class="id" type="var">E</span><br/>
-&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span> <span class="id" type="var">v'</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="keyword">if</span>  <span class="id" type="var">ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">T</span> (<span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span> <span class="id" type="var">a</span>) <span class="id" type="var">y</span> <span class="id" type="var">v'</span> <span class="id" type="var">b</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="keyword">if</span> <span class="id" type="var">ltb</span> <span class="id" type="var">y</span> <span class="id" type="var">x</span> <span class="id" type="keyword">then</span> <span class="id" type="var">T</span> <span class="id" type="var">a</span> <span class="id" type="var">y</span> <span class="id" type="var">v'</span> (<span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span> <span class="id" type="var">b</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">T</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span> <span class="id" type="var">b</span><br/>
-&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">elements'</span> (<span class="id" type="var">s</span>: <span class="id" type="var">tree</span>) (<span class="id" type="var">base</span>: <span class="id" type="var">list</span> (<span class="id" type="var">key</span>*<span class="id" type="var">V</span>)) : <span class="id" type="var">list</span> (<span class="id" type="var">key</span> * <span class="id" type="var">V</span>) :=<br/>
-&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">s</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;| <span class="id" type="var">E</span> ⇒ <span class="id" type="var">base</span><br/>
-&nbsp;| <span class="id" type="var">T</span> <span class="id" type="var">a</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">b</span> ⇒ <span class="id" type="var">elements'</span> <span class="id" type="var">a</span> ((<span class="id" type="var">k</span>,<span class="id" type="var">v</span>) :: <span class="id" type="var">elements'</span> <span class="id" type="var">b</span> <span class="id" type="var">base</span>)<br/>
-&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">elements</span> (<span class="id" type="var">s</span>: <span class="id" type="var">tree</span>) : <span class="id" type="var">list</span> (<span class="id" type="var">key</span> * <span class="id" type="var">V</span>) := <span class="id" type="var">elements'</span> <span class="id" type="var">s</span> <span class="id" type="var">nil</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">combine</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">pivot</span>: <span class="id" type="var">Z</span>) (<span class="id" type="var">m<sub>1</sub></span> <span class="id" type="var">m<sub>2</sub></span>: <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">Z.ltb</span> <span class="id" type="var">x</span> <span class="id" type="var">pivot</span>  <span class="id" type="keyword">then</span> <span class="id" type="var">m<sub>1</sub></span> <span class="id" type="var">x</span> <span class="id" type="keyword">else</span> <span class="id" type="var">m<sub>2</sub></span> <span class="id" type="var">x</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">Abs</span>:  <span class="id" type="var">tree</span> → <span class="id" type="var">total_map</span> <span class="id" type="var">V</span> → <span class="id" type="keyword">Prop</span> :=<br/>
-| <span class="id" type="var">Abs_E</span>: <span class="id" type="var">Abs</span> <span class="id" type="var">E</span> (<span class="id" type="var">t_empty</span> <span class="id" type="var">default</span>)<br/>
-| <span class="id" type="var">Abs_T</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">r</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">l</span> <span class="id" type="var">a</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">r</span> <span class="id" type="var">b</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">T</span> <span class="id" type="var">l</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">r</span>)  (<span class="id" type="var">t_update</span> (<span class="id" type="var">combine</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) <span class="id" type="var">a</span> <span class="id" type="var">b</span>) (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) <span class="id" type="var">v</span>).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">empty_tree_relate</span>: <span class="id" type="var">Abs</span> <span class="id" type="var">empty_tree</span> (<span class="id" type="var">t_empty</span> <span class="id" type="var">default</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="var">constructor</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Module</span> <a name="SearchTree2"><span class="id" title="module">SearchTree2</span></a>.<br/>
+<span class="id" title="keyword">Section</span> <a name="SearchTree2.TREES"><span class="id" title="section">TREES</span></a>.<br/>
+<span class="id" title="keyword">Variable</span> <a name="SearchTree2.TREES.V"><span class="id" title="variable">V</span></a> : <span class="id" title="keyword">Type</span>.<br/>
+<span class="id" title="keyword">Variable</span> <a name="SearchTree2.TREES.default"><span class="id" title="variable">default</span></a>: <a class="idref" href="Extract.html#SearchTree2.TREES.V"><span class="id" title="variable">V</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="SearchTree2.key"><span class="id" title="definition">key</span></a> := <a class="idref" href="Extract.html#int"><span class="id" title="axiom">int</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Inductive</span> <a name="SearchTree2.tree"><span class="id" title="inductive">tree</span></a> : <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;| <a name="SearchTree2.E"><span class="id" title="constructor">E</span></a> : <a class="idref" href="Extract.html#tree"><span class="id" title="inductive">tree</span></a><br/>
+&nbsp;| <a name="SearchTree2.T"><span class="id" title="constructor">T</span></a>: <a class="idref" href="Extract.html#tree"><span class="id" title="inductive">tree</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Extract.html#SearchTree2.key"><span class="id" title="definition">key</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Extract.html#SearchTree2.TREES.V"><span class="id" title="variable">V</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Extract.html#tree"><span class="id" title="inductive">tree</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Extract.html#tree"><span class="id" title="inductive">tree</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="SearchTree2.empty_tree"><span class="id" title="definition">empty_tree</span></a> : <a class="idref" href="Extract.html#SearchTree2.tree"><span class="id" title="inductive">tree</span></a> := <a class="idref" href="Extract.html#SearchTree2.E"><span class="id" title="constructor">E</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Fixpoint</span> <a name="SearchTree2.lookup"><span class="id" title="definition">lookup</span></a> (<span class="id" title="var">x</span>: <a class="idref" href="Extract.html#SearchTree2.key"><span class="id" title="definition">key</span></a>) (<span class="id" title="var">t</span> : <a class="idref" href="Extract.html#SearchTree2.tree"><span class="id" title="inductive">tree</span></a>) : <a class="idref" href="Extract.html#SearchTree2.TREES.V"><span class="id" title="variable">V</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Extract.html#t"><span class="id" title="variable">t</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="Extract.html#SearchTree2.E"><span class="id" title="constructor">E</span></a> ⇒ <a class="idref" href="Extract.html#SearchTree2.TREES.default"><span class="id" title="variable">default</span></a><br/>
+&nbsp;&nbsp;| <a class="idref" href="Extract.html#SearchTree2.T"><span class="id" title="constructor">T</span></a> <span class="id" title="var">tl</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">tr</span> ⇒ <span class="id" title="keyword">if</span> <a class="idref" href="Extract.html#ltb"><span class="id" title="axiom">ltb</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="var">k</span> <span class="id" title="keyword">then</span> <a class="idref" href="Extract.html#lookup"><span class="id" title="definition">lookup</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="var">tl</span> <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <span class="id" title="keyword">if</span> <a class="idref" href="Extract.html#ltb"><span class="id" title="axiom">ltb</span></a> <span class="id" title="var">k</span> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Extract.html#lookup"><span class="id" title="definition">lookup</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="var">tr</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <span class="id" title="var">v</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Fixpoint</span> <a name="SearchTree2.insert"><span class="id" title="definition">insert</span></a> (<span class="id" title="var">x</span>: <a class="idref" href="Extract.html#SearchTree2.key"><span class="id" title="definition">key</span></a>) (<span class="id" title="var">v</span>: <a class="idref" href="Extract.html#SearchTree2.TREES.V"><span class="id" title="variable">V</span></a>) (<span class="id" title="var">s</span>: <a class="idref" href="Extract.html#SearchTree2.tree"><span class="id" title="inductive">tree</span></a>) : <a class="idref" href="Extract.html#SearchTree2.tree"><span class="id" title="inductive">tree</span></a> :=<br/>
+&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Extract.html#s"><span class="id" title="variable">s</span></a> <span class="id" title="keyword">with</span> <br/>
+&nbsp;| <a class="idref" href="Extract.html#SearchTree2.E"><span class="id" title="constructor">E</span></a> ⇒ <a class="idref" href="Extract.html#SearchTree2.T"><span class="id" title="constructor">T</span></a> <a class="idref" href="Extract.html#SearchTree2.E"><span class="id" title="constructor">E</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Extract.html#SearchTree2.E"><span class="id" title="constructor">E</span></a><br/>
+&nbsp;| <a class="idref" href="Extract.html#SearchTree2.T"><span class="id" title="constructor">T</span></a> <span class="id" title="var">a</span> <span class="id" title="var">y</span> <span class="id" title="var">v'</span> <span class="id" title="var">b</span> ⇒ <span class="id" title="keyword">if</span>  <a class="idref" href="Extract.html#ltb"><span class="id" title="axiom">ltb</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="var">y</span> <span class="id" title="keyword">then</span> <a class="idref" href="Extract.html#SearchTree2.T"><span class="id" title="constructor">T</span></a> (<a class="idref" href="Extract.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a> <span class="id" title="var">a</span>) <span class="id" title="var">y</span> <span class="id" title="var">v'</span> <span class="id" title="var">b</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <span class="id" title="keyword">if</span> <a class="idref" href="Extract.html#ltb"><span class="id" title="axiom">ltb</span></a> <span class="id" title="var">y</span> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Extract.html#SearchTree2.T"><span class="id" title="constructor">T</span></a> <span class="id" title="var">a</span> <span class="id" title="var">y</span> <span class="id" title="var">v'</span> (<a class="idref" href="Extract.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a> <span class="id" title="var">b</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="Extract.html#SearchTree2.T"><span class="id" title="constructor">T</span></a> <span class="id" title="var">a</span> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a> <span class="id" title="var">b</span><br/>
+&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Fixpoint</span> <a name="SearchTree2.elements'"><span class="id" title="definition">elements'</span></a> (<span class="id" title="var">s</span>: <a class="idref" href="Extract.html#SearchTree2.tree"><span class="id" title="inductive">tree</span></a>) (<span class="id" title="var">base</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Extract.html#SearchTree2.key"><span class="id" title="definition">key</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="Extract.html#SearchTree2.TREES.V"><span class="id" title="variable">V</span></a>)) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Extract.html#SearchTree2.key"><span class="id" title="definition">key</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Extract.html#SearchTree2.TREES.V"><span class="id" title="variable">V</span></a>) :=<br/>
+&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Extract.html#s"><span class="id" title="variable">s</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;| <a class="idref" href="Extract.html#SearchTree2.E"><span class="id" title="constructor">E</span></a> ⇒ <a class="idref" href="Extract.html#base"><span class="id" title="variable">base</span></a><br/>
+&nbsp;| <a class="idref" href="Extract.html#SearchTree2.T"><span class="id" title="constructor">T</span></a> <span class="id" title="var">a</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">b</span> ⇒ <a class="idref" href="Extract.html#elements'"><span class="id" title="definition">elements'</span></a> <span class="id" title="var">a</span> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">(</span></a><span class="id" title="var">k</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><span class="id" title="var">v</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a> <a class="idref" href="Extract.html#elements'"><span class="id" title="definition">elements'</span></a> <span class="id" title="var">b</span> <a class="idref" href="Extract.html#base"><span class="id" title="variable">base</span></a>)<br/>
+&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="SearchTree2.elements"><span class="id" title="definition">elements</span></a> (<span class="id" title="var">s</span>: <a class="idref" href="Extract.html#SearchTree2.tree"><span class="id" title="inductive">tree</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> (<a class="idref" href="Extract.html#SearchTree2.key"><span class="id" title="definition">key</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Extract.html#SearchTree2.TREES.V"><span class="id" title="variable">V</span></a>) := <a class="idref" href="Extract.html#SearchTree2.elements'"><span class="id" title="definition">elements'</span></a> <a class="idref" href="Extract.html#s"><span class="id" title="variable">s</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="SearchTree2.combine"><span class="id" title="definition">combine</span></a> {<span class="id" title="var">A</span>} (<span class="id" title="var">pivot</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Numbers.BinNums.html#Z"><span class="id" title="inductive">Z</span></a>) (<span class="id" title="var">m<sub>1</sub></span> <span class="id" title="var">m<sub>2</sub></span>: <a class="idref" href="Extract.html#IntMaps.total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a>) : <a class="idref" href="Extract.html#IntMaps.total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Extract.html#A"><span class="id" title="variable">A</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> ⇒ <span class="id" title="keyword">if</span> <a class="idref" href="http://coq.inria.fr/library//Coq.ZArith.BinInt.html#Z.ltb"><span class="id" title="definition">Z.ltb</span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Extract.html#pivot"><span class="id" title="variable">pivot</span></a>  <span class="id" title="keyword">then</span> <a class="idref" href="Extract.html#m<sub>1</sub>"><span class="id" title="variable">m<sub>1</sub></span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="Extract.html#m<sub>2</sub>"><span class="id" title="variable">m<sub>2</sub></span></a> <a class="idref" href="Extract.html#x"><span class="id" title="variable">x</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Inductive</span> <a name="SearchTree2.Abs"><span class="id" title="inductive">Abs</span></a>:  <a class="idref" href="Extract.html#SearchTree2.tree"><span class="id" title="inductive">tree</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Extract.html#IntMaps.total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Extract.html#SearchTree2.TREES.V"><span class="id" title="variable">V</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span> :=<br/>
+| <a name="SearchTree2.Abs_E"><span class="id" title="constructor">Abs_E</span></a>: <a class="idref" href="Extract.html#Abs"><span class="id" title="inductive">Abs</span></a> <a class="idref" href="Extract.html#SearchTree2.E"><span class="id" title="constructor">E</span></a> (<a class="idref" href="Extract.html#IntMaps.t_empty"><span class="id" title="definition">t_empty</span></a> <a class="idref" href="Extract.html#SearchTree2.TREES.default"><span class="id" title="variable">default</span></a>)<br/>
+| <a name="SearchTree2.Abs_T"><span class="id" title="constructor">Abs_T</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">l</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">r</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Extract.html#Abs"><span class="id" title="inductive">Abs</span></a> <a class="idref" href="Extract.html#l"><span class="id" title="variable">l</span></a> <a class="idref" href="Extract.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Extract.html#Abs"><span class="id" title="inductive">Abs</span></a> <a class="idref" href="Extract.html#r"><span class="id" title="variable">r</span></a> <a class="idref" href="Extract.html#b"><span class="id" title="variable">b</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Extract.html#Abs"><span class="id" title="inductive">Abs</span></a> (<a class="idref" href="Extract.html#SearchTree2.T"><span class="id" title="constructor">T</span></a> <a class="idref" href="Extract.html#l"><span class="id" title="variable">l</span></a> <a class="idref" href="Extract.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Extract.html#r"><span class="id" title="variable">r</span></a>)  (<a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a> (<a class="idref" href="Extract.html#SearchTree2.combine"><span class="id" title="definition">combine</span></a> (<a class="idref" href="Extract.html#int2Z"><span class="id" title="axiom">int2Z</span></a> <a class="idref" href="Extract.html#k"><span class="id" title="variable">k</span></a>) <a class="idref" href="Extract.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Extract.html#b"><span class="id" title="variable">b</span></a>) (<a class="idref" href="Extract.html#int2Z"><span class="id" title="axiom">int2Z</span></a> <a class="idref" href="Extract.html#k"><span class="id" title="variable">k</span></a>) <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="SearchTree2.empty_tree_relate"><span class="id" title="lemma">empty_tree_relate</span></a>: <a class="idref" href="Extract.html#SearchTree2.Abs"><span class="id" title="inductive">Abs</span></a> <a class="idref" href="Extract.html#SearchTree2.empty_tree"><span class="id" title="definition">empty_tree</span></a> (<a class="idref" href="Extract.html#IntMaps.t_empty"><span class="id" title="definition">t_empty</span></a> <a class="idref" href="Extract.html#SearchTree2.TREES.default"><span class="id" title="variable">default</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">constructor</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab99"></a><h4 class="section">练习：3 星, standard (lookup_relate)</h4>
+<a name="lab100"></a><h4 class="section">练习：3 星, standard (lookup_relate)</h4>
 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">lookup_relate</span>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> ,   <span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> → <span class="id" type="var">lookup</span> <span class="id" type="var">k</span> <span class="id" type="var">t</span> =  <span class="id" type="var">cts</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>).<br/>
-<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;Copy&nbsp;your&nbsp;proof&nbsp;from&nbsp;SearchTree.v,&nbsp;and&nbsp;adapt&nbsp;it.&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Theorem</span> <a name="SearchTree2.lookup_relate"><span class="id" title="lemma">lookup_relate</span></a>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">k</span> <span class="id" title="var">t</span> <span class="id" title="var">cts</span> ,   <a class="idref" href="Extract.html#SearchTree2.Abs"><span class="id" title="inductive">Abs</span></a> <a class="idref" href="Extract.html#t"><span class="id" title="variable">t</span></a> <a class="idref" href="Extract.html#cts"><span class="id" title="variable">cts</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Extract.html#SearchTree2.lookup"><span class="id" title="definition">lookup</span></a> <a class="idref" href="Extract.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="Extract.html#t"><span class="id" title="variable">t</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a>  <a class="idref" href="Extract.html#cts"><span class="id" title="variable">cts</span></a> (<a class="idref" href="Extract.html#int2Z"><span class="id" title="axiom">int2Z</span></a> <a class="idref" href="Extract.html#k"><span class="id" title="variable">k</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>. <span class="comment">(*&nbsp;Copy&nbsp;your&nbsp;proof&nbsp;from&nbsp;SearchTree.v,&nbsp;and&nbsp;adapt&nbsp;it.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab100"></a><h4 class="section">练习：3 星, standard (insert_relate)</h4>
+<a name="lab101"></a><h4 class="section">练习：3 星, standard (insert_relate)</h4>
 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">insert_relate</span>:<br/>
-&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Abs</span> (<span class="id" type="var">insert</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) (<span class="id" type="var">t_update</span> <span class="id" type="var">cts</span> (<span class="id" type="var">int2Z</span> <span class="id" type="var">k</span>) <span class="id" type="var">v</span>).<br/>
-<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;Copy&nbsp;your&nbsp;proof&nbsp;from&nbsp;SearchTree.v,&nbsp;and&nbsp;adapt&nbsp;it.&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Theorem</span> <a name="SearchTree2.insert_relate"><span class="id" title="lemma">insert_relate</span></a>:<br/>
+&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span> <span class="id" title="var">cts</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Extract.html#SearchTree2.Abs"><span class="id" title="inductive">Abs</span></a> <a class="idref" href="Extract.html#t"><span class="id" title="variable">t</span></a> <a class="idref" href="Extract.html#cts"><span class="id" title="variable">cts</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Extract.html#SearchTree2.Abs"><span class="id" title="inductive">Abs</span></a> (<a class="idref" href="Extract.html#SearchTree2.insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Extract.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Extract.html#t"><span class="id" title="variable">t</span></a>) (<a class="idref" href="Extract.html#IntMaps.t_update"><span class="id" title="definition">t_update</span></a> <a class="idref" href="Extract.html#cts"><span class="id" title="variable">cts</span></a> (<a class="idref" href="Extract.html#int2Z"><span class="id" title="axiom">int2Z</span></a> <a class="idref" href="Extract.html#k"><span class="id" title="variable">k</span></a>) <a class="idref" href="Extract.html#v"><span class="id" title="variable">v</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>. <span class="comment">(*&nbsp;Copy&nbsp;your&nbsp;proof&nbsp;from&nbsp;SearchTree.v,&nbsp;and&nbsp;adapt&nbsp;it.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab101"></a><h4 class="section">练习：1 星, standard (unrealistically_strong_can_relate)</h4>
+<a name="lab102"></a><h4 class="section">练习：1 星, standard (unrealistically_strong_can_relate)</h4>
 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">unrealistically_strong_can_relate</span>:<br/>
-&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">t</span>,  <span style='font-size:120%;'>&exist;</span><span class="id" type="var">cts</span>, <span class="id" type="var">Abs</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span>.<br/>
-<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;Copy-paste&nbsp;your&nbsp;proof&nbsp;from&nbsp;SearchTree.v;&nbsp;it&nbsp;should&nbsp;work&nbsp;as&nbsp;is.&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Lemma</span> <a name="SearchTree2.unrealistically_strong_can_relate"><span class="id" title="lemma">unrealistically_strong_can_relate</span></a>:<br/>
+&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">t</span>,  <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#84eb6d2849dbf3581b1c0c05add5f2d<sub>8</sub>"><span class="id" title="notation">∃</span></a> <span class="id" title="var">cts</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#84eb6d2849dbf3581b1c0c05add5f2d<sub>8</sub>"><span class="id" title="notation">,</span></a> <a class="idref" href="Extract.html#SearchTree2.Abs"><span class="id" title="inductive">Abs</span></a> <a class="idref" href="Extract.html#t"><span class="id" title="variable">t</span></a> <a class="idref" href="Extract.html#cts"><span class="id" title="variable">cts</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="comment">(*&nbsp;Copy-paste&nbsp;your&nbsp;proof&nbsp;from&nbsp;SearchTree.v;&nbsp;it&nbsp;should&nbsp;work&nbsp;as&nbsp;is.&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">End</span> <span class="id" type="var">TREES</span>.<br/>
+<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="Extract.html#SearchTree2.TREES"><span class="id" title="section">TREES</span></a>.<br/>
 </div>
 
 <div class="doc">
 Now, run this command and examine the results in the "results"
    window of your IDE: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Recursive Extraction</span> <span class="id" type="var">empty_tree</span> <span class="id" type="var">insert</span> <span class="id" type="var">lookup</span> <span class="id" type="var">elements</span>.<br/>
+<br/>
+<span class="id" title="keyword">Recursive Extraction</span> <span class="id" title="var">empty_tree</span> <span class="id" title="var">insert</span> <span class="id" title="var">lookup</span> <span class="id" title="var">elements</span>.<br/>
 </div>
 
 <div class="doc">
 Next, we will extract it into an Ocaml source file, and measure its 
   performance. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Extraction</span> "searchtree.ml" <span class="id" type="var">empty_tree</span> <span class="id" type="var">insert</span> <span class="id" type="var">lookup</span> <span class="id" type="var">elements</span>.<br/>
+<br/>
+<span class="id" title="keyword">Extraction</span> "searchtree.ml" <span class="id" title="var">empty_tree</span> <span class="id" title="var">insert</span> <span class="id" title="var">lookup</span> <span class="id" title="var">elements</span>.<br/>
 </div>
 
 <div class="doc">
-Note: we've done the extraction _inside_ the module, even though
+Note: we've done the extraction <i>inside</i> the module, even though
    Coq warns against it, for a specific reason:  We want to extract only
    the program, not the proofs. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">End</span> <span class="id" type="var">SearchTree2</span>.<br/>
+<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="Extract.html#SearchTree2"><span class="id" title="module">SearchTree2</span></a>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab102"></a><h1 class="section">Performance Tests</h1>
+<a name="lab103"></a><h1 class="section">Performance Tests</h1>
 
 <div class="paragraph"> </div>
 
@@ -536,44 +551,46 @@ Insert and lookup 20000 consecutive integers in 0.374 seconds.
 
 <div class="paragraph"> </div>
 
-<a name="lab103"></a><h1 class="section">Unbalanced Binary Search Trees</h1>
+<a name="lab104"></a><h1 class="section">Unbalanced Binary Search Trees</h1>
  Why is the performance of the algorithm so much worse when the
    keys are all inserted consecutively?  To examine this, let's compute
    with some searchtrees inside Coq.  We cannot do this with the search
    trees defined thus far in this file, because they use a key-comparison
-   function <span class="inlinecode"><span class="id" type="var">ltb</span></span>  that is abstract and uninstantiated (only during
-   Extraction to Ocaml does <span class="inlinecode"><span class="id" type="var">ltb</span></span> get instantiated).
+   function <span class="inlinecode"><span class="id" title="var">ltb</span></span>  that is abstract and uninstantiated (only during
+   Extraction to Ocaml does <span class="inlinecode"><span class="id" title="var">ltb</span></span> get instantiated).
 
 <div class="paragraph"> </div>
 
    So instead, we'll use the SearchTree module, 
    where everything runs inside Coq. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">VFA</span> <span class="id" type="keyword">Require</span> <span class="id" type="var">SearchTree</span>.<br/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">Experiments</span>.<br/>
-<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">nat_scope</span>.<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty_tree</span> := <span class="id" type="var">SearchTree.empty_tree</span> <span class="id" type="var">nat</span>.<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">insert</span> := <span class="id" type="var">SearchTree.insert</span> <span class="id" type="var">nat</span>.<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">lookup</span> := <span class="id" type="var">SearchTree.lookup</span> <span class="id" type="var">nat</span> 0.<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">E</span> := <span class="id" type="var">SearchTree.E</span> <span class="id" type="var">nat</span>.<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">T</span> := <span class="id" type="var">SearchTree.T</span> <span class="id" type="var">nat</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Goal</span> <span class="id" type="var">insert</span> 5 1 (<span class="id" type="var">insert</span> 4 1 (<span class="id" type="var">insert</span> 3 1 (<span class="id" type="var">insert</span> 2 1 (<span class="id" type="var">insert</span> 1 1 (<span class="id" type="var">insert</span> 0 1 <span class="id" type="var">empty_tree</span>))))) ≠ <span class="id" type="var">E</span>.<br/>
-<span class="id" type="tactic">simpl</span>. <span class="id" type="var">fold</span> <span class="id" type="var">E</span>; <span class="id" type="tactic">repeat</span> <span class="id" type="var">fold</span> <span class="id" type="var">T</span>.<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">VFA</span> <span class="id" title="keyword">Require</span> <a class="idref" href="SearchTree.html#"><span class="id" title="library">SearchTree</span></a>.<br/>
+<span class="id" title="keyword">Module</span> <a name="Experiments"><span class="id" title="module">Experiments</span></a>.<br/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">nat_scope</span>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="Experiments.empty_tree"><span class="id" title="definition">empty_tree</span></a> := <a class="idref" href="SearchTree.html#empty_tree"><span class="id" title="definition">SearchTree.empty_tree</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="Experiments.insert"><span class="id" title="definition">insert</span></a> := <a class="idref" href="SearchTree.html#insert"><span class="id" title="definition">SearchTree.insert</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="Experiments.lookup"><span class="id" title="definition">lookup</span></a> := <a class="idref" href="SearchTree.html#lookup"><span class="id" title="definition">SearchTree.lookup</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> 0.<br/>
+<span class="id" title="keyword">Definition</span> <a name="Experiments.E"><span class="id" title="definition">E</span></a> := <a class="idref" href="SearchTree.html#E"><span class="id" title="constructor">SearchTree.E</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="Experiments.T"><span class="id" title="definition">T</span></a> := <a class="idref" href="SearchTree.html#T"><span class="id" title="constructor">SearchTree.T</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Goal</span> <a class="idref" href="Extract.html#Experiments.insert"><span class="id" title="definition">insert</span></a> 5 1 (<a class="idref" href="Extract.html#Experiments.insert"><span class="id" title="definition">insert</span></a> 4 1 (<a class="idref" href="Extract.html#Experiments.insert"><span class="id" title="definition">insert</span></a> 3 1 (<a class="idref" href="Extract.html#Experiments.insert"><span class="id" title="definition">insert</span></a> 2 1 (<a class="idref" href="Extract.html#Experiments.insert"><span class="id" title="definition">insert</span></a> 1 1 (<a class="idref" href="Extract.html#Experiments.insert"><span class="id" title="definition">insert</span></a> 0 1 <a class="idref" href="Extract.html#Experiments.empty_tree"><span class="id" title="definition">empty_tree</span></a>))))) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="Extract.html#Experiments.E"><span class="id" title="definition">E</span></a>.<br/>
+<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">fold</span> <a class="idref" href="Extract.html#Experiments.E"><span class="id" title="definition">E</span></a>; <span class="id" title="tactic">repeat</span> <span class="id" title="tactic">fold</span> <a class="idref" href="Extract.html#Experiments.T"><span class="id" title="definition">T</span></a>.<br/>
 </div>
 
 <div class="doc">
 Look here!  The tree is completely unbalanced.  Looking up <span class="inlinecode">5</span> will take linear time.
    That's why the runtime on consecutive integers is so bad. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Abort</span>.<br/>
+<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab104"></a><h1 class="section">Balanced Binary Search Trees</h1>
+<a name="lab105"></a><h1 class="section">Balanced Binary Search Trees</h1>
 
 <div class="paragraph"> </div>
 
@@ -582,14 +599,17 @@ Look here!  The tree is completely unbalanced.  Looking up <span class="inlineco
     search trees balanced.  The next chapter, <a href="Redblack.html"><span class="inlineref">Redblack</span></a>,
     implements that idea. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">End</span> <span class="id" type="var">Experiments</span>.<br/><hr class='doublespaceincode'/>
-<span class="comment">(*&nbsp;Sun&nbsp;Jan&nbsp;5&nbsp;03:20:54&nbsp;UTC&nbsp;2020&nbsp;*)</span><br/>
+<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="Extract.html#Experiments"><span class="id" title="module">Experiments</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="comment">(*&nbsp;2020年1月16日&nbsp;*)</span><br/>
 </div>
 </div>
 
-
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
 
 </div>
 

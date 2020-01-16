@@ -36,21 +36,34 @@ idtac "-------------------  typechecker_extensions  --------------------".
 idtac " ".
 
 idtac "#> Manually graded: TypecheckerExtensions.type_checking_sound".
-idtac "Possible points: 2".
+idtac "Possible points: 4".
 print_manual_grade TypecheckerExtensions.manual_grade_for_type_checking_sound.
 idtac " ".
 
 idtac "#> Manually graded: TypecheckerExtensions.type_checking_complete".
-idtac "Possible points: 3".
+idtac "Possible points: 6".
 print_manual_grade TypecheckerExtensions.manual_grade_for_type_checking_complete.
 idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 5".
-idtac "Max points - advanced: 5".
+idtac "Max points - standard: 10".
+idtac "Max points - advanced: 10".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- type_checking_sound ---------".
@@ -61,4 +74,4 @@ idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Jan 5 03:19:15 UTC 2020 *)
+(* 2020年1月16日 *)

@@ -104,7 +104,29 @@ idtac " ".
 idtac "Max points - standard: 15".
 idtac "Max points - advanced: 15".
 idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "functional_extensionality_dep".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "int".
+idtac "int2Z".
+idtac "ltb_lt".
+idtac "ltb".
+idtac "Extract.int".
+idtac "Extract.int2Z".
+idtac "Extract.ltb_lt".
+idtac "Extract.ltb".
+idtac "".
+idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- select_perm ---------".
@@ -121,4 +143,4 @@ idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Jan 5 03:21:00 UTC 2020 *)
+(* 2020年1月16日 *)

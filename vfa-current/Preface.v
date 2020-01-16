@@ -69,7 +69,7 @@
 
 (** Coq runs on Windows, Linux, and OS X.  The Preface of Volume 1
     describes the Coq installation you will need.  This edition was
-    built with Coq 8.8.1.
+    built with Coq 8.9.1.
 
     In addition, two of the chapters ask you to compile and run an
     OCaml program; having OCaml installed on your computer is helpful,
@@ -136,6 +136,23 @@
     Your contributions are welcome!  Please see the [Preface]
     to _Logical Foundations_ for instructions. *)
 
+(* ================================================================= *)
+(** ** Recommended Citation Format *)
+
+(** If you want to refer to this volume in your own writing, please
+    do so as follows:
+
+   @book            {$FIRSTAUTHOR:SF$VOLUMENUMBER,
+   author       =   {$AUTHORS},
+   title        =   "$VOLUMENAME",
+   series       =   "Software Foundations",
+   volume       =   "$VOLUMENUMBER",
+   year         =   "$VOLUMEYEAR",
+   publisher    =   "Electronic textbook",
+   note         =   {Version $VERSION, \URLhttp://softwarefoundations.cis.upenn.edu },
+   }
+*)
+
 (* ################################################################# *)
 (** * Thanks *)
 
@@ -144,4 +161,4 @@
     NSF Expeditions grant 1521523, _The Science of Deep
     Specification_. *)
 
-(* Sun Jan 5 03:20:53 UTC 2020 *)
+(* 2020年1月16日 *)

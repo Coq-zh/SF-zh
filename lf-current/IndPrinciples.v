@@ -19,9 +19,16 @@ Check nat_ind.
               (forall n : nat, P n -> P (S n))  ->
               forall n : nat, P n  *)
 
+(** In English: Suppose [P] is a property of natural numbers (that is,
+      [P n] is a [Prop] for every [n]). To show that [P n] holds of all
+      [n], it suffices to show:
+
+      - [P] holds of [0]
+      - for any [n], if [P] holds of [n], then [P] holds of [S n]. *)
+
 (** [induction] 利用归纳法则，执行 [apply t_ind] 等策略。
     为了清楚地理解这一点，让我们直接使用 [apply nat_ind] 而非 [induction]
-    策略来证明。[Basics] 一章中 [mult_0_r'] 定理的另一种证明如下所示。 *)
+    策略来证明。例如，[Induction] 一章中 [mult_0_r'] 定理的另一种证明如下所示。 *)
 
 Theorem mult_0_r' : forall n:nat,
   n * 0 = 0.
@@ -40,10 +47,12 @@ Proof.
     是一个带有量词的公式，[apply] 需要这个结论精确地匹配当前证明目标状态的形状，包括其中的量词。
     相反，[induction] 策略对于上下文中的变量或目标中由量词引入的变量都适用。
 
+    第三，我们必须手动为 [apply] 提供归纳法则，而 [induction] 可以自己解决它。
+
     相比于直接使用 [nat_ind] 这样的归纳法则，在实践中使用 [induction] 更加方便。
     但重要的是认识到除了这一点变量名的管理工作，我们在做的其实就是应用 [nat_ind]。 *)
 
-(** **** 练习：2 星, standard, optional (plus_one_r')  
+(** **** 练习：2 星, standard, optional (plus_one_r') 
 
     请不使用 [induction] 策略来完成这个证明。 *)
 
@@ -55,10 +64,10 @@ Proof.
 
 (** Coq 为每一个 [Inductive] 定义的数据类型生成了归纳法则，包括那些非递归的。
     尽管我们不需要归纳，便可证明非递归数据类型的性质，但归纳原理仍可用来证明其性质；
-    给定类型，及关于该类型所有值的性质，归纳原理提供了证明该性质的方法。
+    给定类型，及关于该类型所有值的性质，归纳原理提供了证明该性质的方法。 *)
 
-    这些生成的原则都具有类似的模式。如果我们定义了类型 [t] 及其构造子 [c1] ... [cn]，
-    Coq 会生成形如下文的定理：
+(** 这些生成的原则都具有类似的模式。如果我们定义了带有构造子 [c1] ... [cn]
+    的类型 [t]，那么 Coq 会生成形如下文的定理：
 
     t_ind : forall P : t -> Prop,
               ... case for c1 ... ->
@@ -66,20 +75,22 @@ Proof.
               ... case for cn ... ->
               forall n : t, P n
 
-    每个情形具体的形状取决于对应构造子的参数。在尝试总结出一般规律前，
-    让我们先来看看更多的例子。首先是一个无参数构造子的例子： *)
+    每个情形具体的形状取决于对应构造子的参数。 *)
 
-Inductive yesno : Type :=
-  | yes
-  | no.
+(** 在尝试总结出一般规律前，让我们先来看看更多的例子。
+    首先是一个无参数构造子的例子： *)
 
-Check yesno_ind.
-(* ===> yesno_ind : forall P : yesno -> Prop,
-                      P yes  ->
-                      P no  ->
-                      forall y : yesno, P y *)
+Inductive time : Type :=
+  | day
+  | night.
 
-(** **** 练习：1 星, standard, optional (rgb)  
+Check time_ind.
+(* ===> time_ind : forall P : time -> Prop,
+                          P day ->
+                          P night ->
+                          forall t : time, P t *)
+
+(** **** 练习：1 星, standard, optional (rgb) 
 
     对如下数据类型，请写出 Coq 将会生成的归纳法则。
     先在纸上或注释内写下你的答案，然后同 Coq 打印出的结果比较。 *)
@@ -98,15 +109,15 @@ Inductive natlist : Type :=
   | ncons (n : nat) (l : natlist).
 
 Check natlist_ind.
-(* ===> (除了一些变量被重命名了)
+(* ===>
    natlist_ind :
       forall P : natlist -> Prop,
          P nnil  ->
          (forall (n : nat) (l : natlist),
             P l -> P (ncons n l)) ->
-         forall n : natlist, P n *)
+         forall l : natlist, P l *)
 
-(** **** 练习：1 星, standard, optional (natlist1)  
+(** **** 练习：1 星, standard, optional (natlist1) 
 
     假设我们写下的定义和上面的有一些区别： *)
 
@@ -114,34 +125,36 @@ Inductive natlist1 : Type :=
   | nnil1
   | nsnoc1 (l : natlist1) (n : nat).
 
-(** 现在归纳法则会是什么呢？ 
+(** 现在归纳法则会是什么呢？
 
     [] *)
 
-(** 对于这些例子，我们可以总结出一般的规则：
+(** 通常，为归纳类型 [t] 生成的归纳法则形式如下：
 
-    - 类型定义给定了若干构造子；每个对应于归纳法则中的一个语句。
-    - 每个构造子 [c] 有参数类型 [a1] ... [an]。
-    - 每个 [ai] 要么是 [t]（我们定义的数据类型），要么是其他的类型 [s]。
-    - 对应的归纳法则情形则是：
+    - 每个构造子 [c] 都会生成归纳法则中的一种情况
+    - 若 [c] 不接受参数，该情况为
 
-        - “对于所有的类型为 [a1]...[an] 的值 [x1]...[xn]，如果 [P] 对每个
-          归纳的参数（每个具有类型 [t] 的 [xi]）都成立，那么 [P] 对于 [c x1 ... xn]
-          成立”。
+      “P 对 c 成立”
+
+    - 若 [c] 接受参数 [x1:a1] ... [xn:an]，该情况为：
+
+      “对于所有的 x1:a1 ... xn:an，
+          若 [P] 对每个类型为 [t] 的函数都成立，
+          则 [P] 对于 [c x1 ... xn] 成立”
 *)
 
-(** **** 练习：1 星, standard, optional (byntree_ind)  
+(** **** 练习：1 星, standard, optional (booltree_ind) 
 
     对如下数据类型，请写出 Coq 将会生成的归纳法则。
    （与之前一样，先在纸上或注释内写下你的答案，然后同 Coq 打印出的结果比较。） *)
 
-Inductive byntree : Type :=
- | bempty
- | bleaf (yn : yesno)
- | nbranch (yn : yesno) (t1 t2 : byntree).
+Inductive booltree : Type :=
+ | bt_empty
+ | bt_leaf (b : bool)
+ | bt_branch (b : bool) (t1 t2 : booltree).
 (** [] *)
 
-(** **** 练习：1 星, standard, optional (ex_set)  
+(** **** 练习：1 星, standard, optional (ex_set) 
 
     这是对一个归纳定义的集合的归纳法则。
 
@@ -161,7 +174,7 @@ Inductive ExSet : Type :=
 (* ################################################################# *)
 (** * 多态 *)
 
-(** 接下来，多态数据结构会是怎样呢？
+(** 多态数据结构会是怎样的呢？
 
     归纳定义的多态列表
 
@@ -172,7 +185,9 @@ Inductive ExSet : Type :=
     同 [natlist] 是十分相似的。主要的区别是，这里全部的定义是由集合 [X] 所_'参数化'_的：
     也即，我们定义了_'一族'_归纳类型 [list X]，对于每个 [X] 有其对应的类型在此族中。
     （请注意，当 [list] 出现在声明体中时，它总是被应用参数 [X]。）
-    归纳法则同样被 [X] 所参数化：
+*)
+
+(**  归纳法则同样被 [X] 所参数化：
 
       list_ind :
         forall (X : Type) (P : list X -> Prop),
@@ -183,7 +198,7 @@ Inductive ExSet : Type :=
     请注意归纳法则的_'所有部分'_都被 [X] 所参数化。也即，[list_ind] 可认为是一个
     多态函数，当被应用类型 [X] 时，返回特化在类型 [list X] 上的归纳法则。 *)
 
-(** **** 练习：1 星, standard, optional (tree)  
+(** **** 练习：1 星, standard, optional (tree) 
 
     对如下数据类型，请写出 Coq 将会生成的归纳法则，并与 Coq 打印出的结果比较。*)
 
@@ -193,7 +208,7 @@ Inductive tree (X:Type) : Type :=
 Check tree_ind.
 (** [] *)
 
-(** **** 练习：1 星, standard, optional (mytype)  
+(** **** 练习：1 星, standard, optional (mytype) 
 
     请找到对应于以下归纳法则的归纳定义：
 
@@ -207,7 +222,7 @@ Check tree_ind.
 *) 
 (** [] *)
 
-(** **** 练习：1 星, standard, optional (foo)  
+(** **** 练习：1 星, standard, optional (foo) 
 
     请找到对应于以下归纳法则的归纳定义：
 
@@ -221,7 +236,7 @@ Check tree_ind.
 *) 
 (** [] *)
 
-(** **** 练习：1 星, standard, optional (foo')  
+(** **** 练习：1 星, standard, optional (foo') 
 
     请考虑以下归纳定义： *)
 
@@ -305,8 +320,9 @@ Proof.
     因此，当以 [intros n] 和 [induction n] 开始一个证明时，我们首先在告诉 Coq
     考虑一个_'特殊的'_ [n]（通过引入到上下文中），然后告诉它证明一些关于
     _'全体'_数字的性质（通过使用归纳）。
+*)
 
-    在这种情况下，Coq 事实上在内部“二次一般化（re-generalize）”了我们归纳的变量。
+(**  在这种情况下，Coq 事实上在内部“再次一般化（re-generalize）”了我们进行归纳的变量。
     比如说，起初证明 [plus] 的结合性时……  *)
 
 Theorem plus_assoc' : forall n m p : nat,
@@ -321,10 +337,6 @@ Proof.
   induction n as [| n'].
   - (* n = O *) reflexivity.
   - (* n = S n' *)
-    (* 在 [induction] 生成的第二个子目标——“归纳步骤”——我们必须证明
-       对全体 [n']，[P n'] 蕴含了 [P (S n')]。[induction]
-       策略自动为我们引入了 [n'] 和 [P n'] 到上下文中，并保持 [P (S n')]
-       为目标。 *)
     simpl. rewrite -> IHn'. reflexivity.  Qed.
 
 (** 对目标中含有量词的变量应用 [induction] 同样可以工作。*)
@@ -347,18 +359,18 @@ Theorem plus_comm'' : forall n m : nat,
   n + m = m + n.
 Proof.
   (* 这次让我们对 [m] 而非 [n] 进行归纳…… *)
-  induction m as [| m'].
+  induction m as [| m']. (* [n] 已经引入到上下文中了 *)
   - (* m = O *) simpl. rewrite <- plus_n_O. reflexivity.
   - (* m = S m' *) simpl. rewrite <- IHm'.
     rewrite <- plus_n_Sm. reflexivity.  Qed.
 
-(** **** 练习：1 星, standard, optional (plus_explicit_prop)  
+(** **** 练习：1 星, standard, optional (plus_explicit_prop) 
 
     以类似 [mult_0_r''] 的方式来重写 [plus_assoc']，[plus_comm'] 和它们的证明——
     对于每个定理，给出一个明确的命题的 [Definition]，陈述定理并用归纳法证明这个
     定义的命题。 *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -370,9 +382,10 @@ Proof.
     通过使用 [even] 的归纳法则并归纳地考虑 [even] 中所有可能的形式来证明一些东西。
     然而，直观地讲，我们想要证明的东西并不是关于_'证据'_的陈述，而是关于
     _'自然数'_的陈述：因此，我们想要让归纳法则允许通过对证据进行归纳来
-    证明关于数字的性质。
+    证明关于数字的性质。例如：
+*)
 
-    比如，根据我们前面所讲，你可能会期待这样归纳定义的 [even]……
+(** 根据我们前面所讲，你可能会期待这样归纳定义的 [even]……
 
       Inductive even : nat -> Prop :=
       | ev_0 : even 0
@@ -388,7 +401,9 @@ Proof.
          forall (n : nat) (E : even n),
          P n E
 
-     ……因为：
+*)
+
+(**   ……因为：
 
      - 由于 [even] 被自然数 [n] 所索引（任何 [even] 对象 [E] 都是某个自然数 [n]
        是偶数的证据），且命题 [P] 同时被 [n] 和 [E] 所参数化——因此，被用于证明断言的
@@ -399,8 +414,8 @@ Proof.
 
          - 须证明 [P] 对 [0] 和 [ev_0] 成立。
 
-         - 须证明，当 [n] 是一个自然数且 [E] 是其偶数性质的证据，如果 [P]
-           对 [n] 和 [E] 成立，那么它也对 [S (S n)] 和 [ev_SS n E] 成立。
+         - 须证明，当 [m] 是一个自然数且 [E] 是其偶数性质的证据，如果 [P]
+           对 [m] 和 [E] 成立，那么它也对 [S (S m)] 和 [ev_SS m E] 成立。
 
      - 如果这些子目标可以被证明，那么归纳法则告诉我们 [P] 对所有的偶数 [n]
        和它们的偶数性质 [E] 成立。
@@ -411,70 +426,89 @@ Proof.
     的归纳法则仅仅被 [n] 所参数化，且其结论是 [P] 对所有偶数 [n] 成立，那会方便许多：
 
        forall P : nat -> Prop,
-       ... ->
+         ... ->
        forall n : nat,
-       even n -> P n
+         even n -> P n
 
     出于这样的原因，Coq 实际上为 [even] 生成了简化过的归纳法则： *)
 
-Check even_ind.
+Print ev.
+(* ===>
+Inductive ev : nat -> Prop :=
+  | ev_0 : ev 0
+  | ev_SS : forall n : nat, ev n -> ev (S (S n))
+*)
+
+Check ev_ind.
 (* ===> ev_ind
         : forall P : nat -> Prop,
           P 0 ->
-          (forall n : nat, even n -> P n -> P (S (S n))) ->
+          (forall n : nat, ev n -> P n -> P (S (S n))) ->
           forall n : nat,
-          even n -> P n *)
+          ev n -> P n *)
 
 (** 请特别注意，Coq 丢弃了命题 [P] 参数中的证据项 [E]。 *)
 
-(** 若用自然语言来表述 [ev_ind]，则是说：
-
-    - 假设，[P] 是关于自然数的一个性质（也即，[P n] 是一个在全体 [n] 上的 [Prop]）。
-      为了证明当 [n] 是偶数时 [P n] 成立，需要证明：
+(** 若用自然语言来表述 [ev_ind]，则是说：假设 [P] 是关于自然数的一个性质
+    （也即，[P n] 是一个在全体 [n] 上的 [Prop]）。为了证明当 [n] 是偶数时
+    [P n] 成立，需要证明：
 
       - [P] 对 [0] 成立，
 
       - 对任意 [n]，如果 [n] 是偶数且 [P] 对 [n] 成立，那么 [P] 对 [S (S n)] 成立。 *)
 
 (** 正如期待的那样，我们可以不使用 [induction] 而直接应用 [ev_ind]。
-    比如，我们可以使用它来证明 [even']（那个在 [IndProp] 一章的练习中有点笨拙的偶数性质的定义）
-    等价于更简洁的归纳定义 [even]： *)
-Theorem ev_ev' : forall n, even n -> even' n.
+    比如，我们可以使用它来证明 [ev']（就是在 [IndProp]
+    一章的练习中那个有点笨拙的偶数性质的定义）等价于更简洁的归纳定义 [ev]： *)
+
+Inductive ev' : nat -> Prop :=
+| ev'_0 : ev' 0
+| ev'_2 : ev' 2
+| ev'_sum n m (Hn : ev' n) (Hm : ev' m) : ev' (n + m).
+
+Theorem ev_ev' : forall n, ev n -> ev' n.
 Proof.
-  apply even_ind.
+  apply ev_ind.
   - (* ev_0 *)
-    apply even'_0.
+    apply ev'_0.
   - (* ev_SS *)
     intros m Hm IH.
-    apply (even'_sum 2 m).
-    + apply even'_2.
+    apply (ev'_sum 2 m).
+    + apply ev'_2.
     + apply IH.
 Qed.
+(** [Inductive] 定义的具体形式会影响到 Coq 生成的归纳法则。 *)
 
-(** [Inductive] 定义的具体形式会影响到 Coq 生成的归纳法则。
+Inductive le1 : nat -> nat -> Prop :=
+     | le1_n : forall n, le1 n n
+     | le1_S : forall n m, (le1 n m) -> (le1 n (S m)).
 
-    比如在 [IndProp] 一章中，我们这样定义 [<=]： *)
+Notation "m <=1 n" := (le1 m n) (at level 70).
 
-(* Inductive le : nat -> nat -> Prop :=
-     | le_n : forall n, le n n
-     | le_S : forall n m, (le n m) -> (le n (S m)). *)
+(** 此定义其实可以稍微简化一点，我们观察到左侧的参数 [n]
+    在定义中始终是相同的，于是可以把它变成整体定义中的一个“一般参数”，
+    而非每个构造子的参数。*)
 
-(** 这个定义其实可以被稍微简化一点，通过观察到左侧的参数 [n]
-    在定义中始终是相同的，我们可把它变成整体定义中的一个“一般参数”，而非每个构造子的参数。*)
+Inductive le2 (n:nat) : nat -> Prop :=
+  | le2_n : le2 n n
+  | le2_S m (H : le2 n m) : le2 n (S m).
 
-Inductive le (n:nat) : nat -> Prop :=
-  | le_n : le n n
-  | le_S m (H : le n m) : le n (S m).
+Notation "m <=2 n" := (le2 m n) (at level 70).
 
-Notation "m <= n" := (le m n).
+(** 尽管第二个看起来不那么对称了，但它却更好一点。
+    为什么呢？因为它会生成更简单的归纳法则。 *)
 
-(** 尽管第二个看起来不那么对称了，但它却更好一点。为什么呢？因为它会生成更简单的归纳法则。 *)
+Check le1_ind.
+(* ===> forall P : nat -> nat -> Prop,
+          (forall n : nat, P n n) ->
+          (forall n m : nat, n <=1 m -> P n m -> P n (S m)) ->
+          forall n n0 : nat, n <=1 n0 -> P n n0 *)
 
-Check le_ind.
+Check le2_ind.
 (* ===>  forall (n : nat) (P : nat -> Prop),
            P n ->
-           (forall m : nat, n <= m -> P m -> P (S m)) ->
-           forall n0 : nat, n <= n0 -> P n0 *)
+           (forall m : nat, n <=2 m -> P m -> P (S m)) ->
+           forall n0 : nat, n <=2 n0 -> P n0 *)
 
 (* ################################################################# *)
 (** * 形式化 vs. 非形式化的归纳证明 *)
@@ -589,6 +623,181 @@ Check le_ind.
              那么 [o = S o'] 对某个 [o'] 且 [m <= o']。我们需要证明 [n <= S o']。
              由归纳假设得出，[n <= o']。
 
-            因此，根据 [le_S]，[n <= S o']。  [] *)
+             因此，根据 [le_S]，[n <= S o']。  [] *)
 
-(* Sun Jan 5 03:17:35 UTC 2020 *)
+(* ################################################################# *)
+(** * Explicit Proof Objects for Induction (Optional) *)
+
+(** Although tactic-based proofs are normally much easier to
+    work with, the ability to write a proof term directly is sometimes
+    very handy, particularly when we want Coq to do something slightly
+    non-standard.  *)
+
+(** Recall again the induction principle on naturals that Coq generates for
+    us automatically from the Inductive declation for [nat]. *)
+
+Check nat_ind.
+(* ===>
+   nat_ind : forall P : nat -> Prop,
+      P 0 ->
+      (forall n : nat, P n -> P (S n)) ->
+      forall n : nat, P n  *)
+
+(** There's nothing magic about this induction lemma: it's just
+   another Coq lemma that requires a proof.  Coq generates the proof
+   automatically too...  *)
+
+Print nat_ind.
+(* ===> (after some slight tidying)
+nat_ind :=
+    fun (P : nat -> Prop)
+        (f : P 0)
+        (f0 : forall n : nat, P n -> P (S n)) =>
+          fix F (n : nat) : P n :=
+             match n with
+            | 0 => f
+            | S n0 => f0 n0 (F n0)
+            end.
+*)
+
+(** We can read this as follows:
+     Suppose we have evidence [f] that [P] holds on 0,  and
+     evidence [f0] that [forall n:nat, P n -> P (S n)].
+     Then we can prove that [P] holds of an arbitrary nat [n] via
+     a recursive function [F] (here defined using the expression
+     form [Fix] rather than by a top-level [Fixpoint]
+     declaration).  [F] pattern matches on [n]:
+      - If it finds 0, [F] uses [f] to show that [P n] holds.
+      - If it finds [S n0], [F] applies itself recursively on [n0]
+         to obtain evidence that [P n0] holds; then it applies [f0]
+         on that evidence to show that [P (S n)] holds.
+    [F] is just an ordinary recursive function that happens to
+    operate on evidence in [Prop] rather than on terms in [Set].
+
+*)
+
+(**  We can adapt this approach to proving [nat_ind] to help prove
+    _non-standard_ induction principles too.  As a motivating example,
+    suppose that we want to prove the following lemma, directly
+    relating the [ev] predicate we defined in [IndProp]
+    to the [evenb] function defined in [Basics]. *)
+
+Lemma evenb_ev : forall n: nat, evenb n = true -> ev n.
+Proof.
+  induction n; intros.
+  - apply ev_0.
+  - destruct n.
+    + simpl in H. inversion H.
+    + simpl in H.
+      apply ev_SS.
+Abort.
+
+(** Attempts to prove this by standard induction on [n] fail in the case for
+    [S (S n)],  because the induction hypothesis only tells us something about
+    [S n], which is useless. There are various ways to hack around this problem;
+    for example, we _can_ use ordinary induction on [n] to prove this (try it!):
+
+    [Lemma evenb_ev' : forall n : nat,
+     (evenb n = true -> ev n) /\ (evenb (S n) = true -> ev (S n))].
+
+    But we can make a much better proof by defining and proving a
+    non-standard induction principle that goes "by twos":
+ *)
+
+ Definition nat_ind2 :
+    forall (P : nat -> Prop),
+    P 0 ->
+    P 1 ->
+    (forall n : nat, P n -> P (S(S n))) ->
+    forall n : nat , P n :=
+       fun P => fun P0 => fun P1 => fun PSS =>
+          fix f (n:nat) := match n with
+                             0 => P0
+                           | 1 => P1
+                           | S (S n') => PSS n' (f n')
+                          end.
+
+ (** Once you get the hang of it, it is entirely straightforward to
+     give an explicit proof term for induction principles like this.
+     Proving this as a lemma using tactics is much less intuitive.
+
+     The [induction ... using] tactic variant gives a convenient way to
+     utilize a non-standard induction principle like this. *)
+
+Lemma evenb_ev : forall n, evenb n = true -> ev n.
+Proof.
+ intros.
+ induction n as [ | |n'] using nat_ind2.
+ - apply ev_0.
+ - simpl in H.
+   inversion H.
+ - simpl in H.
+   apply ev_SS.
+   apply IHn'.
+   apply H.
+Qed.
+
+(* ################################################################# *)
+(** * The Coq Trusted Computing Base *)
+
+(** One issue that arises with any automated proof assistant is "why
+    trust it?": what if there is a bug in the implementation that
+    renders all its reasoning suspect?
+
+    While it is impossible to allay such concerns completely, the fact
+    that Coq is based on the Curry-Howard correspondence gives it a
+    strong foundation. Because propositions are just types and proofs
+    are just terms, checking that an alleged proof of a proposition is
+    valid just amounts to _type-checking_ the term.  Type checkers are
+    relatively small and straightforward programs, so the "trusted
+    computing base" for Coq -- the part of the code that we have to
+    believe is operating correctly -- is small too.
+
+    What must a typechecker do?  Its primary job is to make sure that
+    in each function application the expected and actual argument
+    types match, that the arms of a [match] expression are constructor
+    patterns belonging to the inductive type being matched over and
+    all arms of the [match] return the same type, and so on.
+
+    There are a few additional wrinkles:
+
+    - Since Coq types can themselves be expressions, the checker must
+      normalize these (by using the computation rules) before
+      comparing them.
+
+    - The checker must make sure that [match] expressions are
+      _exhaustive_.  That is, there must be an arm for every possible
+      constructor.  To see why, consider the following alleged proof
+      object:
+
+      Definition or_bogus : forall P Q, P \/ Q -> P :=
+        fun (P Q : Prop) (A : P \/ Q) =>
+           match A with
+           | or_introl H => H
+           end.
+
+      All the types here match correctly, but the [match] only
+      considers one of the possible constructors for [or].  Coq's
+      exhaustiveness check will reject this definition.
+
+    - The checker must make sure that each [fix] expression
+      terminates.  It does this using a syntactic check to make sure
+      that each recursive call is on a subexpression of the original
+      argument.  To see why this is essential, consider this alleged
+      proof:
+
+          Definition nat_false : forall (n:nat), False :=
+             fix f (n:nat) : False := f n.
+
+      Again, this is perfectly well-typed, but (fortunately) Coq will
+      reject it. *)
+
+(** Note that the soundness of Coq depends only on the correctness of
+    this typechecking engine, not on the tactic machinery.  If there
+    is a bug in a tactic implementation (and this certainly does
+    happen!), that tactic might construct an invalid proof term.  But
+    when you type [Qed], Coq checks the term for validity from
+    scratch.  Only lemmas whose proofs pass the type-checker can be
+    used in further proof developments.  *)
+
+(* 2020年1月16日 *)

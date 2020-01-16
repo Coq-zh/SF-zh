@@ -107,7 +107,7 @@ Qed.
 (** But there's another way to use [ltb_reflect], etc: read on. *)
 
 (* ================================================================= *)
-(** ** Some Advanced Tactical Hacking 
+(** ** Some Advanced Tactical Hacking
 
     You may skip ahead to "Inversion/clear/subst".
      Right here, we build some machinery that you'll want to
@@ -146,7 +146,7 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(** ** [inversion] / [clear] / [subst] 
+(** ** [inversion] / [clear] / [subst]
 
     Coq's [inversion H] tactic is so good at extracting information
     from the hypothesis [H] that [H] becomes completely redundant,
@@ -445,7 +445,7 @@ Print Permutation.
     should use this specification to prove some properties that we
     think permutations ought to have. *)
 
-(** **** 练习：2 星, standard (Permutation_properties)  
+(** **** 练习：2 星, standard (Permutation_properties) 
 
     Think of some properties of the [Permutation] relation and write
     them down informally in English, or a mix of Coq and English.
@@ -518,7 +518,7 @@ Qed.
   [perm_skip] to cancel a single element, or [Permutation_app_head]
   to cancel an append-chunk. *)
 
-(** **** 练习：3 星, standard (permut_example)  
+(** **** 练习：3 星, standard (permut_example) 
 
     Use the permutation rules in the library (see the [Search],
     above) to prove the following theorem.  These [Check] commands
@@ -536,7 +536,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星, standard (not_a_permutation)  
+(** **** 练习：1 星, standard (not_a_permutation) 
 
     Prove that [[1;1]] is not a permutation of [[1;2]].
     Hints are given as [Check] commands. *)
@@ -610,7 +610,7 @@ End Exploration1.
   [maybe_swap_correct] will be applied (at a larger scale) in
   the next few chapters. *)
 
-(** **** 练习：2 星, standard (Forall_perm)  
+(** **** 练习：2 星, standard (Forall_perm) 
 
     To close, a useful utility lemma.  Prove this by induction;
   but is it induction on [al], or on [bl], or on [Permutation al bl],
@@ -624,4 +624,4 @@ Proof.
 (** [] *)
 
 
-(* Sun Jan 5 03:20:53 UTC 2020 *)
+(* 2020年1月16日 *)

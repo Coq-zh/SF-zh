@@ -32,8 +32,8 @@ From PLF Require Import Imp.
 
    (注意 _'参数'_ [m] 和 [p]，它们代表任意给定数字（fixed-but-arbitrary numbers）。
    形式上，它们只是 [nat] 类型的 Coq 变量)
-
-    这是这个程序的一个可能的规格说明：
+*)
+(** 这是这个程序的一个可能的规格说明：
 
       {{ True }}
     X ::= m;;
@@ -43,8 +43,8 @@ From PLF Require Import Imp.
       X ::= X - 1
     END
       {{ Z = p - m }}
-
-    这是该程序的装饰版本，体现了该规格说明的证明：
+*)
+(** 这是该程序的装饰版本，体现了该规格说明的证明：
 
       {{ True }} ->>
       {{ m = m }}
@@ -62,7 +62,7 @@ From PLF Require Import Imp.
       X ::= X - 1
         {{ Z - X = p - m }}
     END
-      {{ Z - X = p - m /\ ~ (X <> 0) }} ->> 
+      {{ Z - X = p - m /\ ~ (X <> 0) }} ->>
       {{ Z = p - m }}
 *)
 
@@ -133,10 +133,11 @@ From PLF Require Import Imp.
 (** 这些局部一致性条件实质上描述了_'验证'_给定证明的正确性的过程。
     此验证涉及检查每个命令是否与所附断言局部一致。
 
-    如果我们对_'找到'_关于给定规格说明的证明感兴趣，我们需要发现正确的断言。
-    这可以用几乎机械的方式完成，除了找到循环不变量比较特殊外，这是下一节
-    的主题。在本节的其余部分，我们将详细解释如何为几个不涉及非平凡
-    循环不变量的简单程序构造装饰。*)
+    如果我们对_'找到'_关于给定规范的证明感兴趣，我们需要发现正确的断言。
+    除了找到循环不变量比较特殊外，这可以用几乎机械的方式完成。
+    在本节剩下的内容中，我们将详细解释如何为几个小程序构造装饰，
+    它们中都没有循环或只有简单的循环不变量。
+    我们将在下一节中详细讨论如何寻找循环不变量。 *)
 
 (* ================================================================= *)
 (** ** 示例：使用加法和减法实现交换操作 *)
@@ -148,7 +149,8 @@ From PLF Require Import Imp.
        Y ::= X - Y;;
        X ::= X - Y
 
-    我们可以使用装饰来 (非形式化地) 证明这个程序是正确的 —— 也就是说，它总是交换变量[X]和[Y]的值。
+    我们可以使用装饰来 (非形式化地) 证明这个程序是正确的 —— 也就是说，它总是交换变量[X]和[Y]的值。*)
+(**
 
     (1)     {{ X = m /\ Y = n }} ->>
     (2)     {{ (X + Y) - ((X + Y) - Y) = n /\ (X + Y) - Y = m }}
@@ -215,7 +217,7 @@ From PLF Require Import Imp.
     请注意 [n - m + m = n] 并 _不是_ 对任意的自然数 [n] 和 [m] 总成立的 (比如: [3 - 5 + 5 =
     5]). *)
 
-(** **** 练习：2 星, standard (if_minus_plus_reloaded)  
+(** **** 练习：2 星, standard (if_minus_plus_reloaded) 
 
     为以下程序填上合法的装饰:
 
@@ -251,16 +253,18 @@ Definition manual_grade_for_decorations_in_if_minus_plus_reloaded : option (nat*
                  X ::= X - 1
         (4)        {{ True }}
                END
-        (5)      {{ True /\ X = 0 }} ->>
+        (5)      {{ True /\ ~(X <> 0) }} ->>
         (6)      {{ X = 0 }}
 
 The decorations can be constructed as follows:
   - Start with the outer precondition (1) and postcondition (6).
-  - Following the format dictated by the [hoare_while] rule, we
-    copy (1) to (4). We conjoin (1) with the guard to obtain (2) and
-    with the negation of the guard to obtain (5). Note that, because
-    the outer postcondition (6) does not syntactically match (5), we
-    need a trivial use of the consequence rule from (5) to (6).
+  - Following the format dictated by the [hoare_while] rule, we copy
+    (1) to (4). We conjoin (1) with the guard to obtain (2). The guard
+    is a Boolean expression [~(X = 0)], which for simplicity we
+    express in assertion (2) as [X <> 0]. We also conjoin (1) with the
+    negation of the guard to obtain (5). Note that, because the outer
+    postcondition (6) does not syntactically match (5), we need a
+    trivial use of the consequence rule from (5) to (6).
   - Assertion (3) is the same as (4), because [X] does not appear in
     [4], so the substitution in the assignment rule is trivial.
   - Finally, the implication between (2) and (3) is also trivial. *)
@@ -273,14 +277,14 @@ The decorations can be constructed as follows:
     programs. *)
 
 Definition reduce_to_zero' : com :=
-  (WHILE ~(X = 0) DO
+  WHILE ~(X = 0) DO
     X ::= X - 1
-  END)%imp.
+  END.
 
 Theorem reduce_to_zero_correct' :
-  {{fun st => True}}
+  {{True}}
   reduce_to_zero'
-  {{fun st => st X = 0}}.
+  {{X = 0}}.
 Proof.
   unfold reduce_to_zero'.
   (* First we need to transform the postcondition so
@@ -342,7 +346,8 @@ Proof.
              Y ::= Y + 1
       (8)      {{ n * Y + X = m }}
            END
-      (9)    {{ n * Y + X = m /\ X < n }}
+      (9)    {{ n * Y + X = m /\ ~ (n <= X) }} ->>
+     (10)    {{ n * Y + X = m /\ X < n }}
 
     Assertions (4), (5), (8), and (9) are derived mechanically from
     the invariant and the loop's guard.  Assertions (8), (7), and (6)
@@ -351,9 +356,9 @@ Proof.
     applications of the assignment rule.
 
     Now that we've decorated the program it only remains to check that
-    the two uses of the consequence rule are correct -- i.e., that (1)
-    implies (2) and that (5) implies (6).  This is indeed the case, so
-    we have a valid decorated program. *)
+    the uses of the consequence rule are correct -- i.e., that (1)
+    implies (2), that (5) implies (6), and that (9) implies (10). This
+    is indeed the case, so we have a valid decorated program. *)
 
 (* ################################################################# *)
 (** * Finding Loop Invariants *)
@@ -391,7 +396,7 @@ Proof.
     loop.  As a first step we can leave [Inv] as an unknown and build a
     _skeleton_ for the proof by applying the rules for local
     consistency (working from the end of the program to the beginning,
-    as usual, and without any thinking at all yet). 
+    as usual, and without any thinking at all yet).
 
     This leads to the following skeleton:
 
@@ -414,7 +419,7 @@ Proof.
       precondition, i.e., (1) must imply (2);
     - (b) it must be _strong_ enough to imply the program's postcondition,
       i.e., (7) must imply (8);
-    - (c) it must be _preserved_ by each iteration of the loop (given 
+    - (c) it must be _preserved_ by each iteration of the loop (given
       that the loop guard evaluates to true), i.e., (3) must imply (4). *)
 
 (** These conditions are actually independent of the particular
@@ -442,7 +447,7 @@ Proof.
                  X ::= X - 1
         (6)        {{ True }}
                END
-        (7)      {{ True /\ X = 0 }}  ->>       (b - WRONG!)
+        (7)      {{ True /\ ~(X <> 0) }}  ->>       (b - WRONG!)
         (8)      {{ Y = n - m }}
 
     While conditions (a) and (c) are trivially satisfied, condition
@@ -467,7 +472,7 @@ Proof.
              X ::= X - 1
     (6)        {{ Y = n - m }}
            END
-    (7)      {{ Y = n - m /\ X = 0 }}  ->>      (b - OK)
+    (7)      {{ Y = n - m /\ ~(X <> 0) }}  ->>      (b - OK)
     (8)      {{ Y = n - m }}
 
     This time, condition (b) holds trivially, but (a) and (c) are
@@ -507,7 +512,7 @@ Proof.
              X ::= X - 1
     (6)        {{ Y - X = n - m }}
            END
-    (7)      {{ Y - X = n - m /\ X = 0 }}  ->>       (b - OK)
+    (7)      {{ Y - X = n - m /\ ~(X <> 0) }}  ->>       (b - OK)
     (8)      {{ Y = n - m }}
 
     Success!  Conditions (a), (b) and (c) all hold now.  (To
@@ -518,7 +523,7 @@ Proof.
 (* ================================================================= *)
 (** ** Exercise: Slow Assignment *)
 
-(** **** 练习：2 星, standard (slow_assignment)  
+(** **** 练习：2 星, standard (slow_assignment) 
 
     A roundabout way of assigning a number currently stored in [X] to
     the variable [Y] is to start [Y] at [0], then decrement [X] until
@@ -545,7 +550,7 @@ Definition manual_grade_for_decorations_in_slow_assignment : option (nat*string)
 (* ================================================================= *)
 (** ** Exercise: Slow Addition *)
 
-(** **** 练习：3 星, standard, optional (add_slowly_decoration)  
+(** **** 练习：3 星, standard, optional (add_slowly_decoration) 
 
     The following program adds the variable X into the variable Z
     by repeatedly decrementing X and incrementing Z.
@@ -560,7 +565,7 @@ Definition manual_grade_for_decorations_in_slow_assignment : option (nat*string)
     specification of [add_slowly]; then (informally) decorate the
     program accordingly. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -604,7 +609,7 @@ Fixpoint parity x :=
         X ::= X - 2
           {{ parity X = parity m }}
       END
-        {{ parity X = parity m /\ X < 2 }}  ->>       (b - OK)
+        {{ parity X = parity m /\ ~(2 <= X) }}  ->>       (b - OK)
         {{ X = parity m }}
 
     With this invariant, conditions (a), (b), and (c) are all
@@ -613,10 +618,12 @@ Fixpoint parity x :=
     [parity]).  For verifying (c), we observe that, when [2 <= X], we
     have [parity X = parity (X-2)]. *)
 
-(** **** 练习：3 星, standard, optional (parity_formal)  
+(** **** 练习：3 星, standard, optional (parity_formal) 
 
-    Translate this proof to Coq. Refer to the [reduce_to_zero] example
-    for ideas. You may find the following two lemmas useful: *)
+    Translate the above informal decorated program into a formal proof
+    in Coq. Your proof should use the Hoare logic rules and should not
+    unfold [hoare_triple]. Refer to [reduce_to_zero] for an example.
+    You might find the following lemmas to be useful: *)
 
 Lemma parity_ge_2 : forall x,
   2 <= x ->
@@ -629,18 +636,18 @@ Qed.
 
 Lemma parity_lt_2 : forall x,
   ~ 2 <= x ->
-  parity (x) = x.
+  parity x = x.
 Proof.
   intros. induction x. reflexivity. destruct x. reflexivity.
     exfalso. apply H. omega.
 Qed.
 
-Theorem parity_correct : forall m,
-    {{ fun st => st X = m }}
+Theorem parity_correct : forall (m:nat),
+  {{ X = m }}
   WHILE 2 <= X DO
     X ::= X - 2
   END
-    {{ fun st => st X = parity m }}.
+  {{  X = parity m }}.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -663,12 +670,12 @@ Proof.
     invariant, obtaining the following decorated program:
 
     (1)  {{ X=m }}  ->>           (a - second conjunct of (2) WRONG!)
-    (2)  {{ 0*0 <= m /\ m<1*1 }}
+    (2)  {{ 0*0 <= m /\ m<(0+1)*(0+1) }}
        Z ::= 0;;
     (3)  {{ Z*Z <= m /\ m<(Z+1)*(Z+1) }}
        WHILE (Z+1)*(Z+1) <= X DO
     (4)    {{ Z*Z<=m /\ (Z+1)*(Z+1)<=X }}  ->>             (c - WRONG!)
-    (5)    {{ (Z+1)*(Z+1)<=m /\ m<(Z+2)*(Z+2) }}
+    (5)    {{ (Z+1)*(Z+1)<=m /\ m<((Z+1)+1)*((Z+1)+1) }}
          Z ::= Z+1
     (6)    {{ Z*Z<=m /\ m<(Z+1)*(Z+1) }}
        END
@@ -680,12 +687,12 @@ Proof.
     is almost the same as the first conjunct of (5), except that (4)
     mentions [X] while (5) mentions [m]. But note that [X] is never
     assigned in this program, so we should always have [X=m]; we
-    didn't propagate this information from (1) into the loop 
+    didn't propagate this information from (1) into the loop
     invariant, but we could!
 
-    Also, we don't need the second conjunct of (8), since we can 
-    obtain it from the negation of the guard -- the third conjunct 
-    in (7) -- again under the assumption that [X=m].  This allows 
+    Also, we don't need the second conjunct of (8), since we can
+    obtain it from the negation of the guard -- the third conjunct
+    in (7) -- again under the assumption that [X=m].  This allows
     us to simplify a bit.
 
     So we now try [X=m /\ Z*Z <= m] as the loop invariant:
@@ -700,7 +707,7 @@ Proof.
       Z ::= Z + 1
         {{ X=m /\ Z*Z<=m }}
     END
-      {{ X=m /\ Z*Z<=m /\ X<(Z+1)*(Z+1) }}  ->>           (b - OK)
+      {{ X=m /\ Z*Z<=m /\ ~((Z+1)*(Z+1)<=X) }}  ->>           (b - OK)
       {{ Z*Z<=m /\ m<(Z+1)*(Z+1) }}
 
     This works, since conditions (a), (b), and (c) are now all
@@ -740,7 +747,7 @@ Proof.
     Z ::= 0;;
       {{ Z = m*m /\ X = m }}
     WHILE ~(Y = X) DO
-        {{ Z = Y*m /\ X = m /\ Y <> X }} ->>     (c - WRONG)
+        {{ Z = m*m /\ X = m /\ Y <> X }} ->>     (c - WRONG)
         {{ Z+X = m*m /\ X = m }}
       Z ::= Z + X;;
         {{ Z = m*m /\ X = m }}
@@ -780,14 +787,14 @@ Proof.
 
     It is worth comparing the postcondition [Z = m*m] and the [Z =
     Y*m] conjunct of the invariant. It is often the case that one has
-    to replace parameters with variables -- or with expressions 
-    involving both variables and parameters, like [m - Y] -- when 
+    to replace parameters with variables -- or with expressions
+    involving both variables and parameters, like [m - Y] -- when
     going from postconditions to invariants. *)
 
 (* ================================================================= *)
 (** ** Exercise: Factorial *)
 
-(** **** 练习：3 星, standard (factorial)  
+(** **** 练习：3 星, standard (factorial) 
 
     Recall that [n!] denotes the factorial of [n] (i.e., [n! =
     1*2*...*n]).  Here is an Imp program that calculates the factorial
@@ -827,25 +834,17 @@ Proof.
 Definition manual_grade_for_decorations_in_factorial : option (nat*string) := None.
 (** [] *)
 
-(* LY: I saw one submission for [factorial_dec] use a program like that instead
-   of the one already given by the informal exercise. I accepted it because the
-   exercise does not require to reuse the given program, and we did not
-   strictly define what it means to "implement" factorial in Imp.
-   This other one "implements" factorial in the same way two_loops_dec
-   "implements" the sum (a + b + c).
-*)
-
 (* ================================================================= *)
 (** ** Exercise: Min *)
 
-(** **** 练习：3 星, standard (Min_Hoare)  
+(** **** 练习：3 星, standard (Min_Hoare)  *)
 
-    Fill in valid decorations for the following program.
-  For the [=>] steps in your annotations, you may rely (silently)
+(** Fill in valid decorations for the following program.
+  For the [->>] steps in your annotations, you may rely (silently)
   on the following facts about min
 
   Lemma lemma1 : forall x y,
-    (x=0 \/ y=0) -> min x y = 0.
+    (x<>0 /\ y<>0) -> min x y <> 0.
   Lemma lemma2 : forall x y,
     min (x-1) (y-1) = (min x y) - 1.
 
@@ -877,7 +876,7 @@ Definition manual_grade_for_decorations_in_factorial : option (nat*string) := No
 Definition manual_grade_for_decorations_in_Min_Hoare : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：3 星, standard (two_loops)  
+(** **** 练习：3 星, standard (two_loops) 
 
     Here is a very inefficient way of adding 3 numbers:
 
@@ -933,7 +932,7 @@ Definition manual_grade_for_decorations_in_two_loops : option (nat*string) := No
 (* ================================================================= *)
 (** ** Exercise: Power Series *)
 
-(** **** 练习：4 星, standard, optional (dpow2_down)  
+(** **** 练习：4 星, standard, optional (dpow2_down) 
 
     Here is a program that computes the series:
     [1 + 2 + 2^2 + ... + 2^m = 2^(m+1) - 1]
@@ -949,7 +948,7 @@ Definition manual_grade_for_decorations_in_two_loops : option (nat*string) := No
 
     Write a decorated program for this. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -997,7 +996,7 @@ Definition is_wp P c Q :=
     _weakest_ (easiest to satisfy) assertion that guarantees that
     [Q] will hold after executing [c]. *)
 
-(** **** 练习：1 星, standard, optional (wp)  
+(** **** 练习：1 星, standard, optional (wp) 
 
     What are the weakest preconditions of the following commands
    for the following postconditions?
@@ -1020,24 +1019,24 @@ Definition is_wp P c Q :=
      WHILE true DO X ::= 0 END
      {{ X = 0 }}
 *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：3 星, advanced, optional (is_wp_formal)  
+(** **** 练习：3 星, advanced, optional (is_wp_formal) 
 
     Prove formally, using the definition of [hoare_triple], that [Y <= 4]
    is indeed the weakest precondition of [X ::= Y + 1] with respect to
    postcondition [X <= 5]. *)
 
 Theorem is_wp_example :
-  is_wp (fun st => st Y <= 4)
-    (X ::= Y + 1) (fun st => st X <= 5).
+  is_wp (Y <= 4)
+    (X ::= Y + 1) (X <= 5).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, advanced, optional (hoare_asgn_weakest)  
+(** **** 练习：2 星, advanced, optional (hoare_asgn_weakest) 
 
     Show that the precondition in the rule [hoare_asgn] is in fact the
     weakest precondition. *)
@@ -1048,7 +1047,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, advanced, optional (hoare_havoc_weakest)  
+(** **** 练习：2 星, advanced, optional (hoare_havoc_weakest) 
 
     Show that your [havoc_pre] rule from the [himp_hoare] exercise
     in the [Hoare] chapter returns the weakest precondition. *)
@@ -1080,15 +1079,31 @@ End Himp2.
 
 (** The first thing we need to do is to formalize a variant of the
     syntax of commands with embedded assertions.  We call the new
-    commands _decorated commands_, or [dcom]s. *)
+    commands _decorated commands_, or [dcom]s.
 
-(** We don't want both preconditions and postconditions on each
+    The choice of exactly where to put assertions in the definition of
+    [dcom] is a bit subtle.  The simplest thing to do would be to
+    annotate every [dcom] with a precondition and postcondition.  But
+    this would result in very verbose programs with a lot of repeated
+    annotations: for example, a program like [SKIP;SKIP] would have to
+    be annotated as
+
+        {{P}} ({{P}} SKIP {{P}}) ;; ({{P}} SKIP {{P}}) {{P}},
+
+    with pre- and post-conditions on each [SKIP], plus identical pre-
+    and post-conditions on the semicolon!
+
+    We don't want both preconditions and postconditions on each
     command, because a sequence of two commands would contain
     redundant decorations--the postcondition of the first likely being
-    the same as the precondition of the second. Instead, decorations
-    are added corresponding to postconditions only.  A separate type,
-    [decorated], is used to add just one precondition for the entire
-    program. **)
+    the same as the precondition of the second.
+
+    Instead, we decorate commands as follows:
+
+       - The _post_-condition expected by each [dcom] [d] is embedded
+         in [d].
+
+       - The _pre_-condition is supplied by the context. *)
 
 Inductive dcom : Type :=
   | DCSkip :  Assertion -> dcom
@@ -1100,8 +1115,17 @@ Inductive dcom : Type :=
   | DCPre : Assertion -> dcom -> dcom
   | DCPost : dcom -> Assertion -> dcom.
 
+(** [DCPre] is used to provide the weakened precondition from
+    the rule of consequence. To provide the initial precondition
+    at the very top of the program, we use [Decorated]: *)
+
 Inductive decorated : Type :=
   | Decorated : Assertion -> dcom -> decorated.
+
+(** To avoid clashing with the existing [Notation] definitions for
+    ordinary [com]mands, we introduce these notations in a special
+    scope called [dcom_scope], and we [Open] this scope for the
+    remainder of the file. *)
 
 Delimit Scope default with default.
 
@@ -1134,33 +1158,22 @@ Delimit Scope dcom_scope with dcom.
 Open Scope dcom_scope.
 
 Example dec0 :=
-  SKIP {{ fun st => True }}.
+  SKIP {{ True }}.
 Example dec1 :=
-  WHILE true DO {{ fun st => True }} SKIP {{ fun st => True }} END
-  {{ fun st => True }}.
-Set Printing All.
-
-(** To avoid clashing with the existing [Notation] definitions for
-    ordinary [com]mands, we introduce these notations in a special
-    scope called [dcom_scope], and we [Open] this scope for the
-    remainder of the file.
-
-    Careful readers will note that we've defined two notations
-    for specifying a precondition explicitly, one with and one
-    without a [->>].  The "without" version is intended to be
-    used to supply the initial precondition at the very top
-    of the program. *)
+  WHILE true DO {{ True }} SKIP {{ True }} END
+  {{ True }}.
+(* Set Printing All. *)
 
 Example dec_while : decorated :=
-  {{ fun st => True }} 
+  {{ True }}
   WHILE ~(X = 0)
   DO
-    {{ fun st => True /\ st X <> 0}}
+    {{ True /\ (X <> 0) }}
     X ::= X - 1
-    {{ fun _ => True }}
+    {{ True }}
   END
-  {{ fun st => True /\ st X = 0}} ->>
-  {{ fun st => st X = 0 }}.
+  {{ True /\  X = 0}} ->>
+  {{ X = 0 }}.
 
 (** It is easy to go from a [dcom] to a [com] by erasing all
     annotations. *)
@@ -1181,29 +1194,25 @@ Definition extract_dec (dec : decorated) : com :=
   | Decorated P d => extract d
   end.
 
-(** The choice of exactly where to put assertions in the definition of
-    [dcom] is a bit subtle.  The simplest thing to do would be to
-    annotate every [dcom] with a precondition and postcondition.  But
-    this would result in very verbose programs with a lot of repeated
-    annotations: for example, a program like [SKIP;SKIP] would have to
-    be annotated as
+Print dec_while.
+(*
+dec_while =
+{{fun _ : state => True}} (WHILE ~ X = 0
+                           DO {{fun st : state => True /\ st X <> 0}}
+                           X ::= X - 1 {{fun _ : state => True}}
+                           END {{fun st : state => True /\ st X = 0}}) ->>
+                          {{fun st : state => st X = 0}}
+     : decorated
+*)
 
-        {{P}} ({{P}} SKIP {{P}}) ;; ({{P}} SKIP {{P}}) {{P}},
+Compute (extract_dec dec_while).
+(*
+     = (WHILE ~ "X"%string = 0 DO "X" ::= "X"%string - 1 END)%imp
+     : com
+*)
 
-    with pre- and post-conditions on each [SKIP], plus identical pre-
-    and post-conditions on the semicolon!
-
-    Instead, the rule we've followed is this:
-
-       - The _post_-condition expected by each [dcom] [d] is embedded
-         in [d].
-
-       - The _pre_-condition is supplied by the context. *)
-
-(** In other words, the invariant of the representation is that a
-    [dcom] [d] together with a precondition [P] determines a Hoare
-    triple [{{P}} (extract d) {{post d}}], where [post] is defined as
-    follows: *)
+(** It is straightforward to extract the precondition and
+    postcondition from a decorated program. *)
 
 Fixpoint post (d : dcom) : Assertion :=
   match d with
@@ -1216,9 +1225,6 @@ Fixpoint post (d : dcom) : Assertion :=
   | DCPost c Q              => Q
   end.
 
-(** It is straightforward to extract the precondition and
-    postcondition from a decorated program. *)
-
 Definition pre_dec (dec : decorated) : Assertion :=
   match dec with
   | Decorated P d => P
@@ -1229,18 +1235,48 @@ Definition post_dec (dec : decorated) : Assertion :=
   | Decorated P d => post d
   end.
 
+Print dec_while.
+(*
+dec_while =
+{{fun _ : state => True}} (WHILE ~ X = 0
+                           DO {{fun st : state => True /\ st X <> 0}}
+                           X ::= X - 1 {{fun _ : state => True}}
+                           END {{fun st : state => True /\ st X = 0}}) ->>
+                          {{fun st : state => st X = 0}}
+     : decorated
+*)
+
+Compute pre_dec dec_while.
+(*
+     = fun _ : state => True
+     : Assertion
+*)
+
+Compute post_dec dec_while.
+(*
+     = fun x : state => x "X"%string = 0
+     : Assertion
+*)
+
 (** We can express what it means for a decorated program to be
     correct as follows: *)
 
 Definition dec_correct (dec : decorated) :=
   {{pre_dec dec}} (extract_dec dec) {{post_dec dec}}.
 
+Example dec_while_triple_correct :
+  dec_correct dec_while
+ = {{ fun st => True }}
+   (WHILE ~(X = 0) DO X ::= X - 1 END)%imp
+   {{ fun st => st X = 0 }}.
+Proof. reflexivity. Qed.
+
 (** To check whether this Hoare triple is _valid_, we need a way to
-    extract the "proof obligations" from a decorated program.  These
+    extract the "proof obligations" from a decorated program. These
     obligations are often called _verification conditions_, because
     they are the facts that must be verified to see that the
-    decorations are logically consistent and thus add up to a complete
-    proof of correctness. *)
+    decorations are logically consistent and thus constitute a proof
+    of correctness. *)
 
 (* ================================================================= *)
 (** ** Extracting Verification Conditions *)
@@ -1267,8 +1303,8 @@ Fixpoint verification_conditions (P : Assertion) (d : dcom) : Prop :=
   | DCAsgn X a Q =>
       (P ->> Q [X |-> a])
   | DCIf b P1 d1 P2 d2 Q =>
-      ((fun st => P st /\ bassn b st) ->> P1)
-      /\ ((fun st => P st /\ ~ (bassn b st)) ->> P2)
+      ((P /\ b) ->> P1)%assertion
+      /\ ((P /\ ~ b) ->> P2)%assertion
       /\ (post d1 ->> Q) /\ (post d2 ->> Q)
       /\ verification_conditions P1 d1
       /\ verification_conditions P2 d2
@@ -1276,8 +1312,8 @@ Fixpoint verification_conditions (P : Assertion) (d : dcom) : Prop :=
       (* post d is the loop invariant and the initial
          precondition *)
       (P ->> post d)
-      /\ ((fun st => post d st /\ bassn b st) ->> Pbody)
-      /\ ((fun st => post d st /\ ~(bassn b st)) ->> Ppost)
+      /\ ((post d  /\ b) ->> Pbody)%assertion
+      /\ ((post d  /\ ~ b) ->> Ppost)%assertion
       /\ verification_conditions Pbody d
   | DCPre P' d =>
       (P ->> P') /\ verification_conditions P' d
@@ -1329,9 +1365,6 @@ Proof.
     eapply hoare_consequence_post. apply IHd. apply Hd. assumption.
 Qed.
 
-(* ================================================================= *)
-(** ** Automation *)
-
 (** Now that all the pieces are in place, we can verify an entire program. *)
 
 Definition verification_conditions_dec (dec : decorated) : Prop :=
@@ -1339,7 +1372,7 @@ Definition verification_conditions_dec (dec : decorated) : Prop :=
   | Decorated P d => verification_conditions P d
   end.
 
-Lemma verification_correct_dec : forall dec,
+Corollary verification_correct_dec : forall dec,
   verification_conditions_dec dec -> dec_correct dec.
 Proof.
   intros [P d]. apply verification_correct.
@@ -1359,9 +1392,12 @@ Eval simpl in (verification_conditions_dec dec_while).
       (fun st : state => True /\ st X = 0)) /\
       (fun st : state => True /\ st X <> 0) ->>
       (fun _ : state => True) [X |-> X - 1]) /\
-      (fun st : state => True /\ st X = 0) ->> 
-      (fun st : state => st X = 0)   
+      (fun st : state => True /\ st X = 0) ->>
+      (fun st : state => st X = 0)
 *)
+
+(* ================================================================= *)
+(** ** Automation *)
 
 (** In principle, we could work with such propositions using just the
     tactics we have so far, but we can make things much smoother with
@@ -1375,10 +1411,11 @@ Tactic Notation "verify" :=
   apply verification_correct;
   repeat split;
   simpl; unfold assert_implies;
-  unfold bassn in *; unfold beval in *; unfold aeval in *;
+  unfold ap in *; unfold ap2 in *; unfold bassn in *; unfold beval in *; unfold aeval in *;
   unfold assn_sub; intros;
-  repeat rewrite t_update_eq;
-  repeat (rewrite t_update_neq; [| (intro X; inversion X)]);
+  repeat (simpl in *;
+          rewrite t_update_eq ||
+          (try rewrite t_update_neq; [| (intro X; inversion X; fail)]));
   simpl in *;
   repeat match goal with [H : _ /\ _ |- _] => destruct H end;
   repeat rewrite not_true_iff_false in *;
@@ -1390,11 +1427,12 @@ Tactic Notation "verify" :=
   repeat rewrite leb_iff in *;
   repeat rewrite leb_iff_conv in *;
   try subst;
+  simpl in *;
   repeat
     match goal with
       [st : state |- _] =>
         match goal with
-          [H : st _ = _ |- _] => rewrite -> H in *; clear H
+        | [H : st _ = _ |- _] => rewrite -> H in *; clear H
         | [H : _ = st _ |- _] => rewrite <- H in *; clear H
         end
     end;
@@ -1409,33 +1447,33 @@ Theorem dec_while_correct :
   dec_correct dec_while.
 Proof. verify. Qed.
 
-(** Another example (formalizing a decorated program we've seen
-    before): *)
-
-Example subtract_slowly_dec (m : nat) (p : nat) : decorated :=
-    {{ fun st => st X = m /\ st Z = p }} ->>
-    {{ fun st => st Z - st X = p - m }}
-  WHILE ~(X = 0)
-  DO   {{ fun st => st Z - st X = p - m /\ st X <> 0 }} ->>
-       {{ fun st => (st Z - 1) - (st X - 1) = p - m }}
-     Z ::= Z - 1
-       {{ fun st => st Z - (st X - 1) = p - m }} ;;
-     X ::= X - 1
-       {{ fun st => st Z - st X = p - m }}
-  END
-    {{ fun st => st Z - st X = p - m /\ st X = 0 }} ->>
-    {{ fun st => st Z = p - m }}.
-
-Theorem subtract_slowly_dec_correct : forall m p,
-  dec_correct (subtract_slowly_dec m p).
-Proof. intros m p. verify. (* this grinds for a bit! *) Qed.
-
 (* ================================================================= *)
 (** ** Examples *)
 
 (** In this section, we use the automation developed above to verify
     formal decorated programs corresponding to most of the informal
     ones we have seen. *)
+
+(* ----------------------------------------------------------------- *)
+(** *** Slow Subtraction *)
+
+Example subtract_slowly_dec (m : nat) (p : nat) : decorated :=
+    {{ X = m /\  Z = p }} ->>
+    {{ Z - X = p - m }}
+  WHILE ~(X = 0)
+  DO   {{ Z - X = p - m /\ X  <>  0 }} ->>
+       {{ (Z - 1) - (X - 1) = p - m }}
+     Z ::= Z - 1
+       {{ Z - (X - 1) = p - m }} ;;
+     X ::= X - 1
+       {{ Z - X = p - m }}
+  END
+    {{ Z - X = p - m /\ X = 0 }} ->>
+    {{ Z = p - m }}.
+
+Theorem subtract_slowly_dec_correct : forall m p,
+  dec_correct (subtract_slowly_dec m p).
+Proof. intros m p. verify. (* this grinds for a bit! *) Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** Swapping Using Addition and Subtraction *)
@@ -1445,90 +1483,44 @@ Definition swap : com :=
   Y ::= X - Y;;
   X ::= X - Y.
 
-Definition swap_dec m n : decorated :=
-   {{ fun st => st X = m /\ st Y = n}} ->>
-   {{ fun st => (st X + st Y) - ((st X + st Y) - st Y) = n
-                /\ (st X + st Y) - st Y = m }}
+Definition swap_dec (m n:nat) : decorated :=
+   {{ X = m /\ Y = n}} ->>
+   {{ (X + Y) - ((X + Y) - Y) = n
+                /\ (X + Y) - Y = m }}
   X ::= X + Y
-   {{ fun st => st X - (st X - st Y) = n /\ st X - st Y = m }};;
+   {{ X - (X - Y) = n /\ X - Y = m }};;
   Y ::= X - Y
-   {{ fun st => st X - st Y = n /\ st Y = m }};;
+   {{ X - Y = n /\ Y = m }};;
   X ::= X - Y
-   {{ fun st => st X = n /\ st Y = m}}.
+   {{ X = n /\ Y = m}}.
 
 Theorem swap_correct : forall m n,
   dec_correct (swap_dec m n).
-Proof. intros; verify. Qed.
+Proof. intros; verify.   Qed.
 
-(* ----------------------------------------------------------------- *)
-(** *** Simple Conditionals *)
-
-Definition if_minus_plus_com :=
-  (TEST X <= Y
-    THEN Z ::= Y - X
-    ELSE Y ::= X + Z
-  FI)%imp.
-
-Definition if_minus_plus_dec :=
-  {{fun st => True}}
-  TEST X <= Y  THEN
-      {{ fun st => True /\ st X <= st Y }} ->>
-      {{ fun st => st Y = st X + (st Y - st X) }}
-    Z ::= Y - X
-      {{ fun st => st Y = st X + st Z }}
-  ELSE
-      {{ fun st => True /\ ~(st X <= st Y) }} ->>
-      {{ fun st => st X + st Z = st X + st Z }}
-    Y ::= X + Z
-      {{ fun st => st Y = st X + st Z }}
-  FI
-  {{fun st => st Y = st X + st Z}}.
-
-Theorem if_minus_plus_correct :
-  dec_correct if_minus_plus_dec.
-Proof. verify. Qed.
-
-Definition if_minus_dec :=
-  {{fun st => True}}
-  TEST X <= Y THEN
-      {{fun st => True /\ st X <= st Y }} ->>
-      {{fun st => (st Y - st X) + st X = st Y
-               \/ (st Y - st X) + st Y = st X}}
-    Z ::= Y - X
-      {{fun st => st Z + st X = st Y \/ st Z + st Y = st X}}
-  ELSE
-      {{fun st => True /\ ~(st X <= st Y) }} ->>
-      {{fun st => (st X - st Y) + st X = st Y
-               \/ (st X - st Y) + st Y = st X}}
-    Z ::= X - Y
-      {{fun st => st Z + st X = st Y \/ st Z + st Y = st X}}
-  FI
-    {{fun st => st Z + st X = st Y \/ st Z + st Y = st X}}.
-
-Theorem if_minus_correct :
-  dec_correct if_minus_dec.
-Proof. verify. Qed.
-
+(**  MRC hid some proofs here so as not to spoil earlier exercises.
+   Consider the pros and cons of this. 
+ *)
 (* ----------------------------------------------------------------- *)
 (** *** Division *)
 
 Definition div_mod_dec (a b : nat) : decorated :=
-  {{ fun st => True }} ->>
-  {{ fun st => b * 0 + a = a }}
+  {{ True }} ->>
+  {{ b * 0 + a = a }}
   X ::= a
-  {{ fun st => b * 0 + st X = a }};;
+  {{ b * 0 + X = a }};;
   Y ::= 0
-  {{ fun st => b * st Y + st X = a }};;
+  {{ b * Y + X = a }};;
   WHILE b <= X DO
-    {{ fun st => b * st Y + st X = a /\ b <= st X }} ->>
-    {{ fun st => b * (st Y + 1) + (st X - b) = a }}
+    {{ b * Y + X = a /\ b <= X }} ->>
+    {{ b * (Y + 1) + (X - b) = a }}
     X ::= X - b
-    {{ fun st => b * (st Y + 1) + st X = a }};;
+    {{ b * (Y + 1) + X = a }};;
     Y ::= Y + 1
-    {{ fun st => b * st Y + st X = a }}
+    {{ b * Y + X = a }}
   END
-  {{ fun st => b * st Y + st X = a /\ ~(b <= st X) }} ->>
-  {{ fun st => b * st Y + st X = a /\ (st X < b) }}.
+  {{ b * Y + X = a /\ ~(b <= X) }} ->>
+  {{ b * Y + X = a /\ (X < b) }}.
 
 Theorem div_mod_dec_correct : forall a b,
   dec_correct (div_mod_dec a b).
@@ -1552,17 +1544,17 @@ Inductive ev : nat -> Prop :=
   | ev_0 : ev O
   | ev_SS : forall n : nat, ev n -> ev (S (S n)).
 
-Definition find_parity_dec m : decorated :=
-   {{ fun st => st X = m}} ->>
-   {{ fun st => st X <= m /\ ev (m - st X) }}
+Definition find_parity_dec (m:nat) : decorated :=
+   {{ X = m }} ->>
+   {{ X <= m /\ ap ev (m - X) }}
   WHILE 2 <= X DO
-     {{ fun st => (st X <= m /\ ev (m - st X)) /\ 2 <= st X }} ->>
-     {{ fun st => st X - 2 <= m /\ (ev (m - (st X - 2))) }}
+     {{ (X <= m /\ ap ev (m - X)) /\ 2 <= X }} ->>
+     {{ X - 2 <= m /\ ap ev (m - (X - 2)) }}
      X ::= X - 2
-     {{ fun st => st X <= m /\ ev (m - st X) }}
+     {{ X <= m /\ ap ev (m - X) }}
   END
-   {{ fun st => (st X <= m /\ ev (m - st X)) /\ st X < 2 }} ->>
-   {{ fun st => st X=0 <-> ev m }}.
+   {{ (X <= m /\ ap ev (m - X)) /\ X < 2 }} ->>
+   {{  X = 0 <-> ev m }}.
 
 Lemma l1 : forall m n p,
   p <= n ->
@@ -1598,40 +1590,40 @@ Proof.
     fold (2 <=? (st X)) in *;
     try rewrite leb_iff in *;
     try rewrite leb_iff_conv in *; eauto; try omega.
-    - (* invariant holds initially *)
-      rewrite minus_diag. constructor.
-    - (* invariant preserved *)
-      rewrite l1; try assumption.
-      apply l2; assumption.
-    - (* invariant strong enough to imply conclusion
+  - (* invariant holds initially *)
+    rewrite minus_diag. constructor.
+  - (* invariant preserved *)
+    rewrite l1; try assumption.
+    apply l2; assumption.
+  - (* invariant strong enough to imply conclusion
          (-> direction) *)
-      rewrite <- minus_n_O in H2. assumption.
-    - (* invariant strong enough to imply conclusion
+    rewrite <- minus_n_O in H2. assumption.
+  - (* invariant strong enough to imply conclusion
          (<- direction) *)
-      destruct (st X) as [| [| n]].
-      (* by H1 X can only be 0 or 1 *)
-      + (* st X = 0 *)
-        reflexivity.
-      + (* st X = 1 *)
-        apply l3 in H; try assumption. inversion H.
-      + (* st X = 2 *)
-        clear H0 H2. (* omega confused otherwise *)
-        omega.
+    destruct (st X) as [| [| n]].
+    (* by H1 X can only be 0 or 1 *)
+    + (* st X = 0 *)
+      reflexivity.
+    + (* st X = 1 *)
+      apply l3 in H; try assumption. inversion H.
+    + (* st X = 2 *)
+      clear H0 H2. (* omega confused otherwise *)
+      omega.
 Qed.
 
 (** Here is a more intuitive way of writing the invariant: *)
 
-Definition find_parity_dec' m : decorated :=
-  {{ fun st => st X = m}} ->>
-  {{ fun st => ev (st X) <-> ev m }}
+Definition find_parity_dec' (m:nat) : decorated :=
+  {{ X = m }} ->>
+  {{ ap ev X <-> ev m }}
  WHILE 2 <= X DO
-    {{ fun st => (ev (st X) <-> ev m) /\ 2 <= st X }} ->>
-    {{ fun st => (ev (st X - 2) <-> ev m) }}
+    {{ (ap ev X <-> ev m) /\ 2 <= X }} ->>
+    {{ ap ev (X - 2) <-> ev m }}
     X ::= X - 2
-    {{ fun st => (ev (st X) <-> ev m) }}
+    {{ ap ev X <-> ev m }}
  END
- {{ fun st => (ev (st X) <-> ev m) /\ ~(2 <= st X) }} ->>
- {{ fun st => st X=0 <-> ev m }}.
+ {{ (ap ev X <-> ev m) /\ ~(2 <= X) }} ->>
+ {{  X=0 <-> ev m }}.
 
 Lemma l4 : forall m,
   2 <= m ->
@@ -1671,52 +1663,24 @@ Proof.
         omega.
 Qed.
 
-(** Here is the simplest invariant we've found for this program: *)
-
-Definition parity_dec m : decorated :=
-  {{ fun st => st X = m}} ->>
-  {{ fun st => parity (st X) = parity m }}
- WHILE 2 <= X DO
-    {{ fun st => parity (st X) = parity m /\ 2 <= st X }} ->>
-    {{ fun st => parity (st X - 2) = parity m }}
-    X ::= X - 2
-    {{ fun st => parity (st X) = parity m }}
- END
- {{ fun st => parity (st X) = parity m /\ ~(2 <= st X) }} ->>
- {{ fun st => st X = parity m }}.
-
-Theorem parity_dec_correct : forall m,
-  dec_correct (parity_dec m).
-Proof.
-  intros. verify;
-    (* simplification too aggressive ... reverting a bit *)
-    fold (2 <=? (st X)) in *;
-    try rewrite leb_iff in *;
-    try rewrite leb_iff_conv in *; eauto; try omega.
-  - (* invariant preserved *)
-    rewrite <- H. apply parity_ge_2. assumption.
-  - (* invariant strong enough *)
-    rewrite <- H. symmetry. apply parity_lt_2. assumption.
-Qed.
-
 (* ----------------------------------------------------------------- *)
 (** *** Square Roots *)
 
-Definition sqrt_dec m : decorated :=
-    {{ fun st => st X = m }} ->>
-    {{ fun st => st X = m /\ 0*0 <= m }}
+Definition sqrt_dec (m:nat) : decorated :=
+    {{ X = m }} ->>
+    {{ X = m /\ 0*0 <= m }}
   Z ::= 0
-    {{ fun st => st X = m /\ st Z*st Z <= m }};;
+    {{ X = m /\ Z*Z <= m }};;
   WHILE (Z+1)*(Z+1) <= X DO
-      {{ fun st => (st X = m /\ st Z*st Z<=m)
-                   /\ (st Z + 1)*(st Z + 1) <= st X }} ->>
-      {{ fun st => st X = m /\ (st Z+1)*(st Z+1)<=m }}
+      {{ (X = m /\ Z*Z<=m)
+                   /\ (Z + 1)*(Z + 1) <= X }} ->>
+      {{ X = m /\ (Z+1)*(Z+1)<=m }}
     Z ::= Z + 1
-      {{ fun st => st X = m /\ st Z*st Z<=m }}
+      {{ X = m /\ Z*Z<=m }}
   END
-    {{ fun st => (st X = m /\ st Z*st Z<=m)
-                   /\ ~((st Z + 1)*(st Z + 1) <= st X) }} ->>
-    {{ fun st => st Z*st Z<=m /\ m<(st Z+1)*(st Z+1) }}.
+    {{ (X = m /\ Z*Z<=m)
+                   /\ ~((Z + 1)*(Z + 1) <= X) }} ->>
+    {{ Z*Z<=m /\ m<(Z+1)*(Z+1) }}.
 
 Theorem sqrt_correct : forall m,
   dec_correct (sqrt_dec m).
@@ -1730,64 +1694,64 @@ Proof. intro m. verify. Qed.
     last. *)
 
 Definition square_dec (m : nat) : decorated :=
-  {{ fun st => st X = m }}
+  {{ X = m }}
   Y ::= X
-  {{ fun st => st X = m /\ st Y = m }};;
+  {{ X = m /\ Y = m }};;
   Z ::= 0
-  {{ fun st => st X = m /\ st Y = m /\ st Z = 0}} ->>
-  {{ fun st => st Z + st X * st Y = m * m }};;
-  WHILE ~(Y = 0) DO
-    {{ fun st => st Z + st X * st Y = m * m /\ st Y <> 0 }} ->>
-    {{ fun st => (st Z + st X) + st X * (st Y - 1) = m * m }}
+  {{ X = m /\ Y = m /\ Z = 0}} ->>
+  {{ Z + X * Y = m * m }};;
+  WHILE ~ (Y = 0) DO
+    {{ Z + X * Y = m * m /\ Y <> 0 }} ->>
+    {{ (Z + X) + X * (Y - 1) = m * m }}
     Z ::= Z + X
-    {{ fun st => st Z + st X * (st Y - 1) = m * m }};;
+    {{ Z + X * (Y - 1) = m * m }};;
     Y ::= Y - 1
-    {{ fun st => st Z + st X * st Y = m * m }}
+    {{ Z + X * Y = m * m }}
   END
-  {{ fun st => st Z + st X * st Y = m * m /\ st Y = 0 }} ->>
-  {{ fun st => st Z = m * m }}.
+  {{ Z + X * Y = m * m /\ Y = 0 }} ->>
+  {{ Z = m * m }}.
 
 Theorem square_dec_correct : forall m,
   dec_correct (square_dec m).
 Proof.
   intro n. verify.
   - (* invariant preserved *)
-    destruct (st Y) as [| y']. apply False_ind. apply H0.
-    reflexivity.
-    simpl. rewrite <- minus_n_O.
+    destruct (st Y) as [| y'].
+    + exfalso. auto.
+    + simpl. rewrite <- minus_n_O.
     assert (G : forall n m, n * S m = n + n * m). {
       clear. intros. induction n. reflexivity. simpl.
       rewrite IHn. omega. }
-    rewrite <- H. rewrite G. rewrite plus_assoc. reflexivity.
+    rewrite <- H. rewrite G. omega.
 Qed.
 
 Definition square_dec' (n : nat) : decorated :=
-  {{ fun st => True }}
+  {{ True }}
   X ::= n
-  {{ fun st => st X = n }};;
+  {{ X = n }};;
   Y ::= X
-  {{ fun st => st X = n /\ st Y = n }};;
+  {{ X = n /\ Y = n }};;
   Z ::= 0
-  {{ fun st => st X = n /\ st Y = n /\ st Z = 0 }} ->>
-  {{ fun st => st Z = st X * (st X - st Y)
-               /\ st X = n /\ st Y <= st X }};;
+  {{ X = n /\ Y = n /\ Z = 0 }} ->>
+  {{ Z = X * (X - Y)
+               /\ X = n /\ Y <= X }};;
   WHILE ~(Y = 0) DO
-    {{ fun st => (st Z = st X * (st X - st Y)
-                /\ st X = n /\ st Y <= st X)
-                 /\ st Y <> 0 }}
+    {{ (Z = X * (X - Y)
+                /\ X = n /\ Y <= X)
+                /\  Y <> 0 }}
     Z ::= Z + X
-    {{ fun st => st Z = st X * (st X - (st Y - 1))
-                 /\ st X = n /\ st Y <= st X }};;
+    {{ Z = X * (X - (Y - 1))
+                 /\ X = n /\ Y <= X }};;
     Y ::= Y - 1
-    {{ fun st => st Z = st X * (st X - st Y)
-                 /\ st X = n /\ st Y <= st X }}
+    {{ Z = X * (X - Y)
+                 /\ X = n /\ Y <= X }}
   END
-  {{ fun st => (st Z = st X * (st X - st Y)
-              /\ st X = n /\ st Y <= st X)
-               /\ st Y = 0 }} ->>
-  {{ fun st => st Z = n * n }}.
+  {{ (Z = X * (X - Y)
+              /\ X = n /\ Y <= X)
+               /\ Y = 0 }} ->>
+  {{ Z = n * n }}.
 
-Theorem square_dec'_correct : forall n,
+Theorem square_dec'_correct : forall (n:nat),
   dec_correct (square_dec' n).
 Proof.
   intro n. verify.
@@ -1800,8 +1764,9 @@ Proof.
                   m <= n -> p <= m -> n - (m - p) = n - m + p).
       intros. omega.
     rewrite G. reflexivity. apply mult_le_compat_l. assumption.
-    destruct (st Y). apply False_ind. apply H0. reflexivity.
-      clear. rewrite mult_succ_r. rewrite plus_comm.
+    destruct (st Y).
+    + exfalso. auto.
+    + clear. rewrite mult_succ_r. rewrite plus_comm.
       apply le_plus_l.
   - (* invariant + negation of guard imply
        desired postcondition *)
@@ -1809,69 +1774,30 @@ Proof.
 Qed.
 
 Definition square_simpler_dec (m : nat) : decorated :=
-  {{ fun st => st X = m }} ->>
-  {{ fun st => 0 = 0*m /\ st X = m }}
+  {{ X = m }} ->>
+  {{ 0 = 0*m /\ X = m }}
   Y ::= 0
-  {{ fun st => 0 = (st Y)*m /\ st X = m }};;
+  {{ 0 = Y*m /\ X = m }};;
   Z ::= 0
-  {{ fun st => st Z = (st Y)*m /\ st X = m }}->>
-  {{ fun st => st Z = (st Y)*m /\ st X = m }};;
+  {{ Z = Y*m /\ X = m }};;
   WHILE ~(Y = X) DO
-    {{ fun st => (st Z = (st Y)*m /\ st X = m)
-        /\ st Y <> st X }} ->>
-    {{ fun st => st Z + st X = ((st Y) + 1)*m /\ st X = m }}
+    {{ (Z = Y*m /\ X = m)
+        /\ Y <> X }} ->>
+    {{ Z + X = (Y + 1)*m /\ X = m }}
     Z ::= Z + X
-    {{ fun st => st Z = ((st Y) + 1)*m /\ st X = m }};;
+    {{ Z = (Y + 1)*m /\ X = m }};;
     Y ::= Y + 1
-    {{ fun st => st Z = (st Y)*m /\ st X = m }}
+    {{ Z = Y*m /\ X = m }}
   END
-  {{ fun st => (st Z = (st Y)*m /\ st X = m) /\ st Y = st X }} ->>
-  {{ fun st => st Z = m*m }}.
+  {{ (Z = Y*m /\ X = m) /\ Y = X }} ->>
+  {{ Z = m*m }}.
 
 Theorem square_simpler_dec_correct : forall m,
   dec_correct (square_simpler_dec m).
 Proof.
   intro m. verify.
-  rewrite mult_plus_distr_r. simpl. rewrite <- plus_n_O.
-  reflexivity.
+  rewrite mult_plus_distr_r. omega.
 Qed.
-
-(* ----------------------------------------------------------------- *)
-(** *** Two loops *)
-
-Definition two_loops_dec (a b c : nat) : decorated :=
-  {{ fun st => True }} ->>
-  {{ fun st => c = 0 + c /\ 0 = 0 }}
-  X ::= 0
-  {{ fun st => c = st X + c /\ 0 = 0 }};;
-  Y ::= 0
-  {{ fun st => c = st X + c /\ st Y = 0 }};;
-  Z ::= c
-  {{ fun st => st Z = st X + c /\ st Y = 0 }};;
-  WHILE ~(X = a) DO
-    {{ fun st => (st Z = st X + c /\ st Y = 0) /\ st X <> a }} ->>
-    {{ fun st => st Z + 1 = st X + 1 + c /\ st Y = 0 }}
-    X ::= X + 1
-    {{ fun st => st Z + 1 = st X + c /\ st Y = 0 }};;
-    Z ::= Z + 1
-    {{ fun st => st Z = st X + c /\ st Y = 0 }}
-  END
-  {{ fun st => (st Z = st X + c /\ st Y = 0) /\ st X = a }} ->>
-  {{ fun st => st Z = a + st Y + c }};;
-  WHILE ~(Y = b) DO
-    {{ fun st => st Z = a + st Y + c /\ st Y <> b }} ->>
-    {{ fun st => st Z + 1 = a + st Y + 1 + c }}
-    Y ::= Y + 1
-    {{ fun st => st Z + 1 = a + st Y + c }};;
-    Z ::= Z + 1
-    {{ fun st => st Z = a + st Y + c }}
-  END
-  {{ fun st => (st Z = a + st Y + c) /\ st Y = b }} ->>
-  {{ fun st => st Z = a + b + c }}.
-
-Theorem two_loops_correct : forall a b c,
-  dec_correct (two_loops_dec a b c).
-Proof. intros a b c. verify. Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** Power Series *)
@@ -1883,32 +1809,32 @@ Fixpoint pow2 n :=
   end.
 
 Definition dpow2_down (n : nat) :=
-  {{ fun st => True }} ->>
-  {{ fun st => 1 = (pow2 (0 + 1))-1 /\ 1 = pow2 0 }}
+  {{ True }} ->>
+  {{ 1 = (pow2 (0 + 1))-1 /\ 1 = pow2 0 }}
   X ::= 0
-  {{ fun st => 1 = (pow2 (0 + 1))-1 /\ 1 = pow2 (st X) }};;
+  {{ 1 = (pow2 (0 + 1))-1 /\ 1 = ap pow2 X }};;
   Y ::= 1
-  {{ fun st => st Y = (pow2 (st X + 1))-1 /\ 1 = pow2 (st X) }};;
+  {{ Y = (ap pow2 (X + 1))-1 /\ 1 = ap pow2 X}};;
   Z ::= 1
-  {{ fun st => st Y = (pow2 (st X + 1))-1 /\ st Z = pow2 (st X) }};;
+  {{ Y = (ap pow2 (X + 1))-1 /\ Z = ap pow2 X }};;
   WHILE ~(X = n) DO
-    {{ fun st => (st Y = (pow2 (st X + 1))-1 /\ st Z = pow2 (st X))
-                 /\ st X <> n }} ->>
-    {{ fun st => st Y + 2 * st Z = (pow2 (st X + 2))-1
-                 /\ 2 * st Z = pow2 (st X + 1) }}
+    {{ (Y = (ap pow2 (X + 1))-1 /\ Z = ap pow2 X)
+                 /\ X <> n }} ->>
+    {{ Y + 2 * Z = (ap pow2 (X + 2))-1
+                 /\ 2 * Z = ap pow2 (X + 1) }}
     Z ::= 2 * Z
-    {{ fun st => st Y + st Z = (pow2 (st X + 2))-1
-                 /\ st Z = pow2 (st X + 1) }};;
+    {{ Y + Z = (ap pow2 (X + 2))-1
+                 /\ Z = ap pow2 (X + 1) }};;
     Y ::= Y + Z
-    {{ fun st => st Y = (pow2 (st X + 2))-1
-                 /\ st Z = pow2 (st X + 1) }};;
+    {{ Y = (ap pow2 (X + 2))-1
+                 /\ Z = ap pow2 (X + 1) }};;
     X ::= X + 1
-    {{ fun st => st Y = (pow2 (st X + 1))-1
-                 /\ st Z = pow2 (st X) }}
+    {{ Y = (ap pow2 (X + 1))-1
+                 /\ Z = ap pow2 X }}
   END
-  {{ fun st => (st Y = (pow2 (st X + 1))-1 /\ st Z = pow2 (st X))
-               /\ st X = n }} ->>
-  {{ fun st => st Y = pow2 (n+1) - 1 }}.
+  {{ (Y = (ap pow2 (X + 1))-1 /\ Z = ap pow2 X)
+               /\ X = n }} ->>
+  {{ Y = pow2 (n+1) - 1 }}.
 
 Lemma pow2_plus_1 : forall n,
   pow2 (n+1) = pow2 n + pow2 n.
@@ -1942,13 +1868,33 @@ Qed.
 (* ================================================================= *)
 (** ** Further Exercises *)
 
-(** **** 练习：3 星, advanced (slow_assignment_dec)  
+(** **** 练习：3 星, advanced (slow_assignment_dec) 
 
     In the [slow_assignment] exercise above, we saw a roundabout way
     of assigning a number currently stored in [X] to the variable [Y]:
     start [Y] at [0], then decrement [X] until it hits [0],
-    incrementing [Y] at each step.  Write a formal version of this
-    decorated program and prove it correct. *)
+    incrementing [Y] at each step. Transform the informal decorated
+    program your wrote for [slow_assignment] into a formal decorated
+    program and prove its correctness. If all goes well, your
+    correctness proof will need only [intros] and [verify].
+
+    Hint: most of transformation will involve replacing informal
+    assertions with formal assertions.  For example, you would
+    replace [{{ X = m /\ Y = 0}}] with [{{ fun st => st X = m /\ st Y = 0 }}].
+    Also, semicolons go after the postcondition of an assignment in
+    a formal decorated program, as in this example:
+
+    {{ X = m /\ 0 = 0 }}
+  Y ::= 0;;
+    {{ X = m /\ Y = 0 }}
+
+becomes
+
+    {{ fun st => st X = m /\ 0 = 0 }}
+  Y ::= 0
+    {{ fun st => st X = m /\ st Y = 0 }} ;;
+
+*)
 
 Example slow_assignment_dec (m : nat) : decorated
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1961,19 +1907,31 @@ Proof. (* 请在此处解答 *) Admitted.
 Definition manual_grade_for_check_defn_of_slow_assignment_dec : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：4 星, advanced (factorial_dec)   
+(** **** 练习：4 星, advanced (factorial_dec)  
 
-    Remember the factorial function we worked with before: *)
+    The factorial function is defined recursively in the Coq standard
+    library in a way that is equivalent to the following:
 
-Fixpoint real_fact (n : nat) : nat :=
+Fixpoint fact (n : nat) : nat :=
   match n with
   | O => 1
-  | S n' => n * (real_fact n')
+  | S n' => n * (fact n')
   end.
+*)
 
-(** Following the pattern of [subtract_slowly_dec], write a decorated
-    program [factorial_dec] that implements the factorial function and
-    prove it correct as [factorial_dec_correct]. *)
+Compute fact 5. (* ==> 120 *)
+
+(** Using your solutions to [factorial] and [slow_assignment_dec] as a
+    guide, write a formal decorated program [factorial_dec] that
+    implements the factorial function, state a theorem named
+    [factorial_dec_correct] that says [factorial_dec] is correct, and
+    prove the theorem. If all goes well, [verify] will leave you with
+    just two subgoals, each of which requires establishing some
+    mathematical property of [fact] rather than proving anything about
+    your program.
+
+    Hint: when transforming a loop guard into a formal assertion, make
+    sure to express it with [bassn]. *)
 
 (* 请在此处解答 *)
 
@@ -1981,7 +1939,7 @@ Fixpoint real_fact (n : nat) : nat :=
 Definition manual_grade_for_factorial_dec : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：4 星, advanced, optional (fib_eqn)  
+(** **** 练习：4 星, advanced, optional (fib_eqn) 
 
     The Fibonacci function is usually written like this:
 
@@ -2008,12 +1966,12 @@ Fixpoint fib n :=
 
 Lemma fib_eqn : forall n,
   n > 0 ->
-  fib n + fib (Init.Nat.pred n) = fib (n + 1).
+  fib n + fib (pred n) = fib (n + 1).
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced, optional (fib)  
+(** **** 练习：4 星, advanced, optional (fib) 
 
     The following Imp program leaves the value of [fib n] in the
     variable [Y] when it terminates:
@@ -2035,7 +1993,7 @@ Proof.
 *)
 
 Definition T : string := "T".
-                      
+
 Definition dfib (n : nat) : decorated
 (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
@@ -2044,7 +2002,9 @@ Theorem dfib_correct : forall n,
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：5 星, advanced, optional (improve_dcom)  
+Close Scope dcom_scope.
+
+(** **** 练习：5 星, advanced, optional (improve_dcom) 
 
     The formal decorated programs defined in this section are intended
     to look as similar as possible to the informal ones defined earlier
@@ -2055,18 +2015,19 @@ Theorem dfib_correct : forall n,
     rest of the formal development leading up to the [verification_correct]
     theorem. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：4 星, advanced, optional (implement_dcom)  
+(** **** 练习：4 星, advanced, optional (implement_dcom) 
 
     Adapt the parser for Imp presented in chapter [ImpParser]
     of _Logical Foundations_ to parse decorated commands (either ours
     or, even better, the ones you defined in the previous exercise). *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(* Sun Jan 5 03:18:34 UTC 2020 *)
+
+(* 2020年1月16日 *)

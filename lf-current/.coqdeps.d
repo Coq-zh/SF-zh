@@ -32,6 +32,8 @@ Extraction.vo Extraction.glob Extraction.v.beautified: Extraction.v ImpCEvalFun.
 Extraction.vio: Extraction.v ImpCEvalFun.vio Imp.vio ImpParser.vio Maps.vio
 Auto.vo Auto.glob Auto.v.beautified: Auto.v Maps.vo Imp.vo
 Auto.vio: Auto.v Maps.vio Imp.vio
+AltAuto.vo AltAuto.glob AltAuto.v.beautified: AltAuto.v IndProp.vo
+AltAuto.vio: AltAuto.v IndProp.vio
 Postscript.vo Postscript.glob Postscript.v.beautified: Postscript.v
 Postscript.vio: Postscript.v
 Bib.vo Bib.glob Bib.v.beautified: Bib.v
@@ -70,6 +72,8 @@ ExtractionTest.vo ExtractionTest.glob ExtractionTest.v.beautified: ExtractionTes
 ExtractionTest.vio: ExtractionTest.v Extraction.vio
 AutoTest.vo AutoTest.glob AutoTest.v.beautified: AutoTest.v Auto.vo
 AutoTest.vio: AutoTest.v Auto.vio
+AltAutoTest.vo AltAutoTest.glob AltAutoTest.v.beautified: AltAutoTest.v AltAuto.vo
+AltAutoTest.vio: AltAutoTest.v AltAuto.vio
 PostscriptTest.vo PostscriptTest.glob PostscriptTest.v.beautified: PostscriptTest.v Postscript.vo
 PostscriptTest.vio: PostscriptTest.v Postscript.vio
 BibTest.vo BibTest.glob BibTest.v.beautified: BibTest.v Bib.vo

@@ -1,4 +1,5 @@
-(** * Selection:  Selection Sort, With Specification and Proof of Correctness
+(** * Selection:  Selection Sort, With Specification and Proof of Correctness*)
+(**
   This sorting algorithm works by choosing (and deleting) the smallest
   element, then doing it again, and so on.  It takes O(N^2) time.
 
@@ -250,4 +251,4 @@ Proof.
 Eval compute in selsort' [3;1;4;1;5;9;2;6;5].
 
 
-(* Sun Jan 5 03:20:53 UTC 2020 *)
+(* 2020年1月16日 *)

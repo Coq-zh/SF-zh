@@ -176,7 +176,7 @@ idtac " ".
 
 idtac "#> Himp.p1_may_diverge".
 idtac "Advanced".
-idtac "Possible points: 2".
+idtac "Possible points: 3".
 check_type @Himp.p1_may_diverge (
 (forall (st : String.string -> nat) (st' : Imp.state),
  st Imp.X <> 0 -> ~ Himp.ceval Himp.p1 st st')).
@@ -188,7 +188,7 @@ idtac " ".
 
 idtac "#> Himp.p2_may_diverge".
 idtac "Advanced".
-idtac "Possible points: 2".
+idtac "Possible points: 3".
 check_type @Himp.p2_may_diverge (
 (forall (st : String.string -> nat) (st' : Imp.state),
  st Imp.X <> 0 -> ~ Himp.ceval Himp.p2 st st')).
@@ -203,7 +203,7 @@ idtac " ".
 
 idtac "#> Himp.p1_p2_equiv".
 idtac "Advanced".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @Himp.p1_p2_equiv ((Himp.cequiv Himp.p1 Himp.p2)).
 idtac "Assumptions:".
 Abort.
@@ -216,7 +216,7 @@ idtac " ".
 
 idtac "#> Himp.p3_p4_inequiv".
 idtac "Advanced".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @Himp.p3_p4_inequiv ((~ Himp.cequiv Himp.p3 Himp.p4)).
 idtac "Assumptions:".
 Abort.
@@ -227,9 +227,22 @@ idtac " ".
 idtac " ".
 
 idtac "Max points - standard: 27".
-idtac "Max points - advanced: 39".
+idtac "Max points - advanced: 45".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- skip_right ---------".
@@ -266,4 +279,4 @@ idtac "---------- Himp.p3_p4_inequiv ---------".
 Print Assumptions Himp.p3_p4_inequiv.
 Abort.
 
-(* Sun Jan 5 03:18:44 UTC 2020 *)
+(* 2020年1月16日 *)

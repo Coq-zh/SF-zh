@@ -67,7 +67,7 @@ Hint Unfold update.
 (* ================================================================= *)
 (** ** 操作语义 *)
 
-(** 首先我们非形式化地描述单步关系…… 
+(** 首先我们非形式化地描述单步关系……
 
                    -------------------------------                  (ST_TestTru)
                    test tru then t1 else t2 --> t1
@@ -182,11 +182,10 @@ Proof.
 
 (** （提示：在证明中的某个地方，你需要使用归纳来推理某个项，这个项已知是数值。
     归纳可以对项本身进行，也可以对它是数值这个证据进行。两种方法均可完成证明，
-    但你发现一种要比另一种稍微简短一点。作为练习，请尝试使用这两种方法完成证明。）
+    但你发现一种要比另一种稍微简短一点。作为练习，请尝试使用这两种方法完成证明。）*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：3 星, standard, optional (step_deterministic)  
+(** **** 练习：3 星, standard, optional (step_deterministic) 
 
     使用 [value_is_nf] 来证明 [step] 关系是确定的。*)
 
@@ -210,7 +209,7 @@ Inductive ty : Type :=
 
 (** 在非形式化的记号中，类型关系经常写做 [|- t \in T]，并读做“[t] 有类型 [T]”。
     [|-] 符号叫做“十字转门（turnstile）”。下面，我们会看到更加丰富的类型关系，其中
-    我们会在 [|-] 左侧添加一个或多个“上下文（context）”。目前暂时来说，上下文总是空的。 
+    我们会在 [|-] 左侧添加一个或多个“上下文（context）”。目前暂时来说，上下文总是空的。
 
     
                            ---------------                     (T_Tru)
@@ -349,7 +348,7 @@ Proof with auto.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced (finish_progress_informal)  
+(** **** 练习：3 星, advanced (finish_progress_informal) 
 
     请完成非形式化的证明： *)
 
@@ -409,7 +408,7 @@ Proof with auto.
     (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced (finish_preservation_informal)  
+(** **** 练习：3 星, advanced (finish_preservation_informal) 
 
     请完成非形式化的证明： *)
 
@@ -441,7 +440,7 @@ Proof with auto.
 Definition manual_grade_for_finish_preservation_informal : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：3 星, standard (preservation_alternate_proof)  
+(** **** 练习：3 星, standard (preservation_alternate_proof) 
 
     现在请对_'求值'_导出式（而非类型导出式）进行归纳来证明保型性定理。
     请仔细阅读和思考上面证明中最开始的几行，确保你理解了他们是在做什么。
@@ -480,7 +479,7 @@ Proof.
 (* ================================================================= *)
 (** ** 额外练习 *)
 
-(** **** 练习：2 星, standard, recommended (subject_expansion)  
+(** **** 练习：2 星, standard, recommended (subject_expansion) 
 
     在学习了主语归约属性后，你可能会好奇其相反的属性——主语_'扩张'_（subject expasion）
     ——是否也成立。也即，如果有 [t --> t'] 且 [|- t' \in T]，是否总是有
@@ -493,7 +492,7 @@ Proof.
 Definition manual_grade_for_subject_expansion : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (variation1)  
+(** **** 练习：2 星, standard (variation1) 
 
     假设我们为类型关系添加新的规则：
 
@@ -514,7 +513,7 @@ Definition manual_grade_for_subject_expansion : option (nat*string) := None.
 Definition manual_grade_for_variation1 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (variation2)  
+(** **** 练习：2 星, standard (variation2) 
 
     假设，我们仅为 [step] 关系添加新的规则：
 
@@ -528,7 +527,7 @@ Definition manual_grade_for_variation1 : option (nat*string) := None.
 Definition manual_grade_for_variation2 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (variation3)  
+(** **** 练习：2 星, standard, optional (variation3) 
 
     假设，我们仅添加新的规则：
 
@@ -538,10 +537,10 @@ Definition manual_grade_for_variation2 : option (nat*string) := None.
 
    this rule?  For each one that does, give a counter-example.
             (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, optional (variation4)  
+(** **** 练习：2 星, standard, optional (variation4) 
 
     假设，我们仅添加新的规则：
 
@@ -550,10 +549,10 @@ Definition manual_grade_for_variation2 : option (nat*string) := None.
 
    上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, optional (variation5)  
+(** **** 练习：2 星, standard, optional (variation5) 
 
     假设，我们仅添加新的规则：
 
@@ -562,10 +561,10 @@ Definition manual_grade_for_variation2 : option (nat*string) := None.
 
    上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, optional (variation6)  
+(** **** 练习：2 星, standard, optional (variation6) 
 
     假设，我们仅添加新的规则：
 
@@ -574,19 +573,19 @@ Definition manual_grade_for_variation2 : option (nat*string) := None.
 
    上面的哪些性质不再成立？对于不再成立的性质，给出一个反例。
 (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：3 星, standard, optional (more_variations)  
+(** **** 练习：3 星, standard, optional (more_variations) 
 
     请使用上面的模式编写更多的练习。尝试有选择地使某些性质不再成立——
     即，对定义的改变只会导致某一个性质不再成立，而其他仍然成立。
 *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：1 星, standard (remove_prdzro)  
+(** **** 练习：1 星, standard (remove_prdzro) 
 
     归约规则 [ST_PrdZro] 可能有一点反直觉：我们想要让 [ zro] 的前趋变为未定义的，
     而非定义为 [zro]。我们是否可以通过仅仅移除 [step] 中的某条规则达到这一点？
@@ -598,7 +597,7 @@ Definition manual_grade_for_variation2 : option (nat*string) := None.
 Definition manual_grade_for_remove_predzro : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：4 星, advanced (prog_pres_bigstep)  
+(** **** 练习：4 星, advanced (prog_pres_bigstep) 
 
     假设我们的求值关系是以大步语义方式定义的。请陈述类似的可进性和保型性定理。
     （你不需要证明他们。）
@@ -614,4 +613,4 @@ Definition manual_grade_for_prog_pres_bigstep : option (nat*string) := None.
 
 
 
-(* Sun Jan 5 03:18:35 UTC 2020 *)
+(* 2020年1月16日 *)

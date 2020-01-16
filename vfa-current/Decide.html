@@ -2,86 +2,88 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
 <title>Decide: Programming with Decision Procedures</title>
-</head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
 <link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+</head>
 
 <body>
 
 <div id="page">
 
 <div id="header">
-<a href='https://coq-zh.github.io/SF-zh/index.html'>
-<img src='common/media/image/sf_logo_sm.png'></a>
-</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: 函数式算法验证</span><br></br>
+<div id='logoinheader'><a href='https://coq-zh.github.io/SF-zh/'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 3: 函数式算法验证</a></div>
 <ul id='menu'>
-   <a href='toc.html'><li class='section_name'>目录</li></a>
-   <a href='coqindex.html'><li class='section_name'>索引</li></a>
-   <a href='deps.html'><li class='section_name'>路线</li></a>
+   <li class='section_name'><a href='toc.html'>目录</a></li>
+   <li class='section_name'><a href='coqindex.html'>索引</a></li>
+   <li class='section_name'><a href='deps.html'>路线</a></li>
 </ul>
-</a></div>
+</div>
 
 <div id="main">
 
 <h1 class="libtitle">Decide<span class="subtitle">Programming with Decision Procedures</span></h1>
 
+<div class="code">
+</div>
 
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Set</span> <span class="id" type="var">Warnings</span> "-notation-overridden,-parsing".<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">VFA</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/>
+<br/>
+<span class="id" title="keyword">Set</span> <span class="id" title="var">Warnings</span> "-notation-overridden,-parsing".<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">VFA</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Perm.html#"><span class="id" title="library">Perm</span></a>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab185"></a><h1 class="section">Using <span class="inlinecode"><span class="id" type="var">reflect</span></span> to characterize decision procedures</h1>
+<a name="lab186"></a><h1 class="section">Using <span class="inlinecode"><span class="id" title="var">reflect</span></span> to characterize decision procedures</h1>
 
 <div class="paragraph"> </div>
 
- Thus far in _Verified Functional Algorithms_ we have been using
-
-<div class="paragraph"> </div>
-
+ Thus far in <i>Verified Functional Algorithms</i> we have been using
 <ul class="doclist">
-<li> propositions (<span class="inlinecode"><span class="id" type="keyword">Prop</span></span>) such as <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span> (which is Notation for <span class="inlinecode"><span class="id" type="var">lt</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span>)
+<li> propositions (<span class="inlinecode"><span class="id" title="keyword">Prop</span></span>) such as <span class="inlinecode"><span class="id" title="var">a</span>&lt;<span class="id" title="var">b</span></span> (which is Notation for <span class="inlinecode"><span class="id" title="var">lt</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span>)
 
 </li>
-<li> booleans (<span class="inlinecode"><span class="id" type="var">bool</span></span>) such as <span class="inlinecode"><span class="id" type="var">a</span>&lt;?<span class="id" type="var">b</span></span> (which is Notation for <span class="inlinecode"><span class="id" type="var">ltb</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span>). 
+<li> booleans (<span class="inlinecode"><span class="id" title="var">bool</span></span>) such as <span class="inlinecode"><span class="id" title="var">a</span>&lt;?<span class="id" title="var">b</span></span> (which is Notation for <span class="inlinecode"><span class="id" title="var">ltb</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span>). 
 </li>
 </ul>
 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> <span class="id" type="var">Nat.lt</span>. <span class="comment">(*&nbsp;:&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop&nbsp;*)</span><br/>
-<span class="id" type="keyword">Check</span> <span class="id" type="var">Nat.ltb</span>. <span class="comment">(*&nbsp;:&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;bool&nbsp;*)</span><br/>
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.PeanoNat.html#Nat.lt"><span class="id" title="definition">Nat.lt</span></a>. <span class="comment">(*&nbsp;:&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop&nbsp;*)</span><br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.PeanoNat.html#Nat.ltb"><span class="id" title="definition">Nat.ltb</span></a>. <span class="comment">(*&nbsp;:&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;nat&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;bool&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-The <a href="Perm.html"><span class="inlineref">Perm</span></a> chapter defined a tactic called <span class="inlinecode"><span class="id" type="var">bdestruct</span></span> that
+The <a href="Perm.html"><span class="inlineref">Perm</span></a> chapter defined a tactic called <span class="inlinecode"><span class="id" title="var">bdestruct</span></span> that
     does case analysis on (x &lt;? y) while giving you hypotheses (above
-    the line) of the form (x&lt;y).   This tactic is built using the <span class="inlinecode"><span class="id" type="var">reflect</span></span> 
-    type and the <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span> theorem. 
+    the line) of the form (x&lt;y).   This tactic is built using the <span class="inlinecode"><span class="id" title="var">reflect</span></span> 
+    type and the <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span> theorem. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Print</span> <span class="id" type="var">reflect</span>.<br/>
+<br/>
+<span class="id" title="keyword">Print</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#reflect"><span class="id" title="inductive">reflect</span></a>.<br/>
 <span class="comment">(*&nbsp;Inductive&nbsp;reflect&nbsp;(P&nbsp;:&nbsp;Prop)&nbsp;:&nbsp;bool&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Set&nbsp;:=<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ReflectT&nbsp;:&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;reflect&nbsp;P&nbsp;true&nbsp;<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;ReflectF&nbsp;:&nbsp;~&nbsp;P&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;reflect&nbsp;P&nbsp;false&nbsp;&nbsp;*)</span><br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Check</span> <span class="id" type="var">ltb_reflect</span>. <span class="comment">(*&nbsp;:&nbsp;forall&nbsp;x&nbsp;y,&nbsp;reflect&nbsp;(x&lt;y)&nbsp;(x&nbsp;&lt;?&nbsp;y)&nbsp;*)</span><br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="Perm.html#ltb_reflect"><span class="id" title="lemma">ltb_reflect</span></a>. <span class="comment">(*&nbsp;:&nbsp;forall&nbsp;x&nbsp;y,&nbsp;reflect&nbsp;(x&lt;y)&nbsp;(x&nbsp;&lt;?&nbsp;y)&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-The name <span class="inlinecode"><span class="id" type="var">reflect</span></span> for this type is a reference to _computational
-   reflection_,  a technique in logic.  One takes a logical formula, or 
+The name <span class="inlinecode"><span class="id" title="var">reflect</span></span> for this type is a reference to <i>computational
+   reflection</i>,  a technique in logic.  One takes a logical formula, or 
    proposition, or predicate,  and designs a syntactic embedding of 
-   this formula as an "object value" in the logic.  That is, _reflect_ the
+   this formula as an "object value" in the logic.  That is, <i>reflect</i> the
    formula back into the logic. Then one can design computations 
    expressible inside the logic that manipulate these syntactic object 
    values.  Finally, one proves that the computations make transformations
@@ -100,7 +102,7 @@ The name <span class="inlinecode"><span class="id" type="var">reflect</span></sp
    In Coq it is easy to do reflection, because the Calculus of Inductive
    Constructions (CiC) has Inductive data types that can easily encode 
    syntax trees.  We could, for example, take some of our propositional 
-   operators such as <span class="inlinecode"><span class="id" type="var">and</span></span>, <span class="inlinecode"><span class="id" type="var">or</span></span>, and make an <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> type that is an 
+   operators such as <span class="inlinecode"><span class="id" title="var">and</span></span>, <span class="inlinecode"><span class="id" title="var">or</span></span>, and make an <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> type that is an 
    encoding of these, and build a computational reasoning system for
    boolean satisfiability.
 
@@ -108,136 +110,135 @@ The name <span class="inlinecode"><span class="id" type="var">reflect</span></sp
 
    But in this chapter I will show something much simpler.  When 
    reasoning about less-than comparisons on natural numbers, we have
-   the advantage that <span class="inlinecode"><span class="id" type="var">nat</span></span> already an inductive type; it is "pre-reflected,"
-   in some sense.  (The same for <span class="inlinecode"><span class="id" type="var">Z</span></span>, <span class="inlinecode"><span class="id" type="var">list</span></span>, <span class="inlinecode"><span class="id" type="var">bool</span></span>, etc.)  
+   the advantage that <span class="inlinecode"><span class="id" title="var">nat</span></span> already an inductive type; it is "pre-reflected,"
+   in some sense.  (The same for <span class="inlinecode"><span class="id" title="var">Z</span></span>, <span class="inlinecode"><span class="id" title="var">list</span></span>, <span class="inlinecode"><span class="id" title="var">bool</span></span>, etc.)  
 <div class="paragraph"> </div>
 
- Now, let's examine how <span class="inlinecode"><span class="id" type="var">reflect</span></span> expresses the coherence between
-  <span class="inlinecode"><span class="id" type="var">lt</span></span> and <span class="inlinecode"><span class="id" type="var">ltb</span></span>. Suppose we have a value <span class="inlinecode"><span class="id" type="var">v</span></span> whose type is 
-  <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&lt;?7)</span>.  What is <span class="inlinecode"><span class="id" type="var">v</span></span>?  Either it is
-
-<div class="paragraph"> </div>
-
+ Now, let's examine how <span class="inlinecode"><span class="id" title="var">reflect</span></span> expresses the coherence between
+  <span class="inlinecode"><span class="id" title="var">lt</span></span> and <span class="inlinecode"><span class="id" title="var">ltb</span></span>. Suppose we have a value <span class="inlinecode"><span class="id" title="var">v</span></span> whose type is 
+  <span class="inlinecode"><span class="id" title="var">reflect</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&lt;?7)</span>.  What is <span class="inlinecode"><span class="id" title="var">v</span></span>?  Either it is
 <ul class="doclist">
-<li> ReflectT <span class="inlinecode"><span class="id" type="var">P</span></span> (3&lt;?7), where <span class="inlinecode"><span class="id" type="var">P</span></span> is a proof of <span class="inlinecode">3&lt;7</span>,  and <span class="inlinecode">3&lt;?7</span> is <span class="inlinecode"><span class="id" type="var">true</span></span>, or
+<li> ReflectT <span class="inlinecode"><span class="id" title="var">P</span></span> (3&lt;?7), where <span class="inlinecode"><span class="id" title="var">P</span></span> is a proof of <span class="inlinecode">3&lt;7</span>,  and <span class="inlinecode">3&lt;?7</span> is <span class="inlinecode"><span class="id" title="var">true</span></span>, or
 
 </li>
-<li> ReflectF <span class="inlinecode"><span class="id" type="var">Q</span></span> (3&lt;?7), where <span class="inlinecode"><span class="id" type="var">Q</span></span> is a proof of <span class="inlinecode">~(3&lt;7)</span>, and <span class="inlinecode">3&lt;?7</span> is <span class="inlinecode"><span class="id" type="var">false</span></span>.
+<li> ReflectF <span class="inlinecode"><span class="id" title="var">Q</span></span> (3&lt;?7), where <span class="inlinecode"><span class="id" title="var">Q</span></span> is a proof of <span class="inlinecode">~(3&lt;7)</span>, and <span class="inlinecode">3&lt;?7</span> is <span class="inlinecode"><span class="id" title="var">false</span></span>.
 
 </li>
 </ul>
-  In the case of <span class="inlinecode">3,7</span>, we are well advised to use <span class="inlinecode"><span class="id" type="var">ReflectT</span></span>, because
-   (3&lt;?7) cannot match the <span class="inlinecode"><span class="id" type="var">false</span></span> required by <span class="inlinecode"><span class="id" type="var">ReflectF</span></span>. 
+  In the case of <span class="inlinecode">3,7</span>, we are well advised to use <span class="inlinecode"><span class="id" title="var">ReflectT</span></span>, because
+   (3&lt;?7) cannot match the <span class="inlinecode"><span class="id" title="var">false</span></span> required by <span class="inlinecode"><span class="id" title="var">ReflectF</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Goal</span> (3&lt;?7 = <span class="id" type="var">true</span>). <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Goal</span> (3<a class="idref" href="http://coq.inria.fr/library//Coq.Arith.PeanoNat.html#558f8b76d149cdb311ec341fe9014aa<sub>8</sub>"><span class="id" title="notation">&lt;?</span></a>7 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>). <span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-So <span class="inlinecode"><span class="id" type="var">v</span></span> cannot be <span class="inlinecode"><span class="id" type="var">ReflectF</span></span> <span class="inlinecode"><span class="id" type="var">Q</span></span> <span class="inlinecode">(3&lt;?7)</span> for any <span class="inlinecode"><span class="id" type="var">Q</span></span>, because that would
+So <span class="inlinecode"><span class="id" title="var">v</span></span> cannot be <span class="inlinecode"><span class="id" title="var">ReflectF</span></span> <span class="inlinecode"><span class="id" title="var">Q</span></span> <span class="inlinecode">(3&lt;?7)</span> for any <span class="inlinecode"><span class="id" title="var">Q</span></span>, because that would
    not type-check.  Now, the next question:  must there exist a value
-   of type <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&lt;?7)</span>  ?  The answer is yes; that is the
-   <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span> theorem.  The result of <span class="inlinecode"><span class="id" type="keyword">Check</span></span> <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span>, above, says that
-   for any <span class="inlinecode"><span class="id" type="var">x</span>,<span class="id" type="var">y</span></span>, there does exist a value (ltb_reflect x y) whose type
-   is exactly <span class="inlinecode"><span class="id" type="var">reflect</span></span> <span class="inlinecode">(<span class="id" type="var">x</span>&lt;<span class="id" type="var">y</span>)(<span class="id" type="var">x</span>&lt;?<span class="id" type="var">y</span>)</span>.     So let's look at that value!  That is,
-   examine what <span class="inlinecode"><span class="id" type="var">H</span></span>, and <span class="inlinecode"><span class="id" type="var">P</span></span>, and <span class="inlinecode"><span class="id" type="var">Q</span></span> are equal to at "Case 1" and "Case 2": 
+   of type <span class="inlinecode"><span class="id" title="var">reflect</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&lt;?7)</span>  ?  The answer is yes; that is the
+   <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span> theorem.  The result of <span class="inlinecode"><span class="id" title="keyword">Check</span></span> <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span>, above, says that
+   for any <span class="inlinecode"><span class="id" title="var">x</span>,<span class="id" title="var">y</span></span>, there does exist a value (ltb_reflect x y) whose type
+   is exactly <span class="inlinecode"><span class="id" title="var">reflect</span></span> <span class="inlinecode">(<span class="id" title="var">x</span>&lt;<span class="id" title="var">y</span>)(<span class="id" title="var">x</span>&lt;?<span class="id" title="var">y</span>)</span>.     So let's look at that value!  That is,
+   examine what <span class="inlinecode"><span class="id" title="var">H</span></span>, and <span class="inlinecode"><span class="id" title="var">P</span></span>, and <span class="inlinecode"><span class="id" title="var">Q</span></span> are equal to at "Case 1" and "Case 2": 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">three_less_seven_1</span>: 3&lt;7.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">assert</span> (<span class="id" type="var">H</span> := <span class="id" type="var">ltb_reflect</span> 3 7).<br/>
-<span class="id" type="var">remember</span> (3&lt;?7) <span class="id" type="keyword">as</span> <span class="id" type="var">b</span>.<br/>
-<span class="id" type="tactic">destruct</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">P</span>|<span class="id" type="var">Q</span>] <span class="id" type="var">eqn</span>:?.<br/>
-* <span class="comment">(*&nbsp;Case&nbsp;1:&nbsp;H&nbsp;=&nbsp;ReflectT&nbsp;(3&lt;7)&nbsp;P&nbsp;*)</span><br/>
-<span class="id" type="tactic">apply</span> <span class="id" type="var">P</span>.<br/>
-* <span class="comment">(*&nbsp;Case&nbsp;2:&nbsp;H&nbsp;=&nbsp;ReflectF&nbsp;(3&lt;7)&nbsp;Q&nbsp;*)</span><br/>
-<span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Heqb</span>.<br/>
-<span class="id" type="tactic">inversion</span> <span class="id" type="var">Heqb</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
-</div>
-
-<div class="doc">
-Here is another proof that uses <span class="inlinecode"><span class="id" type="tactic">inversion</span></span> instead of <span class="inlinecode"><span class="id" type="tactic">destruct</span></span>.
-   The <span class="inlinecode"><span class="id" type="var">ReflectF</span></span> case is eliminated automatically by <span class="inlinecode"><span class="id" type="tactic">inversion</span></span>
-   because <span class="inlinecode">3&lt;?7</span> does not match <span class="inlinecode"><span class="id" type="var">false</span></span>. 
-</div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">three_less_seven_2</span>: 3&lt;7.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">assert</span> (<span class="id" type="var">H</span> := <span class="id" type="var">ltb_reflect</span> 3 7).<br/>
-<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">P</span>|<span class="id" type="var">Q</span>].<br/>
-<span class="id" type="tactic">apply</span> <span class="id" type="var">P</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="three_less_seven_1"><span class="id" title="lemma">three_less_seven_1</span></a>: 3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">assert</span> (<span class="id" title="var">H</span> := <a class="idref" href="Perm.html#ltb_reflect"><span class="id" title="lemma">ltb_reflect</span></a> 3 7).<br/>
+<span class="id" title="var">remember</span> (3<a class="idref" href="http://coq.inria.fr/library//Coq.Arith.PeanoNat.html#558f8b76d149cdb311ec341fe9014aa<sub>8</sub>"><span class="id" title="notation">&lt;?</span></a>7) <span class="id" title="keyword">as</span> <span class="id" title="var">b</span>.<br/>
+<span class="id" title="tactic">destruct</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">P</span>|<span class="id" title="var">Q</span>] <span class="id" title="var">eqn</span>:?.<br/>
+× <span class="comment">(*&nbsp;Case&nbsp;1:&nbsp;H&nbsp;=&nbsp;ReflectT&nbsp;(3&lt;7)&nbsp;P&nbsp;*)</span><br/>
+<span class="id" title="tactic">apply</span> <span class="id" title="var">P</span>.<br/>
+× <span class="comment">(*&nbsp;Case&nbsp;2:&nbsp;H&nbsp;=&nbsp;ReflectF&nbsp;(3&lt;7)&nbsp;Q&nbsp;*)</span><br/>
+<span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Heqb</span>.<br/>
+<span class="id" title="tactic">inversion</span> <span class="id" title="var">Heqb</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-The <span class="inlinecode"><span class="id" type="var">reflect</span></span> inductive data type is a way of relating a _decision
-   procedure_ (a function from X to <span class="inlinecode"><span class="id" type="var">bool</span></span>) with a predicate (a function
-   from X to <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>).   The convenience of <span class="inlinecode"><span class="id" type="var">reflect</span></span>, in the verification
-   of functional programs, is that we can do <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" type="var">ltb_reflect</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span>)</span>,
-   which relates <span class="inlinecode"><span class="id" type="var">a</span>&lt;?<span class="id" type="var">b</span></span> (in the program) to the <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span> (in the proof).
-   That's just how the <span class="inlinecode"><span class="id" type="var">bdestruct</span></span> tactic works; you can go back
-   to <span class="inlinecode"><span class="id" type="var">Perm.v</span></span> and examine how it is implemented in the <span class="inlinecode"><span class="id" type="keyword">Ltac</span></span>
+Here is another proof that uses <span class="inlinecode"><span class="id" title="tactic">inversion</span></span> instead of <span class="inlinecode"><span class="id" title="tactic">destruct</span></span>.
+   The <span class="inlinecode"><span class="id" title="var">ReflectF</span></span> case is eliminated automatically by <span class="inlinecode"><span class="id" title="tactic">inversion</span></span>
+   because <span class="inlinecode">3&lt;?7</span> does not match <span class="inlinecode"><span class="id" title="var">false</span></span>. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="three_less_seven_2"><span class="id" title="lemma">three_less_seven_2</span></a>: 3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">assert</span> (<span class="id" title="var">H</span> := <a class="idref" href="Perm.html#ltb_reflect"><span class="id" title="lemma">ltb_reflect</span></a> 3 7).<br/>
+<span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">P</span>|<span class="id" title="var">Q</span>].<br/>
+<span class="id" title="tactic">apply</span> <span class="id" title="var">P</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+
+<div class="doc">
+The <span class="inlinecode"><span class="id" title="var">reflect</span></span> inductive data type is a way of relating a <i>decision
+   procedure</i> (a function from X to <span class="inlinecode"><span class="id" title="var">bool</span></span>) with a predicate (a function
+   from X to <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>).   The convenience of <span class="inlinecode"><span class="id" title="var">reflect</span></span>, in the verification
+   of functional programs, is that we can do <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" title="var">ltb_reflect</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode"><span class="id" title="var">b</span>)</span>,
+   which relates <span class="inlinecode"><span class="id" title="var">a</span>&lt;?<span class="id" title="var">b</span></span> (in the program) to the <span class="inlinecode"><span class="id" title="var">a</span>&lt;<span class="id" title="var">b</span></span> (in the proof).
+   That's just how the <span class="inlinecode"><span class="id" title="var">bdestruct</span></span> tactic works; you can go back
+   to <span class="inlinecode"><span class="id" title="var">Perm.v</span></span> and examine how it is implemented in the <span class="inlinecode"><span class="id" title="keyword">Ltac</span></span>
    tactic-definition language. 
 <div class="paragraph"> </div>
 
-<a name="lab186"></a><h1 class="section">Using <span class="inlinecode"><span class="id" type="var">sumbool</span></span> to Characterize Decision Procedures</h1>
+<a name="lab187"></a><h1 class="section">Using <span class="inlinecode"><span class="id" title="var">sumbool</span></span> to Characterize Decision Procedures</h1>
 
 </div>
-<div class="code code-space">
+<div class="code">
 
 <br/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">ScratchPad</span>.<br/>
+<span class="id" title="keyword">Module</span> <a name="ScratchPad"><span class="id" title="module">ScratchPad</span></a>.<br/>
 </div>
 
 <div class="doc">
 An alternate way to characterize decision procedures,
-   widely used in Coq, is via the inductive type <span class="inlinecode"><span class="id" type="var">sumbool</span></span>.
+   widely used in Coq, is via the inductive type <span class="inlinecode"><span class="id" title="var">sumbool</span></span>.
 
 <div class="paragraph"> </div>
 
-   Suppose <span class="inlinecode"><span class="id" type="var">Q</span></span>  is a proposition, that is, <span class="inlinecode"><span class="id" type="var">Q</span>:</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>.  We say <span class="inlinecode"><span class="id" type="var">Q</span></span> is
-   _decidable_ if there is an algorithm for computing a proof of
-   <span class="inlinecode"><span class="id" type="var">Q</span></span> or <span class="inlinecode">¬<span class="id" type="var">Q</span></span>.  More generally, when <span class="inlinecode"><span class="id" type="var">P</span></span> is a predicate (a function 
-   from some type <span class="inlinecode"><span class="id" type="var">T</span></span> to <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>), we say <span class="inlinecode"><span class="id" type="var">P</span></span> is decidable when 
-   <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">T</span>,</span> <span class="inlinecode"><span class="id" type="var">decidable</span>(<span class="id" type="var">P</span>)</span>.
+   Suppose <span class="inlinecode"><span class="id" title="var">Q</span></span>  is a proposition, that is, <span class="inlinecode"><span class="id" title="var">Q</span>:</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>.  We say <span class="inlinecode"><span class="id" title="var">Q</span></span> is
+   <i>decidable</i> if there is an algorithm for computing a proof of
+   <span class="inlinecode"><span class="id" title="var">Q</span></span> or <span class="inlinecode">¬<span class="id" title="var">Q</span></span>.  More generally, when <span class="inlinecode"><span class="id" title="var">P</span></span> is a predicate (a function 
+   from some type <span class="inlinecode"><span class="id" title="var">T</span></span> to <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>), we say <span class="inlinecode"><span class="id" title="var">P</span></span> is decidable when 
+   <span class="inlinecode"><span class="id" title="keyword">∀</span></span> <span class="inlinecode"><span class="id" title="var">x</span>:<span class="id" title="var">T</span>,</span> <span class="inlinecode"><span class="id" title="var">decidable</span>(<span class="id" title="var">P</span>)</span>.
 
 <div class="paragraph"> </div>
 
    We represent this concept in Coq by an inductive datatype: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">sumbool</span> (<span class="id" type="var">A</span> <span class="id" type="var">B</span> : <span class="id" type="keyword">Prop</span>) : <span class="id" type="keyword">Set</span> :=<br/>
-&nbsp;| <span class="id" type="var">left</span> : <span class="id" type="var">A</span> → <span class="id" type="var">sumbool</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span><br/>
-&nbsp;| <span class="id" type="var">right</span> : <span class="id" type="var">B</span> → <span class="id" type="var">sumbool</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span>.<br/>
+<br/>
+<span class="id" title="keyword">Inductive</span> <a name="ScratchPad.sumbool"><span class="id" title="inductive">sumbool</span></a> (<span class="id" title="var">A</span> <span class="id" title="var">B</span> : <span class="id" title="keyword">Prop</span>) : <span class="id" title="keyword">Set</span> :=<br/>
+&nbsp;| <a name="ScratchPad.left"><span class="id" title="constructor">left</span></a> : <a class="idref" href="Decide.html#A"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Decide.html#sumbool"><span class="id" title="inductive">sumbool</span></a> <a class="idref" href="Decide.html#A"><span class="id" title="variable">A</span></a> <a class="idref" href="Decide.html#B"><span class="id" title="variable">B</span></a><br/>
+&nbsp;| <a name="ScratchPad.right"><span class="id" title="constructor">right</span></a> : <a class="idref" href="Decide.html#B"><span class="id" title="variable">B</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Decide.html#sumbool"><span class="id" title="inductive">sumbool</span></a> <a class="idref" href="Decide.html#A"><span class="id" title="variable">A</span></a> <a class="idref" href="Decide.html#B"><span class="id" title="variable">B</span></a>.<br/>
 </div>
 
 <div class="doc">
-Let's consider <span class="inlinecode"><span class="id" type="var">sumbool</span></span> applied to two propositions: 
+Let's consider <span class="inlinecode"><span class="id" title="var">sumbool</span></span> applied to two propositions: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">t<sub>1</sub></span> := <span class="id" type="var">sumbool</span> (3&lt;7) (3&gt;2).<br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">less37</span>: 3&lt;7. <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">omega</span>. <span class="id" type="keyword">Qed</span>.<br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">greater23</span>: 3&gt;2. <span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">omega</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">v1a</span>: <span class="id" type="var">t<sub>1</sub></span> := <span class="id" type="var">left</span> (3&lt;7) (3&gt;2) <span class="id" type="var">less37</span>.<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">v1b</span>: <span class="id" type="var">t<sub>1</sub></span> := <span class="id" type="var">right</span> (3&lt;7) (3&gt;2) <span class="id" type="var">greater23</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.t1"><span class="id" title="definition">t<sub>1</sub></span></a> := <a class="idref" href="Decide.html#ScratchPad.sumbool"><span class="id" title="inductive">sumbool</span></a> (3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7) (3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#19ab5cfd7e4f60fa14f22b576013bd<sub>96</sub>"><span class="id" title="notation">&gt;</span></a>2).<br/>
+<span class="id" title="keyword">Lemma</span> <a name="ScratchPad.less37"><span class="id" title="lemma">less37</span></a>: 3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7. <span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">omega</span>. <span class="id" title="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Lemma</span> <a name="ScratchPad.greater23"><span class="id" title="lemma">greater23</span></a>: 3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#19ab5cfd7e4f60fa14f22b576013bd<sub>96</sub>"><span class="id" title="notation">&gt;</span></a>2. <span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">omega</span>. <span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.v1a"><span class="id" title="definition">v1a</span></a>: <a class="idref" href="Decide.html#ScratchPad.t1"><span class="id" title="definition">t<sub>1</sub></span></a> := <a class="idref" href="Decide.html#ScratchPad.left"><span class="id" title="constructor">left</span></a> (3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7) (3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#19ab5cfd7e4f60fa14f22b576013bd<sub>96</sub>"><span class="id" title="notation">&gt;</span></a>2) <a class="idref" href="Decide.html#ScratchPad.less37"><span class="id" title="lemma">less37</span></a>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.v1b"><span class="id" title="definition">v1b</span></a>: <a class="idref" href="Decide.html#ScratchPad.t1"><span class="id" title="definition">t<sub>1</sub></span></a> := <a class="idref" href="Decide.html#ScratchPad.right"><span class="id" title="constructor">right</span></a> (3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7) (3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#19ab5cfd7e4f60fa14f22b576013bd<sub>96</sub>"><span class="id" title="notation">&gt;</span></a>2) <a class="idref" href="Decide.html#ScratchPad.greater23"><span class="id" title="lemma">greater23</span></a>.<br/>
 </div>
 
 <div class="doc">
-A value of type <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&gt;2)</span> is either one of:
-
-<div class="paragraph"> </div>
-
+A value of type <span class="inlinecode"><span class="id" title="var">sumbool</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(3&gt;2)</span> is either one of:
 <ul class="doclist">
-<li> <span class="inlinecode"><span class="id" type="var">left</span></span> applied to a proof of (3&lt;7), or
+<li> <span class="inlinecode"><span class="id" title="tactic">left</span></span> applied to a proof of (3&lt;7), or
 
 </li>
-<li> <span class="inlinecode"><span class="id" type="var">right</span></span> applied to a proof of (3&gt;2).   
+<li> <span class="inlinecode"><span class="id" title="tactic">right</span></span> applied to a proof of (3&gt;2).   
 </li>
 </ul>
 
@@ -245,228 +246,236 @@ A value of type <span class="inlinecode"><span class="id" type="var">sumbool</sp
 
  Now let's consider: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">t<sub>2</sub></span> := <span class="id" type="var">sumbool</span> (3&lt;7) (2&gt;3).<br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">v2a</span>: <span class="id" type="var">t<sub>2</sub></span> := <span class="id" type="var">left</span> (3&lt;7) (2&gt;3) <span class="id" type="var">less37</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.t2"><span class="id" title="definition">t<sub>2</sub></span></a> := <a class="idref" href="Decide.html#ScratchPad.sumbool"><span class="id" title="inductive">sumbool</span></a> (3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7) (2<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#19ab5cfd7e4f60fa14f22b576013bd<sub>96</sub>"><span class="id" title="notation">&gt;</span></a>3).<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.v2a"><span class="id" title="definition">v2a</span></a>: <a class="idref" href="Decide.html#ScratchPad.t2"><span class="id" title="definition">t<sub>2</sub></span></a> := <a class="idref" href="Decide.html#ScratchPad.left"><span class="id" title="constructor">left</span></a> (3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7) (2<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#19ab5cfd7e4f60fa14f22b576013bd<sub>96</sub>"><span class="id" title="notation">&gt;</span></a>3) <a class="idref" href="Decide.html#ScratchPad.less37"><span class="id" title="lemma">less37</span></a>.<br/>
 </div>
 
 <div class="doc">
-A value of type <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(2&gt;3)</span> is either one of:
-
-<div class="paragraph"> </div>
-
+A value of type <span class="inlinecode"><span class="id" title="var">sumbool</span></span> <span class="inlinecode">(3&lt;7)</span> <span class="inlinecode">(2&gt;3)</span> is either one of:
 <ul class="doclist">
-<li> <span class="inlinecode"><span class="id" type="var">left</span></span> applied to a proof of (3&lt;7), or
+<li> <span class="inlinecode"><span class="id" title="tactic">left</span></span> applied to a proof of (3&lt;7), or
 
 </li>
-<li> <span class="inlinecode"><span class="id" type="var">right</span></span> applied to a proof of (2&gt;3).
+<li> <span class="inlinecode"><span class="id" title="tactic">right</span></span> applied to a proof of (2&gt;3).
 
 </li>
 </ul>
-  But since there are no proofs of 2&gt;3, only <span class="inlinecode"><span class="id" type="var">left</span></span> values (such as <span class="inlinecode"><span class="id" type="var">v2a</span></span>)
+  But since there are no proofs of 2&gt;3, only <span class="inlinecode"><span class="id" title="tactic">left</span></span> values (such as <span class="inlinecode"><span class="id" title="var">v2a</span></span>)
   exist.  That's OK. 
 <div class="paragraph"> </div>
 
- <span class="inlinecode"><span class="id" type="var">sumbool</span></span> is in the Coq standard library, where there is <span class="inlinecode"><span class="id" type="keyword">Notation</span></span> 
-   for it:  the expression <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" type="var">A</span>}+{<span class="id" type="var">B</span>}</span> <span class="inlinecode"></span> means <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode"><span class="id" type="var">B</span></span>. 
+ <span class="inlinecode"><span class="id" title="var">sumbool</span></span> is in the Coq standard library, where there is <span class="inlinecode"><span class="id" title="keyword">Notation</span></span> 
+   for it:  the expression <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" title="var">A</span>}+{<span class="id" title="var">B</span>}</span> <span class="inlinecode"></span> means <span class="inlinecode"><span class="id" title="var">sumbool</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode"><span class="id" title="var">B</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Notation</span> "{ A } + { B }" := (<span class="id" type="var">sumbool</span> <span class="id" type="var">A</span> <span class="id" type="var">B</span>) : <span class="id" type="var">type_scope</span>.<br/>
+<br/>
+<span class="id" title="keyword">Notation</span> <a name="cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">&quot;</span></a>{ A } + { B }" := (<a class="idref" href="Decide.html#ScratchPad.sumbool"><span class="id" title="inductive">sumbool</span></a> <span class="id" title="var">A</span> <span class="id" title="var">B</span>) : <span class="id" title="var">type_scope</span>.<br/>
 </div>
 
 <div class="doc">
-A very common use of <span class="inlinecode"><span class="id" type="var">sumbool</span></span> is on a proposition and its negation.
+A very common use of <span class="inlinecode"><span class="id" title="var">sumbool</span></span> is on a proposition and its negation.
    For example, 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">t<sub>4</sub></span> := <span style='font-size:120%;'>&forall;</span><span class="id" type="var">a</span> <span class="id" type="var">b</span>, {<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)}.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.t4"><span class="id" title="definition">t<sub>4</sub></span></a> := <span class="id" title="keyword">∀</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>, <a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">{</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">}+{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">~(</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">)</span></a><a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">}</span></a>.<br/>
 </div>
 
 <div class="doc">
-That expression, <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span>,</span> <span class="inlinecode">{<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)}</span>, says that for any 
- natural numbers <span class="inlinecode"><span class="id" type="var">a</span></span> and <span class="inlinecode"><span class="id" type="var">b</span></span>, either <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span> or <span class="inlinecode"><span class="id" type="var">a</span>≥<span class="id" type="var">b</span></span>.  But it is _more_
- than that!  Because <span class="inlinecode"><span class="id" type="var">sumbool</span></span> is an Inductive type with two constructors
- <span class="inlinecode"><span class="id" type="var">left</span></span> and <span class="inlinecode"><span class="id" type="var">right</span></span>, then given the <span class="inlinecode">{3&lt;7}+{~(3&lt;7)}</span> you can pattern-match
- on it and learn _constructively_ which thing is true.  
+That expression, <span class="inlinecode"><span class="id" title="keyword">∀</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode"><span class="id" title="var">b</span>,</span> <span class="inlinecode">{<span class="id" title="var">a</span>&lt;<span class="id" title="var">b</span>}+{~(<span class="id" title="var">a</span>&lt;<span class="id" title="var">b</span>)}</span>, says that for any 
+ natural numbers <span class="inlinecode"><span class="id" title="var">a</span></span> and <span class="inlinecode"><span class="id" title="var">b</span></span>, either <span class="inlinecode"><span class="id" title="var">a</span>&lt;<span class="id" title="var">b</span></span> or <span class="inlinecode"><span class="id" title="var">a</span>≥<span class="id" title="var">b</span></span>.  But it is <i>more</i>
+ than that!  Because <span class="inlinecode"><span class="id" title="var">sumbool</span></span> is an Inductive type with two constructors
+ <span class="inlinecode"><span class="id" title="tactic">left</span></span> and <span class="inlinecode"><span class="id" title="tactic">right</span></span>, then given the <span class="inlinecode">{3&lt;7}+{~(3&lt;7)}</span> you can pattern-match
+ on it and learn <i>constructively</i> which thing is true.  
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">v<sub>3</sub></span>: {3&lt;7}+{~(3&lt;7)} := <span class="id" type="var">left</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">less37</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_3_less_7</span>:  <span class="id" type="var">bool</span> :=<br/>
-&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">v<sub>3</sub></span> <span class="id" type="keyword">with</span><br/>
-&nbsp;| <span class="id" type="var">left</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">true</span><br/>
-&nbsp;| <span class="id" type="var">right</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">false</span><br/>
-&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">is_3_less_7</span>. <span class="comment">(*&nbsp;=&nbsp;true&nbsp;:&nbsp;bool&nbsp;*)</span><br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Print</span> <span class="id" type="var">t<sub>4</sub></span>. <span class="comment">(*&nbsp;=&nbsp;forall&nbsp;a&nbsp;b&nbsp;:&nbsp;nat,&nbsp;{a&nbsp;&lt;&nbsp;b}&nbsp;+&nbsp;{~&nbsp;a&nbsp;&lt;&nbsp;b}&nbsp;*)</span><br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.v3"><span class="id" title="definition">v<sub>3</sub></span></a>: <a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">{</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7<a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">}+{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">~(</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a>7<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">)</span></a><a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">}</span></a> := <a class="idref" href="Decide.html#ScratchPad.left"><span class="id" title="constructor">left</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <a class="idref" href="Decide.html#ScratchPad.less37"><span class="id" title="lemma">less37</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.is_3_less_7"><span class="id" title="definition">is_3_less_7</span></a>:  <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Decide.html#ScratchPad.v3"><span class="id" title="definition">v<sub>3</sub></span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;| <a class="idref" href="Decide.html#ScratchPad.left"><span class="id" title="constructor">left</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a><br/>
+&nbsp;| <a class="idref" href="Decide.html#ScratchPad.right"><span class="id" title="constructor">right</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a><br/>
+&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="Decide.html#ScratchPad.is_3_less_7"><span class="id" title="definition">is_3_less_7</span></a>. <span class="comment">(*&nbsp;=&nbsp;true&nbsp;:&nbsp;bool&nbsp;*)</span><br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Print</span> <a class="idref" href="Decide.html#ScratchPad.t4"><span class="id" title="definition">t<sub>4</sub></span></a>. <span class="comment">(*&nbsp;=&nbsp;forall&nbsp;a&nbsp;b&nbsp;:&nbsp;nat,&nbsp;{a&nbsp;&lt;&nbsp;b}&nbsp;+&nbsp;{~&nbsp;a&nbsp;&lt;&nbsp;b}&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-Suppose there existed a value <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> of type <span class="inlinecode"><span class="id" type="var">t<sub>4</sub></span></span>.  That would be a 
-  _decision procedure_ for the less-than function on natural numbers.
-  For any nats <span class="inlinecode"><span class="id" type="var">a</span></span> and <span class="inlinecode"><span class="id" type="var">b</span></span>, you could calculate <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">b</span></span>, which would
-  be either <span class="inlinecode"><span class="id" type="var">left</span></span> <span class="inlinecode">...</span> (if <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span> was provable) or <span class="inlinecode"><span class="id" type="var">right</span></span> <span class="inlinecode">...</span> (if <span class="inlinecode">~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)</span> was
+Suppose there existed a value <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> of type <span class="inlinecode"><span class="id" title="var">t<sub>4</sub></span></span>.  That would be a 
+  <i>decision procedure</i> for the less-than function on natural numbers.
+  For any nats <span class="inlinecode"><span class="id" title="var">a</span></span> and <span class="inlinecode"><span class="id" title="var">b</span></span>, you could calculate <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode"><span class="id" title="var">b</span></span>, which would
+  be either <span class="inlinecode"><span class="id" title="tactic">left</span></span> <span class="inlinecode">...</span> (if <span class="inlinecode"><span class="id" title="var">a</span>&lt;<span class="id" title="var">b</span></span> was provable) or <span class="inlinecode"><span class="id" title="tactic">right</span></span> <span class="inlinecode">...</span> (if <span class="inlinecode">~(<span class="id" title="var">a</span>&lt;<span class="id" title="var">b</span>)</span> was
   provable).
 
 <div class="paragraph"> </div>
 
-  Let's go ahead and implement <span class="inlinecode"><span class="id" type="var">lt_dec</span></span>.  We can base it on the function
-  <span class="inlinecode"><span class="id" type="var">ltb</span>:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">bool</span></span> which calculates whether <span class="inlinecode"><span class="id" type="var">a</span></span> is less than <span class="inlinecode"><span class="id" type="var">b</span></span>,
+  Let's go ahead and implement <span class="inlinecode"><span class="id" title="var">lt_dec</span></span>.  We can base it on the function
+  <span class="inlinecode"><span class="id" title="var">ltb</span>:</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">bool</span></span> which calculates whether <span class="inlinecode"><span class="id" title="var">a</span></span> is less than <span class="inlinecode"><span class="id" title="var">b</span></span>,
   as a boolean.  We already have a theorem that this function on booleans
-  is related to the proposition <span class="inlinecode"><span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span></span>; that theorem is called <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span>. 
+  is related to the proposition <span class="inlinecode"><span class="id" title="var">a</span>&lt;<span class="id" title="var">b</span></span>; that theorem is called <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> <span class="id" type="var">ltb_reflect</span>. <span class="comment">(*&nbsp;:&nbsp;forall&nbsp;x&nbsp;y,&nbsp;reflect&nbsp;(x&lt;y)&nbsp;(x&lt;?y)&nbsp;*)</span><br/>
-</div>
-
-<div class="doc">
-It's not too hard to use <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span> to define <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> 
-</div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">lt_dec</span> (<span class="id" type="var">a</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">b</span>: <span class="id" type="var">nat</span>) : {<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)} :=<br/>
-<span class="id" type="keyword">match</span> <span class="id" type="var">ltb_reflect</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span><br/>
-| <span class="id" type="var">ReflectT</span> <span class="id" type="var">_</span> <span class="id" type="var">P</span> ⇒ <span class="id" type="var">left</span> (<span class="id" type="var">a</span> &lt; <span class="id" type="var">b</span>) (¬<span class="id" type="var">a</span> &lt; <span class="id" type="var">b</span>) <span class="id" type="var">P</span><br/>
-| <span class="id" type="var">ReflectF</span> <span class="id" type="var">_</span> <span class="id" type="var">Q</span> ⇒ <span class="id" type="var">right</span> (<span class="id" type="var">a</span> &lt; <span class="id" type="var">b</span>) (¬<span class="id" type="var">a</span> &lt; <span class="id" type="var">b</span>) <span class="id" type="var">Q</span><br/>
-<span class="id" type="keyword">end</span>.<br/>
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="Perm.html#ltb_reflect"><span class="id" title="lemma">ltb_reflect</span></a>. <span class="comment">(*&nbsp;:&nbsp;forall&nbsp;x&nbsp;y,&nbsp;reflect&nbsp;(x&lt;y)&nbsp;(x&lt;?y)&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-Another, equivalent way to define <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> is to use 
+It's not too hard to use <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span> to define <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.lt_dec"><span class="id" title="definition">lt_dec</span></a> (<span class="id" title="var">a</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">b</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">{</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">}+{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">~(</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">)</span></a><a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">}</span></a> :=<br/>
+<span class="id" title="keyword">match</span> <a class="idref" href="Perm.html#ltb_reflect"><span class="id" title="lemma">ltb_reflect</span></a> <a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a> <span class="id" title="keyword">with</span><br/>
+| <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#ReflectT"><span class="id" title="constructor">ReflectT</span></a> <span class="id" title="var">_</span> <span class="id" title="var">P</span> ⇒ <a class="idref" href="Decide.html#ScratchPad.left"><span class="id" title="constructor">left</span></a> (<a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a>) (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">¬</span></a> <a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a>) <span class="id" title="var">P</span><br/>
+| <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#ReflectF"><span class="id" title="constructor">ReflectF</span></a> <span class="id" title="var">_</span> <span class="id" title="var">Q</span> ⇒ <a class="idref" href="Decide.html#ScratchPad.right"><span class="id" title="constructor">right</span></a> (<a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a>) (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">¬</span></a> <a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a>) <span class="id" title="var">Q</span><br/>
+<span class="id" title="keyword">end</span>.<br/>
+</div>
+
+<div class="doc">
+Another, equivalent way to define <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> is to use 
      definition-by-tactic: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">lt_dec'</span> (<span class="id" type="var">a</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">b</span>: <span class="id" type="var">nat</span>) : {<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)}.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">ltb_reflect</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">P</span>|<span class="id" type="var">Q</span>]. <span class="id" type="var">left</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">P</span>. <span class="id" type="var">right</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Q</span>.<br/>
-<span class="id" type="keyword">Defined</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Print</span> <span class="id" type="var">lt_dec</span>.<br/>
-<span class="id" type="keyword">Print</span> <span class="id" type="var">lt_dec'</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">lt_dec_equivalent</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">a</span> <span class="id" type="var">b</span>, <span class="id" type="var">lt_dec</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> = <span class="id" type="var">lt_dec'</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">intros</span>.<br/>
-<span class="id" type="tactic">unfold</span> <span class="id" type="var">lt_dec</span>, <span class="id" type="var">lt_dec'</span>.<br/>
-<span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad.lt_dec'"><span class="id" title="definition">lt_dec'</span></a> (<span class="id" title="var">a</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">b</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">{</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">}+{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">~(</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">)</span></a><a class="idref" href="Decide.html#cb4d61caf5d304d39dc8fc7a210fed27"><span class="id" title="notation">}</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Perm.html#ltb_reflect"><span class="id" title="lemma">ltb_reflect</span></a> <span class="id" title="var">a</span> <span class="id" title="var">b</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">P</span>|<span class="id" title="var">Q</span>]. <span class="id" title="tactic">left</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">P</span>. <span class="id" title="tactic">right</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">Q</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Print</span> <a class="idref" href="Decide.html#ScratchPad.lt_dec"><span class="id" title="definition">lt_dec</span></a>.<br/>
+<span class="id" title="keyword">Print</span> <a class="idref" href="Decide.html#ScratchPad.lt_dec'"><span class="id" title="definition">lt_dec'</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="ScratchPad.lt_dec_equivalent"><span class="id" title="lemma">lt_dec_equivalent</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>, <a class="idref" href="Decide.html#ScratchPad.lt_dec"><span class="id" title="definition">lt_dec</span></a> <a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Decide.html#ScratchPad.lt_dec'"><span class="id" title="definition">lt_dec'</span></a> <a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">intros</span>.<br/>
+<span class="id" title="tactic">unfold</span> <a class="idref" href="Decide.html#ScratchPad.lt_dec"><span class="id" title="definition">lt_dec</span></a>, <a class="idref" href="Decide.html#ScratchPad.lt_dec'"><span class="id" title="definition">lt_dec'</span></a>.<br/>
+<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-Warning: these definitions of <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> are not as nice as the
+Warning: these definitions of <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> are not as nice as the
   definition in the Coq standard library, because these are not
   fully computable.  See the discussion below. 
 </div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">End</span> <span class="id" type="var">ScratchPad</span>.<br/>
-</div>
-
-<div class="doc">
-<a name="lab187"></a><h2 class="section"><span class="inlinecode"><span class="id" type="var">sumbool</span></span> in the Coq Standard Library</h2>
-
-</div>
-<div class="code code-space">
+<div class="code">
 
 <br/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">ScratchPad2</span>.<br/>
-<span class="id" type="var">Locate</span> <span class="id" type="var">sumbool</span>. <span class="comment">(*&nbsp;Coq.Init.Specif.sumbool&nbsp;*)</span><br/>
-<span class="id" type="keyword">Print</span> <span class="id" type="var">sumbool</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="Decide.html#ScratchPad"><span class="id" title="module">ScratchPad</span></a>.<br/>
 </div>
 
 <div class="doc">
-The output of <span class="inlinecode"><span class="id" type="keyword">Print</span></span> <span class="inlinecode"><span class="id" type="var">sumbool</span></span> explains that the first two arguments 
-   of <span class="inlinecode"><span class="id" type="var">left</span></span> and <span class="inlinecode"><span class="id" type="var">right</span></span> are implicit.  We use them as follows (notice that
-   <span class="inlinecode"><span class="id" type="var">left</span></span> has only one explicit argument <span class="inlinecode"><span class="id" type="var">P</span></span>:  
-</div>
-<div class="code code-tight">
+<a name="lab188"></a><h2 class="section"><span class="inlinecode"><span class="id" title="var">sumbool</span></span> in the Coq Standard Library</h2>
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">lt_dec</span> (<span class="id" type="var">a</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">b</span>: <span class="id" type="var">nat</span>) : {<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>&lt;<span class="id" type="var">b</span>)} :=<br/>
-<span class="id" type="keyword">match</span> <span class="id" type="var">ltb_reflect</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span><br/>
-| <span class="id" type="var">ReflectT</span> <span class="id" type="var">_</span> <span class="id" type="var">P</span> ⇒ <span class="id" type="var">left</span> <span class="id" type="var">P</span><br/>
-| <span class="id" type="var">ReflectF</span> <span class="id" type="var">_</span> <span class="id" type="var">Q</span> ⇒ <span class="id" type="var">right</span> <span class="id" type="var">Q</span><br/>
-<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">le_dec</span> (<span class="id" type="var">a</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">b</span>: <span class="id" type="var">nat</span>) : {<span class="id" type="var">a</span>≤<span class="id" type="var">b</span>}+{~(<span class="id" type="var">a</span>≤<span class="id" type="var">b</span>)} :=<br/>
-<span class="id" type="keyword">match</span> <span class="id" type="var">leb_reflect</span> <span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="keyword">with</span><br/>
-| <span class="id" type="var">ReflectT</span> <span class="id" type="var">_</span> <span class="id" type="var">P</span> ⇒ <span class="id" type="var">left</span> <span class="id" type="var">P</span><br/>
-| <span class="id" type="var">ReflectF</span> <span class="id" type="var">_</span> <span class="id" type="var">Q</span> ⇒ <span class="id" type="var">right</span> <span class="id" type="var">Q</span><br/>
-<span class="id" type="keyword">end</span>.<br/>
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Module</span> <a name="ScratchPad2"><span class="id" title="module">ScratchPad2</span></a>.<br/>
+<span class="id" title="keyword">Locate</span> <span class="id" title="var">sumbool</span>. <span class="comment">(*&nbsp;Coq.Init.Specif.sumbool&nbsp;*)</span><br/>
+<span class="id" title="keyword">Print</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#sumbool"><span class="id" title="inductive">sumbool</span></a>.<br/>
 </div>
 
 <div class="doc">
-Now, let's use <span class="inlinecode"><span class="id" type="var">le_dec</span></span> directly in the implementation of insertion
-   sort, without mentioning <span class="inlinecode"><span class="id" type="var">ltb</span></span> at all. 
+The output of <span class="inlinecode"><span class="id" title="keyword">Print</span></span> <span class="inlinecode"><span class="id" title="var">sumbool</span></span> explains that the first two arguments 
+   of <span class="inlinecode"><span class="id" title="tactic">left</span></span> and <span class="inlinecode"><span class="id" title="tactic">right</span></span> are implicit.  We use them as follows (notice that
+   <span class="inlinecode"><span class="id" title="tactic">left</span></span> has only one explicit argument <span class="inlinecode"><span class="id" title="var">P</span></span>:  
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> (<span class="id" type="var">x</span>:<span class="id" type="var">nat</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">x</span>::<span class="id" type="var">nil</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">le_dec</span> <span class="id" type="var">x</span> <span class="id" type="var">h</span> <span class="id" type="keyword">then</span> <span class="id" type="var">x</span>::<span class="id" type="var">h</span>::<span class="id" type="var">t</span> <span class="id" type="keyword">else</span> <span class="id" type="var">h</span> :: <span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">t</span><br/>
-&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">sort</span> (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">nil</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="var">insert</span> <span class="id" type="var">h</span> (<span class="id" type="var">sort</span> <span class="id" type="var">t</span>)<br/>
-<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">sorted</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> := <br/>
-| <span class="id" type="var">sorted_nil</span>:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> <span class="id" type="var">nil</span><br/>
-| <span class="id" type="var">sorted_1</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> (<span class="id" type="var">x</span>::<span class="id" type="var">nil</span>)<br/>
-| <span class="id" type="var">sorted_cons</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">l</span>,<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="var">x</span> ≤ <span class="id" type="var">y</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">y</span>::<span class="id" type="var">l</span>) → <span class="id" type="var">sorted</span> (<span class="id" type="var">x</span>::<span class="id" type="var">y</span>::<span class="id" type="var">l</span>).<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad2.lt_dec"><span class="id" title="definition">lt_dec</span></a> (<span class="id" title="var">a</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">b</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}+{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">~(</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">)</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a> :=<br/>
+<span class="id" title="keyword">match</span> <a class="idref" href="Perm.html#ltb_reflect"><span class="id" title="lemma">ltb_reflect</span></a> <a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a> <span class="id" title="keyword">with</span><br/>
+| <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#ReflectT"><span class="id" title="constructor">ReflectT</span></a> <span class="id" title="var">_</span> <span class="id" title="var">P</span> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#left"><span class="id" title="constructor">left</span></a> <span class="id" title="var">P</span><br/>
+| <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#ReflectF"><span class="id" title="constructor">ReflectF</span></a> <span class="id" title="var">_</span> <span class="id" title="var">Q</span> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#right"><span class="id" title="constructor">right</span></a> <span class="id" title="var">Q</span><br/>
+<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad2.le_dec"><span class="id" title="definition">le_dec</span></a> (<span class="id" title="var">a</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">b</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#9b077c369e19739ef880736ba34623ff"><span class="id" title="notation">≤</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}+{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">~(</span></a><a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#9b077c369e19739ef880736ba34623ff"><span class="id" title="notation">≤</span></a><a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">)</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a> :=<br/>
+<span class="id" title="keyword">match</span> <a class="idref" href="Perm.html#leb_reflect"><span class="id" title="lemma">leb_reflect</span></a> <a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Decide.html#b"><span class="id" title="variable">b</span></a> <span class="id" title="keyword">with</span><br/>
+| <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#ReflectT"><span class="id" title="constructor">ReflectT</span></a> <span class="id" title="var">_</span> <span class="id" title="var">P</span> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#left"><span class="id" title="constructor">left</span></a> <span class="id" title="var">P</span><br/>
+| <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#ReflectF"><span class="id" title="constructor">ReflectF</span></a> <span class="id" title="var">_</span> <span class="id" title="var">Q</span> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#right"><span class="id" title="constructor">right</span></a> <span class="id" title="var">Q</span><br/>
+<span class="id" title="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab188"></a><h4 class="section">练习：2 星, standard (insert_sorted_le_dec)</h4>
+Now, let's use <span class="inlinecode"><span class="id" title="var">le_dec</span></span> directly in the implementation of insertion
+   sort, without mentioning <span class="inlinecode"><span class="id" title="var">ltb</span></span> at all. 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="ScratchPad2.insert"><span class="id" title="definition">insert</span></a> (<span class="id" title="var">x</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">l</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) := <br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Decide.html#l"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a> ⇒ <a class="idref" href="Decide.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a><br/>
+&nbsp;&nbsp;| <span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> ⇒ <span class="id" title="keyword">if</span> <a class="idref" href="Decide.html#ScratchPad2.le_dec"><span class="id" title="definition">le_dec</span></a> <a class="idref" href="Decide.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="var">h</span> <span class="id" title="keyword">then</span> <a class="idref" href="Decide.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> <span class="id" title="keyword">else</span> <span class="id" title="var">h</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a> <a class="idref" href="Decide.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Decide.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="var">t</span><br/>
+&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Fixpoint</span> <a name="ScratchPad2.sort"><span class="id" title="definition">sort</span></a> (<span class="id" title="var">l</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Decide.html#l"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a><br/>
+&nbsp;&nbsp;| <span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> ⇒ <a class="idref" href="Decide.html#ScratchPad2.insert"><span class="id" title="definition">insert</span></a> <span class="id" title="var">h</span> (<a class="idref" href="Decide.html#sort"><span class="id" title="definition">sort</span></a> <span class="id" title="var">t</span>)<br/>
+<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Inductive</span> <a name="ScratchPad2.sorted"><span class="id" title="inductive">sorted</span></a>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span> := <br/>
+| <a name="ScratchPad2.sorted_nil"><span class="id" title="constructor">sorted_nil</span></a>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Decide.html#sorted"><span class="id" title="inductive">sorted</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a><br/>
+| <a name="ScratchPad2.sorted_1"><span class="id" title="constructor">sorted_1</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Decide.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Decide.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>)<br/>
+| <a name="ScratchPad2.sorted_cons"><span class="id" title="constructor">sorted_cons</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> <span class="id" title="var">l</span>,<br/>
+&nbsp;&nbsp;&nbsp;<a class="idref" href="Decide.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#9b077c369e19739ef880736ba34623ff"><span class="id" title="notation">≤</span></a> <a class="idref" href="Decide.html#y"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Decide.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Decide.html#y"><span class="id" title="variable">y</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="Decide.html#l"><span class="id" title="variable">l</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Decide.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Decide.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="Decide.html#y"><span class="id" title="variable">y</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="Decide.html#l"><span class="id" title="variable">l</span></a>).<br/>
+</div>
+
+<div class="doc">
+<a name="lab189"></a><h4 class="section">练习：2 星, standard (insert_sorted_le_dec)</h4>
 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_sorted</span>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">a</span> <span class="id" type="var">l</span>, <span class="id" type="var">sorted</span> <span class="id" type="var">l</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">insert</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;- <span class="id" type="var">constructor</span>.<br/>
-&nbsp;&nbsp;- <span class="id" type="tactic">unfold</span> <span class="id" type="var">insert</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">le_dec</span> <span class="id" type="var">a</span> <span class="id" type="var">x</span>) <span class="id" type="keyword">as</span> [ <span class="id" type="var">Hle</span> | <span class="id" type="var">Hgt</span>].<br/>
+<div class="code">
+<span class="id" title="keyword">Lemma</span> <a name="ScratchPad2.insert_sorted"><span class="id" title="lemma">insert_sorted</span></a>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">a</span> <span class="id" title="var">l</span>, <a class="idref" href="Decide.html#ScratchPad2.sorted"><span class="id" title="inductive">sorted</span></a> <a class="idref" href="Decide.html#l"><span class="id" title="variable">l</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Decide.html#ScratchPad2.sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Decide.html#ScratchPad2.insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Decide.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Decide.html#l"><span class="id" title="variable">l</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">a</span> <span class="id" title="var">l</span> <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">constructor</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">unfold</span> <a class="idref" href="Decide.html#ScratchPad2.insert"><span class="id" title="definition">insert</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Decide.html#ScratchPad2.le_dec"><span class="id" title="definition">le_dec</span></a> <span class="id" title="var">a</span> <span class="id" title="var">x</span>) <span class="id" title="keyword">as</span> [ <span class="id" title="var">Hle</span> | <span class="id" title="var">Hgt</span>].<br/>
 </div>
 
 <div class="doc">
 Look at the proof state now.  In the first subgoal, we have
-      above the line, <span class="inlinecode"><span class="id" type="var">Hle</span>:</span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" type="var">x</span></span>.  In the second subgoal, we have
-      <span class="inlinecode"><span class="id" type="var">Hgt</span>:</span> <span class="inlinecode">¬</span> <span class="inlinecode">(<span class="id" type="var">a</span></span> <span class="inlinecode">&lt;</span> <span class="inlinecode"><span class="id" type="var">x</span>)</span>.  These are put there automatically by the 
-      <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" type="var">le_dec</span></span> <span class="inlinecode"><span class="id" type="var">a</span></span> <span class="inlinecode"><span class="id" type="var">x</span>)</span>.  Now, the rest of the proof can proceed
-      as it did in <span class="inlinecode"><span class="id" type="var">Sort.v</span></span>, but using <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" type="var">le_dec</span></span> <span class="inlinecode"><span class="id" type="var">_</span></span> <span class="inlinecode"><span class="id" type="var">_</span>)</span> instead of
-      <span class="inlinecode"><span class="id" type="var">bdestruct</span></span> <span class="inlinecode">(<span class="id" type="var">_</span></span> <span class="inlinecode">&lt;=?</span> <span class="inlinecode"><span class="id" type="var">_</span>)</span>. 
+      above the line, <span class="inlinecode"><span class="id" title="var">Hle</span>:</span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode">≤</span> <span class="inlinecode"><span class="id" title="var">x</span></span>.  In the second subgoal, we have
+      <span class="inlinecode"><span class="id" title="var">Hgt</span>:</span> <span class="inlinecode">¬</span> <span class="inlinecode">(<span class="id" title="var">a</span></span> <span class="inlinecode">&lt;</span> <span class="inlinecode"><span class="id" title="var">x</span>)</span>.  These are put there automatically by the 
+      <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" title="var">le_dec</span></span> <span class="inlinecode"><span class="id" title="var">a</span></span> <span class="inlinecode"><span class="id" title="var">x</span>)</span>.  Now, the rest of the proof can proceed
+      as it did in <span class="inlinecode"><span class="id" title="var">Sort.v</span></span>, but using <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" title="var">le_dec</span></span> <span class="inlinecode"><span class="id" title="var">_</span></span> <span class="inlinecode"><span class="id" title="var">_</span>)</span> instead of
+      <span class="inlinecode"><span class="id" title="var">bdestruct</span></span> <span class="inlinecode">(<span class="id" title="var">_</span></span> <span class="inlinecode">&lt;=?</span> <span class="inlinecode"><span class="id" title="var">_</span>)</span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab189"></a><h1 class="section">Decidability and Computability</h1>
+<a name="lab190"></a><h1 class="section">Decidability and Computability</h1>
 
 <div class="paragraph"> </div>
 
  Before studying the rest of this chapter, it is helpful to study the
-   <span class="inlinecode"><span class="id" type="var">ProofObjects</span></span> chapter of _Software Foundations volume 1_ if you
+   <span class="inlinecode"><span class="id" title="var">ProofObjects</span></span> chapter of <i>Software Foundations volume 1</i> if you
    have not done so already.
 
 <div class="paragraph"> </div>
 
-   A predicate <span class="inlinecode"><span class="id" type="var">P</span>:</span> <span class="inlinecode"><span class="id" type="var">T</span>→<span class="id" type="keyword">Prop</span></span> is _decidable_ if there is a computable
-   function <span class="inlinecode"><span class="id" type="var">f</span>:</span> <span class="inlinecode"><span class="id" type="var">T</span>→<span class="id" type="var">bool</span></span> such that, forall <span class="inlinecode"><span class="id" type="var">x</span>:<span class="id" type="var">T</span></span>, <span class="inlinecode"><span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span>.
-   The second and most famous example of an _undecidable_ predicate
-   is the Halting Problem (Turing, 1936): <span class="inlinecode"><span class="id" type="var">T</span></span> is the type of Turing-machine
-   descriptions, and <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">x</span>)</span> is, Turing machine <span class="inlinecode"><span class="id" type="var">x</span></span> halts.  The first, and not
+   A predicate <span class="inlinecode"><span class="id" title="var">P</span>:</span> <span class="inlinecode"><span class="id" title="var">T</span>→<span class="id" title="keyword">Prop</span></span> is <i>decidable</i> if there is a computable
+   function <span class="inlinecode"><span class="id" title="var">f</span>:</span> <span class="inlinecode"><span class="id" title="var">T</span>→<span class="id" title="var">bool</span></span> such that, forall <span class="inlinecode"><span class="id" title="var">x</span>:<span class="id" title="var">T</span></span>, <span class="inlinecode"><span class="id" title="var">f</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">true</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span>.
+   The second and most famous example of an <i>undecidable</i> predicate
+   is the Halting Problem (Turing, 1936): <span class="inlinecode"><span class="id" title="var">T</span></span> is the type of Turing-machine
+   descriptions, and <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">x</span>)</span> is, Turing machine <span class="inlinecode"><span class="id" title="var">x</span></span> halts.  The first, and not
    as famous, example is due to Church, 1936 (six months earlier): test
    whether a lambda-expression has a normal form.  In 1936-37, as a 
    first-year PhD student before beginning his PhD thesis work, Turing
@@ -474,46 +483,48 @@ Look at the proof state now.  In the first subgoal, we have
 
 <div class="paragraph"> </div>
 
-   Classical logic contains the axiom <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">P</span>,</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span>.  This is not provable
+   Classical logic contains the axiom <span class="inlinecode"><span class="id" title="keyword">∀</span></span> <span class="inlinecode"><span class="id" title="var">P</span>,</span> <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" title="var">P</span></span>.  This is not provable
    in core Coq, that is, in the bare Calculus of Inductive Constructions.  But
    its negation is not provable either.   You could add this axiom to Coq
-   and the system would still be consistent (i.e., no way to prove <span class="inlinecode"><span class="id" type="var">False</span></span>).
+   and the system would still be consistent (i.e., no way to prove <span class="inlinecode"><span class="id" title="var">False</span></span>).
 
 <div class="paragraph"> </div>
 
-   But <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span> is a weaker statement than <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" type="var">P</span>}+{~<span class="id" type="var">P</span>}</span> <span class="inlinecode"></span>, that is,
-   <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">(¬<span class="id" type="var">P</span>)</span>.  From <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" type="var">P</span>}+{~<span class="id" type="var">P</span>}</span> <span class="inlinecode"></span> you can actually _calculate_ or
-   <span class="inlinecode"><span class="id" type="tactic">compute</span></span> either <span class="inlinecode"><span class="id" type="var">left</span></span> <span class="inlinecode">(<span class="id" type="var">x</span>:<span class="id" type="var">P</span>)</span> or <span class="inlinecode"><span class="id" type="var">right</span>(<span class="id" type="var">y</span>:</span> <span class="inlinecode">¬<span class="id" type="var">P</span>)</span>.     From <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span> you cannot 
-   <span class="inlinecode"><span class="id" type="tactic">compute</span></span> whether <span class="inlinecode"><span class="id" type="var">P</span></span> is true.  Yes, you can <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> it in a proof, 
+   But <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" title="var">P</span></span> is a weaker statement than <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" title="var">P</span>}+{~<span class="id" title="var">P</span>}</span> <span class="inlinecode"></span>, that is,
+   <span class="inlinecode"><span class="id" title="var">sumbool</span></span> <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">(~<span class="id" title="var">P</span>)</span>.  From <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" title="var">P</span>}+{~<span class="id" title="var">P</span>}</span> <span class="inlinecode"></span> you can actually <i>calculate</i> or
+   <span class="inlinecode"><span class="id" title="tactic">compute</span></span> either <span class="inlinecode"><span class="id" title="tactic">left</span></span> <span class="inlinecode">(<span class="id" title="var">x</span>:<span class="id" title="var">P</span>)</span> or <span class="inlinecode"><span class="id" title="tactic">right</span>(<span class="id" title="var">y</span>:</span> <span class="inlinecode">¬<span class="id" title="var">P</span>)</span>.     From <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" title="var">P</span></span> you cannot 
+   <span class="inlinecode"><span class="id" title="tactic">compute</span></span> whether <span class="inlinecode"><span class="id" title="var">P</span></span> is true.  Yes, you can <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> it in a proof, 
    but not in a calculation.  
 
 <div class="paragraph"> </div>
 
-   For most purposes its unnecessary to add the axiom <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span> to Coq,
-   because for specific predicates there's a specific way to prove <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span>
+   For most purposes its unnecessary to add the axiom <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" title="var">P</span></span> to Coq,
+   because for specific predicates there's a specific way to prove <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" title="var">P</span></span>
    as a theorem.  For example,  less-than on natural numbers is decidable,
-   and the existence of <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span> or <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> (as a theorem, not as an axiom)
+   and the existence of <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span> or <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> (as a theorem, not as an axiom)
    is a demonstration of that.
 
 <div class="paragraph"> </div>
 
-   Furthermore, in this "book" we are interested in _algorithms_.  An axiom
-   <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" type="var">P</span></span> does not give us an algorithm to compute whether P is true.  As
-   you saw in the definition of <span class="inlinecode"><span class="id" type="var">insert</span></span> above, we can use <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> not only as
+   Furthermore, in this "book" we are interested in <i>algorithms</i>.  An axiom
+   <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">¬<span class="id" title="var">P</span></span> does not give us an algorithm to compute whether P is true.  As
+   you saw in the definition of <span class="inlinecode"><span class="id" title="var">insert</span></span> above, we can use <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> not only as
    a theorem that either <span class="inlinecode">3&lt;7</span> or <span class="inlinecode">~(3&lt;7)</span>, we can use it as a function to
    compute whether <span class="inlinecode">3&lt;7</span>.  In Coq, you can't compute with axioms!
    Let's try it: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Axiom</span> <span class="id" type="var">lt_dec_axiom_1</span>:  <span style='font-size:120%;'>&forall;</span><span class="id" type="var">i</span> <span class="id" type="var">j</span>: <span class="id" type="var">nat</span>, <span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span> ∨ ~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>).<br/>
+<br/>
+<span class="id" title="keyword">Axiom</span> <a name="ScratchPad2.lt_dec_axiom_1"><span class="id" title="axiom">lt_dec_axiom_1</span></a>:  <span class="id" title="keyword">∀</span> <span class="id" title="var">i</span> <span class="id" title="var">j</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>, <a class="idref" href="Decide.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#7a45dffb109c3069e5c675be68643e<sub>60</sub>"><span class="id" title="notation">∨</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">~(</span></a><a class="idref" href="Decide.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#j"><span class="id" title="variable">j</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">)</span></a>.<br/>
 </div>
 
 <div class="doc">
 Now, can we use this axiom to compute with?  
 </div>
-<div class="code code-tight">
+<div class="code">
 
+<br/>
 <span class="comment">(*&nbsp;Uncomment&nbsp;and&nbsp;try&nbsp;this:&nbsp;<br/>
 Definition&nbsp;max&nbsp;(i&nbsp;j:&nbsp;nat)&nbsp;:&nbsp;nat&nbsp;:=<br/>
 &nbsp;&nbsp;&nbsp;if&nbsp;lt_dec_axiom_1&nbsp;i&nbsp;j&nbsp;then&nbsp;j&nbsp;else&nbsp;i.<br/>
@@ -521,120 +532,127 @@ Definition&nbsp;max&nbsp;(i&nbsp;j:&nbsp;nat)&nbsp;:&nbsp;nat&nbsp;:=<br/>
 </div>
 
 <div class="doc">
-That doesn't work, because an <span class="inlinecode"><span class="id" type="keyword">if</span></span> statement requires an <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span>
-  data type with exactly two constructors; but <span class="inlinecode"><span class="id" type="var">lt_dec_axiom_1</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span></span> has
-  type <span class="inlinecode"><span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>)</span>,  which is not Inductive.  But let's try a different axiom: 
+That doesn't work, because an <span class="inlinecode"><span class="id" title="keyword">if</span></span> statement requires an <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span>
+  data type with exactly two constructors; but <span class="inlinecode"><span class="id" title="var">lt_dec_axiom_1</span></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span> has
+  type <span class="inlinecode"><span class="id" title="var">i</span>&lt;<span class="id" title="var">j</span></span> <span class="inlinecode">∨</span> <span class="inlinecode">~(<span class="id" title="var">i</span>&lt;<span class="id" title="var">j</span>)</span>,  which is not Inductive.  But let's try a different axiom: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Axiom</span> <span class="id" type="var">lt_dec_axiom_2</span>:  <span style='font-size:120%;'>&forall;</span><span class="id" type="var">i</span> <span class="id" type="var">j</span>: <span class="id" type="var">nat</span>, {<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>} + {~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>)}.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">max_with_axiom</span> (<span class="id" type="var">i</span> <span class="id" type="var">j</span>: <span class="id" type="var">nat</span>) : <span class="id" type="var">nat</span> :=<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">lt_dec_axiom_2</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span> <span class="id" type="keyword">then</span> <span class="id" type="var">j</span> <span class="id" type="keyword">else</span> <span class="id" type="var">i</span>.<br/>
+<br/>
+<span class="id" title="keyword">Axiom</span> <a name="ScratchPad2.lt_dec_axiom_2"><span class="id" title="axiom">lt_dec_axiom_2</span></a>:  <span class="id" title="keyword">∀</span> <span class="id" title="var">i</span> <span class="id" title="var">j</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>, <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="Decide.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#j"><span class="id" title="variable">j</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">~(</span></a><a class="idref" href="Decide.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="Decide.html#j"><span class="id" title="variable">j</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">)</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="ScratchPad2.max_with_axiom"><span class="id" title="definition">max_with_axiom</span></a> (<span class="id" title="var">i</span> <span class="id" title="var">j</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> <a class="idref" href="Decide.html#ScratchPad2.lt_dec_axiom_2"><span class="id" title="axiom">lt_dec_axiom_2</span></a> <a class="idref" href="Decide.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="Decide.html#j"><span class="id" title="variable">j</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Decide.html#j"><span class="id" title="variable">j</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="Decide.html#i"><span class="id" title="variable">i</span></a>.<br/>
 </div>
 
 <div class="doc">
-This typechecks, because <span class="inlinecode"><span class="id" type="var">lt_dec_axiom_2</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span></span>  belongs to type
-     <span class="inlinecode"><span class="id" type="var">sumbool</span></span> <span class="inlinecode">(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>)</span> <span class="inlinecode">(~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>))</span>   (also written <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{~(<span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span>)}</span> <span class="inlinecode"></span>), which does have
+This typechecks, because <span class="inlinecode"><span class="id" title="var">lt_dec_axiom_2</span></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span></span>  belongs to type
+     <span class="inlinecode"><span class="id" title="var">sumbool</span></span> <span class="inlinecode">(<span class="id" title="var">i</span>&lt;<span class="id" title="var">j</span>)</span> <span class="inlinecode">(~(<span class="id" title="var">i</span>&lt;<span class="id" title="var">j</span>))</span>   (also written <span class="inlinecode"></span> <span class="inlinecode">{<span class="id" title="var">i</span>&lt;<span class="id" title="var">j</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{~(<span class="id" title="var">i</span>&lt;<span class="id" title="var">j</span>)}</span> <span class="inlinecode"></span>), which does have
      two constructors.
 
 <div class="paragraph"> </div>
 
      Now, let's use this function: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">max_with_axiom</span> 3 7.<br/>
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="Decide.html#ScratchPad2.max_with_axiom"><span class="id" title="definition">max_with_axiom</span></a> 3 7.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;&nbsp;=&nbsp;if&nbsp;lt_dec_axiom_2&nbsp;3&nbsp;7&nbsp;then&nbsp;7&nbsp;else&nbsp;3<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;nat&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-This <span class="inlinecode"><span class="id" type="tactic">compute</span></span> didn't compute very much!  Let's try to evaluate it
-    using <span class="inlinecode"><span class="id" type="tactic">unfold</span></span>: 
+This <span class="inlinecode"><span class="id" title="tactic">compute</span></span> didn't compute very much!  Let's try to evaluate it
+    using <span class="inlinecode"><span class="id" title="tactic">unfold</span></span>: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">prove_with_max_axiom</span>:   <span class="id" type="var">max_with_axiom</span> 3 7 = 7.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">unfold</span> <span class="id" type="var">max_with_axiom</span>.<br/>
-<span class="id" type="tactic">try</span> <span class="id" type="tactic">reflexivity</span>. <span class="comment">(*&nbsp;does&nbsp;not&nbsp;do&nbsp;anything,&nbsp;reflexivity&nbsp;fails&nbsp;*)</span><br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="ScratchPad2.prove_with_max_axiom"><span class="id" title="lemma">prove_with_max_axiom</span></a>:   <a class="idref" href="Decide.html#ScratchPad2.max_with_axiom"><span class="id" title="definition">max_with_axiom</span></a> 3 7 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> 7.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">unfold</span> <a class="idref" href="Decide.html#ScratchPad2.max_with_axiom"><span class="id" title="definition">max_with_axiom</span></a>.<br/>
+<span class="id" title="tactic">try</span> <span class="id" title="tactic">reflexivity</span>. <span class="comment">(*&nbsp;does&nbsp;not&nbsp;do&nbsp;anything,&nbsp;reflexivity&nbsp;fails&nbsp;*)</span><br/>
 <span class="comment">(*&nbsp;uncomment&nbsp;this&nbsp;line&nbsp;and&nbsp;try&nbsp;it:&nbsp;<br/>
 &nbsp;&nbsp;&nbsp;unfold&nbsp;lt_dec_axiom_2.<br/>
 *)</span><br/>
-<span class="id" type="tactic">destruct</span> (<span class="id" type="var">lt_dec_axiom_2</span> 3 7).<br/>
-<span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="var">contradiction</span> <span class="id" type="var">n</span>. <span class="id" type="tactic">omega</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="tactic">destruct</span> (<a class="idref" href="Decide.html#ScratchPad2.lt_dec_axiom_2"><span class="id" title="axiom">lt_dec_axiom_2</span></a> 3 7).<br/>
+<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="var">contradiction</span> <span class="id" title="var">n</span>. <span class="id" title="tactic">omega</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
 It is dangerous to add Axioms to Coq: if you add one that's inconsistent,
-   then it leads to the ability to prove <span class="inlinecode"><span class="id" type="var">False</span></span>.  While that's a convenient way
+   then it leads to the ability to prove <span class="inlinecode"><span class="id" title="var">False</span></span>.  While that's a convenient way
    to get a lot of things proved, it's unsound; the proofs are useless.  
 
 <div class="paragraph"> </div>
 
-   The Axioms above, <span class="inlinecode"><span class="id" type="var">lt_dec_axiom_1</span></span> and <span class="inlinecode"><span class="id" type="var">lt_dec_axiom_2</span></span>, are safe enough:
+   The Axioms above, <span class="inlinecode"><span class="id" title="var">lt_dec_axiom_1</span></span> and <span class="inlinecode"><span class="id" title="var">lt_dec_axiom_2</span></span>, are safe enough:
    they are consistent.  But they don't help in computation.  Axioms are not
    useful here. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">End</span> <span class="id" type="var">ScratchPad2</span>.<br/>
+<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="Decide.html#ScratchPad2"><span class="id" title="module">ScratchPad2</span></a>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab190"></a><h1 class="section">Opacity of <span class="inlinecode"><span class="id" type="keyword">Qed</span></span></h1>
+<a name="lab191"></a><h1 class="section">Opacity of <span class="inlinecode"><span class="id" title="keyword">Qed</span></span></h1>
 
 <div class="paragraph"> </div>
 
- This lemma <span class="inlinecode"><span class="id" type="var">prove_with_max_axiom</span></span> turned out to be _provable_, but the proof
-    could not go by _computation_.  In contrast, let's use <span class="inlinecode"><span class="id" type="var">lt_dec</span></span>, which was built
+ This lemma <span class="inlinecode"><span class="id" title="var">prove_with_max_axiom</span></span> turned out to be <i>provable</i>, but the proof
+    could not go by <i>computation</i>.  In contrast, let's use <span class="inlinecode"><span class="id" title="var">lt_dec</span></span>, which was built
     without any axioms: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">compute_with_lt_dec</span>:  (<span class="id" type="keyword">if</span> <span class="id" type="var">ScratchPad2.lt_dec</span> 3 7 <span class="id" type="keyword">then</span> 7 <span class="id" type="keyword">else</span> 3) = 7.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">compute</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="compute_with_lt_dec"><span class="id" title="lemma">compute_with_lt_dec</span></a>:  <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><span class="id" title="keyword">if</span> <a class="idref" href="Decide.html#lt_dec"><span class="id" title="definition">ScratchPad2.lt_dec</span></a> 3 7 <span class="id" title="keyword">then</span> 7 <span class="id" title="keyword">else</span> 3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> 7.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">compute</span>.<br/>
 <span class="comment">(*&nbsp;uncomment&nbsp;this&nbsp;line&nbsp;and&nbsp;try&nbsp;it:<br/>
 &nbsp;&nbsp;&nbsp;unfold&nbsp;ltb_reflect.<br/>
 *)</span><br/>
-<span class="id" type="keyword">Abort</span>.<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
 </div>
 
 <div class="doc">
-Unfortunately, even though <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span> was proved without any axioms, it
-    is an _opaque theorem_  (proved with <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> instead of with <span class="inlinecode"><span class="id" type="keyword">Defined</span></span>), and
+Unfortunately, even though <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span> was proved without any axioms, it
+    is an <i>opaque theorem</i>  (proved with <span class="inlinecode"><span class="id" title="keyword">Qed</span></span> instead of with <span class="inlinecode"><span class="id" title="keyword">Defined</span></span>), and
     one cannot compute with opaque theorems.  Not only that, but it is proved with
-    other opaque theorems such as <span class="inlinecode"><span class="id" type="var">iff_sym</span></span> and <span class="inlinecode"><span class="id" type="var">Nat.ltb_lt</span></span>.  If we want to
-    compute with an implementation of <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> built from <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span>, then
-    we will have to rebuild <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span> without using <span class="inlinecode"><span class="id" type="keyword">Qed</span></span> anywhere, only <span class="inlinecode"><span class="id" type="keyword">Defined</span></span>.
+    other opaque theorems such as <span class="inlinecode"><span class="id" title="var">iff_sym</span></span> and <span class="inlinecode"><span class="id" title="var">Nat.ltb_lt</span></span>.  If we want to
+    compute with an implementation of <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> built from <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span>, then
+    we will have to rebuild <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span> without using <span class="inlinecode"><span class="id" title="keyword">Qed</span></span> anywhere, only <span class="inlinecode"><span class="id" title="keyword">Defined</span></span>.
 
 <div class="paragraph"> </div>
 
-    Instead, let's use the version of <span class="inlinecode"><span class="id" type="var">lt_dec</span></span> from the Coq standard library,
-    which _is_ carefully built without any opaque (<span class="inlinecode"><span class="id" type="keyword">Qed</span></span>) theorems.
+    Instead, let's use the version of <span class="inlinecode"><span class="id" title="var">lt_dec</span></span> from the Coq standard library,
+    which <i>is</i> carefully built without any opaque (<span class="inlinecode"><span class="id" title="keyword">Qed</span></span>) theorems.
 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">compute_with_StdLib_lt_dec</span>:  (<span class="id" type="keyword">if</span> <span class="id" type="var">lt_dec</span> 3 7 <span class="id" type="keyword">then</span> 7 <span class="id" type="keyword">else</span> 3) = 7.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">compute</span>.<br/>
-<span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="compute_with_StdLib_lt_dec"><span class="id" title="lemma">compute_with_StdLib_lt_dec</span></a>:  <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><span class="id" title="keyword">if</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.Compare_dec.html#lt_dec"><span class="id" title="lemma">lt_dec</span></a> 3 7 <span class="id" title="keyword">then</span> 7 <span class="id" title="keyword">else</span> 3<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> 7.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">compute</span>.<br/>
+<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
 The Coq standard library has many decidability theorems.  You can
-   examine them by doing the following <span class="inlinecode"><span class="id" type="var">Search</span></span> command. The results
+   examine them by doing the following <span class="inlinecode"><span class="id" title="keyword">Search</span></span> command. The results
    shown here are only for the subset of the library that's currently
-   imported (by the <span class="inlinecode"><span class="id" type="keyword">Import</span></span> commands above); there's even more out there. 
+   imported (by the <span class="inlinecode"><span class="id" title="keyword">Import</span></span> commands above); there's even more out there. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Search</span> ({<span class="id" type="var">_</span>}+{~_}).<br/>
+<br/>
+<span class="id" title="keyword">Search</span> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><span class="id" title="var">_</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}+{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">¬</span></a><span class="id" title="var">_</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a>).<br/>
 <span class="comment">(*<br/>
 reflect_dec:&nbsp;forall&nbsp;(P&nbsp;:&nbsp;Prop)&nbsp;(b&nbsp;:&nbsp;bool),&nbsp;reflect&nbsp;P&nbsp;b&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;{P}&nbsp;+&nbsp;{~&nbsp;P}<br/>
 lt_dec:&nbsp;forall&nbsp;n&nbsp;m&nbsp;:&nbsp;nat,&nbsp;{n&nbsp;&lt;&nbsp;m}&nbsp;+&nbsp;{~&nbsp;n&nbsp;&lt;&nbsp;m}<br/>
@@ -654,102 +672,110 @@ eq_nat_dec:&nbsp;forall&nbsp;n&nbsp;m&nbsp;:&nbsp;nat,&nbsp;{n&nbsp;=&nbsp;m}&nb
 bool_dec:&nbsp;forall&nbsp;b<sub>1</sub>&nbsp;b<sub>2</sub>&nbsp;:&nbsp;bool,&nbsp;{b<sub>1</sub>&nbsp;=&nbsp;b<sub>2</sub>}&nbsp;+&nbsp;{b<sub>1</sub>&nbsp;&lt;&gt;&nbsp;b<sub>2</sub>}<br/>
 Zodd_dec:&nbsp;forall&nbsp;n&nbsp;:&nbsp;Z,&nbsp;{Zodd&nbsp;n}&nbsp;+&nbsp;{~&nbsp;Zodd&nbsp;n}<br/>
 Zeven_dec:&nbsp;forall&nbsp;n&nbsp;:&nbsp;Z,&nbsp;{Zeven&nbsp;n}&nbsp;+&nbsp;{~&nbsp;Zeven&nbsp;n}<br/>
-Z_zerop:&nbsp;forall&nbsp;x&nbsp;:&nbsp;Z,&nbsp;{x&nbsp;=&nbsp;0%Z}&nbsp;+&nbsp;{x&nbsp;&lt;&gt;&nbsp;0%Z}<br/>
-Z_lt_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&lt;&nbsp;y)%Z}&nbsp;+&nbsp;{~&nbsp;(x&nbsp;&lt;&nbsp;y)%Z}<br/>
-Z_le_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&lt;=&nbsp;y)%Z}&nbsp;+&nbsp;{~&nbsp;(x&nbsp;&lt;=&nbsp;y)%Z}<br/>
-Z_gt_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&gt;&nbsp;y)%Z}&nbsp;+&nbsp;{~&nbsp;(x&nbsp;&gt;&nbsp;y)%Z}<br/>
-Z_ge_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&gt;=&nbsp;y)%Z}&nbsp;+&nbsp;{~&nbsp;(x&nbsp;&gt;=&nbsp;y)%Z}<br/>
+Z_zerop:&nbsp;forall&nbsp;x&nbsp;:&nbsp;Z,&nbsp;{x&nbsp;=&nbsp;0Z}<br/>
+Z_lt_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&lt;&nbsp;y)Z}<br/>
+Z_le_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&lt;=&nbsp;y)Z}<br/>
+Z_gt_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&gt;&nbsp;y)Z}<br/>
+Z_ge_dec:&nbsp;forall&nbsp;x&nbsp;y&nbsp;:&nbsp;Z,&nbsp;{(x&nbsp;&gt;=&nbsp;y)Z}<br/>
 *)</span><br/>
 </div>
 
 <div class="doc">
-The type of <span class="inlinecode"><span class="id" type="var">list_eq_dec</span></span> is worth looking at.  It says that if you
-     have  a decidable equality for an element type <span class="inlinecode"><span class="id" type="var">A</span></span>, then
-    <span class="inlinecode"><span class="id" type="var">list_eq_dec</span></span> calculates for you a decidable equality for type <span class="inlinecode"><span class="id" type="var">list</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>.
+The type of <span class="inlinecode"><span class="id" title="var">list_eq_dec</span></span> is worth looking at.  It says that if you
+     have  a decidable equality for an element type <span class="inlinecode"><span class="id" title="var">A</span></span>, then
+    <span class="inlinecode"><span class="id" title="var">list_eq_dec</span></span> calculates for you a decidable equality for type <span class="inlinecode"><span class="id" title="var">list</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span>.
     Try it out: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">list_nat_eq_dec</span>: <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&forall;</span><span class="id" type="var">al</span> <span class="id" type="var">bl</span> : <span class="id" type="var">list</span> <span class="id" type="var">nat</span>, {<span class="id" type="var">al</span>=<span class="id" type="var">bl</span>}+{<span class="id" type="var">al</span>≠<span class="id" type="var">bl</span>}) :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">list_eq_dec</span> <span class="id" type="var">eq_nat_dec</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="keyword">if</span> <span class="id" type="var">list_nat_eq_dec</span> [1;3;4] [1;4;3] <span class="id" type="keyword">then</span> <span class="id" type="var">true</span> <span class="id" type="keyword">else</span> <span class="id" type="var">false</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="list_nat_eq_dec"><span class="id" title="definition">list_nat_eq_dec</span></a>: <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="keyword">∀</span> <span class="id" title="var">al</span> <span class="id" title="var">bl</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>, <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="Decide.html#al"><span class="id" title="variable">al</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a><a class="idref" href="Decide.html#bl"><span class="id" title="variable">bl</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}+{</span></a><a class="idref" href="Decide.html#al"><span class="id" title="variable">al</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a><a class="idref" href="Decide.html#bl"><span class="id" title="variable">bl</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a>) :=<br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#list_eq_dec"><span class="id" title="lemma">list_eq_dec</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.Peano_dec.html#eq_nat_dec"><span class="id" title="abbreviation">eq_nat_dec</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <span class="id" title="keyword">if</span> <a class="idref" href="Decide.html#list_nat_eq_dec"><span class="id" title="definition">list_nat_eq_dec</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>.<br/>
 &nbsp;<span class="comment">(*&nbsp;=&nbsp;false&nbsp;:&nbsp;bool&nbsp;*)</span><br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="keyword">if</span> <span class="id" type="var">list_nat_eq_dec</span> [1;3;4] [1;3;4] <span class="id" type="keyword">then</span> <span class="id" type="var">true</span> <span class="id" type="keyword">else</span> <span class="id" type="var">false</span>.<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <span class="id" title="keyword">if</span> <a class="idref" href="Decide.html#list_nat_eq_dec"><span class="id" title="definition">list_nat_eq_dec</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>.<br/>
 &nbsp;<span class="comment">(*&nbsp;=&nbsp;true&nbsp;:&nbsp;bool&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab191"></a><h4 class="section">练习：2 星, standard (list_nat_in)</h4>
- Use <span class="inlinecode"><span class="id" type="var">in_dec</span></span> to build this function. 
+<a name="lab192"></a><h4 class="section">练习：2 星, standard (list_nat_in)</h4>
+ Use <span class="inlinecode"><span class="id" title="var">in_dec</span></span> to build this function. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">list_nat_in</span>: <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">i</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>), {<span class="id" type="var">In</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span>}+{~ <span class="id" type="var">In</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span>}<br/>
-&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Example</span> <span class="id" type="var">in_4_pi</span>:  (<span class="id" type="keyword">if</span> <span class="id" type="var">list_nat_in</span> 4  [3;1;4;1;5;9;2;6] <span class="id" type="keyword">then</span> <span class="id" type="var">true</span> <span class="id" type="keyword">else</span> <span class="id" type="var">false</span>) = <span class="id" type="var">true</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">simpl</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="list_nat_in"><span class="id" title="definition">list_nat_in</span></a>: <span class="id" title="keyword">∀</span> (<span class="id" title="var">i</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">al</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>), <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#In"><span class="id" title="definition">In</span></a> <a class="idref" href="Decide.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="Decide.html#al"><span class="id" title="variable">al</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}+{</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#611abc97cba304de784fa909dbdea1fa"><span class="id" title="notation">¬</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#In"><span class="id" title="definition">In</span></a> <a class="idref" href="Decide.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="Decide.html#al"><span class="id" title="variable">al</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5bf2050e90b21ebc82dc5463d1ba338e"><span class="id" title="notation">}</span></a><br/>
+&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <a name="in_4_pi"><span class="id" title="definition">in_4_pi</span></a>:  <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><span class="id" title="keyword">if</span> <a class="idref" href="Decide.html#list_nat_in"><span class="id" title="axiom">list_nat_in</span></a> 4  <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>9<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>6<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">simpl</span>.<br/>
 <span class="comment">(*&nbsp;reflexivity.&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
- In general, beyond <span class="inlinecode"><span class="id" type="var">list_eq_dec</span></span> and <span class="inlinecode"><span class="id" type="var">in_dec</span></span>, one can construct a
+ In general, beyond <span class="inlinecode"><span class="id" title="var">list_eq_dec</span></span> and <span class="inlinecode"><span class="id" title="var">in_dec</span></span>, one can construct a
      whole programmable calculus of decidability, using the
      programs-as-proof  language of Coq.  But is it a good idea?  Read on! 
 <div class="paragraph"> </div>
 
-<a name="lab192"></a><h1 class="section">Advantages and Disadvantages of <span class="inlinecode"><span class="id" type="var">reflect</span></span> Versus <span class="inlinecode"><span class="id" type="var">sumbool</span></span></h1>
+<a name="lab193"></a><h1 class="section">Advantages and Disadvantages of <span class="inlinecode"><span class="id" title="var">reflect</span></span> Versus <span class="inlinecode"><span class="id" title="var">sumbool</span></span></h1>
 
 <div class="paragraph"> </div>
 
  I have shown two ways to program decision procedures in Coq,
-    one using <span class="inlinecode"><span class="id" type="var">reflect</span></span> and the other using <span class="inlinecode">{<span class="id" type="var">_</span>}+{~_}</span>, i.e., <span class="inlinecode"><span class="id" type="var">sumbool</span></span>.
+    one using <span class="inlinecode"><span class="id" title="var">reflect</span></span> and the other using <span class="inlinecode">{<span class="id" title="var">_</span>}+{~<span class="id" title="var">_</span>}</span>, i.e., <span class="inlinecode"><span class="id" title="var">sumbool</span></span>.
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> With <span class="inlinecode"><span class="id" type="var">sumbool</span></span>, you define _two_ things: the operator in <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>
-      such as <span class="inlinecode"><span class="id" type="var">lt</span>:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span> and the decidability "theorem"
-      in <span class="inlinecode"><span class="id" type="var">sumbool</span></span>, such as <span class="inlinecode"><span class="id" type="var">lt_dec</span>:</span> <span class="inlinecode"><span style='font-size:120%;'>&forall;</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span>,</span> <span class="inlinecode">{<span class="id" type="var">lt</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span>}+{~</span> <span class="inlinecode"><span class="id" type="var">lt</span></span> <span class="inlinecode"><span class="id" type="var">i</span></span> <span class="inlinecode"><span class="id" type="var">j</span>}</span>.  I say
-      "theorem" in quotes because it's not _just_ a theorem, it's also
+<li> With <span class="inlinecode"><span class="id" title="var">sumbool</span></span>, you define <i>two</i> things: the operator in <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>
+      such as <span class="inlinecode"><span class="id" title="var">lt</span>:</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span> and the decidability "theorem"
+      in <span class="inlinecode"><span class="id" title="var">sumbool</span></span>, such as <span class="inlinecode"><span class="id" title="var">lt_dec</span>:</span> <span class="inlinecode"><span class="id" title="keyword">∀</span></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span>,</span> <span class="inlinecode">{<span class="id" title="var">lt</span></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span>}+{~</span> <span class="inlinecode"><span class="id" title="var">lt</span></span> <span class="inlinecode"><span class="id" title="var">i</span></span> <span class="inlinecode"><span class="id" title="var">j</span>}</span>.  I say
+      "theorem" in quotes because it's not <i>just</i> a theorem, it's also
       a (nonopaque) computable function.
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> With <span class="inlinecode"><span class="id" type="var">reflect</span></span>, you define _three_ things:  the operator in <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>,
-      the operator in <span class="inlinecode"><span class="id" type="var">bool</span></span> (such as <span class="inlinecode"><span class="id" type="var">ltb</span>:</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">bool</span></span>, and the
-      theorem that relates them (such as <span class="inlinecode"><span class="id" type="var">ltb_reflect</span></span>).  
+<li> With <span class="inlinecode"><span class="id" title="var">reflect</span></span>, you define <i>three</i> things:  the operator in <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>,
+      the operator in <span class="inlinecode"><span class="id" title="var">bool</span></span> (such as <span class="inlinecode"><span class="id" title="var">ltb</span>:</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">nat</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">bool</span></span>, and the
+      theorem that relates them (such as <span class="inlinecode"><span class="id" title="var">ltb_reflect</span></span>).  
 
 </li>
 </ul>
+
+<div class="paragraph"> </div>
+
    Defining three things seems like more work than defining two.
-   But it may be easier and more efficient.  Programming in <span class="inlinecode"><span class="id" type="var">bool</span></span>,
+   But it may be easier and more efficient.  Programming in <span class="inlinecode"><span class="id" title="var">bool</span></span>,
    you may have more control over how your functions are implemented,
    you will have fewer difficult uses of dependent types, and you
    will run into fewer difficulties with opaque theorems.
 
 <div class="paragraph"> </div>
 
-   However, among Coq programmers, <span class="inlinecode"><span class="id" type="var">sumbool</span></span> seems to be more
+   However, among Coq programmers, <span class="inlinecode"><span class="id" title="var">sumbool</span></span> seems to be more
    widely used, and it seems to have better support in the Coq standard
    library.  So you may encounter it, and it is worth understanding what
    it does.   Either of these two methods is a reasonable way of programming
    with proof.  
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="comment">(*&nbsp;Sun&nbsp;Jan&nbsp;5&nbsp;03:20:54&nbsp;UTC&nbsp;2020&nbsp;*)</span><br/>
+<br/>
+<span class="comment">(*&nbsp;2020年1月16日&nbsp;*)</span><br/>
 </div>
 </div>
 
-
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
 
 </div>
 

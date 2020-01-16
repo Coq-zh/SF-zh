@@ -12,7 +12,7 @@
 *)
 
 (* ################################################################# *)
-(** * Recommended Reading 
+(** * Recommended Reading
 
     The material presented in this short course serves as an
     introduction to property based random testing using
@@ -43,4 +43,4 @@
       https://lemonidas.github.io/pdf/Leo-PhD-Thesis.pdf
  *)
 
-(* Sun Jan 5 03:22:15 UTC 2020 *)
+(* 2020年1月16日 *)

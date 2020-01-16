@@ -167,7 +167,7 @@ idtac "-------------------  In_map_iff  --------------------".
 idtac " ".
 
 idtac "#> In_map_iff".
-idtac "Possible points: 2".
+idtac "Possible points: 3".
 check_type @In_map_iff (
 (forall (A B : Type) (f : A -> B) (l : list A) (y : B),
  @In B y (@map A B f l) <-> (exists x : A, f x = y /\ @In A x l))).
@@ -219,7 +219,7 @@ idtac "-------------------  tr_rev_correct  --------------------".
 idtac " ".
 
 idtac "#> tr_rev_correct".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @tr_rev_correct ((forall X : Type, @tr_rev X = @rev X)).
 idtac "Assumptions:".
 Abort.
@@ -332,10 +332,23 @@ idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 43".
-idtac "Max points - advanced: 49".
+idtac "Max points - standard: 46".
+idtac "Max points - advanced: 52".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- and_exercise ---------".
@@ -390,4 +403,4 @@ idtac "---------- not_exists_dist ---------".
 Print Assumptions not_exists_dist.
 Abort.
 
-(* Sun Jan 5 03:17:43 UTC 2020 *)
+(* 2020年1月16日 *)

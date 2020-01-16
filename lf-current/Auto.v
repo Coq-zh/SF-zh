@@ -16,11 +16,8 @@ From LF Require Import Imp.
     还有另一大类自动化方式我们所言不多，即内建的对特定种类问题的决策算法：
     [omega] 就是这样的例子，不过还有其它的。这一主题我们会以后再谈。
 
-    我们从以下证明开始，加上一些[Imp]中的小改动。
+    我们从以下证明开始，加上一些 [Imp] 中的小改动。
     我们将分几个阶段来简化此证明。 *)
-
-(** 首先，我们定义一小段 Ltac 宏，将常用的模式压缩成单个指令。 *)
-Ltac inv H := inversion H; subst; clear H.
 
 Theorem ceval_deterministic: forall c st st1 st2,
     st =[ c ]=> st1  ->
@@ -29,7 +26,7 @@ Theorem ceval_deterministic: forall c st st1 st2,
 Proof.
   intros c st st1 st2 E1 E2;
   generalize dependent st2;
-  induction E1; intros st2 E2; inv E2.
+  induction E1; intros st2 E2; inversion E2; subst.
   - (* E_Skip *) reflexivity.
   - (* E_Ass *) reflexivity.
   - (* E_Seq *)
@@ -41,20 +38,20 @@ Proof.
   - (* b 求值为 true *)
     apply IHE1. assumption.
   - (* b 求值为 false（矛盾） *)
-    rewrite H in H5. inversion H5.
+    rewrite H in H5. discriminate.
   (* E_IfFalse *)
   - (* b 求值为 false（矛盾） *)
-    rewrite H in H5. inversion H5.
+    rewrite H in H5. discriminate.
   - (* b 求值为 false *)
     apply IHE1. assumption.
   (* E_WhileFalse *)
   - (* b 求值为 false *)
     reflexivity.
   - (* b 求值为 true（矛盾） *)
-    rewrite H in H2. inversion H2.
+    rewrite H in H2. discriminate.
   (* E_WhileTrue *)
   - (* b 求值为 false（矛盾） *)
-    rewrite H in H4. inversion H4.
+    rewrite H in H4. discriminate.
   - (* b 求值为 true *)
     assert (st' = st'0) as EQ1.
     { (* 断言的证明 *) apply IHE1_1; assumption. }
@@ -88,7 +85,7 @@ Qed.
 (** 使用 [auto] 一定是“安全”的，它不会失败，也不会改变当前证明的状态：
     [auto] 要么完全解决它，要么什么也不做。 *)
 
-(** 下面是个更有趣的例子，它展示了 [auto] 的强大： *)
+(** 下面是个更大的例子，它展示了 [auto] 的强大： *)
 
 Example auto_example_2 : forall P Q R S T U : Prop,
   (P -> Q) ->
@@ -129,6 +126,13 @@ Example auto_example_4 : forall P Q R : Prop,
   P \/ (Q /\ R).
 Proof. auto. Qed.
 
+(** 如果我们想看 [auto] 用到了什么，可以使用 [info_auto] 。 *)
+
+Example auto_example_5: 2 = 2.
+Proof.
+  info_auto.
+Qed.
+
 (** 我们可以为某次 [auto] 的调用扩展提示数据库，只需使用“[auto using ...]”。 *)
 
 Lemma le_antisym : forall n m: nat, (n <= m /\ m <= n) -> n = m.
@@ -139,7 +143,6 @@ Example auto_example_6 : forall n m p : nat,
   n <= p ->
   n = m.
 Proof.
-  intros.
   auto using le_antisym.
 Qed.
 
@@ -187,7 +190,9 @@ Hint Unfold is_fortytwo.
 
 Example auto_example_7' : forall x,
   (x <= 42 /\ 42 <= x) -> is_fortytwo x.
-Proof. auto. Qed.
+Proof.
+  auto. (* try also: info_auto. *)
+Qed.
 
 (** 我们来初次尝试简化 [ceval_deterministic] 的证明脚本。 *)
 
@@ -198,23 +203,23 @@ Theorem ceval_deterministic': forall c st st1 st2,
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
-       induction E1; intros st2 E2; inv E2; auto.
+       induction E1; intros st2 E2; inversion E2; subst; auto.
   - (* E_Seq *)
     assert (st' = st'0) as EQ1 by auto.
     subst st'0.
     auto.
   - (* E_IfTrue *)
     + (* b 求值为 false（矛盾） *)
-      rewrite H in H5. inversion H5.
+      rewrite H in H5. discriminate.
   - (* E_IfFalse *)
     + (* b 求值为 true（矛盾） *)
-      rewrite H in H5. inversion H5.
+      rewrite H in H5. discriminate.
   - (* E_WhileFalse *)
     + (* b 求值为 true（矛盾） *)
-      rewrite H in H2. inversion H2.
+      rewrite H in H2. discriminate.
   (* E_WhileTrue *)
   - (* b 求值为 false（矛盾） *)
-    rewrite H in H4. inversion H4.
+    rewrite H in H4. discriminate.
   - (* b 求值为 true *)
     assert (st' = st'0) as EQ1 by auto.
     subst st'0.
@@ -234,22 +239,22 @@ Proof with auto.
   intros c st st1 st2 E1 E2;
   generalize dependent st2;
   induction E1;
-           intros st2 E2; inv E2...
+           intros st2 E2; inversion E2; subst...
   - (* E_Seq *)
     assert (st' = st'0) as EQ1...
     subst st'0...
   - (* E_IfTrue *)
     + (* b 求值为 false（矛盾） *)
-      rewrite H in H5. inversion H5.
+      rewrite H in H5. discriminate.
   - (* E_IfFalse *)
     + (* b 求值为 true（矛盾） *)
-      rewrite H in H5. inversion H5.
+      rewrite H in H5. discriminate.
   - (* E_WhileFalse *)
     + (* b 求值为 true（矛盾） *)
-      rewrite H in H2. inversion H2.
+      rewrite H in H2. discriminate.
   (* E_WhileTrue *)
   - (* b 求值为 false（矛盾） *)
-    rewrite H in H4. inversion H4.
+    rewrite H in H4. discriminate.
   - (* b 求值为 true *)
     assert (st' = st'0) as EQ1...
     subst st'0...
@@ -268,14 +273,14 @@ Qed.
       H2: beval st b = true
 
     这两个前提。矛盾很显然，但证明却有点麻烦：我们必须找到 [H1] 和 [H2]
-    这两个前提，用一次 [rewrite] 后再用一次 [inversion]。我们希望自动化此过程。
+    这两个前提，用一次 [rewrite] 后再用一次 [discriminate]。我们希望自动化此过程。
 
     （实际上，Coq 有个内建的 [congruence] 策略来处理这种情况。
     不过我们暂时先忽略它的存在，为的是示范如何自己构建正向推理的策略。）
 
     第一步，我们可以通过在 Ltac 中编写一个小函数来抽象出有问题的脚本。 *)
 
-Ltac rwinv H1 H2 := rewrite H1 in H2; inv H2.
+Ltac rwd H1 H2 := rewrite H1 in H2; discriminate.
 
 Theorem ceval_deterministic'': forall c st st1 st2,
     st =[ c ]=> st1  ->
@@ -284,23 +289,23 @@ Theorem ceval_deterministic'': forall c st st1 st2,
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
-  induction E1; intros st2 E2; inv E2; auto.
+  induction E1; intros st2 E2; inversion E2; subst; auto.
   - (* E_Seq *)
     assert (st' = st'0) as EQ1 by auto.
     subst st'0.
     auto.
   - (* E_IfTrue *)
     + (* b 求值为 false（矛盾） *)
-      rwinv H H5.
+      rwd H H5.
   - (* E_IfFalse *)
     + (* b 求值为 true（矛盾） *)
-      rwinv H H5.
+      rwd H H5.
   - (* E_WhileFalse *)
     + (* b 求值为 true（矛盾） *)
-      rwinv H H2.
+      rwd H H2.
   (* E_WhileTrue *)
   - (* b 求值为 false（矛盾） *)
-    rwinv H H4.
+    rwd H H4.
   - (* b 求值为 true *)
     assert (st' = st'0) as EQ1 by auto.
     subst st'0.
@@ -309,17 +314,17 @@ Proof.
 (** 此例相比之前略有改进，但我们更希望 Coq 能替我们找到相关的假设。
     Ltac 中的 [match goal] 功能可达成此目的。 *)
 
-Ltac find_rwinv :=
+Ltac find_rwd :=
   match goal with
     H1: ?E = true,
     H2: ?E = false
-    |- _ => rwinv H1 H2
+    |- _ => rwd H1 H2
   end.
 
 (** [match goal] 会查找两个不同的，形如等式的前提，
     其左式为两个相同的任意表达式 [E]，而右式为两个互相矛盾的布尔值。
     如果找到了这样的前提，就把 [H1] 和 [H2] 绑定为它们的名字，
-    并将 [rwinv] 策略应用到 [H1] 和 [H2] 上。
+    并将 [rwd] 策略应用到 [H1] 和 [H2] 上。
 
     把此策略添加到每一个归纳证明的情况中，就能把所有的矛盾情况都解决了。 *)
 
@@ -330,7 +335,7 @@ Theorem ceval_deterministic''': forall c st st1 st2,
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
-  induction E1; intros st2 E2; inv E2; try find_rwinv; auto.
+  induction E1; intros st2 E2; inversion E2; subst; try find_rwd; auto.
   - (* E_Seq *)
     assert (st' = st'0) as EQ1 by auto.
     subst st'0.
@@ -353,7 +358,7 @@ Theorem ceval_deterministic'''': forall c st st1 st2,
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
-  induction E1; intros st2 E2; inv E2; try find_rwinv; auto.
+  induction E1; intros st2 E2; inversion E2; subst; try find_rwd; auto.
   - (* E_Seq *)
     rewrite (IHE1_1 st'0 H1) in *. auto.
   - (* E_WhileTrue *)
@@ -394,7 +399,7 @@ Theorem ceval_deterministic''''': forall c st st1 st2,
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
-  induction E1; intros st2 E2; inv E2; try find_rwinv;
+  induction E1; intros st2 E2; inversion E2; subst; try find_rwd;
     repeat find_eqn; auto.
 Qed.
 
@@ -480,18 +485,18 @@ Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
   induction E1;
-    intros st2 E2; inv E2; try find_rwinv; repeat find_eqn; auto.
+    intros st2 E2; inversion E2; subst; try find_rwd; repeat find_eqn; auto.
   - (* E_RepeatEnd *)
     + (* b 求值为 false（矛盾） *)
-       find_rwinv.
-       (* 哎呀！为什么刚才 [find_rwinv] 没有为我们解决这个问题呢？
+       find_rwd.
+       (* 哎呀！为什么刚才 [find_rwd] 没有为我们解决这个问题呢？
           因为我们把顺序搞错了。 *)
   - (* E_RepeatLoop *)
      + (* b 求值为 true（矛盾） *)
-        find_rwinv.
+        find_rwd.
 Qed.
 
-(** 幸运的是，我们只需交换 [find_eqn] 和 [find_rwinv]
+(** 幸运的是，我们只需交换 [find_eqn] 和 [find_rwd]
     的调用顺序就能修复这一点。 *)
 
 Theorem ceval_deterministic': forall c st st1 st2,
@@ -502,7 +507,7 @@ Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2;
   induction E1;
-    intros st2 E2; inv E2; repeat find_eqn; try find_rwinv; auto.
+    intros st2 E2; inversion E2; subst; repeat find_eqn; try find_rwd; auto.
 Qed.
 
 End Repeat.
@@ -516,7 +521,7 @@ End Repeat.
 (** ** 变体 [eapply] 和 [eauto] *)
 
 (** 作为本章的结尾，我们来介绍一种更加方便的特性：
-    它能够推迟量词的实例化。为了引出此特性，我们来回忆一下[Imp]
+    它能够推迟量词的实例化。为了引出此特性，我们来回忆一下 [Imp]
     中的这个例子： *)
 
 Example ceval_example1:
@@ -593,14 +598,15 @@ Example eauto_example : exists s',
       ELSE Y ::= X + Z
     FI
   ]=> s'.
-Proof. eauto. Qed.
+Proof. info_eauto. Qed.
 
-(** [eauto] 的策略和 [auto] 一样，除了它会使用 [eapply] 而非 [apply]。
+(** [eauto] 的策略和 [auto] 一样，除了它会使用 [eapply] 而非 [apply]；
+    [info_eauto] 会显示 [auto] 使用了哪个事实。 *)
 
-    专业提示：有人可能会想，既然 [eapply] 和 [eauto] 比 [apply] 和 [auto]
+(** 专业提示：有人可能会想，既然 [eapply] 和 [eauto] 比 [apply] 和 [auto]
     更强大，那么总是用它们不就好了。不幸的是，它们明显更慢，特别是 [eauto]。
     Coq 专家倾向于主要使用 [apply] 和 [auto]，只在普通的版本无法做这些工作时才使用
     [e] 开头的变体。 *)
 
 
-(* Sun Jan 5 03:17:36 UTC 2020 *)
+(* 2020年1月16日 *)

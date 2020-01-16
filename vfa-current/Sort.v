@@ -108,7 +108,7 @@ Definition is_a_sorting_algorithm (f: list nat -> list nat) :=
 (* ################################################################# *)
 (** * Proof of Correctness *)
 
-(** **** 练习：3 星, standard (insert_perm)  
+(** **** 练习：3 星, standard (insert_perm) 
 
     Prove the following auxiliary lemma, [insert_perm], which will be
     useful for proving [sort_perm] below.  Your proof will be by
@@ -122,7 +122,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (sort_perm)  
+(** **** 练习：3 星, standard (sort_perm) 
 
     Now prove that sort is a permutation. *)
 
@@ -131,7 +131,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, standard (insert_sorted)  
+(** **** 练习：4 星, standard (insert_sorted) 
 
     This one is a bit tricky.  However, there just a single induction
    right at the beginning, and you do _not_ need to use [insert_perm]
@@ -143,7 +143,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard (sort_sorted)  
+(** **** 练习：2 星, standard (sort_sorted) 
 
     This one is easy.   *)
 
@@ -249,4 +249,4 @@ Theorem sort_sorted': forall l, sorted' (sort l).
    [sorted_sorted']. *)
 
 
-(* Sun Jan 5 03:20:53 UTC 2020 *)
+(* 2020年1月16日 *)

@@ -105,7 +105,8 @@ From Coq Require Import Strings.String.
            | T * T             积类型
 *)
 
-(** 我们需要几个新的归约规则来描述二元组和投影操作的行为。
+(** 我们需要几个新的归约规则来描述二元组和投影操作的行为。*)
+(**
 
                               t1 --> t1'
                          --------------------                        (ST_Pair1)
@@ -140,7 +141,7 @@ From Coq Require Import Strings.String.
     是一个值。二元组的成员必须是值，这一点保证了当二元组作为参数传入一个函数时已经
     完全归约了。*)
 
-(** 二元组和投影的类型规则十分直接。 
+(** 二元组和投影的类型规则十分直接。
 
                Gamma |- t1 \in T1     Gamma |- t2 \in T2
                -----------------------------------------               (T_Pair)
@@ -163,9 +164,8 @@ From Coq Require Import Strings.String.
 (* ================================================================= *)
 (** ** 单元素类型 *)
 
-(** 另一个在 ML 语言家族中经常出现的基础类型是只含有一个元素的类型（singleton type），即 [Unit]。
-
-    它只含有一个常量项 [unit]（以小写 [u] 开头），以及一个类型规则使 [unit] 成为
+(** 另一个在 ML 语言家族中经常出现的基础类型是只含有一个元素的类型（singleton type），即 [Unit]。*)
+(** 它只含有一个常量项 [unit]（以小写 [u] 开头），以及一个类型规则使 [unit] 成为
     [Unit] 的一个元素。我们同时添加 [unit] 到可作为值的项的集合中，确实，[unit]
     是 [Unit] 类型的表达式唯一可能的归约结果。 *)
 
@@ -207,7 +207,8 @@ From Coq Require Import Strings.String.
     的具体例子，他们描述了从一个或两个给定类型的值的集合，例如：
 
        Nat + Bool
-
+*)
+(**
     我们在创建这些类型的值时，会为值_'标记（tagging）'_上其成分类型。
     比如说，如果 [n] 是自然数，那么 [inl n] 是 [Nat+Bool] 的一个元素；
     类似地，如果 [b] 的类型为 [Bool]，那么 [inr b] 是 [Nat+Bool]
@@ -233,12 +234,13 @@ From Coq Require Import Strings.String.
             inr unit
           else
             inl ...
-
-    事实上，上面的 [Nat + Unit] 类型与 Coq 中的 [option nat]
+*)
+(** 事实上，上面的 [Nat + Unit] 类型与 Coq 中的 [option nat]
     类型是同构的——也即，我们很容易写出他们的转换函数。 *)
 
 (** 为了_'使用'_和类型和元素，我们引入 [case] 语句（Coq 中 [match]
-    的非常简化版）用于解构他们。比如说，下面的程序将 [Nat+Bool] 的值转为了 [Nat]：
+    的非常简化版）用于解构他们。比如说，下面的程序将 [Nat+Bool] 的值转为了 [Nat]：*)
+(**
 
     getNat \in Nat+Bool -> Nat
     getNat =
@@ -246,8 +248,8 @@ From Coq Require Import Strings.String.
         case x of
           inl n => n
         | inr b => test b then 1 else 0
-
-    更加形式化地讲…… *)
+*)
+(** 更加形式化地讲…… *)
 
 (** 语法：
 
@@ -290,7 +292,7 @@ From Coq Require Import Strings.String.
 
             -----------------------------------------------        (ST_CaseInr)
             case (inr T1 v2) of inl x1 => t1 | inr x2 => t2
-                           -->  [x2:=v1]t2
+                           -->  [x2:=v2]t2
 *)
 
 (** 定型规则：
@@ -344,7 +346,8 @@ From Coq Require Import Strings.String.
       lcase x of nil   => 0
                | a::x' => lcase x' of nil    => a
                                     | b::x'' => a+b
-
+*)
+(**
     语法：
 
        t ::=                项
@@ -435,8 +438,8 @@ From Coq Require Import Strings.String.
             (\f:Nat->Nat.
                \x:Nat.
                   test x=0 then 1 else x * (f (pred x)))
-
-    我们可用如下方式把前者转换为后者：
+*)
+(** 我们可用如下方式把前者转换为后者：
 
       - 在 [fact] 的定义的右侧表达式中，替换递归引用的 [fact] 为一个新的变量 [f]。
 
@@ -567,7 +570,7 @@ From Coq Require Import Strings.String.
 (** 特别重要的一点是，不同于 Coq 中的 [Fixpoint] 定义，
     [fix] 并不会保证所定义的函数一定停机。*)
 
-(** **** 练习：1 星, standard, optional (halve_fix)  
+(** **** 练习：1 星, standard, optional (halve_fix) 
 
     请将下面非形式化的定义使用 [fix] 写出：
 
@@ -578,16 +581,16 @@ From Coq Require Import Strings.String.
            else 1 + (halve (pred (pred x)))
 
 (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：1 星, standard, optional (fact_steps)  
+(** **** 练习：1 星, standard, optional (fact_steps) 
 
     请分步骤写下 [fact 1] 如何归约为正规式（假定有一般算数操作的归约规则）。
 
     (* 请在此处解答 *)
-
-    [] *)
+*)
+(** [] *)
 
 (** 对任意类型 [T]，构造类型为 [T->T] 的函数的不动点的能力带了了一些令人惊讶的推论。
     特别是，这意味着_'每个'_类型都存在某个项。我们可以观察到，对每个类型 [T]，
@@ -607,8 +610,8 @@ From Coq Require Import Strings.String.
              test m=0 then iszero n
              else test n=0 then fls
              else eq (pred m) (pred n))
-
-    最后的例子展示了如何用 [fix] 定一个_'二元组'_的递归函数（规则 [T_Fix]
+*)
+(** 最后的例子展示了如何用 [fix] 定一个_'二元组'_的递归函数（规则 [T_Fix]
     中的 [T1] 并不需要函数类型）：
 
       evenodd =
@@ -663,8 +666,8 @@ From Coq Require Import Strings.String.
 
                       -------------------------                    (ST_ProjRcd)
                       {..., i=vi, ...}.i --> vi
-
-    再次提醒，这些规则是非形式化的。比如说，第一个规则应当被读做“如果 [ti]
+*)
+(** 再次提醒，这些规则是非形式化的。比如说，第一个规则应当被读做“如果 [ti]
    是最左边的非值字段，且如果 [ti] 前进一步归约到 [ti']，那么整个字段组归约为……”。
    最后一个规则的意思是说应当只有一个名字为 [i] 的字段，而其他的字段必须指向值。*)
 
@@ -782,7 +785,7 @@ From Coq Require Import Strings.String.
 
 Module STLCExtended.
 
-(** **** 练习：3 星, standard (STLCE_definitions)  
+(** **** 练习：3 星, standard (STLCE_definitions) 
 
     在接下来的一系列练习中，你将会形式化本章中描述的一些扩展。
     我们提供了必要的项和类型的语法，以及一些例子用于测试你的定义是否工作。
@@ -1134,7 +1137,7 @@ Definition manual_grade_for_extensions_definition : option (nat*string) := None.
 (* ================================================================= *)
 (** ** 例子 *)
 
-(** **** 练习：3 星, standard (STLCE_examples)  
+(** **** 练习：3 星, standard (STLCE_examples) 
 
     本节形式化了一些上文中出现的例子（以及一些其他的例子）。
 
@@ -1557,7 +1560,7 @@ End Examples.
 (* ----------------------------------------------------------------- *)
 (** *** 可归约性 *)
 
-(** **** 练习：3 星, standard (STLCE_progress)  
+(** **** 练习：3 星, standard (STLCE_progress) 
 
     Complete the proof of [progress].
 
@@ -1721,7 +1724,7 @@ Definition manual_grade_for_progress : option (nat*string) := None.
 (* ----------------------------------------------------------------- *)
 (** *** 上下文不变性 *)
 
-(** **** 练习：3 星, standard (STLCE_context_invariance)  
+(** **** 练习：3 星, standard (STLCE_context_invariance) 
 
     Complete the definition of [appears_free_in], and the proofs of
    [context_invariance] and [free_in_context]. *)
@@ -1880,7 +1883,7 @@ Definition manual_grade_for_context_invariance : option (nat*string) := None.
 (* ----------------------------------------------------------------- *)
 (** *** 替换 *)
 
-(** **** 练习：2 星, standard (STLCE_subst_preserves_typing)  
+(** **** 练习：2 星, standard (STLCE_subst_preserves_typing) 
 
     Complete the proof of [substitution_preserves_typing]. *)
 
@@ -2025,7 +2028,7 @@ Definition manual_grade_for_substitution_preserves_typing : option (nat*string) 
 (* ----------------------------------------------------------------- *)
 (** *** 保型性 *)
 
-(** **** 练习：3 星, standard (STLCE_preservation)  
+(** **** 练习：3 星, standard (STLCE_preservation) 
 
     Complete the proof of [preservation]. *)
 
@@ -2093,4 +2096,4 @@ Definition manual_grade_for_preservation : option (nat*string) := None.
 
 End STLCExtended.
 
-(* Sun Jan 5 03:18:35 UTC 2020 *)
+(* 2020年1月16日 *)

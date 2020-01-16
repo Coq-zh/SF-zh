@@ -49,30 +49,34 @@ Definition eqb_string (x y : string) : bool :=
 (** （函数 [string_dec] 来自于 Coq 的字符串标准库。如果你查看
     [string_dec] 的结果类型，就会发现其返回值的类型并不是 [bool]，
     而是一个形如 [{x = y} + {x <> y}] 的类型，叫做 [sumbool] 类型，
-    它可以看做“带有证据的布尔类型”。形式上来说，一个 [sumbool]
-    类型的元素要么是两个东西相等的证明，要么就是它们不相等的证明，
+    它可以看做“带有证据的布尔类型”。形式上来说，一个 [{x = y} + {x <> y}]
+    类型的元素要么是 [x] 和 [y] 的相等的证明，要么就是它们不相等的证明，
     与一个标签一起来指出具体是哪一个。不过就目前来说，你可以把它当做一个
     花哨的 [bool]。） *)
 
 (** 现在我们需要一些关于字符串相等性的基本性质... *)
 Theorem eqb_string_refl : forall s : string, true = eqb_string s s.
-Proof. intros s. unfold eqb_string. destruct (string_dec s s) as [|Hs].
+Proof.
+  intros s. unfold eqb_string.
+  destruct (string_dec s s) as [Hs_eq | Hs_not_eq].
   - reflexivity.
-  - destruct Hs. reflexivity.
+  - destruct Hs_not_eq. reflexivity.
 Qed.
 
-(** 以下有用的性质可由类似的字符串引理推出： *)
+(** 两个字符串在 [eqb_string] 的意义上相等，当且仅当它们在
+    [=] 的意义上相等。因此 [eqb_string] 中反映了 [=]，[IndProp]
+    一章中讨论了「互映」的意义。 *)
 
 Theorem eqb_string_true_iff : forall x y : string,
     eqb_string x y = true <-> x = y.
 Proof.
    intros x y.
    unfold eqb_string.
-   destruct (string_dec x y) as [|Hs].
-   - subst. split. reflexivity. reflexivity.
+   destruct (string_dec x y) as [Hs_eq | Hs_not_eq].
+   - rewrite Hs_eq. split. reflexivity. reflexivity.
    - split.
      + intros contra. discriminate contra.
-     + intros H. rewrite H in Hs. destruct Hs. reflexivity.
+     + intros H. rewrite H in Hs_not_eq. destruct Hs_not_eq. reflexivity.
 Qed.
 
 (** 类似地： *)
@@ -83,7 +87,7 @@ Proof.
   intros x y. rewrite <- eqb_string_true_iff.
   rewrite not_true_iff_false. reflexivity. Qed.
 
-(** 以下方便使用的变体只需通过改写就能得出： *)
+(** 以下便于使用的变体只需通过改写就能得出： *)
 
 Theorem false_eqb_string : forall x y : string,
    x <> y -> eqb_string x y = false.
@@ -95,7 +99,7 @@ Proof.
 (** * 全映射 *)
 
 (** 在本章中，我们的主要任务就是构建一个偏映射的定义，其行为类似于我们之前在
-    [Lists]一章中看到的那个，再加上伴随其行为的引理。
+    [Lists] 一章中看到的那个，再加上伴随其行为的引理。
 
     不过这一次，我们将使用_'函数'_而非“键-值”对的列表来构建映射。
     这种表示方法的优点在于它提供了映射更具_'外延性'_的视角，
@@ -173,9 +177,9 @@ Proof. reflexivity. Qed.
 
 (** 即便你没有进行下面的练习，也要确保透彻地理解以下引理的陈述！ *)
 
-(** （其中有些证明需要函数的外延性公理，我们在[Logic]一节中讨论过它）。 *)
+(** （其中有些证明需要函数的外延性公理，我们在 [Logic] 一节中讨论过它）。 *)
 
-(** **** 练习：1 星, standard, optional (t_apply_empty)  
+(** **** 练习：1 星, standard, optional (t_apply_empty) 
 
     首先，空映射对于所有的键都会返回默认元素（即，空映射总是返回默认元素）： *)
 
@@ -185,7 +189,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (t_update_eq)  
+(** **** 练习：2 星, standard, optional (t_update_eq) 
 
     接着，如果将映射 [m] 的键 [x] 关联的值更新为 [v]，然后在 [update]
     产生的新映射中查找 [x]，就会得到 [v]（即，更新某个键的映射，
@@ -197,7 +201,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (t_update_neq)  
+(** **** 练习：2 星, standard, optional (t_update_neq) 
 
     此外，如果将映射 [m] 的键 [x1] 更新后在返回的结果中查找_'另一个'_键
     [x2]，那么得到的结果与在 [m] 中查找它的结果相同
@@ -210,7 +214,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (t_update_shadow)  
+(** **** 练习：2 星, standard, optional (t_update_shadow) 
 
     如果将映射 [m] 的键 [x] 关联的值更新为 [v1] 后，又将同一个键 [x]
     更新为另一个值 [v2]，那么产生的映射与仅将第二次 [update] 应用于 [m]
@@ -222,13 +226,13 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** 对于最后两个全映射的引理而言，用[IndProp]一章中引入的互映法
+(** 对于最后两个全映射的引理而言，用 [IndProp] 一章中引入的互映法
     （Reflection idioms）来证明会十分方便。我们首先通过证明基本的_'互映引理'_，
-    将 [id] 上的相等关系命题与布尔函数 [eqb_id] 关联起来。*)
+    将字符串上的相等关系命题与布尔函数 [eqb_string] 关联起来。*)
 
-(** **** 练习：2 星, standard, optional (eqb_stringP)  
+(** **** 练习：2 星, standard, optional (eqb_stringP) 
 
-    请仿照[IndProp]一章中对 [eqb_natP] 的证明来证明以下引理： *)
+    请仿照 [IndProp] 一章中对 [eqb_natP] 的证明来证明以下引理： *)
 
 Lemma eqb_stringP : forall x y : string,
     reflect (x = y) (eqb_string x y).
@@ -241,9 +245,9 @@ Proof.
     的结果进行分类讨论的同时，生成关于 [x1] 和 [x2] （在 [=] 的意义上）
     的相等关系前提。 *)
 
-(** **** 练习：2 星, standard (t_update_same)  
+(** **** 练习：2 星, standard (t_update_same) 
 
-    请仿照[IndProp]一章中的示例，用 [eqb_stringP] 来证明以下定理，
+    请仿照 [IndProp] 一章中的示例，用 [eqb_stringP] 来证明以下定理，
     它陈述了：如果我们用映射 [m] 中已经与键 [x] 相关联的值更新了 [x]，
     那么其结果与 [m] 相等： *)
 
@@ -253,7 +257,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, recommended (t_update_permute)  
+(** **** 练习：3 星, standard, recommended (t_update_permute) 
 
     使用 [eqb_stringP] 来证明最后一个 [update] 函数的性质：
     如果我们更新了映射 [m] 中两个不同的键，那么更新的顺序无关紧要。 *)
@@ -342,4 +346,4 @@ Proof.
   apply t_update_permute.
 Qed.
 
-(* Sun Jan 5 03:18:33 UTC 2020 *)
+(* 2020年1月16日 *)

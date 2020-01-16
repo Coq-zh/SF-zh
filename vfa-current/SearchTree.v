@@ -297,7 +297,7 @@ Inductive Abs:  tree -> total_map V -> Prop :=
       Abs r b ->
       Abs (T l k v r)  (t_update (combine k a b) k v).
 
-(** **** 练习：3 星, standard (check_example_map)  
+(** **** 练习：3 星, standard (check_example_map) 
 
     Prove that your [example_map] is the right one.
      If it isn't, go back and fix your definition of [example_map].
@@ -731,8 +731,8 @@ Print Abs.
             Abs l a ->
             Abs r b ->
 	    Abs (T l k v r) (t_update (combine k a b) (Id k) v)
-
-    Because the [combine] function is chosen very carefully, it turns out
+*)
+(** Because the [combine] function is chosen very carefully, it turns out
   that this abstraction relation even works on bogus trees! *)
 
 Remark abstraction_of_bogus_tree:
@@ -883,7 +883,7 @@ rewrite elements_slow_elements.
 (** [] *)
 
 (* ================================================================= *)
-(** ** Coherence With [elements] Instead of [lookup] 
+(** ** Coherence With [elements] Instead of [lookup]
 
     The first definition of the abstraction relation, [Abs], is "coherent"
      with the [lookup] operation, but not very coherent with the [elements]
@@ -903,4 +903,4 @@ rewrite elements_slow_elements.
 
 End TREES.
 
-(* Sun Jan 5 03:20:54 UTC 2020 *)
+(* 2020年1月16日 *)

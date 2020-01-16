@@ -2,41 +2,43 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
 <title>Extraction: 从 Coq 中提取 ML</title>
-</head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+</head>
 
 <body>
 
 <div id="page">
 
 <div id="header">
-<a href='https://coq-zh.github.io/SF-zh/index.html'>
-<img src='common/media/image/sf_logo_sm.png'></a>
-</br><a href='index.html'>  <span class='booktitleinheader'>Volume 1: 逻辑基础</span><br></br>
+<div id='logoinheader'><a href='https://coq-zh.github.io/SF-zh/'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 1: 逻辑基础</a></div>
 <ul id='menu'>
-   <a href='toc.html'><li class='section_name'>目录</li></a>
-   <a href='coqindex.html'><li class='section_name'>索引</li></a>
-   <a href='deps.html'><li class='section_name'>路线</li></a>
+   <li class='section_name'><a href='toc.html'>目录</a></li>
+   <li class='section_name'><a href='coqindex.html'>索引</a></li>
+   <li class='section_name'><a href='deps.html'>路线</a></li>
 </ul>
-</a></div>
+</div>
 
 <div id="main">
 
 <h1 class="libtitle">Extraction<span class="subtitle">从 Coq 中提取 ML</span></h1>
 
+<div class="code">
+</div>
 
 <div class="doc">
 
 <div class="paragraph"> </div>
 
-<a name="lab390"></a><h1 class="section">基本的提取方式</h1>
+<a name="lab393"></a><h1 class="section">基本的提取方式</h1>
 
 <div class="paragraph"> </div>
 
@@ -47,48 +49,48 @@
     首先我们需要指定提取的目标语言。可选的语言有三种：提取机制最为成熟的
     OCaml，提取结果大都可以直接使用的 Haskell，以及提取机制有些过时的 Scheme。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Require</span> <span class="id" type="var">Coq.extraction.Extraction</span>.<br/>
-<span class="id" type="var">Extraction</span> <span class="id" type="var">Language</span> <span class="id" type="var">OCaml</span>.<br/>
+<br/>
+<span class="id" title="keyword">Require</span> <a class="idref" href="http://coq.inria.fr/library//Coq.extraction.Extraction.html#"><span class="id" title="library">Coq.extraction.Extraction</span></a>.<br/>
+<span class="id" title="keyword">Extraction</span> <span class="id" title="var">Language</span> <span class="id" title="var">OCaml</span>.<br/>
 </div>
 
 <div class="doc">
 现在我们将待提取的定义加载到 Coq 环境中。你可以直接写出定义，
     也可以从其它模块中加载。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Arith.Arith</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Init.Nat</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Arith.EqNat</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">LF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">ImpCEvalFun</span>.<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.Arith.html#"><span class="id" title="library">Arith.Arith</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Nat.html#"><span class="id" title="library">Init.Nat</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.EqNat.html#"><span class="id" title="library">Arith.EqNat</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">LF</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="ImpCEvalFun.html#"><span class="id" title="library">ImpCEvalFun</span></a>.<br/>
 </div>
 
 <div class="doc">
 最后，我们来指定需要提取的定义，以及用于保存提取结果的文件名。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Extraction</span> "imp1.ml" <span class="id" type="var">ceval_step</span>.<br/>
+<br/>
+<span class="id" title="keyword">Extraction</span> "imp1.ml" <span class="id" title="var">ceval_step</span>.<br/>
 </div>
 
 <div class="doc">
-Coq 在处理此指令时会生成一个名为 <span class="inlinecode"><span class="id" type="var">imp1.ml</span></span> 的文件，其中包含了提取后的
-    <span class="inlinecode"><span class="id" type="var">ceval_step</span></span> 以及所有递归依赖的文件。编译本章对应的 <span class="inlinecode">.<span class="id" type="var">v</span></span>
-    文件，然后看看生成的 <span class="inlinecode"><span class="id" type="var">imp1.ml</span></span> 吧！ 
+Coq 在处理此指令时会生成一个名为 <span class="inlinecode"><span class="id" title="var">imp1.ml</span></span> 的文件，其中包含了提取后的
+    <span class="inlinecode"><span class="id" title="var">ceval_step</span></span> 以及所有递归依赖的文件。编译本章对应的 <span class="inlinecode">.<span class="id" title="var">v</span></span>
+    文件，然后看看生成的 <span class="inlinecode"><span class="id" title="var">imp1.ml</span></span> 吧！ 
 </div>
 
 <div class="doc">
-<a name="lab391"></a><h1 class="section">控制提取特定的类型</h1>
+<a name="lab394"></a><h1 class="section">控制提取特定的类型</h1>
 
 <div class="paragraph"> </div>
 
- 我们可以让 Coq 将具体的 <span class="inlinecode"><span class="id" type="keyword">Inductive</span></span> 定义提取为特定的 OCaml 类型。
+ 我们可以让 Coq 将具体的 <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> 定义提取为特定的 OCaml 类型。
     对于每一个定义，我们都要指明：
-
-<div class="paragraph"> </div>
-
 <ul class="doclist">
 <li> 该 Coq 类型应当如何用 OCaml 来表示，以及
 
@@ -98,9 +100,10 @@ Coq 在处理此指令时会生成一个名为 <span class="inlinecode"><span cl
 </ul>
 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Extract</span> <span class="id" type="keyword">Inductive</span> <span class="id" type="var">bool</span> ⇒ "bool" [ "true" "false" ].<br/>
+<br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="keyword">Inductive</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> ⇒ "bool" [ "true" "false" ].<br/>
 </div>
 
 <div class="doc">
@@ -109,52 +112,51 @@ Coq 在处理此指令时会生成一个名为 <span class="inlinecode"><span cl
 
 <div class="paragraph"> </div>
 
-    （译注：在这一部分，读者可以在为 <span class="inlinecode"><span class="id" type="var">nat</span></span> 指定对应的类型后使用
-    <span class="inlinecode"><span class="id" type="var">Extraction</span></span> <span class="inlinecode"><span class="id" type="var">plus</span></span> 来得到自然数加法的提取结果，以此加深对“递归器”的理解。）
+    （译注：在这一部分，读者可以在为 <span class="inlinecode"><span class="id" title="var">nat</span></span> 指定对应的类型后使用
+    <span class="inlinecode"><span class="id" title="keyword">Extraction</span></span> <span class="inlinecode"><span class="id" title="var">plus</span></span> 来得到自然数加法的提取结果，以此加深对“递归器”的理解。）
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Extract</span> <span class="id" type="keyword">Inductive</span> <span class="id" type="var">nat</span> ⇒ "int"<br/>
-&nbsp;&nbsp;[ "0" "(fun x → x + 1)" ]<br/>
-&nbsp;&nbsp;"(fun zero succ n →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if n=0 then zero () else succ (n-1))".<br/>
+<br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="keyword">Inductive</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> ⇒ "int"<br/>
+&nbsp;&nbsp;[ "0" "(fun x <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> x + 1)" ]<br/>
+&nbsp;&nbsp;"(fun zero succ n <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>
+      if n=0 then zero () else succ (n-1))".<br/>
 </div>
 
 <div class="doc">
 我们也可以将定义的常量提取为具体的 OCaml 项或者操作符。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Extract</span> <span class="id" type="var">Constant</span> <span class="id" type="var">plus</span> ⇒ "( + )".<br/>
-<span class="id" type="var">Extract</span> <span class="id" type="var">Constant</span> <span class="id" type="var">mult</span> ⇒ "( * )".<br/>
-<span class="id" type="var">Extract</span> <span class="id" type="var">Constant</span> <span class="id" type="var">eqb</span> ⇒ "( = )".<br/>
+<br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="var">Constant</span> <span class="id" title="var">plus</span> ⇒ "( + )".<br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="var">Constant</span> <span class="id" title="var">mult</span> ⇒ "( * )".<br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="var">Constant</span> <span class="id" title="var">eqb</span> ⇒ "( = )".<br/>
 </div>
 
 <div class="doc">
-注意：保证提取结果的合理性是<b>你的责任</b>。例如，以下指定可能十分自然：
-
+注意：保证提取结果的合理性是<i>'你的责任'</i>。例如，以下指定可能十分自然：
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Extract</span> <span class="id" title="var">Constant</span> <span class="id" title="var">minus</span> ⇒ "( - )".
 <div class="paragraph"> </div>
 
-<div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Extract</span>&nbsp;<span class="id" type="var">Constant</span>&nbsp;<span class="id" type="var">minus</span>&nbsp;⇒&nbsp;"( - )".
-<div class="paragraph"> </div>
+</span>    但是这样做会引起严重的混乱。（思考一下。为什么会这样呢？）
 
 </div>
-    但是这样做会引起严重的混乱。（思考一下。为什么会这样呢？）
+<div class="code">
 
-</div>
-<div class="code code-tight">
-
-<span class="id" type="var">Extraction</span> "imp2.ml" <span class="id" type="var">ceval_step</span>.<br/>
+<br/>
+<span class="id" title="keyword">Extraction</span> "imp2.ml" <span class="id" title="var">ceval_step</span>.<br/>
 </div>
 
 <div class="doc">
-检查一下生成的 <span class="inlinecode"><span class="id" type="var">imp2.ml</span></span> 文件，留意一下此次的提取结果与 <span class="inlinecode"><span class="id" type="var">imp1.ml</span></span>
+检查一下生成的 <span class="inlinecode"><span class="id" title="var">imp2.ml</span></span> 文件，留意一下此次的提取结果与 <span class="inlinecode"><span class="id" title="var">imp1.ml</span></span>
     有何不同。 
 </div>
 
 <div class="doc">
-<a name="lab392"></a><h1 class="section">一个完整的示例</h1>
+<a name="lab395"></a><h1 class="section">一个完整的示例</h1>
 
 <div class="paragraph"> </div>
 
@@ -164,41 +166,44 @@ Coq 在处理此指令时会生成一个名为 <span class="inlinecode"><span cl
 <div class="paragraph"> </div>
 
     为简单起见，我们只取最终状态下前四个存储空间中的内容作为程序的结果。
-    （译注：这里的存储空间指作为状态的 <span class="inlinecode"><span class="id" type="var">map</span></span>。）
+    （译注：这里的存储空间指作为状态的 <span class="inlinecode"><span class="id" title="var">map</span></span>。）
 
 <div class="paragraph"> </div>
 
-    为了更方便地输入例子，我们将会从 <span class="inlinecode"><span class="id" type="var">ImpParser</span></span> 模块中提取出语法解析器。
+    为了更方便地输入例子，我们将会从 <span class="inlinecode"><span class="id" title="var">ImpParser</span></span> 模块中提取出语法解析器。
     首先需要正确建立 Coq 中的字符串与 OCaml 中字符列表的对应关系。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">ExtrOcamlBasic</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">ExtrOcamlString</span>.<br/>
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.extraction.ExtrOcamlBasic.html#"><span class="id" title="library">ExtrOcamlBasic</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.extraction.ExtrOcamlString.html#"><span class="id" title="library">ExtrOcamlString</span></a>.<br/>
 </div>
 
 <div class="doc">
 我们还需要翻译另一种布尔值： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Extract</span> <span class="id" type="keyword">Inductive</span> <span class="id" type="var">sumbool</span> ⇒ "bool" ["true" "false"].<br/>
+<br/>
+<span class="id" title="keyword">Extract</span> <span class="id" title="keyword">Inductive</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#sumbool"><span class="id" title="inductive">sumbool</span></a> ⇒ "bool" ["true" "false"].<br/>
 </div>
 
 <div class="doc">
 提取指令是相同的。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">LF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Imp</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">LF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">ImpParser</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="var">From</span> <span class="id" type="var">LF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/>
-<span class="id" type="var">Extraction</span> "imp.ml" <span class="id" type="var">empty_st</span> <span class="id" type="var">ceval_step</span> <span class="id" type="var">parse</span>.<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">LF</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Imp.html#"><span class="id" title="library">Imp</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">LF</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="ImpParser.html#"><span class="id" title="library">ImpParser</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="var">From</span> <span class="id" title="var">LF</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Maps.html#"><span class="id" title="library">Maps</span></a>.<br/>
+<span class="id" title="keyword">Extraction</span> "imp.ml" <span class="id" title="var">empty_st</span> <span class="id" title="var">ceval_step</span> <span class="id" title="var">parse</span>.<br/>
 </div>
 
 <div class="doc">
 现在我们来运行一下生成的 Imp 求值器。首先你应该阅览一下
-    <span class="inlinecode"><span class="id" type="var">impdriver.ml</span></span>（这并非从某个 Coq 源码提取而来，它是手写的。）
+    <span class="inlinecode"><span class="id" title="var">impdriver.ml</span></span>（这并非从某个 Coq 源码提取而来，它是手写的。）
 
 <div class="paragraph"> </div>
 
@@ -207,34 +212,37 @@ Coq 在处理此指令时会生成一个名为 <span class="inlinecode"><span cl
         ocamlc -w -20 -w -26 -o impdriver imp.mli imp.ml impdriver.ml
         ./impdriver
 </pre>
-    （编译时所使用的 <span class="inlinecode">-<span class="id" type="var">w</span></span> 开关只是为了避免输出一些误报的警告信息。） 
+    （编译时所使用的 <span class="inlinecode">-<span class="id" title="var">w</span></span> 开关只是为了避免输出一些误报的警告信息。） 
 </div>
 
 <div class="doc">
-<a name="lab393"></a><h1 class="section">讨论</h1>
+<a name="lab396"></a><h1 class="section">讨论</h1>
 
 <div class="paragraph"> </div>
 
- 由于我们证明了 <span class="inlinecode"><span class="id" type="var">ceval_step</span></span> 函数的行为在适当的意义上与 <span class="inlinecode"><span class="id" type="var">ceval</span></span>
-    关系一致，因此提取出的程序可视作<b>已验证的</b> Imp 解释器。
+ 由于我们证明了 <span class="inlinecode"><span class="id" title="var">ceval_step</span></span> 函数的行为在适当的意义上与 <span class="inlinecode"><span class="id" title="var">ceval</span></span>
+    关系一致，因此提取出的程序可视作<i>'已验证的'</i> Imp 解释器。
     当然，我们使用的语法分析器并未经过验证，因为我们并未对它进行任何证明！ 
 </div>
 
 <div class="doc">
-<a name="lab394"></a><h1 class="section">更进一步</h1>
+<a name="lab397"></a><h1 class="section">更进一步</h1>
 
 <div class="paragraph"> </div>
 
- 有关提取的更多详情见<b>软件基础</b>第三卷<b>已验证的函数式算法</b>中的
+ 有关提取的更多详情见<i>'软件基础'</i>第三卷<i>'已验证的函数式算法'</i>中的
     Extract 一章。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="comment">(*&nbsp;Sun&nbsp;Jan&nbsp;5&nbsp;03:17:35&nbsp;UTC&nbsp;2020&nbsp;*)</span><br/>
+<br/>
+<span class="comment">(*&nbsp;2020年1月16日&nbsp;*)</span><br/>
 </div>
 </div>
 
-
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
 
 </div>
 

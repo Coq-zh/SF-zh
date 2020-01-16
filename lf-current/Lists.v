@@ -13,10 +13,10 @@ Module NatList.
 Inductive natprod : Type :=
 | pair (n1 n2 : nat).
 
-(** 此声明可以读作：“只有一种方式来构造一个数值序对：通过将构造子 [pair]
-    应用到两个 [nat] 类型的参数上”。 *)
+(** 此声明可以读作：“构造数值序对的唯一一种方法，就是将构造子 [pair]
+    应用到两个 [nat] 类型的参数上。” *)
 
-Check (pair 3 5).
+Check (pair 3 5) : natprod.
 
 (** 下述函数分别用于提取二元组中的第一个和第二个分量。 *)
 
@@ -33,13 +33,13 @@ Definition snd (p : natprod) : nat :=
 Compute (fst (pair 3 5)).
 (* ===> 3 *)
 
-(** 鉴于二元组较为常用，不妨以标准的数学记法 [(x,y)] 取代 [pair x y]。
+(** 由于二元组十分常用，不妨以标准的数学记法 [(x,y)] 取代 [pair x y]。
     通过 [Notation] 向 Coq 声明该记法： *)
 
 Notation "( x , y )" := (pair x y).
 
-(** The new pair notation can be used both in expressions and in
-    pattern matches. *)
+(** The new notation can be used both in expressions and in pattern
+    matches. *)
 
 Compute (fst (3,5)).
 
@@ -61,11 +61,10 @@ Definition swap_pair (p : natprod) : natprod :=
 (** Note that pattern-matching on a pair (with parentheses: [(x, y)])
     is not to be confused with the "multiple pattern" syntax
     (with no parentheses: [x, y]) that we have seen previously.
-
     The above examples illustrate pattern matching on a pair with
-    elements [x] and [y], whereas [minus] below (taken from
-    [Basics]) performs pattern matching on the values [n]
-    and [m].
+    elements [x] and [y], whereas, for example, the definition of [minus] in
+    [Basics] performs pattern matching on the values [n]
+    and [m]:
 
        Fixpoint minus (n m : nat) : nat :=
          match n, m with
@@ -93,10 +92,10 @@ Definition swap_pair (p : natprod) : natprod :=
           end.
 *)
 
-(** 我们现在来证明一些有关二元组的简单事实。
+(** 现在我们来证明一些有关二元组的简单事实。
 
-    定理倘若以稍显古怪的方式书写，则只需 [reflexivity]（及其内建的简化）
-    即可完成证明。 *)
+    如果我们以稍显古怪的方式陈述序对的性质，那么有时只需
+    [reflexivity]（及其内建的简化）即可完成证明。 *)
 
 Theorem surjective_pairing' : forall (n m : nat),
   (n,m) = (fst (n,m), snd (n,m)).
@@ -112,7 +111,7 @@ Proof.
   simpl. (* 啥也没有归约！ *)
 Abort.
 
-(** 我们必须要向 Coq 展示 [p] 的具体结构，这样 [simpl] 才能对
+(** 我们还需要向 Coq 展示 [p] 的具体结构，这样 [simpl] 才能对
     [fst] 和 [snd] 做模式匹配。通过 [destruct] 可以达到这个目的。 *)
 
 Theorem surjective_pairing : forall (p : natprod),
@@ -161,14 +160,14 @@ Notation "[ ]" := nil.
 Notation "[ x ; .. ; y ]" := (cons x .. (cons y nil) ..).
 
 (** 我们不必完全理解这些声明，但如果你感兴趣的话，我会大致说明一下
-    发生了什么。 [right associativity] 告诉 Coq 当遇到多个 [::]
+    发生了什么。注解 "[right associativity]" 告诉 Coq 当遇到多个 [::]
     时如何给表达式加括号，如此一来下面三个声明做的就是同一件事： *)
 
 Definition mylist1 := 1 :: (2 :: (3 :: nil)).
 Definition mylist2 := 1 :: 2 :: 3 :: nil.
 Definition mylist3 := [1;2;3].
 
-(** [at level 60] 告诉 Coq 当遇到表达式和其它中缀运算符时应该如何加括号。
+(** "[at level 60]" 告诉 Coq 当遇到表达式和其它中缀运算符时应该如何加括号。
     例如，我们已经为 [plus] 函数定义了 [+] 中缀符号，它的优先级是 50：
 
   Notation "x + y" := (plus x y)
@@ -189,8 +188,9 @@ Definition mylist3 := [1;2;3].
 (* ----------------------------------------------------------------- *)
 (** *** Repeat *)
 
-(** 有很多函数可以方便地操作列表。例如 [repeat] 函数接受一个数字
-    [n] 和一个 [count]，返回一个长度为 [count]，每个元素都是 [n] 的列表。 *)
+(** 接下来我们看几个用来构造和操作列表的函数。第一个是 [repeat]
+    函数，它接受一个数字 [n] 和一个 [count]，返回一个长度为
+    [count]，每个元素都是 [n] 的列表。 *)
 
 Fixpoint repeat (n count : nat) : natlist :=
   match count with
@@ -220,7 +220,7 @@ Fixpoint app (l1 l2 : natlist) : natlist :=
   | h :: t => h :: (app t l2)
   end.
 
-(** 鉴于下文中 [app] 随处可见，不妨将其定义为中缀运算符。 *)
+(** 由于下文中 [app] 随处可见，不妨将其定义为中缀运算符。 *)
 
 Notation "x ++ y" := (app x y)
                      (right associativity, at level 60).
@@ -233,11 +233,11 @@ Example test_app3:             [1;2;3] ++ nil = [1;2;3].
 Proof. reflexivity.  Qed.
 
 (* ----------------------------------------------------------------- *)
-(** *** Head（带默认值）与 Tail *)
+(** *** Head 与 Tail *)
 
 (** 下面介绍列表上的两种运算：[hd] 函数返回列表的第一个元素（即“表头”）；
-    [tl] 函数返回列表除去第一个元素以外的部分（即“表尾”）。考虑到空表没有表头，
-    传入一个参数作为返回的默认值。 *)
+    [tl] 函数返回列表除去第一个元素以外的部分（即“表尾”）。由于空表没有表头，
+    我们必须传入一个参数作为返回的默认值。 *)
 
 Definition hd (default:nat) (l:natlist) : nat :=
   match l with
@@ -261,7 +261,7 @@ Proof. reflexivity.  Qed.
 (* ----------------------------------------------------------------- *)
 (** *** 练习 *)
 
-(** **** 练习：2 星, standard, recommended (list_funs)  
+(** **** 练习：2 星, standard, recommended (list_funs) 
 
     完成以下 [nonzeros]、[oddmembers] 和 [countoddmembers] 的定义，
     你可以查看测试函数来理解这些函数应该做什么。 *)
@@ -296,9 +296,9 @@ Example test_countoddmembers3:
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced (alternate)  
+(** **** 练习：3 星, advanced (alternate) 
 
-    完成 [alternate] 的定义，它从两个列表中交替地取出元素并合并为一个列表，
+    完成以下 [alternate] 的定义，它从两个列表中交替地取出元素并合并为一个列表，
     就像把拉链“拉”起来一样。更多具体示例见后面的测试。
 
     （注意：[alternate] 有一种自然而优雅的定义，但是这一定义无法满足 Coq
@@ -334,7 +334,7 @@ Example test_alternate4:
 
 Definition bag := natlist.
 
-(** **** 练习：3 星, standard, recommended (bag_functions)  
+(** **** 练习：3 星, standard, recommended (bag_functions) 
 
     为袋子完成以下 [count]、[sum]、[add]、和 [member] 函数的定义。 *)
 
@@ -351,14 +351,14 @@ Example test_count2:              count 6 [1;2;3;1;4;1] = 0.
 (** Multiset [sum] is similar to set [union]: [sum a b] contains all
     the elements of [a] and of [b].  (Mathematicians usually define
     [union] on multisets a little bit differently -- using max instead
-    of sum -- which is why we don't use that name for this operation.)
-    For [sum] we're giving you a header that does not give explicit
-    names to the arguments.  Moreover, it uses the keyword
-    [Definition] instead of [Fixpoint], so even if you had names for
-    the arguments, you wouldn't be able to process them recursively.
-    The point of stating the question this way is to encourage you to
-    think about whether [sum] can be implemented in another way --
-    perhaps by using functions that have already been defined.  *)
+    of sum -- which is why we don't call this operation [union].)  For
+    [sum], we're giving you a header that does not give explicit names
+    to the arguments.  Moreover, it uses the keyword [Definition]
+    instead of [Fixpoint], so even if you had names for the arguments,
+    you wouldn't be able to process them recursively.  The point of
+    stating the question this way is to encourage you to think about
+    whether [sum] can be implemented in another way -- perhaps by
+    using one or more functions that have already been defined.  *)
 
 Definition sum : bag -> bag -> bag
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -384,7 +384,7 @@ Example test_member2:             member 2 [1;4;1] = false.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (bag_more_functions)  
+(** **** 练习：3 星, standard, optional (bag_more_functions) 
 
     你可以把下面这些和 [bag] 有关的函数当作额外的练习 *)
 
@@ -432,7 +432,7 @@ Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, recommended (bag_theorem)  
+(** **** 练习：2 星, standard, recommended (bag_theorem) 
 
     写一个你认为有趣的关于袋子的定理 [bag_theorem]，然后证明它；
     这个定理需要用到 [count] 和 [add]。注意，这是个开放性问题。
@@ -448,11 +448,7 @@ Qed.
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_bag_theorem : option (nat*string) := None.
-(* Note to instructors: For silly technical reasons, in this
-   file (only) you will need to write [Some (Datatypes.pair 3 ""%string)]
-   rather than [Some (3,""%string)] to enter your grade and comments. 
-
-    [] *)
+(** [] *)
 
 (* ################################################################# *)
 (** * 有关列表的论证 *)
@@ -482,25 +478,24 @@ Proof.
     而 [destruct] 策略中 [as] 注解引入的两个名字，[n] 和 [l']，分别对应了
     [cons] 构造子的两个参数（正在构造的列表的头和尾）。 *)
 
- (** 然而一般来说，许多关于列表的有趣定理都需要用到归纳法来证明。 *)
+(** 然而一般来说，许多关于列表的有趣定理都需要用到归纳法来证明，
+    接下来我们就会看到证明的方法。 *)
 
-(* ================================================================= *)
-(** ** 一点点说教 *)
-
-(** 只是阅读证明的话，你不会获得什么特别有用的东西。搞清楚每一个细节非常重要，
-    你应该在 Coq 中单步执行这些证明并思考每一步在整个证明中的作用，否则练习题将毫无用处。
-    啰嗦完毕。 *)
+(** （一点点说教：随着不断地深入，若你只是_'阅读'_证明的话，
+    并不会获得什么特别有用的东西。搞清楚每一个细节非常重要，你应该在
+    Coq 中单步执行这些证明并思考每一步在整个证明中的作用，否则练习题将毫无用处。
+    啰嗦完毕。） *)
 
 (* ================================================================= *)
 (** ** 对列表进行归纳 *)
 
 (** 比起对自然数的归纳，读者可能对归纳证明 [natlist] 这样的数据类型更加陌生。
     不过基本思路同样简单。每个 [Inductive] 声明定义了一组数据值，
-    这些值可以用声明过的构造子来构造：布尔值可以用 [true] 或 [false] 来构造；
+    这些值可以用声明过的构造子来构造。例如，布尔值可以用 [true] 或 [false] 来构造；
     自然数可以用 [O] 或 [S] 应用到另一个自然数上来构造；而列表可以用 [nil]
     或者将 [cons] 应用到一个自然数和另一个列表上来构造。
+    除此以外，归纳定义的集合中元素的形式 _'只能是'_ 构造子对其它项的应用。
 
-    除此以外，归纳定义的集合中元素的形式 _'只能是'_ 构造子对其它项的应用；
     这一事实同时也给出了一种对归纳定义的集合进行论证的方法：一个自然数要么是
     [O]，要么就是 [S] 应用到某个_'更小'_的自然数上；一个列表要么是 [nil]，
     要么就是 [cons] 应用到某个数字和某个_'更小'_的列表上，诸如此类。
@@ -512,7 +507,7 @@ Proof.
     - 然后，证明当 [l] 为 [cons n l'] 时 [P l] 成立，其中 [n] 是某个自然数，[l']
       是某个更小的列表，假设 [P l'] 成立.
 
-    由于较大的列表只能通过较小的列表构造出来，最终这个较小的列表会变成
+    由于较大的列表总是能够分解为较小的列表，最终这个较小的列表会变成
     [nil]，这两点合在一起就完成了 [P] 对一切列表 [l] 成立的证明。下面是个具体的例子： *)
 
 Theorem app_assoc : forall l1 l2 l3 : natlist,
@@ -526,6 +521,7 @@ Proof.
 
 (** 注意，和归纳自然数时一样，此处 [induction] 策略的 [as...] 从句为在
     “[l1] 由构造子 [cons] 构造而来”这一情况时出现的“更小的列表”和归纳假设取了名字。
+
     再次强调，如果你把 Coq 的证明当做静态的文档，那么可能不会有特别多的收获 ——
     如果你通过交互式的 Coq 会话来阅读证明，就能看到当前的目标和上下文，
     而这些状态在你阅读写下来的脚本时是不可见的。所以一份用自然语言写成的证明 ——
@@ -574,19 +570,15 @@ Proof. reflexivity.  Qed.
 Example test_rev2:            rev nil = nil.
 Proof. reflexivity.  Qed.
 
-(* ----------------------------------------------------------------- *)
-(** *** [rev] 的性质 *)
-
-(** Now, for something a bit more challenging than the proofs
-    we've seen so far, let's prove that reversing a list does not
-    change its length.  Our first attempt gets stuck in the successor
-    case... *)
+(** 为了比目前所见的证明多一点挑战性，
+    我们来证明反转一个列表不会改变它的长度。
+    我们的首次尝试在后继这一分支上卡住了.... *)
 
 Theorem rev_length_firsttry : forall l : natlist,
   length (rev l) = length l.
 Proof.
   intros l. induction l as [| n l' IHl'].
-  - (* l = [] *)
+  - (* l = nil *)
     reflexivity.
   - (* l = n :: l' *)
     (* 这种情况比较棘手。我们从一般的化简开始。 *)
@@ -599,7 +591,7 @@ Proof.
 Abort.
 
 (** 不妨单独提出引理，阐述 [++] 与 [length] 形成的等式关系，
-    以推进证明。 *)
+    以从我们卡住的地方推进证明。 *)
 
 Theorem app_length : forall l1 l2 : natlist,
   length (l1 ++ l2) = (length l1) + (length l2).
@@ -624,8 +616,10 @@ Proof.
   - (* l = nil *)
     reflexivity.
   - (* l = cons *)
-    simpl. rewrite -> app_length, plus_comm.
-    simpl. rewrite -> IHl'. reflexivity.  Qed.
+    simpl. rewrite -> app_length.
+    simpl. rewrite -> IHl'. rewrite plus_comm.
+    reflexivity.
+Qed.
 
 (** 作为对比，以下是这两个定理的非形式化证明：
 
@@ -638,7 +632,7 @@ Proof.
 
         length ([] ++ l2) = length [] + length l2,
 
-      根据 [length] 和 [++] 的定义，上式显然可得。
+      根据 [length]、[++] 和 [plus] 的定义，上式显然可得。
 
     - 其次，假设 [l1 = n::l1']，并且
 
@@ -646,7 +640,7 @@ Proof.
 
       我们必须证明
 
-        length ((n::l1') ++ l2) = length (n::l1') + length l2).
+        length ((n::l1') ++ l2) = length (n::l1') + length l2.
 
       根据 [length] 和 [++] 的定义以及归纳假设，上式显然可得。 [] *)
 
@@ -678,15 +672,14 @@ Proof.
 
         根据归纳假设和 [length] 的定义，上式显然可得。 [] *)
 
-(** 这些证明的风格实在是冗长而迂腐。几次练习之后，我们会发现减少细枝末节，
+(** 这些证明的风格实在是冗长而迂腐。读多了之后，我们会发现减少细枝末节，
     详述不太显然的步骤更有助于我们理解证明。毕竟细节更容易在大脑中思考，
     必要时我们还可以在草稿纸上补全。下面我们以一种更加紧凑的方式呈现之前的证明： *)
 
-(** _'定理'_：
-     对于所有 [l]，[length (rev l) = length l]。
+(** _'定理'_：对于所有 [l]，[length (rev l) = length l]。
 
-    _'证明'_：首先，观察到 [length (l ++ [n]) = S (length l)] 对一切 [l] 成立
-    （通过对 [l] 的归纳直接可得）。当 [l = n'::l'] 时，通过再次对 [l] 使用归纳，
+    _'证明'_：首先，观察到 [length (l ++ [n]) = S (length l)] 对一切 [l] 成立，
+    这一点可通过对 [l] 的归纳直接得到。当 [l = n'::l'] 时，通过再次对 [l] 使用归纳，
     然后同时使用之前观察得到的性质和归纳假设即可证明。 [] *)
 
 (** 一般而言，在不同的情况下合适的风格也会不同：读者对这个问题了解程度，
@@ -713,7 +706,7 @@ Proof.
 (* ================================================================= *)
 (** ** 列表练习，第一部分 *)
 
-(** **** 练习：3 星, standard (list_exercises)  
+(** **** 练习：3 星, standard (list_exercises) 
 
     更多有关列表的实践： *)
 
@@ -748,7 +741,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard (eqblist)  
+(** **** 练习：2 星, standard (eqblist) 
 
     填写 [eqblist] 的定义，它通过比较列表中的数字来判断是否相等。
     证明对于所有列表 [l]，[eqblist l l] 返回 [true]。 *)
@@ -806,15 +799,15 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (bag_count_sum)  
+(** **** 练习：3 星, standard, optional (bag_count_sum) 
 
     写下一个用到函数 [count] 和 [sum] 的，关于袋子的有趣定理 [bag_count_sum]，
     然后证明它。（你可能会发现该证明的难度取决于你如何定义 [count]！） *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：4 星, advanced (rev_injective)  
+(** **** 练习：4 星, advanced (rev_injective) 
 
     求证 [rev] 是单射函数，即：
 
@@ -836,10 +829,10 @@ Definition manual_grade_for_rev_injective : option (nat*string) := None.
 
 Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
   match l with
-  | nil => 42  (* 任意值！ *)
-  | a :: l' => match n =? O with
-               | true => a
-               | false => nth_bad l' (pred n)
+  | nil => 42
+  | a :: l' => match n with
+               | 0 => a
+               | S n' => nth_bad l' n'
                end
   end.
 
@@ -860,9 +853,9 @@ Inductive natoption : Type :=
 Fixpoint nth_error (l:natlist) (n:nat) : natoption :=
   match l with
   | nil => None
-  | a :: l' => match n =? O with
-               | true => Some a
-               | false => nth_error l' (pred n)
+  | a :: l' => match n with
+               | O => Some a
+               | S n' => nth_error l' n'
                end
   end.
 
@@ -885,7 +878,7 @@ Fixpoint nth_error' (l:natlist) (n:nat) : natoption :=
   end.
 
  (** Coq 的条件语句和其它语言中的一样，不过加上了一点更为一般化的特性。
-    由于布尔类型不是内建的，因此 Coq 实际上支持在_'任何'_带有两个构造子的，
+    由于 [bool] 类型不是内建的，因此 Coq 实际上支持在_'任何'_带有两个构造子的，
     归纳定义的类型上使用条件表达式。当断言（guard）求值为 [Inductive]
     定义中的第一个构造子时，它被认为是真的；当它被求值到第二个构造子时，
     则被认为是假的。 *)
@@ -937,7 +930,7 @@ Inductive id : Type :=
   | Id (n : nat).
 
 (** 本质上来说，[id] 只是一个数。但通过 [Id] 标签封装自然数来引入新的类型，
-    能让定义变得更加可读，同时我们也可以灵活地按需修改它的定义。 *)
+    能让定义变得更加可读，同时也给了我们更多的灵活性。 *)
 
 (** 我们还需要一个 [id] 的相等关系测试： *)
 
@@ -962,7 +955,7 @@ Inductive partial_map : Type :=
   | record (i : id) (v : nat) (m : partial_map).
 
 (** 此声明可以读作：“有两种方式可以构造一个 [partial_map]：用构造子 [empty]
-    表示一个空的偏映射，或通过将构造子 [record] 应用到一个键、一个值和一个既有的
+    表示一个空的偏映射，或将构造子 [record] 应用到一个键、一个值和一个既有的
     [partial_map] 来构造一个带“键-值”映射 的 [partial_map]。”*)
 
 (** [update] 函数在部分映射中覆盖给定的键以取缔原值（如该键尚不存在，
@@ -1002,7 +995,7 @@ Proof.
 (** [] *)
 End PartialMap.
 
-(** **** 练习：2 星, standard (baz_num_elts)  
+(** **** 练习：2 星, standard (baz_num_elts) 
 
     考虑以下归纳定义： *)
 
@@ -1018,4 +1011,4 @@ Inductive baz : Type :=
 Definition manual_grade_for_baz_num_elts : option (nat*string) := None.
 (** [] *)
 
-(* Sun Jan 5 03:17:34 UTC 2020 *)
+(* 2020年1月16日 *)

@@ -1,6 +1,6 @@
 (** * PE: 部分求值 *)
 
-(* 本章由單中杰（Chung-chieh Shan）撰写和维护。*)
+(* 本章由單中杰（Chung-chieh Shan）撰写并维护。*)
 
 (** [Equiv] 一章介绍了常量折叠作为程序变换的一个例子，并证明了此变换保持了程序的语义。
     常量折叠变换适用于明显的常量上，例如 [ANum] 表达式。比如说，它将命令 [Y ::= 3 + 1]
@@ -377,12 +377,12 @@ Qed.
     和初始状态到剩余程序和最终部分状态的全函数。为了对这种非停机性建模，我们
     采用和命令的完全求值相同的技术，即归纳地定义关系。我们写下
 
-      c1 / st \\ c1' / st'
+      c1 / st ==> c1' / st'
 
     意思是对源程序 [c1] 在初始状态 [st] 中部分求值产生剩余程序 [c1']
     和最终部分状态 [st']。举个例子，我们想要让
 
-      [] / (X ::= 3 ;; Y ::= Z * (X + X)) \\ (Y ::= Z * 6) / [(X,3)]
+      [] / (X ::= 3 ;; Y ::= Z * (X + X)) ==> (Y ::= Z * 6) / [(X,3)]
 
     成立。对 [X] 的赋值出现在最终部分状态中，而非剩余命令中。
 
@@ -676,43 +676,43 @@ Qed.
     [PE_AssDynamic] 和 [PE_If] 中的不等式仅仅是为了使部分求值器
     保持确定性；他们并不是正确性所需要的。*)
 
-Reserved Notation "c1 '/' st '\\' c1' '/' st'"
+Reserved Notation "c1 '/' st '==>' c1' '/' st'"
   (at level 40, st at level 39, c1' at level 39).
 
 Inductive pe_com : com -> pe_state -> com -> pe_state -> Prop :=
   | PE_Skip : forall pe_st,
-      SKIP / pe_st \\ SKIP / pe_st
+      SKIP / pe_st ==> SKIP / pe_st
   | PE_AssStatic : forall pe_st a1 n1 l,
       pe_aexp pe_st a1 = ANum n1 ->
-      (l ::= a1) / pe_st \\ SKIP / pe_add pe_st l n1
+      (l ::= a1) / pe_st ==> SKIP / pe_add pe_st l n1
   | PE_AssDynamic : forall pe_st a1 a1' l,
       pe_aexp pe_st a1 = a1' ->
       (forall n, a1' <> ANum n) ->
-      (l ::= a1) / pe_st \\ (l ::= a1') / pe_remove pe_st l
+      (l ::= a1) / pe_st ==> (l ::= a1') / pe_remove pe_st l
   | PE_Seq : forall pe_st pe_st' pe_st'' c1 c2 c1' c2',
-      c1 / pe_st  \\ c1' / pe_st' ->
-      c2 / pe_st' \\ c2' / pe_st'' ->
-      (c1 ;; c2) / pe_st \\ (c1' ;; c2') / pe_st''
+      c1 / pe_st  ==> c1' / pe_st' ->
+      c2 / pe_st' ==> c2' / pe_st'' ->
+      (c1 ;; c2) / pe_st ==> (c1' ;; c2') / pe_st''
   | PE_IfTrue : forall pe_st pe_st' b1 c1 c2 c1',
       pe_bexp pe_st b1 = BTrue ->
-      c1 / pe_st \\ c1' / pe_st' ->
-      (TEST b1 THEN c1 ELSE c2 FI) / pe_st \\ c1' / pe_st'
+      c1 / pe_st ==> c1' / pe_st' ->
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st ==> c1' / pe_st'
   | PE_IfFalse : forall pe_st pe_st' b1 c1 c2 c2',
       pe_bexp pe_st b1 = BFalse ->
-      c2 / pe_st \\ c2' / pe_st' ->
-      (TEST b1 THEN c1 ELSE c2 FI) / pe_st \\ c2' / pe_st'
+      c2 / pe_st ==> c2' / pe_st' ->
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st ==> c2' / pe_st'
   | PE_If : forall pe_st pe_st1 pe_st2 b1 c1 c2 c1' c2',
       pe_bexp pe_st b1 <> BTrue ->
       pe_bexp pe_st b1 <> BFalse ->
-      c1 / pe_st \\ c1' / pe_st1 ->
-      c2 / pe_st \\ c2' / pe_st2 ->
+      c1 / pe_st ==> c1' / pe_st1 ->
+      c2 / pe_st ==> c2' / pe_st2 ->
       (TEST b1 THEN c1 ELSE c2 FI) / pe_st
-        \\ (TEST pe_bexp pe_st b1
+        ==> (TEST pe_bexp pe_st b1
              THEN c1' ;; assign pe_st1 (pe_compare pe_st1 pe_st2)
              ELSE c2' ;; assign pe_st2 (pe_compare pe_st1 pe_st2) FI)
             / pe_removes pe_st1 (pe_compare pe_st1 pe_st2)
 
-  where "c1 '/' st '\\' c1' '/' st'" := (pe_com c1 st c1' st').
+  where "c1 '/' st '==>' c1' '/' st'" := (pe_com c1 st c1' st').
 
 Hint Constructors pe_com.
 Hint Constructors ceval.
@@ -726,13 +726,13 @@ Hint Constructors ceval.
 
 Example pe_example1:
   (X ::= 3 ;; Y ::= Z * (X + X))%imp
-  / [] \\ (SKIP;; Y ::= Z * 6)%imp / [(X,3)].
+  / [] ==> (SKIP;; Y ::= Z * 6)%imp / [(X,3)].
 Proof. eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_AssDynamic. reflexivity. intros n H. inversion H. Qed.
 
 Example pe_example2:
   (X ::= 3 ;; TEST X <= 4 THEN X ::= 4 ELSE SKIP FI)%imp
-  / [] \\ (SKIP;; SKIP)%imp / [(X,4)].
+  / [] ==> (SKIP;; SKIP)%imp / [(X,4)].
 Proof. eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_IfTrue. reflexivity.
   eapply PE_AssStatic. reflexivity. Qed.
@@ -743,12 +743,12 @@ Example pe_example3:
      Y ::= 4;;
      TEST X = Y THEN Y ::= 999 ELSE SKIP FI
    ELSE SKIP FI)%imp / []
-  \\ (SKIP;;
+  ==> (SKIP;;
        TEST Y <= 4 THEN
          (SKIP;; SKIP);; (SKIP;; Y ::= 4)
        ELSE SKIP;; SKIP FI)%imp
       / [(X,3)].
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st).
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ ==> c / st).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_If; intuition eauto; try solve_by_invert.
   econstructor. eapply PE_AssStatic. reflexivity.
@@ -760,7 +760,7 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st).
 
 (** 最后，让我们来证明这个部分求值器是正确的！ *)
 
-Reserved Notation "c' '/' pe_st' '/' st '\\' st''"
+Reserved Notation "c' '/' pe_st' '/' st '==>' st''"
   (at level 40, pe_st' at level 39, st at level 39).
 
 Inductive pe_ceval
@@ -768,16 +768,16 @@ Inductive pe_ceval
   | pe_ceval_intro : forall st',
     st =[ c' ]=> st' ->
     pe_update st' pe_st' = st'' ->
-    c' / pe_st' / st \\ st''
-  where "c' '/' pe_st' '/' st '\\' st''" := (pe_ceval c' pe_st' st st'').
+    c' / pe_st' / st ==> st''
+  where "c' '/' pe_st' '/' st '==>' st''" := (pe_ceval c' pe_st' st st'').
 
 Hint Constructors pe_ceval.
 
 Theorem pe_com_complete:
-  forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
+  forall c pe_st pe_st' c', c / pe_st ==> c' / pe_st' ->
   forall st st'',
   (pe_update st pe_st =[ c ]=> st'') ->
-  (c' / pe_st' / st \\ st'').
+  (c' / pe_st' / st ==> st'').
 Proof. intros c pe_st pe_st' c' Hpe.
   induction Hpe; intros st st'' Heval;
   try (inversion Heval; subst;
@@ -807,9 +807,9 @@ Proof. intros c pe_st pe_st' c' Hpe.
 Qed.
 
 Theorem pe_com_sound:
-  forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
+  forall c pe_st pe_st' c', c / pe_st ==> c' / pe_st' ->
   forall st st'',
-  (c' / pe_st' / st \\ st'') ->
+  (c' / pe_st' / st ==> st'') ->
   (pe_update st pe_st =[ c ]=> st'').
 Proof. intros c pe_st pe_st' c' Hpe.
   induction Hpe;
@@ -839,10 +839,10 @@ Qed.
 (** 最终的主定理。感谢 David Menendez 所贡献的这个公式！ *)
 
 Corollary pe_com_correct:
-  forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
+  forall c pe_st pe_st' c', c / pe_st ==> c' / pe_st' ->
   forall st st'',
   (pe_update st pe_st =[ c ]=> st'') <->
-  (c' / pe_st' / st \\ st'').
+  (c' / pe_st' / st ==> st'').
 Proof. intros c pe_st pe_st' c' H st st''. split.
   - (* -> *) apply pe_com_complete. apply H.
   - (* <- *) apply pe_com_sound. apply H.
@@ -899,89 +899,89 @@ Qed.
 
 Module Loop.
 
-Reserved Notation "c1 '/' st '\\' c1' '/' st' '/' c''"
+Reserved Notation "c1 '/' st '==>' c1' '/' st' '/' c''"
   (at level 40, st at level 39, c1' at level 39, st' at level 39).
 
 Inductive pe_com : com -> pe_state -> com -> pe_state -> com -> Prop :=
   | PE_Skip : forall pe_st,
-      SKIP / pe_st \\ SKIP / pe_st / SKIP
+      SKIP / pe_st ==> SKIP / pe_st / SKIP
   | PE_AssStatic : forall pe_st a1 n1 l,
       pe_aexp pe_st a1 = ANum n1 ->
-      (l ::= a1) / pe_st \\ SKIP / pe_add pe_st l n1 / SKIP
+      (l ::= a1) / pe_st ==> SKIP / pe_add pe_st l n1 / SKIP
   | PE_AssDynamic : forall pe_st a1 a1' l,
       pe_aexp pe_st a1 = a1' ->
       (forall n, a1' <> ANum n) ->
-      (l ::= a1) / pe_st \\ (l ::= a1') / pe_remove pe_st l / SKIP
+      (l ::= a1) / pe_st ==> (l ::= a1') / pe_remove pe_st l / SKIP
   | PE_Seq : forall pe_st pe_st' pe_st'' c1 c2 c1' c2' c'',
-      c1 / pe_st  \\ c1' / pe_st' / SKIP ->
-      c2 / pe_st' \\ c2' / pe_st'' / c'' ->
-      (c1 ;; c2) / pe_st \\ (c1' ;; c2') / pe_st'' / c''
+      c1 / pe_st  ==> c1' / pe_st' / SKIP ->
+      c2 / pe_st' ==> c2' / pe_st'' / c'' ->
+      (c1 ;; c2) / pe_st ==> (c1' ;; c2') / pe_st'' / c''
   | PE_IfTrue : forall pe_st pe_st' b1 c1 c2 c1' c'',
       pe_bexp pe_st b1 = BTrue ->
-      c1 / pe_st \\ c1' / pe_st' / c'' ->
-      (TEST b1 THEN c1 ELSE c2 FI) / pe_st \\ c1' / pe_st' / c''
+      c1 / pe_st ==> c1' / pe_st' / c'' ->
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st ==> c1' / pe_st' / c''
   | PE_IfFalse : forall pe_st pe_st' b1 c1 c2 c2' c'',
       pe_bexp pe_st b1 = BFalse ->
-      c2 / pe_st \\ c2' / pe_st' / c'' ->
-      (TEST b1 THEN c1 ELSE c2 FI) / pe_st \\ c2' / pe_st' / c''
+      c2 / pe_st ==> c2' / pe_st' / c'' ->
+      (TEST b1 THEN c1 ELSE c2 FI) / pe_st ==> c2' / pe_st' / c''
   | PE_If : forall pe_st pe_st1 pe_st2 b1 c1 c2 c1' c2' c'',
       pe_bexp pe_st b1 <> BTrue ->
       pe_bexp pe_st b1 <> BFalse ->
-      c1 / pe_st \\ c1' / pe_st1 / c'' ->
-      c2 / pe_st \\ c2' / pe_st2 / c'' ->
+      c1 / pe_st ==> c1' / pe_st1 / c'' ->
+      c2 / pe_st ==> c2' / pe_st2 / c'' ->
       (TEST b1 THEN c1 ELSE c2 FI) / pe_st
-        \\ (TEST pe_bexp pe_st b1
+        ==> (TEST pe_bexp pe_st b1
              THEN c1' ;; assign pe_st1 (pe_compare pe_st1 pe_st2)
              ELSE c2' ;; assign pe_st2 (pe_compare pe_st1 pe_st2) FI)
             / pe_removes pe_st1 (pe_compare pe_st1 pe_st2)
             / c''
   | PE_WhileFalse : forall pe_st b1 c1,
       pe_bexp pe_st b1 = BFalse ->
-      (WHILE b1 DO c1 END) / pe_st \\ SKIP / pe_st / SKIP
+      (WHILE b1 DO c1 END) / pe_st ==> SKIP / pe_st / SKIP
   | PE_WhileTrue : forall pe_st pe_st' pe_st'' b1 c1 c1' c2' c2'',
       pe_bexp pe_st b1 = BTrue ->
-      c1 / pe_st \\ c1' / pe_st' / SKIP ->
-      (WHILE b1 DO c1 END) / pe_st' \\ c2' / pe_st'' / c2'' ->
+      c1 / pe_st ==> c1' / pe_st' / SKIP ->
+      (WHILE b1 DO c1 END) / pe_st' ==> c2' / pe_st'' / c2'' ->
       pe_compare pe_st pe_st'' <> [] ->
-      (WHILE b1 DO c1 END) / pe_st \\ (c1';;c2') / pe_st'' / c2''
+      (WHILE b1 DO c1 END) / pe_st ==> (c1';;c2') / pe_st'' / c2''
   | PE_While : forall pe_st pe_st' pe_st'' b1 c1 c1' c2' c2'',
       pe_bexp pe_st b1 <> BFalse ->
       pe_bexp pe_st b1 <> BTrue ->
-      c1 / pe_st \\ c1' / pe_st' / SKIP ->
-      (WHILE b1 DO c1 END) / pe_st' \\ c2' / pe_st'' / c2'' ->
+      c1 / pe_st ==> c1' / pe_st' / SKIP ->
+      (WHILE b1 DO c1 END) / pe_st' ==> c2' / pe_st'' / c2'' ->
       pe_compare pe_st pe_st'' <> [] ->
       (c2'' = SKIP%imp \/ c2'' = WHILE b1 DO c1 END%imp) ->
       (WHILE b1 DO c1 END) / pe_st
-        \\ (TEST pe_bexp pe_st b1
+        ==> (TEST pe_bexp pe_st b1
              THEN c1';; c2';; assign pe_st'' (pe_compare pe_st pe_st'')
              ELSE assign pe_st (pe_compare pe_st pe_st'') FI)%imp
             / pe_removes pe_st (pe_compare pe_st pe_st'')
             / c2''
   | PE_WhileFixedEnd : forall pe_st b1 c1,
       pe_bexp pe_st b1 <> BFalse ->
-      (WHILE b1 DO c1 END) / pe_st \\ SKIP / pe_st / (WHILE b1 DO c1 END)
+      (WHILE b1 DO c1 END) / pe_st ==> SKIP / pe_st / (WHILE b1 DO c1 END)
   | PE_WhileFixedLoop : forall pe_st pe_st' pe_st'' b1 c1 c1' c2',
       pe_bexp pe_st b1 = BTrue ->
-      c1 / pe_st \\ c1' / pe_st' / SKIP ->
+      c1 / pe_st ==> c1' / pe_st' / SKIP ->
       (WHILE b1 DO c1 END) / pe_st'
-        \\ c2' / pe_st'' / (WHILE b1 DO c1 END) ->
+        ==> c2' / pe_st'' / (WHILE b1 DO c1 END) ->
       pe_compare pe_st pe_st'' = [] ->
       (WHILE b1 DO c1 END) / pe_st
-        \\ (WHILE BTrue DO SKIP END) / pe_st / SKIP
+        ==> (WHILE BTrue DO SKIP END) / pe_st / SKIP
       (* 因为这里是一个无限循环，我们实际上应该开始抛弃剩下的程序：
          (WHILE b1 DO c1 END) / pe_st
-         \\ SKIP / pe_st / (WHILE BTrue DO SKIP END) *)
+         ==> SKIP / pe_st / (WHILE BTrue DO SKIP END) *)
   | PE_WhileFixed : forall pe_st pe_st' pe_st'' b1 c1 c1' c2',
       pe_bexp pe_st b1 <> BFalse ->
       pe_bexp pe_st b1 <> BTrue ->
-      c1 / pe_st \\ c1' / pe_st' / SKIP ->
+      c1 / pe_st ==> c1' / pe_st' / SKIP ->
       (WHILE b1 DO c1 END) / pe_st'
-        \\ c2' / pe_st'' / (WHILE b1 DO c1 END) ->
+        ==> c2' / pe_st'' / (WHILE b1 DO c1 END) ->
       pe_compare pe_st pe_st'' = [] ->
       (WHILE b1 DO c1 END) / pe_st
-        \\ (WHILE pe_bexp pe_st b1 DO c1';; c2' END) / pe_st / SKIP
+        ==> (WHILE pe_bexp pe_st b1 DO c1';; c2' END) / pe_st / SKIP
 
-  where "c1 '/' st '\\' c1' '/' st' '/' c''" := (pe_com c1 st c1' st' c'').
+  where "c1 '/' st '==>' c1' '/' st' '/' c''" := (pe_com c1 st c1' st' c'').
 
 Hint Constructors pe_com.
 
@@ -1004,22 +1004,22 @@ Definition square_loop: com :=
 
 Example pe_loop_example1:
   square_loop / []
-  \\ (WHILE 1 <= X DO
+  ==> (WHILE 1 <= X DO
          (Y ::= Y * Y;;
           X ::= X - 1);; SKIP
        END)%imp / [] / SKIP.
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ ==> c / st / SKIP).
   step PE_WhileFixed. step PE_WhileFixedEnd. reflexivity.
   reflexivity. reflexivity. Qed.
 
 Example pe_loop_example2:
   (X ::= 3;; square_loop)%imp / []
-  \\ (SKIP;;
+  ==> (SKIP;;
        (Y ::= Y * Y;; SKIP);;
        (Y ::= Y * Y;; SKIP);;
        (Y ::= Y * Y;; SKIP);;
        SKIP)%imp / [(X,0)] / SKIP%imp.
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ ==> c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_WhileTrue.
   step PE_WhileTrue.
@@ -1030,7 +1030,7 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
 
 Example pe_loop_example3:
   (Z ::= 3;; subtract_slowly) / []
-  \\ (SKIP;;
+  ==> (SKIP;;
        TEST ~(X = 0) THEN
          (SKIP;; X ::= X - 1);;
          TEST ~(X = 0) THEN
@@ -1044,7 +1044,7 @@ Example pe_loop_example3:
            ELSE SKIP;; Z ::= 1 FI;; SKIP
          ELSE SKIP;; Z ::= 2 FI;; SKIP
        ELSE SKIP;; Z ::= 3 FI)%imp / [] / SKIP.
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ ==> c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_While.
   step PE_While.
@@ -1058,8 +1058,8 @@ Example pe_loop_example4:
   (X ::= 0;;
    WHILE X <= 2 DO
      X ::= 1 - X
-   END)%imp / [] \\ (SKIP;; WHILE true DO SKIP END)%imp / [(X,0)] / SKIP.
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
+   END)%imp / [] ==> (SKIP;; WHILE true DO SKIP END)%imp / [(X,0)] / SKIP.
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ ==> c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_WhileFixedLoop.
   step PE_WhileTrue.
@@ -1072,42 +1072,42 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
 (** 由于部分求值器可以展开一个循环 n 次，其中 n 是一个大于一的有限整数，为了证明其
     正确性我们需要对循环体动态求值的次数进行归纳，而非结构地对动态求值归纳。*)
 
-Reserved Notation "c1 '/' st '\\' st' '#' n"
+Reserved Notation "c1 '/' st '==>' st' '#' n"
   (at level 40, st at level 39, st' at level 39).
 
 Inductive ceval_count : com -> state -> state -> nat -> Prop :=
   | E'Skip : forall st,
-      SKIP / st \\ st # 0
+      SKIP / st ==> st # 0
   | E'Ass  : forall st a1 n l,
       aeval st a1 = n ->
-      (l ::= a1) / st \\ (t_update st l n) # 0
+      (l ::= a1) / st ==> (t_update st l n) # 0
   | E'Seq : forall c1 c2 st st' st'' n1 n2,
-      c1 / st  \\ st'  # n1 ->
-      c2 / st' \\ st'' # n2 ->
-      (c1 ;; c2) / st \\ st'' # (n1 + n2)
+      c1 / st  ==> st'  # n1 ->
+      c2 / st' ==> st'' # n2 ->
+      (c1 ;; c2) / st ==> st'' # (n1 + n2)
   | E'IfTrue : forall st st' b1 c1 c2 n,
       beval st b1 = true ->
-      c1 / st \\ st' # n ->
-      (TEST b1 THEN c1 ELSE c2 FI) / st \\ st' # n
+      c1 / st ==> st' # n ->
+      (TEST b1 THEN c1 ELSE c2 FI) / st ==> st' # n
   | E'IfFalse : forall st st' b1 c1 c2 n,
       beval st b1 = false ->
-      c2 / st \\ st' # n ->
-      (TEST b1 THEN c1 ELSE c2 FI) / st \\ st' # n
+      c2 / st ==> st' # n ->
+      (TEST b1 THEN c1 ELSE c2 FI) / st ==> st' # n
   | E'WhileFalse : forall b1 st c1,
       beval st b1 = false ->
-      (WHILE b1 DO c1 END) / st \\ st # 0
+      (WHILE b1 DO c1 END) / st ==> st # 0
   | E'WhileTrue : forall st st' st'' b1 c1 n1 n2,
       beval st b1 = true ->
-      c1 / st \\ st' # n1 ->
-      (WHILE b1 DO c1 END) / st' \\ st'' # n2 ->
-      (WHILE b1 DO c1 END) / st \\ st'' # S (n1 + n2)
+      c1 / st ==> st' # n1 ->
+      (WHILE b1 DO c1 END) / st' ==> st'' # n2 ->
+      (WHILE b1 DO c1 END) / st ==> st'' # S (n1 + n2)
 
-  where "c1 '/' st '\\' st' # n" := (ceval_count c1 st st' n).
+  where "c1 '/' st '==>' st' # n" := (ceval_count c1 st st' n).
 
 Hint Constructors ceval_count.
 
 Theorem ceval_count_complete: forall c st st',
-  st =[ c ]=> st' -> exists n, c / st \\ st' # n.
+  st =[ c ]=> st' -> exists n, c / st ==> st' # n.
 Proof. intros c st st' Heval.
   induction Heval;
     try inversion IHHeval1;
@@ -1116,7 +1116,7 @@ Proof. intros c st st' Heval.
     eauto. Qed.
 
 Theorem ceval_count_sound: forall c st st' n,
-  c / st \\ st' # n -> st =[ c ]=> st'.
+  c / st ==> st' # n -> st =[ c ]=> st'.
 Proof. intros c st st' n Heval. induction Heval; eauto. Qed.
 
 Theorem pe_compare_nil_lookup: forall pe_st1 pe_st2,
@@ -1135,7 +1135,7 @@ Proof. intros pe_st1 pe_st2 H st.
   apply pe_compare_nil_lookup with (V:=V) in H.
   rewrite H. reflexivity. Qed.
 
-Reserved Notation "c' '/' pe_st' '/' c'' '/' st '\\' st'' '#' n"
+Reserved Notation "c' '/' pe_st' '/' c'' '/' st '==>' st'' '#' n"
   (at level 40, pe_st' at level 39, c'' at level 39,
    st at level 39, st'' at level 39).
 
@@ -1143,26 +1143,26 @@ Inductive pe_ceval_count (c':com) (pe_st':pe_state) (c'':com)
                          (st:state) (st'':state) (n:nat) : Prop :=
   | pe_ceval_count_intro : forall st' n',
     st =[ c' ]=> st' ->
-    c'' / pe_update st' pe_st' \\ st'' # n' ->
+    c'' / pe_update st' pe_st' ==> st'' # n' ->
     n' <= n ->
-    c' / pe_st' / c'' / st \\ st'' # n
-  where "c' '/' pe_st' '/' c'' '/' st '\\' st'' '#' n" :=
+    c' / pe_st' / c'' / st ==> st'' # n
+  where "c' '/' pe_st' '/' c'' '/' st '==>' st'' '#' n" :=
         (pe_ceval_count c' pe_st' c'' st st'' n).
 
 Hint Constructors pe_ceval_count.
 
 Lemma pe_ceval_count_le: forall c' pe_st' c'' st st'' n n',
   n' <= n ->
-  c' / pe_st' / c'' / st \\ st'' # n' ->
-  c' / pe_st' / c'' / st \\ st'' # n.
+  c' / pe_st' / c'' / st ==> st'' # n' ->
+  c' / pe_st' / c'' / st ==> st'' # n.
 Proof. intros c' pe_st' c'' st st'' n n' Hle H. inversion H.
   econstructor; try eassumption. omega. Qed.
 
 Theorem pe_com_complete:
-  forall c pe_st pe_st' c' c'', c / pe_st \\ c' / pe_st' / c'' ->
+  forall c pe_st pe_st' c' c'', c / pe_st ==> c' / pe_st' / c'' ->
   forall st st'' n,
-  (c / pe_update st pe_st \\ st'' # n) ->
-  (c' / pe_st' / c'' / st \\ st'' # n).
+  (c / pe_update st pe_st ==> st'' # n) ->
+  (c' / pe_st' / c'' / st ==> st'' # n).
 Proof. intros c pe_st pe_st' c' c'' Hpe.
   induction Hpe; intros st st'' n Heval;
   try (inversion Heval; subst;
@@ -1234,9 +1234,9 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
 Qed.
 
 Theorem pe_com_sound:
-  forall c pe_st pe_st' c' c'', c / pe_st \\ c' / pe_st' / c'' ->
+  forall c pe_st pe_st' c' c'', c / pe_st ==> c' / pe_st' / c'' ->
   forall st st'' n,
-  (c' / pe_st' / c'' / st \\ st'' # n) ->
+  (c' / pe_st' / c'' / st ==> st'' # n) ->
   (pe_update st pe_st =[ c ]=> st'').
 Proof. intros c pe_st pe_st' c' c'' Hpe.
   induction Hpe;
@@ -1309,7 +1309,7 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
 Qed.
 
 Corollary pe_com_correct:
-  forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' / SKIP ->
+  forall c pe_st pe_st' c', c / pe_st ==> c' / pe_st' / SKIP ->
   forall st st'',
   (pe_update st pe_st =[ c ]=> st'') <->
   (exists st', st =[ c' ]=> st' /\ pe_update st' pe_st' = st'').
@@ -1529,4 +1529,4 @@ Proof. intros.
 Qed.
 
 
-(* Sun Jan 5 03:18:38 UTC 2020 *)
+(* 2020年1月16日 *)

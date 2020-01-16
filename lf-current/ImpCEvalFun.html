@@ -2,239 +2,245 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
 <title>ImpCEvalFun: Imp 的求值函数</title>
-</head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+</head>
 
 <body>
 
 <div id="page">
 
 <div id="header">
-<a href='https://coq-zh.github.io/SF-zh/index.html'>
-<img src='common/media/image/sf_logo_sm.png'></a>
-</br><a href='index.html'>  <span class='booktitleinheader'>Volume 1: 逻辑基础</span><br></br>
+<div id='logoinheader'><a href='https://coq-zh.github.io/SF-zh/'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 1: 逻辑基础</a></div>
 <ul id='menu'>
-   <a href='toc.html'><li class='section_name'>目录</li></a>
-   <a href='coqindex.html'><li class='section_name'>索引</li></a>
-   <a href='deps.html'><li class='section_name'>路线</li></a>
+   <li class='section_name'><a href='toc.html'>目录</a></li>
+   <li class='section_name'><a href='coqindex.html'>索引</a></li>
+   <li class='section_name'><a href='deps.html'>路线</a></li>
 </ul>
-</a></div>
+</div>
 
 <div id="main">
 
 <h1 class="libtitle">ImpCEvalFun<span class="subtitle">Imp 的求值函数</span></h1>
 
+<div class="code">
+</div>
 
 <div class="doc">
 
 <div class="paragraph"> </div>
 
- 在<a href="Imp.html"><span class="inlineref">Imp</span></a>一章中我们已经见到了直接为 <span class="inlinecode"><span class="id" type="var">Imp</span></span> 定义求值函数时会遇到的困难。
+ 在<a href="Imp.html"><span class="inlineref">Imp</span></a>一章中我们已经见到了直接为 <span class="inlinecode"><span class="id" title="var">Imp</span></span> 定义求值函数时会遇到的困难。
     当时为了规避这些困难，我们选择了定义求值关系而不是函数。
-    而在这一可选的章节中，我们会再次讨论能够实现 <span class="inlinecode"><span class="id" type="var">Imp</span></span> 求值函数的方法。 
+    而在这一可选的章节中，我们会再次讨论能够实现 <span class="inlinecode"><span class="id" title="var">Imp</span></span> 求值函数的方法。 
 </div>
 
 <div class="doc">
-<a name="lab382"></a><h1 class="section">一个无法完成的求值器</h1>
+<a name="lab385"></a><h1 class="section">一个无法完成的求值器</h1>
 
 </div>
-<div class="code code-space">
+<div class="code">
 
 <br/>
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">omega.Omega</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Arith.Arith</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">LF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Imp</span> <span class="id" type="var">Maps</span>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.omega.Omega.html#"><span class="id" title="library">omega.Omega</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.Arith.html#"><span class="id" title="library">Arith.Arith</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">LF</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Imp.html#"><span class="id" title="library">Imp</span></a> <a class="idref" href="Maps.html#"><span class="id" title="library">Maps</span></a>.<br/>
 </div>
 
 <div class="doc">
-在初次为指令编写求值函数时，我们写出了如下忽略了 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 的代码： 
+在初次为指令编写求值函数时，我们写出了如下忽略了 <span class="inlinecode"><span class="id" title="var">WHILE</span></span> 的代码： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">ceval_step1</span> (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) : <span class="id" type="var">state</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">l</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">a<sub>1</sub></span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">l</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">aeval</span> <span class="id" type="var">st</span> <span class="id" type="var">a<sub>1</sub></span> ; <span class="id" type="var">st</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">st'</span> := <span class="id" type="var">ceval_step1</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval_step1</span> <span class="id" type="var">st'</span> <span class="id" type="var">c<sub>2</sub></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TEST</span> <span class="id" type="var">b</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">ceval_step1</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">ceval_step1</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>2</sub></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">WHILE</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">DO</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">END</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st</span>  <span class="comment">(*&nbsp;bogus&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
-<span class="id" type="var">Close</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
+<br/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">imp_scope</span>.<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="ceval_step1"><span class="id" title="definition">ceval_step1</span></a> (<span class="id" title="var">st</span> : <a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a>) (<span class="id" title="var">c</span> : <a class="idref" href="Imp.html#com"><span class="id" title="inductive">com</span></a>) : <a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#9838f34589a76e1d4e404cd35557c73e"><span class="id" title="notation">SKIP</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">l</span> <a class="idref" href="Imp.html#1415d381b898f10db78e714a0a964c<sub>11</sub>"><span class="id" title="notation"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span></a> <span class="id" title="var">a<sub>1</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">l</span> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Imp.html#aeval"><span class="id" title="definition">aeval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">a<sub>1</sub></span> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#5604146224f04ce8ff933bc02eb29824"><span class="id" title="notation">;;</span></a> <span class="id" title="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">st'</span> := <a class="idref" href="ImpCEvalFun.html#ceval_step1"><span class="id" title="definition">ceval_step1</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#ceval_step1"><span class="id" title="definition">ceval_step1</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a> <span class="id" title="var">c<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">TEST</span></a> <span class="id" title="var">b</span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">THEN</span></a> <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">ELSE</span></a> <span class="id" title="var">c<sub>2</sub></span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">FI</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">b</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> <a class="idref" href="ImpCEvalFun.html#ceval_step1"><span class="id" title="definition">ceval_step1</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="ImpCEvalFun.html#ceval_step1"><span class="id" title="definition">ceval_step1</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">WHILE</span></a> <span class="id" title="var">b<sub>1</sub></span> <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">DO</span></a> <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">END</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a>  <span class="comment">(*&nbsp;bogus&nbsp;*)</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Close</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">imp_scope</span>.<br/>
 </div>
 
 <div class="doc">
 如<a href="Imp.html"><span class="inlineref">Imp</span></a>一章中所言，在 ML 或 Haskell 这类传统的函数式语言中，
-  我们可以这样处理 <span class="inlinecode"><span class="id" type="var">WHILE</span></span> 指令：
+  我们可以这样处理 <span class="inlinecode"><span class="id" title="var">WHILE</span></span> 指令：
 <pre>
     | WHILE b<sub>1</sub> DO c<sub>1</sub> END =&gt;
         if (beval st b<sub>1</sub>) then
           ceval_step1 st (c<sub>1</sub>;; WHILE b<sub>1</sub> DO c<sub>1</sub> END)
         else st
 </pre>
-    Coq 不会接受此定义（它会提示出现错误 <span class="inlinecode"><span class="id" type="var">Error</span>:</span> <span class="inlinecode"><span class="id" type="var">Cannot</span></span> <span class="inlinecode"><span class="id" type="var">guess</span></span>
-    <span class="inlinecode"><span class="id" type="var">decreasing</span></span> <span class="inlinecode"><span class="id" type="var">argument</span></span> <span class="inlinecode"><span class="id" type="var">of</span></span> <span class="inlinecode"><span class="id" type="var">fix</span></span>），因为我们想要定义的函数无需保证一定停机。
-    确实，修改后的 <span class="inlinecode"><span class="id" type="var">ceval_step1</span></span> 应用到 <span class="inlinecode"><span class="id" type="var">Imp.v</span></span> 中的 <span class="inlinecode"><span class="id" type="var">loop</span></span> 程序时永远不会停机。
+    Coq 不会接受此定义（它会提示出现错误 <span class="inlinecode"><span class="id" title="var">Error</span>:</span> <span class="inlinecode"><span class="id" title="var">Cannot</span></span> <span class="inlinecode"><span class="id" title="var">guess</span></span>
+    <span class="inlinecode"><span class="id" title="var">decreasing</span></span> <span class="inlinecode"><span class="id" title="var">argument</span></span> <span class="inlinecode"><span class="id" title="keyword">of</span></span> <span class="inlinecode"><span class="id" title="keyword">fix</span></span>），因为我们想要定义的函数无需保证一定停机。
+    确实，修改后的 <span class="inlinecode"><span class="id" title="var">ceval_step1</span></span> 应用到 <span class="inlinecode"><span class="id" title="var">Imp.v</span></span> 中的 <span class="inlinecode"><span class="id" title="var">loop</span></span> 程序时永远不会停机。
     因为 Coq 不仅是一个函数式编程语言，还拥有逻辑一致性，
     因此任何有可能不会停机的函数都会被拒绝。下面是一段无效的(!) Coq
     程序，它展示了假如 Coq 允许不停机的递归函数时会产生什么错误：
 <pre>
      Fixpoint loop_false (n : nat) : False := loop_false n.
 </pre>
-    也就是说，像 <span class="inlinecode"><span class="id" type="var">False</span></span> 这样的命题会变成可证的（例如 <span class="inlinecode"><span class="id" type="var">loop_false</span></span> <span class="inlinecode">0</span>
-    就是个对 <span class="inlinecode"><span class="id" type="var">False</span></span> 的证明），这对 Coq 的逻辑一致性来说是一场灾难。
+    也就是说，像 <span class="inlinecode"><span class="id" title="var">False</span></span> 这样的命题会变成可证的（例如 <span class="inlinecode"><span class="id" title="var">loop_false</span></span> <span class="inlinecode">0</span>
+    就是个对 <span class="inlinecode"><span class="id" title="var">False</span></span> 的证明），这对 Coq 的逻辑一致性来说是一场灾难。
 
 <div class="paragraph"> </div>
 
     由于它不会对所有的输入停机，因此至少在不借助附加技巧的情况下，
-    <span class="inlinecode"><span class="id" type="var">ceval_step1</span></span> 的完整版本无法用 Coq 写出... 
+    <span class="inlinecode"><span class="id" title="var">ceval_step1</span></span> 的完整版本无法用 Coq 写出... 
 </div>
 
 <div class="doc">
-<a name="lab383"></a><h1 class="section">一个计步的求值器</h1>
+<a name="lab386"></a><h1 class="section">一个计步的求值器</h1>
 
 <div class="paragraph"> </div>
 
- 我们需要的技巧是将一个<b>附加</b>的参数传入求值函数中来告诉它需要运行多久。
+ 我们需要的技巧是将一个<i>'附加'</i>的参数传入求值函数中来告诉它需要运行多久。
     非正式地说，我们会在求值器的“油箱”中加一定数量的“汽油”，
-    然后允许它运行到按一般的方式终止<b>或者</b>耗尽汽油，
+    然后允许它运行到按一般的方式终止<i>'或者'</i>耗尽汽油，
     此时我们会停止求值并说最终结果为空内存（empty memory）。
-    （我们也可以说当前的状态为求值器耗尽了汽油 &mdash; 这无关紧要，
+    （我们也可以说当前的状态为求值器耗尽了汽油 -- 这无关紧要，
     因为无论在哪种情况下结果都是错误的！） 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">ceval_step2</span> (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) (<span class="id" type="var">i</span> : <span class="id" type="var">nat</span>) : <span class="id" type="var">state</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">empty_st</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">i'</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">l</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">a<sub>1</sub></span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">l</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">aeval</span> <span class="id" type="var">st</span> <span class="id" type="var">a<sub>1</sub></span> ; <span class="id" type="var">st</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">let</span> <span class="id" type="var">st'</span> := <span class="id" type="var">ceval_step2</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval_step2</span> <span class="id" type="var">st'</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TEST</span> <span class="id" type="var">b</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">ceval_step2</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">ceval_step2</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">WHILE</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">DO</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">END</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b<sub>1</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="keyword">let</span> <span class="id" type="var">st'</span> := <span class="id" type="var">ceval_step2</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span> <span class="id" type="keyword">in</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval_step2</span> <span class="id" type="var">st'</span> <span class="id" type="var">c</span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">st</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
-<span class="id" type="var">Close</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
+<br/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">imp_scope</span>.<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="ceval_step2"><span class="id" title="definition">ceval_step2</span></a> (<span class="id" title="var">st</span> : <a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a>) (<span class="id" title="var">c</span> : <a class="idref" href="Imp.html#com"><span class="id" title="inductive">com</span></a>) (<span class="id" title="var">i</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ImpCEvalFun.html#i"><span class="id" title="variable">i</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a> ⇒ <a class="idref" href="Imp.html#empty_st"><span class="id" title="definition">empty_st</span></a><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">i'</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#9838f34589a76e1d4e404cd35557c73e"><span class="id" title="notation">SKIP</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">l</span> <a class="idref" href="Imp.html#1415d381b898f10db78e714a0a964c<sub>11</sub>"><span class="id" title="notation"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span></a> <span class="id" title="var">a<sub>1</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">l</span> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Imp.html#aeval"><span class="id" title="definition">aeval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">a<sub>1</sub></span> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#5604146224f04ce8ff933bc02eb29824"><span class="id" title="notation">;;</span></a> <span class="id" title="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">let</span> <span class="id" title="var">st'</span> := <a class="idref" href="ImpCEvalFun.html#ceval_step2"><span class="id" title="definition">ceval_step2</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#ceval_step2"><span class="id" title="definition">ceval_step2</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a> <span class="id" title="var">c<sub>2</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">TEST</span></a> <span class="id" title="var">b</span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">THEN</span></a> <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">ELSE</span></a> <span class="id" title="var">c<sub>2</sub></span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">FI</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">b</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> <a class="idref" href="ImpCEvalFun.html#ceval_step2"><span class="id" title="definition">ceval_step2</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="ImpCEvalFun.html#ceval_step2"><span class="id" title="definition">ceval_step2</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>2</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">WHILE</span></a> <span class="id" title="var">b<sub>1</sub></span> <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">DO</span></a> <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">END</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">b<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> <span class="id" title="keyword">let</span> <span class="id" title="var">st'</span> := <a class="idref" href="ImpCEvalFun.html#ceval_step2"><span class="id" title="definition">ceval_step2</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#ceval_step2"><span class="id" title="definition">ceval_step2</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Close</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">imp_scope</span>.<br/>
 </div>
 
 <div class="doc">
-<b>'注意</b>：很容易想到这里的索引 <span class="inlinecode"><span class="id" type="var">i</span></span> 是用来计算“求值的步数”的。
+<i>'注意'</i>：很容易想到这里的索引 <span class="inlinecode"><span class="id" title="var">i</span></span> 是用来计算“求值的步数”的。
     然而我们仔细研究就会发现实际并非如此。例如，在串连的规则中，同一个
-    <span class="inlinecode"><span class="id" type="var">i</span></span> 被传入了两个递归调用中。正确地理解 <span class="inlinecode"><span class="id" type="var">i</span></span> 对于 <span class="inlinecode"><span class="id" type="var">ceval__ceval_step</span></span>
+    <span class="inlinecode"><span class="id" title="var">i</span></span> 被传入了两个递归调用中。正确地理解 <span class="inlinecode"><span class="id" title="var">i</span></span> 对于 <span class="inlinecode"><span class="id" title="var">ceval__ceval_step</span></span>
     的正式名分重要，它会在下面的练习中给出。
 
 <div class="paragraph"> </div>
 
     此求值器不太好的一点就是我们无法根据其结果说它是否停止，
     因为程序可能是正常停机，也可能是耗尽了汽油。我们的下下一个版本会返回一个
-    <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">state</span></span> 而非只是一个 <span class="inlinecode"><span class="id" type="var">state</span></span>，这样我们就能区分正常和异常的停机了。 
+    <span class="inlinecode"><span class="id" title="var">option</span></span> <span class="inlinecode"><span class="id" title="var">state</span></span> 而非只是一个 <span class="inlinecode"><span class="id" title="var">state</span></span>，这样我们就能区分正常和异常的停机了。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">ceval_step3</span> (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) (<span class="id" type="var">i</span> : <span class="id" type="var">nat</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">option</span> <span class="id" type="var">state</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">None</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">i'</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Some</span> <span class="id" type="var">st</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">l</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">a<sub>1</sub></span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Some</span> (<span class="id" type="var">l</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">aeval</span> <span class="id" type="var">st</span> <span class="id" type="var">a<sub>1</sub></span> ; <span class="id" type="var">st</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> (<span class="id" type="var">ceval_step3</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span>) <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">st'</span> ⇒ <span class="id" type="var">ceval_step3</span> <span class="id" type="var">st'</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TEST</span> <span class="id" type="var">b</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">ceval_step3</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">ceval_step3</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">WHILE</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">DO</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">END</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b<sub>1</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="keyword">match</span> (<span class="id" type="var">ceval_step3</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span>) <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">st'</span> ⇒ <span class="id" type="var">ceval_step3</span> <span class="id" type="var">st'</span> <span class="id" type="var">c</span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">Some</span> <span class="id" type="var">st</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
-<span class="id" type="var">Close</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
+<br/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">imp_scope</span>.<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="ceval_step3"><span class="id" title="definition">ceval_step3</span></a> (<span class="id" title="var">st</span> : <a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a>) (<span class="id" title="var">c</span> : <a class="idref" href="Imp.html#com"><span class="id" title="inductive">com</span></a>) (<span class="id" title="var">i</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> <a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ImpCEvalFun.html#i"><span class="id" title="variable">i</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">i'</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#9838f34589a76e1d4e404cd35557c73e"><span class="id" title="notation">SKIP</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">l</span> <a class="idref" href="Imp.html#1415d381b898f10db78e714a0a964c<sub>11</sub>"><span class="id" title="notation"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span></a> <span class="id" title="var">a<sub>1</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> (<span class="id" title="var">l</span> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Imp.html#aeval"><span class="id" title="definition">aeval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">a<sub>1</sub></span> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#5604146224f04ce8ff933bc02eb29824"><span class="id" title="notation">;;</span></a> <span class="id" title="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> (<a class="idref" href="ImpCEvalFun.html#ceval_step3"><span class="id" title="definition">ceval_step3</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <span class="id" title="var">st'</span> ⇒ <a class="idref" href="ImpCEvalFun.html#ceval_step3"><span class="id" title="definition">ceval_step3</span></a> <span class="id" title="var">st'</span> <span class="id" title="var">c<sub>2</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">TEST</span></a> <span class="id" title="var">b</span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">THEN</span></a> <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">ELSE</span></a> <span class="id" title="var">c<sub>2</sub></span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">FI</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">b</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> <a class="idref" href="ImpCEvalFun.html#ceval_step3"><span class="id" title="definition">ceval_step3</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="ImpCEvalFun.html#ceval_step3"><span class="id" title="definition">ceval_step3</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>2</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">WHILE</span></a> <span class="id" title="var">b<sub>1</sub></span> <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">DO</span></a> <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">END</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">b<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> <span class="id" title="keyword">match</span> (<a class="idref" href="ImpCEvalFun.html#ceval_step3"><span class="id" title="definition">ceval_step3</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <span class="id" title="var">st'</span> ⇒ <a class="idref" href="ImpCEvalFun.html#ceval_step3"><span class="id" title="definition">ceval_step3</span></a> <span class="id" title="var">st'</span> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Close</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">imp_scope</span>.<br/>
 </div>
 
 <div class="doc">
 我们可以引入一些辅助记法来隐藏对可选状态进行重复匹配的复杂工作，
     从而提高此版本的可读性。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Notation</span> "'LETOPT' x &lt;== e<sub>1</sub> 'IN' e<sub>2</sub>"<br/>
-&nbsp;&nbsp;&nbsp;:= (<span class="id" type="keyword">match</span> <span class="id" type="var">e<sub>1</sub></span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">x</span> ⇒ <span class="id" type="var">e<sub>2</sub></span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">None</span> ⇒ <span class="id" type="var">None</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>)<br/>
-&nbsp;&nbsp;&nbsp;(<span class="id" type="var">right</span> <span class="id" type="var">associativity</span>, <span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 60).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Open</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">ceval_step</span> (<span class="id" type="var">st</span> : <span class="id" type="var">state</span>) (<span class="id" type="var">c</span> : <span class="id" type="var">com</span>) (<span class="id" type="var">i</span> : <span class="id" type="var">nat</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" type="var">option</span> <span class="id" type="var">state</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">None</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">i'</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">c</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">SKIP</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Some</span> <span class="id" type="var">st</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">l</span> <span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span> <span class="id" type="var">a<sub>1</sub></span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Some</span> (<span class="id" type="var">l</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">aeval</span> <span class="id" type="var">st</span> <span class="id" type="var">a<sub>1</sub></span> ; <span class="id" type="var">st</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">c<sub>1</sub></span> ;; <span class="id" type="var">c<sub>2</sub></span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">LETOPT</span> <span class="id" type="var">st'</span> &lt;== <span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span> <span class="id" type="var">IN</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval_step</span> <span class="id" type="var">st'</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">TEST</span> <span class="id" type="var">b</span> <span class="id" type="var">THEN</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">ELSE</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">FI</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>2</sub></span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" type="var">WHILE</span> <span class="id" type="var">b<sub>1</sub></span> <span class="id" type="var">DO</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">END</span> ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">if</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b<sub>1</sub></span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">then</span> <span class="id" type="var">LETOPT</span> <span class="id" type="var">st'</span> &lt;== <span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span> <span class="id" type="var">IN</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">ceval_step</span> <span class="id" type="var">st'</span> <span class="id" type="var">c</span> <span class="id" type="var">i'</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">else</span> <span class="id" type="var">Some</span> <span class="id" type="var">st</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span><br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
-<span class="id" type="var">Close</span> <span class="id" type="keyword">Scope</span> <span class="id" type="var">imp_scope</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">test_ceval</span> (<span class="id" type="var">st</span>:<span class="id" type="var">state</span>) (<span class="id" type="var">c</span>:<span class="id" type="var">com</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span> 500 <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">None</span>    ⇒ <span class="id" type="var">None</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">Some</span> <span class="id" type="var">st</span> ⇒ <span class="id" type="var">Some</span> (<span class="id" type="var">st</span> <span class="id" type="var">X</span>, <span class="id" type="var">st</span> <span class="id" type="var">Y</span>, <span class="id" type="var">st</span> <span class="id" type="var">Z</span>)<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<br/>
+<span class="id" title="keyword">Notation</span> <a name="32725f18d6c8b402015256b8daea2812"><span class="id" title="notation">&quot;</span></a>'LETOPT' x &lt;== e<sub>1</sub> 'IN' e<sub>2</sub>"<br/>
+&nbsp;&nbsp;&nbsp;:= (<span class="id" title="keyword">match</span> <span class="id" title="var">e<sub>1</sub></span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <span class="id" title="var">x</span> ⇒ <span class="id" title="var">e<sub>2</sub></span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>)<br/>
+&nbsp;&nbsp;&nbsp;(<span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>, <span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 60).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">imp_scope</span>.<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="ceval_step"><span class="id" title="definition">ceval_step</span></a> (<span class="id" title="var">st</span> : <a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a>) (<span class="id" title="var">c</span> : <a class="idref" href="Imp.html#com"><span class="id" title="inductive">com</span></a>) (<span class="id" title="var">i</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> <a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ImpCEvalFun.html#i"><span class="id" title="variable">i</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">i'</span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#9838f34589a76e1d4e404cd35557c73e"><span class="id" title="notation">SKIP</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">l</span> <a class="idref" href="Imp.html#1415d381b898f10db78e714a0a964c<sub>11</sub>"><span class="id" title="notation"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span></span></a> <span class="id" title="var">a<sub>1</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> (<span class="id" title="var">l</span> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Imp.html#aeval"><span class="id" title="definition">aeval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">a<sub>1</sub></span> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#5604146224f04ce8ff933bc02eb29824"><span class="id" title="notation">;;</span></a> <span class="id" title="var">c<sub>2</sub></span> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#32725f18d6c8b402015256b8daea2812"><span class="id" title="notation">LETOPT</span></a> <span class="id" title="var">st'</span> <a class="idref" href="ImpCEvalFun.html#32725f18d6c8b402015256b8daea2812"><span class="id" title="notation">&lt;==</span></a> <a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span> <a class="idref" href="ImpCEvalFun.html#32725f18d6c8b402015256b8daea2812"><span class="id" title="notation">IN</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a> <span class="id" title="var">c<sub>2</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">TEST</span></a> <span class="id" title="var">b</span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">THEN</span></a> <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">ELSE</span></a> <span class="id" title="var">c<sub>2</sub></span> <a class="idref" href="Imp.html#f24c9b004b84dc97722b1c3c18c5829f"><span class="id" title="notation">FI</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">b</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> <a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>2</sub></span> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">WHILE</span></a> <span class="id" title="var">b<sub>1</sub></span> <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">DO</span></a> <span class="id" title="var">c<sub>1</sub></span> <a class="idref" href="Imp.html#83a07334581e0deb166d05032f77769f"><span class="id" title="notation">END</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">if</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">b<sub>1</sub></span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">then</span> <a class="idref" href="ImpCEvalFun.html#32725f18d6c8b402015256b8daea2812"><span class="id" title="notation">LETOPT</span></a> <span class="id" title="var">st'</span> <a class="idref" href="ImpCEvalFun.html#32725f18d6c8b402015256b8daea2812"><span class="id" title="notation">&lt;==</span></a> <a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span> <a class="idref" href="ImpCEvalFun.html#32725f18d6c8b402015256b8daea2812"><span class="id" title="notation">IN</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <span class="id" title="var">i'</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Close</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">imp_scope</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="test_ceval"><span class="id" title="definition">test_ceval</span></a> (<span class="id" title="var">st</span>:<a class="idref" href="Imp.html#state"><span class="id" title="definition">state</span></a>) (<span class="id" title="var">c</span>:<a class="idref" href="Imp.html#com"><span class="id" title="inductive">com</span></a>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> 500 <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>    ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <span class="id" title="var">st</span> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">(</span></a><a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="Imp.html#X"><span class="id" title="definition">X</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="Imp.html#Y"><span class="id" title="definition">Y</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="Imp.html#Z"><span class="id" title="definition">Z</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">)</span></a><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
 <span class="comment">(*&nbsp;Compute<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(test_ceval&nbsp;empty_st<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(X&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;2;;<br/>
@@ -247,14 +253,15 @@
 </div>
 
 <div class="doc">
-<a name="lab384"></a><h4 class="section">练习：2 星, standard, recommended (pup_to_n)</h4>
- 编写一个 Imp 程序对 <span class="inlinecode">1</span> 到 <span class="inlinecode"><span class="id" type="var">X</span></span> 求和（即 <span class="inlinecode">1</span> <span class="inlinecode">+</span> <span class="inlinecode">2</span> <span class="inlinecode">+</span> <span class="inlinecode">...</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">X</span></span>）并赋值给 <span class="inlinecode"><span class="id" type="var">Y</span></span>。
+<a name="lab387"></a><h4 class="section">练习：2 星, standard, recommended (pup_to_n)</h4>
+ 编写一个 Imp 程序对 <span class="inlinecode">1</span> 到 <span class="inlinecode"><span class="id" title="var">X</span></span> 求和（即 <span class="inlinecode">1</span> <span class="inlinecode">+</span> <span class="inlinecode">2</span> <span class="inlinecode">+</span> <span class="inlinecode">...</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">X</span></span>）并赋值给 <span class="inlinecode"><span class="id" title="var">Y</span></span>。
     确保你的解答能满足之后的测试。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">pup_to_n</span> : <span class="id" type="var">com</span><br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="pup_to_n"><span class="id" title="definition">pup_to_n</span></a> : <a class="idref" href="Imp.html#com"><span class="id" title="inductive">com</span></a><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
 <span class="comment">(*&nbsp;<br/>
 <br/>
 Example&nbsp;pup_to_n_1&nbsp;:<br/>
@@ -262,207 +269,216 @@ Example&nbsp;pup_to_n_1&nbsp;:<br/>
 &nbsp;&nbsp;=&nbsp;Some&nbsp;(0,&nbsp;15,&nbsp;0).<br/>
 Proof.&nbsp;reflexivity.&nbsp;Qed.<br/>
 *)</span><br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab385"></a><h4 class="section">练习：2 星, standard, optional (peven)</h4>
- 编写一个 <span class="inlinecode"><span class="id" type="var">Imp</span></span> 程序：该程序在 <span class="inlinecode"><span class="id" type="var">X</span></span> 为偶数时将 <span class="inlinecode"><span class="id" type="var">Z</span></span> 置为 <span class="inlinecode">0</span>，
-    否则将 <span class="inlinecode"><span class="id" type="var">Z</span></span> 置为 <span class="inlinecode">1</span>。使用 <span class="inlinecode"><span class="id" type="var">test_ceval</span></span> 测试你的程序。 
+<a name="lab388"></a><h4 class="section">练习：2 星, standard, optional (peven)</h4>
+ 编写一个 <span class="inlinecode"><span class="id" title="var">Imp</span></span> 程序：该程序在 <span class="inlinecode"><span class="id" title="var">X</span></span> 为偶数时将 <span class="inlinecode"><span class="id" title="var">Z</span></span> 置为 <span class="inlinecode">0</span>，
+    否则将 <span class="inlinecode"><span class="id" title="var">Z</span></span> 置为 <span class="inlinecode">1</span>。使用 <span class="inlinecode"><span class="id" title="var">test_ceval</span></span> 测试你的程序。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
+<br/>
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab386"></a><h1 class="section">关系求值 vs. 计步求值</h1>
+<a name="lab389"></a><h1 class="section">关系求值 vs. 计步求值</h1>
 
 <div class="paragraph"> </div>
 
  对于算术表达式和布尔表达式，我们希望两种求值的定义最终都能产生同样的结果。
     本节将对此说明。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_step__ceval</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span style='font-size:120%;'>&exist;</span><span class="id" type="var">i</span>, <span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span> <span class="id" type="var">i</span> = <span class="id" type="var">Some</span> <span class="id" type="var">st'</span>) →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st</span> =[ <span class="id" type="var">c</span> ]⇒ <span class="id" type="var">st'</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="ceval_step__ceval"><span class="id" title="lemma">ceval_step__ceval</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">(</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#84eb6d2849dbf3581b1c0c05add5f2d<sub>8</sub>"><span class="id" title="notation">∃</span></a> <span class="id" title="var">i</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#84eb6d2849dbf3581b1c0c05add5f2d<sub>8</sub>"><span class="id" title="notation">,</span></a> <a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="ImpCEvalFun.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">=[</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">]=&gt;</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a>.<br/>
 <div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
 <div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">i</span> <span class="id" type="var">E</span>].<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st'</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">st</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">generalize</span> <span class="id" type="tactic">dependent</span> <span class="id" type="var">c</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">i</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">i'</span> ].<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span> <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">i</span> <span class="id" title="var">E</span>].<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">clear</span> <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">generalize</span> <span class="id" title="tactic">dependent</span> <span class="id" title="var">st'</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">generalize</span> <span class="id" title="tactic">dependent</span> <span class="id" title="var">st</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">generalize</span> <span class="id" title="tactic">dependent</span> <span class="id" title="var">c</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">i</span> <span class="id" title="keyword">as</span> [| <span class="id" title="var">i'</span> ].<br/><hr class='doublespaceincode'/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;i&nbsp;=&nbsp;0&nbsp;--&nbsp;contradictory&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">discriminate</span> <span class="id" type="var">H</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">discriminate</span> <span class="id" title="var">H</span>.<br/><hr class='doublespaceincode'/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;i&nbsp;=&nbsp;S&nbsp;i'&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">inversion</span> <span class="id" type="var">H</span>; <span class="id" type="tactic">subst</span>; <span class="id" type="tactic">clear</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;SKIP&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">E_Skip</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;*)</span> <span class="id" type="tactic">apply</span> <span class="id" type="var">E_Ass</span>. <span class="id" type="tactic">reflexivity</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span> <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">c</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">inversion</span> <span class="id" title="var">H</span>; <span class="id" title="tactic">subst</span>; <span class="id" title="tactic">clear</span> <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;SKIP&nbsp;*)</span> <span class="id" title="tactic">apply</span> <a class="idref" href="Imp.html#E_Skip"><span class="id" title="constructor">E_Skip</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;*)</span> <span class="id" title="tactic">apply</span> <a class="idref" href="Imp.html#E_Ass"><span class="id" title="constructor">E_Ass</span></a>. <span class="id" title="tactic">reflexivity</span>.<br/><hr class='doublespaceincode'/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;;;&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i'</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqr1</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;Evaluation&nbsp;of&nbsp;r<sub>1</sub>&nbsp;terminates&nbsp;normally&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_Seq</span> <span class="id" type="keyword">with</span> <span class="id" type="var">s</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHi'</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqr1</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHi'</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;Otherwise&nbsp;--&nbsp;contradiction&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">discriminate</span> <span class="id" type="var">H<sub>1</sub></span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <span class="id" title="var">st</span> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i'</span>) <span class="id" title="var">eqn</span>:<span class="id" title="var">Heqr1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;Evaluation&nbsp;of&nbsp;r<sub>1</sub>&nbsp;terminates&nbsp;normally&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Imp.html#E_Seq"><span class="id" title="constructor">E_Seq</span></a> <span class="id" title="keyword">with</span> <span class="id" title="var">s</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHi'</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Heqr1</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHi'</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H<sub>1</sub></span>. <span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;Otherwise&nbsp;--&nbsp;contradiction&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">discriminate</span> <span class="id" title="var">H<sub>1</sub></span>.<br/><hr class='doublespaceincode'/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;TEST&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqr</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;r&nbsp;=&nbsp;true&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_IfTrue</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqr</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHi'</span>. <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;r&nbsp;=&nbsp;false&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_IfFalse</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqr</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHi'</span>. <span class="id" type="tactic">assumption</span>.<br/><hr class='doublespaceincode'/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;WHILE&nbsp;*)</span> <span class="id" type="tactic">destruct</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>) <span class="id" type="var">eqn</span> :<span class="id" type="var">Heqr</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;r&nbsp;=&nbsp;true&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span> <span class="id" type="var">i'</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqr1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <span class="id" title="var">st</span> <span class="id" title="var">b</span>) <span class="id" title="var">eqn</span>:<span class="id" title="var">Heqr</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;r&nbsp;=&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Imp.html#E_IfTrue"><span class="id" title="constructor">E_IfTrue</span></a>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Heqr</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHi'</span>. <span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;r&nbsp;=&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Imp.html#E_IfFalse"><span class="id" title="constructor">E_IfFalse</span></a>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Heqr</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHi'</span>. <span class="id" title="tactic">assumption</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;WHILE&nbsp;*)</span> <span class="id" title="tactic">destruct</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <span class="id" title="var">st</span> <span class="id" title="var">b</span>) <span class="id" title="var">eqn</span> :<span class="id" title="var">Heqr</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;r&nbsp;=&nbsp;true&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <span class="id" title="var">st</span> <span class="id" title="var">c</span> <span class="id" title="var">i'</span>) <span class="id" title="var">eqn</span>:<span class="id" title="var">Heqr1</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="comment">(*&nbsp;r<sub>1</sub>&nbsp;=&nbsp;Some&nbsp;s&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_WhileTrue</span> <span class="id" type="keyword">with</span> <span class="id" type="var">s</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqr</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHi'</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqr1</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">IHi'</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">assumption</span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="comment">(*&nbsp;r<sub>1</sub>&nbsp;=&nbsp;None&nbsp;*)</span> <span class="id" type="tactic">discriminate</span> <span class="id" type="var">H<sub>1</sub></span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;r&nbsp;=&nbsp;false&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">injection</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">H<sub>2</sub></span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H<sub>2</sub></span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">E_WhileFalse</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">Heqr</span>. <span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Imp.html#E_WhileTrue"><span class="id" title="constructor">E_WhileTrue</span></a> <span class="id" title="keyword">with</span> <span class="id" title="var">s</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Heqr</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHi'</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Heqr1</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">IHi'</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">H<sub>1</sub></span>. <span class="id" title="tactic">assumption</span>. }<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="comment">(*&nbsp;r<sub>1</sub>&nbsp;=&nbsp;None&nbsp;*)</span> <span class="id" title="tactic">discriminate</span> <span class="id" title="var">H<sub>1</sub></span>. }<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;r&nbsp;=&nbsp;false&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">injection</span> <span class="id" title="var">H<sub>1</sub></span> <span class="id" title="keyword">as</span> <span class="id" title="var">H<sub>2</sub></span>. <span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">H<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Imp.html#E_WhileFalse"><span class="id" title="constructor">E_WhileFalse</span></a>. <span class="id" title="tactic">apply</span> <span class="id" title="var">Heqr</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 </div>
 
 <div class="doc">
-<a name="lab387"></a><h4 class="section">练习：4 星, standard (ceval_step__ceval_inf)</h4>
- 按照通常的模版写出 <span class="inlinecode"><span class="id" type="var">ceval_step__ceval</span></span> 的非形式化证明，
+<a name="lab390"></a><h4 class="section">练习：4 星, standard (ceval_step__ceval_inf)</h4>
+ 按照通常的模版写出 <span class="inlinecode"><span class="id" title="var">ceval_step__ceval</span></span> 的非形式化证明，
     （对归纳定义的值进行分类讨论的模版，除了没有归纳假设外，
     应当看起来与归纳证明相同。）不要简单地翻译形式化证明的步骤，
     请让你的证明能够将主要想法传达给读者。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
+<br/>
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/><hr class='doublespaceincode'/>
 <span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_ceval_step__ceval_inf</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="manual_grade_for_ceval_step__ceval_inf"><span class="id" title="definition">manual_grade_for_ceval_step__ceval_inf</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_step_more</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">i<sub>1</sub></span> <span class="id" type="var">i<sub>2</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">c</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">i<sub>1</sub></span> ≤ <span class="id" type="var">i<sub>2</sub></span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span> <span class="id" type="var">i<sub>1</sub></span> = <span class="id" type="var">Some</span> <span class="id" type="var">st'</span> →<br/>
-&nbsp;&nbsp;<span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span> <span class="id" type="var">i<sub>2</sub></span> = <span class="id" type="var">Some</span> <span class="id" type="var">st'</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">induction</span> <span class="id" type="var">i<sub>1</sub></span> <span class="id" type="keyword">as</span> [|<span class="id" type="var">i<sub>1</sub>'</span>]; <span class="id" type="tactic">intros</span> <span class="id" type="var">i<sub>2</sub></span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">c</span> <span class="id" type="var">Hle</span> <span class="id" type="var">Hceval</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="ceval_step_more"><span class="id" title="lemma">ceval_step_more</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">i<sub>1</sub></span> <span class="id" title="var">i<sub>2</sub></span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span> <span class="id" title="var">c</span>,<br/>
+&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#i<sub>1</sub>"><span class="id" title="variable">i<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#9b077c369e19739ef880736ba34623ff"><span class="id" title="notation">≤</span></a> <a class="idref" href="ImpCEvalFun.html#i<sub>2</sub>"><span class="id" title="variable">i<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="ImpCEvalFun.html#i<sub>1</sub>"><span class="id" title="variable">i<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="ImpCEvalFun.html#i<sub>2</sub>"><span class="id" title="variable">i<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">induction</span> <span class="id" title="var">i<sub>1</sub></span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">i<sub>1</sub>'</span>]; <span class="id" title="tactic">intros</span> <span class="id" title="var">i<sub>2</sub></span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span> <span class="id" title="var">c</span> <span class="id" title="var">Hle</span> <span class="id" title="var">Hceval</span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;i<sub>1</sub>&nbsp;=&nbsp;0&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>. <span class="id" type="tactic">discriminate</span> <span class="id" type="var">Hceval</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>. <span class="id" title="tactic">discriminate</span> <span class="id" title="var">Hceval</span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;i<sub>1</sub>&nbsp;=&nbsp;S&nbsp;i<sub>1</sub>'&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">i<sub>2</sub></span> <span class="id" type="keyword">as</span> [|<span class="id" type="var">i<sub>2</sub>'</span>]. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hle</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">Hle'</span>: <span class="id" type="var">i<sub>1</sub>'</span> ≤ <span class="id" type="var">i<sub>2</sub>'</span>) <span class="id" type="tactic">by</span> <span class="id" type="tactic">omega</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">c</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">i<sub>2</sub></span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">i<sub>2</sub>'</span>]. <span class="id" title="tactic">inversion</span> <span class="id" title="var">Hle</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">Hle'</span>: <span class="id" title="var">i<sub>1</sub>'</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#9b077c369e19739ef880736ba34623ff"><span class="id" title="notation">≤</span></a> <span class="id" title="var">i<sub>2</sub>'</span>) <span class="id" title="tactic">by</span> <span class="id" title="tactic">omega</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">c</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;SKIP&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hceval</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">Hceval</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;<span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>:</span>:</span>=</span>&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">Hceval</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">Hceval</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;;;&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>. <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c<sub>1</sub></span> <span class="id" type="var">i<sub>1</sub>'</span>) <span class="id" type="var">eqn</span>:<span class="id" type="var">Heqst1'o</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;st<sub>1</sub>'o&nbsp;=&nbsp;Some&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">IHi1'</span> <span class="id" type="var">i<sub>2</sub>'</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">Heqst1'o</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">Heqst1'o</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">IHi1'</span> <span class="id" type="var">i<sub>2</sub>'</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;st<sub>1</sub>'o&nbsp;=&nbsp;None&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">discriminate</span> <span class="id" type="var">Hceval</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <span class="id" title="var">st</span> <span class="id" title="var">c<sub>1</sub></span> <span class="id" title="var">i<sub>1</sub>'</span>) <span class="id" title="var">eqn</span>:<span class="id" title="var">Heqst1'o</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;st<sub>1</sub>'o&nbsp;=&nbsp;Some&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">IHi1'</span> <span class="id" title="var">i<sub>2</sub>'</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Heqst1'o</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">Heqst1'o</span>. <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">IHi1'</span> <span class="id" title="var">i<sub>2</sub>'</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;st<sub>1</sub>'o&nbsp;=&nbsp;None&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">discriminate</span> <span class="id" title="var">Hceval</span>.<br/><hr class='doublespaceincode'/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;TEST&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>. <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>); <span class="id" type="tactic">apply</span> (<span class="id" type="var">IHi1'</span> <span class="id" type="var">i<sub>2</sub>'</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assumption</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <span class="id" title="var">st</span> <span class="id" title="var">b</span>); <span class="id" title="tactic">apply</span> (<span class="id" title="var">IHi1'</span> <span class="id" title="var">i<sub>2</sub>'</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assumption</span>.<br/><hr class='doublespaceincode'/>
 &nbsp;&nbsp;&nbsp;&nbsp;+ <span class="comment">(*&nbsp;WHILE&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>. <span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">beval</span> <span class="id" type="var">st</span> <span class="id" type="var">b</span>); <span class="id" type="tactic">try</span> <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span> <span class="id" type="var">i<sub>1</sub>'</span>) <span class="id" type="var">eqn</span>: <span class="id" type="var">Heqst1'o</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;st<sub>1</sub>'o&nbsp;=&nbsp;Some&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">IHi1'</span> <span class="id" type="var">i<sub>2</sub>'</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">Heqst1'o</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> → <span class="id" type="var">Heqst1'o</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">apply</span> (<span class="id" type="var">IHi1'</span> <span class="id" type="var">i<sub>2</sub>'</span>) <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="comment">(*&nbsp;i<sub>1</sub>'o&nbsp;=&nbsp;None&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hceval</span>. <span class="id" type="tactic">discriminate</span> <span class="id" type="var">Hceval</span>. <span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>. <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Imp.html#beval"><span class="id" title="definition">beval</span></a> <span class="id" title="var">st</span> <span class="id" title="var">b</span>); <span class="id" title="tactic">try</span> <span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <span class="id" title="var">st</span> <span class="id" title="var">c</span> <span class="id" title="var">i<sub>1</sub>'</span>) <span class="id" title="var">eqn</span>: <span class="id" title="var">Heqst1'o</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;st<sub>1</sub>'o&nbsp;=&nbsp;Some&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">IHi1'</span> <span class="id" title="var">i<sub>2</sub>'</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Heqst1'o</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> → <span class="id" title="var">Heqst1'o</span>. <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> (<span class="id" title="var">IHi1'</span> <span class="id" title="var">i<sub>2</sub>'</span>) <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">assumption</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× <span class="comment">(*&nbsp;i<sub>1</sub>'o&nbsp;=&nbsp;None&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hceval</span>. <span class="id" title="tactic">discriminate</span> <span class="id" title="var">Hceval</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab388"></a><h4 class="section">练习：3 星, standard, recommended (ceval__ceval_step)</h4>
- 请完成以下证明。你会在某些地方用到 <span class="inlinecode"><span class="id" type="var">ceval_step_more</span></span> 以及一些关于
-    <span class="inlinecode">≤</span> 和 <span class="inlinecode"><span class="id" type="var">plus</span></span> 的基本事实。 
+<a name="lab391"></a><h4 class="section">练习：3 星, standard, recommended (ceval__ceval_step)</h4>
+ 请完成以下证明。你会在某些地方用到 <span class="inlinecode"><span class="id" title="var">ceval_step_more</span></span> 以及一些关于
+    <span class="inlinecode">≤</span> 和 <span class="inlinecode"><span class="id" title="var">plus</span></span> 的基本事实。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval__ceval_step</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st</span> =[ <span class="id" type="var">c</span> ]⇒ <span class="id" type="var">st'</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style='font-size:120%;'>&exist;</span><span class="id" type="var">i</span>, <span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span> <span class="id" type="var">i</span> = <span class="id" type="var">Some</span> <span class="id" type="var">st'</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span> <span class="id" type="var">Hce</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">induction</span> <span class="id" type="var">Hce</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="ceval__ceval_step"><span class="id" title="lemma">ceval__ceval_step</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">=[</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">]=&gt;</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#84eb6d2849dbf3581b1c0c05add5f2d<sub>8</sub>"><span class="id" title="notation">∃</span></a> <span class="id" title="var">i</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#84eb6d2849dbf3581b1c0c05add5f2d<sub>8</sub>"><span class="id" title="notation">,</span></a> <a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="ImpCEvalFun.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span> <span class="id" title="var">Hce</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">Hce</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_and_ceval_step_coincide</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st</span> =[ <span class="id" type="var">c</span> ]⇒ <span class="id" type="var">st'</span><br/>
-&nbsp;&nbsp;↔ <span style='font-size:120%;'>&exist;</span><span class="id" type="var">i</span>, <span class="id" type="var">ceval_step</span> <span class="id" type="var">st</span> <span class="id" type="var">c</span> <span class="id" type="var">i</span> = <span class="id" type="var">Some</span> <span class="id" type="var">st'</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st'</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ceval__ceval_step</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">ceval_step__ceval</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="ceval_and_ceval_step_coincide"><span class="id" title="lemma">ceval_and_ceval_step_coincide</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">=[</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">]=&gt;</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a><br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#df1ced36fc33ce188051218bca314374"><span class="id" title="notation">↔</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#84eb6d2849dbf3581b1c0c05add5f2d<sub>8</sub>"><span class="id" title="notation">∃</span></a> <span class="id" title="var">i</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#84eb6d2849dbf3581b1c0c05add5f2d<sub>8</sub>"><span class="id" title="notation">,</span></a> <a class="idref" href="ImpCEvalFun.html#ceval_step"><span class="id" title="definition">ceval_step</span></a> <a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="ImpCEvalFun.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="ImpCEvalFun.html#st'"><span class="id" title="variable">st'</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st'</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">split</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="ImpCEvalFun.html#ceval__ceval_step"><span class="id" title="axiom">ceval__ceval_step</span></a>. <span class="id" title="tactic">apply</span> <a class="idref" href="ImpCEvalFun.html#ceval_step__ceval"><span class="id" title="lemma">ceval_step__ceval</span></a>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab389"></a><h1 class="section">再论求值的确定性</h1>
+<a name="lab392"></a><h1 class="section">再论求值的确定性</h1>
 
 <div class="paragraph"> </div>
 
  根据关系求值和计步求值的定义等价这一事实，
-    我们可以给出一种取巧的方式来证明求值<b>关系</b>是确定性的。 
+    我们可以给出一种取巧的方式来证明求值<i>'关系'</i>是确定性的。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">ceval_deterministic'</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st</span> =[ <span class="id" type="var">c</span> ]⇒ <span class="id" type="var">st<sub>1</sub></span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st</span> =[ <span class="id" type="var">c</span> ]⇒ <span class="id" type="var">st<sub>2</sub></span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">st<sub>1</sub></span> = <span class="id" type="var">st<sub>2</sub></span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="ceval_deterministic'"><span class="id" title="lemma">ceval_deterministic'</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st<sub>1</sub></span> <span class="id" title="var">st<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">=[</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">]=&gt;</span></a> <a class="idref" href="ImpCEvalFun.html#st<sub>1</sub>"><span class="id" title="variable">st<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st"><span class="id" title="variable">st</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">=[</span></a> <a class="idref" href="ImpCEvalFun.html#c"><span class="id" title="variable">c</span></a> <a class="idref" href="Imp.html#d602dfe99961027ee7b07f704d78b039"><span class="id" title="notation">]=&gt;</span></a> <a class="idref" href="ImpCEvalFun.html#st<sub>2</sub>"><span class="id" title="variable">st<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ImpCEvalFun.html#st<sub>1</sub>"><span class="id" title="variable">st<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ImpCEvalFun.html#st<sub>2</sub>"><span class="id" title="variable">st<sub>2</sub></span></a>.<br/>
 <div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
 <div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">c</span> <span class="id" type="var">st</span> <span class="id" type="var">st<sub>1</sub></span> <span class="id" type="var">st<sub>2</sub></span> <span class="id" type="var">He<sub>1</sub></span> <span class="id" type="var">He<sub>2</sub></span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ceval__ceval_step</span> <span class="id" type="keyword">in</span> <span class="id" type="var">He<sub>1</sub></span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ceval__ceval_step</span> <span class="id" type="keyword">in</span> <span class="id" type="var">He<sub>2</sub></span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">He<sub>1</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">i<sub>1</sub></span> <span class="id" type="var">E<sub>1</sub></span>].<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">inversion</span> <span class="id" type="var">He<sub>2</sub></span> <span class="id" type="keyword">as</span> [<span class="id" type="var">i<sub>2</sub></span> <span class="id" type="var">E<sub>2</sub></span>].<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ceval_step_more</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">i<sub>2</sub></span> := <span class="id" type="var">i<sub>1</sub></span> + <span class="id" type="var">i<sub>2</sub></span>) <span class="id" type="keyword">in</span> <span class="id" type="var">E<sub>1</sub></span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">ceval_step_more</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">i<sub>2</sub></span> := <span class="id" type="var">i<sub>1</sub></span> + <span class="id" type="var">i<sub>2</sub></span>) <span class="id" type="keyword">in</span> <span class="id" type="var">E<sub>2</sub></span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">E<sub>1</sub></span> <span class="id" type="keyword">in</span> <span class="id" type="var">E<sub>2</sub></span>. <span class="id" type="tactic">inversion</span> <span class="id" type="var">E<sub>2</sub></span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">omega</span>. <span class="id" type="tactic">omega</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">c</span> <span class="id" title="var">st</span> <span class="id" title="var">st<sub>1</sub></span> <span class="id" title="var">st<sub>2</sub></span> <span class="id" title="var">He<sub>1</sub></span> <span class="id" title="var">He<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="ImpCEvalFun.html#ceval__ceval_step"><span class="id" title="axiom">ceval__ceval_step</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">He<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="ImpCEvalFun.html#ceval__ceval_step"><span class="id" title="axiom">ceval__ceval_step</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">He<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">He<sub>1</sub></span> <span class="id" title="keyword">as</span> [<span class="id" title="var">i<sub>1</sub></span> <span class="id" title="var">E<sub>1</sub></span>].<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">inversion</span> <span class="id" title="var">He<sub>2</sub></span> <span class="id" title="keyword">as</span> [<span class="id" title="var">i<sub>2</sub></span> <span class="id" title="var">E<sub>2</sub></span>].<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="ImpCEvalFun.html#ceval_step_more"><span class="id" title="lemma">ceval_step_more</span></a> <span class="id" title="keyword">with</span> (<span class="id" title="var">i<sub>2</sub></span> := <span class="id" title="var">i<sub>1</sub></span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <span class="id" title="var">i<sub>2</sub></span>) <span class="id" title="tactic">in</span> <span class="id" title="var">E<sub>1</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="ImpCEvalFun.html#ceval_step_more"><span class="id" title="lemma">ceval_step_more</span></a> <span class="id" title="keyword">with</span> (<span class="id" title="var">i<sub>2</sub></span> := <span class="id" title="var">i<sub>1</sub></span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <span class="id" title="var">i<sub>2</sub></span>) <span class="id" title="tactic">in</span> <span class="id" title="var">E<sub>2</sub></span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">E<sub>1</sub></span> <span class="id" title="tactic">in</span> <span class="id" title="var">E<sub>2</sub></span>. <span class="id" title="tactic">inversion</span> <span class="id" title="var">E<sub>2</sub></span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">omega</span>. <span class="id" title="tactic">omega</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="comment">(*&nbsp;Sun&nbsp;Jan&nbsp;5&nbsp;03:17:35&nbsp;UTC&nbsp;2020&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;2020年1月16日&nbsp;*)</span><br/>
 </div>
 </div>
 
-
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
 
 </div>
 

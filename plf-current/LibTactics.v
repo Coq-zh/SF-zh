@@ -3415,7 +3415,7 @@ Tactic Notation "branches" constr(N) constr(T) :=
 Tactic Notation "branches" :=
   match goal with h: _ \/ _ |- _ => branches h end.
 
-(* ---------------------------------------------------------------------- 
+(* ----------------------------------------------------------------------
 
     N-ary Existentials *)
 
@@ -3643,7 +3643,7 @@ Ltac auto_star := auto_star_default.
 
 (** [autos~] is a notation for tactic [auto_tilde]. It may be followed
     by lemmas (or proofs terms) which auto will be able to use
-    for solving the goal. 
+    for solving the goal.
 
     [autos] is an alias for [autos~] *)
 
@@ -4840,4 +4840,4 @@ End LibTacticsCompatibility.
 Open Scope nat_scope.
 
 
-(* Sun Jan 5 03:18:37 UTC 2020 *)
+(* 2020年1月16日 *)

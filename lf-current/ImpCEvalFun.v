@@ -184,7 +184,7 @@ Definition test_ceval (st:state) (c:com) :=
    ====>
       Some (2, 0, 4)   *)
 
-(** **** 练习：2 星, standard, recommended (pup_to_n)  
+(** **** 练习：2 星, standard, recommended (pup_to_n) 
 
     编写一个 Imp 程序对 [1] 到 [X] 求和（即 [1 + 2 + ... + X]）并赋值给 [Y]。
     确保你的解答能满足之后的测试。 *)
@@ -198,15 +198,15 @@ Example pup_to_n_1 :
   test_ceval (X !-> 5) pup_to_n
   = Some (0, 15, 0).
 Proof. reflexivity. Qed.
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, optional (peven)  
+(** **** 练习：2 星, standard, optional (peven) 
 
     编写一个 [Imp] 程序：该程序在 [X] 为偶数时将 [Z] 置为 [0]，
     否则将 [Z] 置为 [1]。使用 [test_ceval] 测试你的程序。 *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -266,10 +266,10 @@ Proof.
            apply IHi'. simpl in H1. assumption. }
          { (* r1 = None *) discriminate H1. }
         * (* r = false *)
-          injection H1. intros H2. rewrite <- H2.
+          injection H1 as H2. rewrite <- H2.
           apply E_WhileFalse. apply Heqr. Qed.
 
-(** **** 练习：4 星, standard (ceval_step__ceval_inf)  
+(** **** 练习：4 星, standard (ceval_step__ceval_inf) 
 
     按照通常的模版写出 [ceval_step__ceval] 的非形式化证明，
     （对归纳定义的值进行分类讨论的模版，除了没有归纳假设外，
@@ -326,7 +326,7 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
       * (* i1'o = None *)
         simpl in Hceval. discriminate Hceval.  Qed.
 
-(** **** 练习：3 星, standard, recommended (ceval__ceval_step)  
+(** **** 练习：3 星, standard, recommended (ceval__ceval_step) 
 
     请完成以下证明。你会在某些地方用到 [ceval_step_more] 以及一些关于
     [<=] 和 [plus] 的基本事实。 *)
@@ -369,4 +369,4 @@ Proof.
   rewrite E1 in E2. inversion E2. reflexivity.
   omega. omega.  Qed.
 
-(* Sun Jan 5 03:17:35 UTC 2020 *)
+(* 2020年1月16日 *)

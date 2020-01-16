@@ -91,7 +91,7 @@ idtac "-------------------  balance_relate  --------------------".
 idtac " ".
 
 idtac "#> balance_relate".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @balance_relate (
 (forall (V : Type) (default : V) (c : color) (l : tree V) 
    (k : key) (vk : V) (r : tree V) (m : Extract.IntMaps.total_map V),
@@ -125,7 +125,7 @@ idtac "-------------------  is_redblack_properties  --------------------".
 idtac " ".
 
 idtac "#> is_redblack_toblack".
-idtac "Possible points: 1".
+idtac "Possible points: 1.5".
 check_type @is_redblack_toblack (
 (forall (V : Type) (s : tree V) (n : nat),
  is_redblack V s Red n -> is_redblack V s Black n)).
@@ -136,7 +136,7 @@ Goal True.
 idtac " ".
 
 idtac "#> makeblack_fiddle".
-idtac "Possible points: 1".
+idtac "Possible points: 1.5".
 check_type @makeblack_fiddle (
 (forall (V : Type) (s : tree V) (n : nat),
  is_redblack V s Black n ->
@@ -148,7 +148,7 @@ Goal True.
 idtac " ".
 
 idtac "#> ins_is_redblack".
-idtac "Possible points: 1".
+idtac "Possible points: 1.5".
 check_type @ins_is_redblack (
 (forall (V : Type) (x : key) (vx : V) (s : tree V) (n : nat),
  (is_redblack V s Black n -> nearly_redblack V (ins V x vx s) n) /\
@@ -160,7 +160,7 @@ Goal True.
 idtac " ".
 
 idtac "#> insert_is_redblack".
-idtac "Possible points: 1".
+idtac "Possible points: 1.5".
 check_type @insert_is_redblack (
 (forall (V : Type) (x : key) (xv : V) (s : tree V) (n : nat),
  is_redblack V s Red n ->
@@ -173,10 +173,32 @@ idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 18".
-idtac "Max points - advanced: 18".
+idtac "Max points - standard: 22".
+idtac "Max points - advanced: 22".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "functional_extensionality_dep".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "int".
+idtac "int2Z".
+idtac "ltb_lt".
+idtac "ltb".
+idtac "Extract.int".
+idtac "Extract.int2Z".
+idtac "Extract.ltb_lt".
+idtac "Extract.ltb".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- ins_SearchTree ---------".
@@ -203,4 +225,4 @@ idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Jan 5 03:21:28 UTC 2020 *)
+(* 2020年1月16日 *)

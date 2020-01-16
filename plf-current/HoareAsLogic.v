@@ -11,6 +11,7 @@
     这一章是可选的。在阅读之前，你会想要阅读一下在_'逻辑基础'_（_'软件基础'_的
     第一卷）中的 [ProofObjects] 章节。 *)
 
+From PLF Require Import Maps.
 From PLF Require Import Imp.
 From PLF Require Import Hoare.
 
@@ -21,7 +22,7 @@ Inductive hoare_proof : Assertion -> com -> Assertion -> Type :=
   | H_Skip : forall P,
       hoare_proof P (SKIP) P
   | H_Asgn : forall Q V a,
-      hoare_proof (assn_sub V a Q) (V ::= a) Q
+      hoare_proof (Q [V |-> a]) (V ::= a) Q
   | H_Seq  : forall P c Q d R,
       hoare_proof P c Q -> hoare_proof Q d R -> hoare_proof P (c;;d) R
   | H_If : forall P Q b c1 c2,
@@ -73,9 +74,8 @@ Proof.
   eapply H_Seq; apply H_Asgn.
 Qed.
 
-(*
 Print sample_proof.
-
+(*
 ====>
   H_Seq
   (((fun st : state => st X = 3) [X |-> X + 2]) [X |-> X + 1])
@@ -94,9 +94,12 @@ Print sample_proof.
 (* ################################################################# *)
 (** * 性质 *)
 
-(** **** 练习：2 星, standard (hoare_proof_sound)  
+(** **** 练习：2 星, standard (hoare_proof_sound) 
 
-    证明这些证明对象是正确的断言。 *)
+    请证明由 [hoare_proof] 构造的推导式对应于有效的霍尔三元组。换言之，就是
+    [hoare_proof] 推导式是_'可靠'_的。提示：我们已经将[Hoare]
+    中所有独立的证明规则证明成了定理 [hoare_skip]、[hoare_asgn] 等等。
+    请发挥它们的优势。 *)
 
 Theorem hoare_proof_sound : forall P c Q,
   hoare_proof P c Q -> {{P}} c {{Q}}.
@@ -183,13 +186,16 @@ Qed.
 
 (** 最后，我们可以说明 [hoare_proof] 公理集合足够用来证明关于任何（部分）正确性的
     事实。更准确地说，任何我们能够证明的语义霍尔三元组，都能够通过这些公理证明。
-    这样的公理集合被称为_'相对完备的（relatively complete）'_。我们的证明的灵感来自
-    于：
+    这样的公理集合被称为_'相对完备的（relatively complete）'_。也就是说，这些公理
+    _'相对于'_我们可以用底层的断言语言证明的事实来说是完备的。
+    如果该语言的证明中有所跳跃（gap），那么我们应该责怪它而非霍尔逻辑公理。
+
+    我们的证明的灵感来自于：
 
       https://www.ps.uni-saarland.de/courses/sem-ws11/script/Hoare.html
 
-    为了完成这个证明，我们需要使用一种被称为
-    _'最弱前置条件（weakest preconditions）'_的技术装置来创造一些中间的断言。
+    为了完成这个证明，我们需要使用一种被称为_'最弱前置条件（Weakest Precondition）'_
+    的技术装置来创造一些中间的断言（它也在 [Hoare2] 有所讨论）。
 
     给定一个命令[c]和一个想要的后置条件断言 [Q] ，最弱前置条件 [wp c Q] 是一个断言
     [P]，使得 [{{P}} c {{Q}}] 成立，并且对于任意其他断言 [P']，如果 [{{P}} c {{Q}}] 成立，那么
@@ -198,20 +204,34 @@ Qed.
 Definition wp (c:com) (Q:Assertion) : Assertion :=
   fun s => forall s', s =[ c ]=> s' -> Q s'.
 
+(** 为了习惯这个 [wp] 的定义，请证明以下两个简单的定理。 *)
+
 (** **** 练习：1 星, standard (wp_is_precondition)  *)
 
-Lemma wp_is_precondition: forall c Q,
+Theorem wp_is_precondition : forall c Q,
   {{wp c Q}} c {{Q}}.
-(* 请在此处解答 *) Admitted.
+Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
 (** **** 练习：1 星, standard (wp_is_weakest)  *)
 
-Lemma wp_is_weakest: forall c Q P',
+Theorem wp_is_weakest : forall c Q P',
    {{P'}} c {{Q}} -> forall st, P' st -> wp c Q st.
-(* 请在此处解答 *) Admitted.
+Proof. (* 请在此处解答 *) Admitted.
+(** [] *)
 
-(** 下面这个辅助引理也很有用。 *)
+(** **** 练习：2 星, standard (wp_invariant)  *)
+
+(** Prove that for any [Q], assertion [wp (WHILE b DO c END) Q] is an
+    invariant of [WHILE b DO c END]. *)
+
+Lemma wp_invariant : forall b c Inv Q,
+    Inv = wp (WHILE b DO c END) Q
+    -> {{ fun st => Inv st /\ bassn b st }} c {{ Inv }}.
+Proof. (* 请在此处解答 *) Admitted.
+(** [] *)
+
+(** 以下辅助引理在接下来的练习中会很有用。 *)
 
 Lemma bassn_eval_false : forall b st, ~ bassn b st -> beval st b = false.
 Proof.
@@ -219,11 +239,10 @@ Proof.
     exfalso. apply H. reflexivity.
     reflexivity.
 Qed.
-(** [] *)
 
-(** **** 练习：5 星, standard (hoare_proof_complete)  
+(** **** 练习：4 星, standard (hoare_proof_complete) 
 
-    完成如下定理的证明。 *)
+    完成如下定理的证明。对 [WHILE] 分支的提示：你需要创建一个循环不变量。 *)
 
 Theorem hoare_proof_complete: forall P c Q,
   {{P}} c {{Q}} -> hoare_proof P c Q.
@@ -238,7 +257,7 @@ Proof.
   - (* ::= *)
     eapply H_Consequence.
       eapply H_Asgn.
-      intro st. apply HT. econstructor. reflexivity.
+      intro st. apply HT. constructor. reflexivity.
       intros; assumption.
   - (* ;; *)
     apply H_Seq with (wp c2 Q).
@@ -264,4 +283,4 @@ Proof.
     满意：这太冗长了。在 [Hoare2] 一章中的关于形式化修饰程序的章节会向我们展
     示如何做的更好。 *)
 
-(* Sun Jan 5 03:18:35 UTC 2020 *)
+(* 2020年1月16日 *)

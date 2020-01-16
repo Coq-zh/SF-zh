@@ -15,7 +15,7 @@ From LF Require Export Lists.
 (* ================================================================= *)
 (** ** 多态列表 *)
 
-(** 在前几章中，我们只是使用了数的列表。很明显，
+(** 在上一章中，我们使用了只包含数的列表。很明显，
     有趣的程序还需要能够处理其它元素类型的列表，如字符串列表、布尔值列表、
     列表的列表等等。我们_'可以'_分别为它们定义新的归纳数据类型，例如... *)
 
@@ -26,7 +26,7 @@ Inductive boollist : Type :=
 (** ...不过这样很快就会变得乏味。
     部分原因在于我们必须为每种数据类型都定义不同的构造子，
     然而主因还是我们必须为每种数据类型再重新定义一遍所有的列表处理函数
-    （如 [length]、[rev] 等）。 *)
+    （ [length]、[rev] 等）以及它们所有的性质（[rev_length]、[app_assoc] 等）。 *)
 
 (** 为避免这些重复，Coq 支持定义_'多态'_归纳类型。
     例如，以下就是_'多态列表'_数据类型。 *)
@@ -36,17 +36,16 @@ Inductive list (X:Type) : Type :=
   | cons (x : X) (l : list X).
 
 (** 这和上一章中 [natlist] 的定义基本一样，只是将 [cons] 构造子的
-    [nat] 参数换成了任意的类型 [X]，定义的头部添加了 [X] 的绑定，
+    [nat] 参数换成了任意的类型 [X]，函数头的第一行添加了 [X] 的绑定，
     而构造子类型中的 [natlist] 则换成了 [list X]。（我们可以重用构造子名
     [nil] 和 [cons]，因为之前定义的 [natlist] 在当前作用之外的一个 [Module] 中。）
 
     [list] 本身又是什么类型？一种不错的思路就是把 [list] 当做从 [Type]
-    类型到 [Inductive] 归纳定义的_'函数'_；或者换种思路，即 [list]
+    类型到 [Inductive] 归纳定义的_'函数'_；或者换种更简明的思路，即 [list]
     是个从 [Type] 类型到 [Type] 类型的函数。对于任何特定的类型 [X]，
     类型 [list X] 是一个 [Inductive] 归纳定义的，元素类型为 [X] 的列表的集合。 *)
 
-Check list.
-(* ===> list : Type -> Type *)
+Check list : Type -> Type.
 
 (** The parameter [X] in the definition of [list] automatically
     becomes a parameter to the constructors [nil] and [cons] -- that
@@ -55,28 +54,24 @@ Check list.
     list they are building. For example, [nil nat] constructs the
     empty list of type [nat]. *)
 
-Check (nil nat).
-(* ===> nil nat : list nat *)
+Check (nil nat) : list nat.
 
 (** [cons nat] 与此类似，它将类型为 [nat] 的元素添加到类型为
     [list nat] 的列表中。以下示例构造了一个只包含自然数 3 的列表： *)
 
-Check (cons nat 3 (nil nat)).
-(* ===> cons nat 3 (nil nat) : list nat *)
+Check (cons nat 3 (nil nat)) : list nat.
 
 (** [nil] 的类型可能是什么？我们可以从定义中看到 [list X] 的类型，
     它忽略了 [list] 的形参 [X] 的绑定。[Type -> list X] 并没有解释
     [X] 的含义，[(X : Type) -> list X] 则比较接近。Coq 对这种情况的记法为
     [forall X : Type, list X]： *)
 
-Check nil.
-(* ===> nil : forall X : Type, list X *)
+Check nil : forall X : Type, list X.
 
 (** 类似地，定义中 [cons] 看起来像 [X -> list X -> list X]
     然而以此约定来解释 [X] 的含义则是类型 [forall X, X -> list X -> list X]。 *)
 
-Check cons.
-(* ===> cons : forall X : Type, X -> list X -> list X *)
+Check cons : forall X : Type, X -> list X -> list X.
 
 (** （关于记法的附注：在 [.v] 文件中，量词“forall”会写成字母的形式，
     而在生成的 HTML 和一些设置了显示控制的 IDE 中，[forall]
@@ -86,10 +81,8 @@ Check cons.
 (** 如果在每次使用列表构造子时，都要为它提供类型参数，那样会很麻烦。
     不过我们很快就会看到如何省去这种麻烦。 *)
 
-Check (cons nat 2 (cons nat 1 (nil nat))).
-
-(** （这里显式地写出了 [nil] 和 [cons]，因为我们还没为新版本的列表定义
-    [ [] ] 和 [::] 记法。我们待会儿再干。) *)
+Check (cons nat 2 (cons nat 1 (nil nat)))
+      : list nat.
 
 (** 现在我们可以回过头来定义之前写下的列表处理函数的多态版本了。
     例如 [repeat]：*)
@@ -105,17 +98,17 @@ Fixpoint repeat (X : Type) (x : X) (count : nat) : list X :=
 
 Example test_repeat1 :
   repeat nat 4 2 = cons nat 4 (cons nat 4 (nil nat)).
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (** 要用 [repeat] 构造其它种类的列表，
     我们只需通过对应类型的参数将它实例化即可： *)
 
 Example test_repeat2 :
   repeat bool false 1 = cons bool false (nil bool).
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 
-(** **** 练习：2 星, standard (mumble_grumble)  
+(** **** 练习：2 星, standard (mumble_grumble) 
 
     考虑以下两个归纳定义的类型： *)
 
@@ -160,10 +153,10 @@ Fixpoint repeat' X x count : list X :=
 
 (** 当然会。我们来看看 Coq 赋予了 [repeat'] 什么类型： *)
 
-Check repeat'.
-(* ===> forall X : Type, X -> nat -> list X *)
-Check repeat.
-(* ===> forall X : Type, X -> nat -> list X *)
+Check repeat'
+  : forall X : Type, X -> nat -> list X.
+Check repeat
+  : forall X : Type, X -> nat -> list X.
 
 (** 它与 [repeat] 的类型完全一致。Coq 可以使用_'类型推断'_
     基于它们的使用方式来推出 [X]、[x] 和 [count] 一定是什么类型。例如，
@@ -173,8 +166,8 @@ Check repeat.
 
     这种强大的功能意味着我们不必总是在任何地方都显式地写出类型标注，
     不过显式的类型标注对于文档和完整性检查来说仍然非常有用，
-    因此我们仍会继续使用它。你应当在代码中把握好使用类型标注的平衡点，
-    太多导致混乱并分散注意力，太少则会迫使读者为理解你的代码而在大脑中进行类型推断。 *)
+    因此我们仍会继续使用它。在代码中使用类型标注时，你应当把握好一个度，
+    太多会导致混乱并分散注意力，太少则会迫使读者为理解你的代码而在大脑中进行类型推断。 *)
 
 (* ----------------------------------------------------------------- *)
 (** *** 类型参数的推断 *)
@@ -198,7 +191,7 @@ Check repeat.
 
       repeat' X x count : list X :=
 
-    我们还可以将类型换成 [_]：
+    我们还可以将类型换成洞：
 
       repeat' (X : _) (x : _) (count : _) : list X :=
 
@@ -251,7 +244,7 @@ Fixpoint repeat''' {X : Type} (x : X) (count : nat) : list X :=
   end.
 
 (** （注意我们现在甚至不必在 [repeat'''] 的递归调用中提供类型参数了，
-      实际上提供了反而是无效的！）
+      实际上提供了反而是无效的，因为 Coq 并不想要它。）
 
     我们会尽可能使用最后一种风格，不过还会继续在 [Inductive] 构造子中使用显式的
     [Argument] 声明。原因在于如果将归纳类型的形参标为隐式的话，
@@ -289,14 +282,14 @@ Fixpoint length {X : Type} (l : list X) : nat :=
 
 Example test_rev1 :
   rev (cons 1 (cons 2 nil)) = (cons 2 (cons 1 nil)).
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 Example test_rev2:
   rev (cons true nil) = cons true nil.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 Example test_length1: length (cons 1 (cons 2 (cons 3 nil))) = 3.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** 显式提供类型参数 *)
@@ -319,7 +312,7 @@ Definition mynil : list nat := nil.
 
 (** 此外，我们还可以在函数名前加上前缀 [@] 来强制将隐式参数变成显式的： *)
 
-Check @nil.
+Check @nil : forall X : Type, list X.
 
 Definition mynil' := @nil nat.
 
@@ -341,7 +334,7 @@ Definition list123''' := [1; 2; 3].
 (* ----------------------------------------------------------------- *)
 (** *** 练习 *)
 
-(** **** 练习：2 星, standard, optional (poly_exercises)  
+(** **** 练习：2 星, standard, optional (poly_exercises) 
 
     下面是一些简单的练习，和 [Lists] 一章中的一样。
     为了实践多态，请完成下面的证明。 *)
@@ -362,7 +355,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (more_poly_exercises)  
+(** **** 练习：2 星, standard, optional (more_poly_exercises) 
 
     这儿有些更有趣的东西... *)
 
@@ -397,7 +390,7 @@ Notation "( x , y )" := (pair x y).
 
 Notation "X * Y" := (prod X Y) : type_scope.
 
-(** （标注 [: type_scope] 会告诉 Coq 该缩写只能在解析类型时使用。
+(** （标注 [: type_scope] 会告诉 Coq 该缩写只能在解析类型而非表达式时使用。
       这避免了与乘法符号的冲突。) *)
 
 (** 一开始会很容易混淆 [(x,y)] 和 [X*Y]。不过要记住 [(x,y)]
@@ -430,17 +423,17 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
   | x :: tx, y :: ty => (x, y) :: (combine tx ty)
   end.
 
-(** **** 练习：1 星, standard, optional (combine_checks)  
+(** **** 练习：1 星, standard, optional (combine_checks) 
 
     请尝试在纸上回答以下问题并在 Coq 中检验你的解答：
     - [combine] 的类型是什么？（即 [Check @combine] 会打印出什么？）
     - 以下指令会打印出什么？
 
         Compute (combine [1;2] [false;false;true;true]).
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, recommended (split)  
+(** **** 练习：2 星, standard, recommended (split) 
 
     函数 [split] 是 [combine] 的右逆（right inverse）：
     它接受一个序对的列表并返回一个列表的序对。
@@ -461,14 +454,9 @@ Proof.
 (* ================================================================= *)
 (** ** 多态候选 *)
 
-(** 现在介绍最后一种多态类型：_'多态候选（Polymorphic Options）'_,
-    它推广了上一章中的 [natoption]： 
-
-    One last polymorphic type for now: _polymorphic options_,
-    which generalize [natoption] from the previous chapter.  (We put
-    the definition inside a module because the standard library
-    already defines [option] and it's this one that we want to use
-    below.) *)
+(** 最后一种要介绍的多态类型是_'多态候选（Polymorphic Options）'_,
+    它推广了上一章中的 [natoption]（由于我们之后要用标准库中定义的
+    [option] 版本，因此这里的定义我们把它放在模块中）： *)
 
 Module OptionPlayground.
 
@@ -497,7 +485,7 @@ Proof. reflexivity. Qed.
 Example test_nth_error3 : nth_error [true] 2 = None.
 Proof. reflexivity. Qed.
 
-(** **** 练习：1 星, standard, optional (hd_error_poly)  
+(** **** 练习：1 星, standard, optional (hd_error_poly) 
 
     请完成上一章中 [hd_error] 的多态定义，确保它能通过下方的单元测试。 *)
 
@@ -506,7 +494,7 @@ Definition hd_error {X : Type} (l : list X) : option X
 
 (** 再说一遍，要强制将隐式参数转为显式参数，我们可以在函数名前使用 [@]。 *)
 
-Check @hd_error.
+Check @hd_error : forall X : Type, list X -> option X.
 
 Example test_hd_error1 : hd_error [1;2] = Some 1.
  (* 请在此处解答 *) Admitted.
@@ -517,8 +505,8 @@ Example test_hd_error2 : hd_error  [[1];[2]]  = Some [1].
 (* ################################################################# *)
 (** * 函数作为数据 *)
 
-(** 和其它现代编程语言，包括所有函数式语言（ML、Haskell、
-    Scheme、Scala、Clojure 等）一样，Coq 也将函数视作“一等公民（First-Class Citizens）”，
+(** 和大部分现代编程语言一样，特别是“函数式”的语言，包括 OCaml、Haskell、
+    Racket、Scala、Clojure 等，Coq 也将函数视作“一等公民（First-Class Citizens）”，
     即允许将它们作为参数传入其它函数、作为结果返回、以及存储在数据结构中等等。 *)
 
 (* ================================================================= *)
@@ -532,14 +520,13 @@ Definition doit3times {X:Type} (f:X->X) (n:X) : X :=
 (** 这里的参数 [f] 本身也是个（从 [X] 到 [X] 的）函数，
     [doit3times] 的函数体将 [f] 对某个值 [n] 应用三次。 *)
 
-Check @doit3times.
-(* ===> doit3times : forall X : Type, (X -> X) -> X -> X *)
+Check @doit3times : forall X : Type, (X -> X) -> X -> X.
 
 Example test_doit3times: doit3times minustwo 9 = 3.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 Example test_doit3times': doit3times negb true = false.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (* ================================================================= *)
 (** ** 过滤器 *)
@@ -560,7 +547,7 @@ Fixpoint filter {X:Type} (test: X->bool) (l:list X)
     上，那么它就会返回一个只包含 [l] 中偶数的列表。 *)
 
 Example test_filter1: filter evenb [1;2;3;4] = [2;4].
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 Definition length_is_1 {X : Type} (l : list X) : bool :=
   (length l) =? 1.
@@ -569,7 +556,7 @@ Example test_filter2:
     filter length_is_1
            [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
   = [ [3]; [4]; [8] ].
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (** 我们可以使用 [filter] 给出 [Lists] 中 [countoddmembers]
     函数的简洁的版本。 *)
@@ -578,11 +565,11 @@ Definition countoddmembers' (l:list nat) : nat :=
   length (filter oddb l).
 
 Example test_countoddmembers'1:   countoddmembers' [1;0;3;1;4;5] = 4.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 Example test_countoddmembers'2:   countoddmembers' [0;2;4] = 0.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 Example test_countoddmembers'3:   countoddmembers' nil = 0.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (* ================================================================= *)
 (** ** 匿名函数 *)
@@ -597,7 +584,7 @@ Proof. reflexivity.  Qed.
 
 Example test_anon_fun':
   doit3times (fun n => n * n) 2 = 256.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (** 表达式 [(fun n => n * n)] 可读作“一个给定 [n] 并返回 [n * n] 的函数。” *)
 
@@ -607,9 +594,9 @@ Example test_filter2':
     filter (fun l => (length l) =? 1)
            [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
   = [ [3]; [4]; [8] ].
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
-(** **** 练习：2 星, standard (filter_even_gt7)  
+(** **** 练习：2 星, standard (filter_even_gt7) 
 
     使用 [filter]（而非 [Fixpoint]）来编写 Coq 函数 [filter_even_gt7]，
     它接受一个自然数列表作为输入，返回一个只包含大于 [7] 的偶数的列表。 *)
@@ -626,14 +613,14 @@ Example test_filter_even_gt7_2 :
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (partition)  
+(** **** 练习：3 星, standard (partition) 
 
     使用 [filter] 编写一个 Coq 函数 [partition]：
 
       partition : forall X : Type,
                   (X -> bool) -> list X -> list X * list X
 
-   给定一个集合 [X]、一个类型为 [X -> bool] 的测试函数和一个 [list X]，
+   给定一个集合 [X]、一个类型为 [X -> bool] 的断言和一个 [list X]，
    [partition] 应当返回一个列表的序对。该序对的第一个成员为包含原始列表中
    满足该测试的子列表，而第二个成员为包含不满足该测试的元素的子列表。
    两个子列表中元素的顺序应当与它们在原始列表中的顺序相同。 *)
@@ -666,7 +653,7 @@ Fixpoint map {X Y: Type} (f:X->Y) (l:list X) : (list Y) :=
     中的每一个元素。例如： *)
 
 Example test_map1: map (fun x => plus 3 x) [2;0;2] = [5;3;5].
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (** 输入列表和输出列表的元素类型不必相同，因为 [map] 会接受_'两个'_类型参数
     [X] 和 [Y]，因此它可以应用到一个数值的列表和一个从数值到布尔值的函数，
@@ -674,7 +661,7 @@ Proof. reflexivity.  Qed.
 
 Example test_map2:
   map oddb [2;1;2;5] = [false;true;false;true].
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (** 它甚至可以应用到一个数值的列表和一个从数值到布尔值列表的函数，
     并产生一个布尔值的_'列表的列表'_： *)
@@ -682,12 +669,12 @@ Proof. reflexivity.  Qed.
 Example test_map3:
     map (fun n => [evenb n;oddb n]) [2;1;2;5]
   = [[true;false];[false;true];[true;false];[false;true]].
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** 习题 *)
 
-(** **** 练习：3 星, standard (map_rev)  
+(** **** 练习：3 星, standard (map_rev) 
 
     请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引理 *)
 
@@ -697,7 +684,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, recommended (flat_map)  
+(** **** 练习：2 星, standard, recommended (flat_map) 
 
     函数 [map] 通过一个类型为 [X -> Y] 的函数将 [list X] 映射到 [list Y]。
     我们可以定义一个类似的函数 [flat_map]，它通过一个类型为 [X -> list Y]
@@ -728,14 +715,14 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
     | Some x => Some (f x)
   end.
 
-(** **** 练习：2 星, standard, optional (implicit_args)  
+(** **** 练习：2 星, standard, optional (implicit_args) 
 
     [filter] 和 [map] 的定义和应用在很多地方使用了隐式参数。
     请将隐式参数外层的花括号替换为圆括号，然后在必要的地方补充显式类型形参并用
     Coq 检查你做的是否正确。（本练习并不会打分，你可以在本文件的_'副本'_中做它，
     之后丢掉即可。）
-
-    [] *)
+*)
+(** [] *)
 
 (* ================================================================= *)
 (** ** 折叠 *)
@@ -763,8 +750,7 @@ Fixpoint fold {X Y: Type} (f: X->Y->Y) (l: list X) (b: Y)
 
     以下是更多例子： *)
 
-Check (fold andb).
-(* ===> fold andb : list bool -> bool -> bool *)
+Check (fold andb) : list bool -> bool -> bool.
 
 Example fold_example1 :
   fold mult [1;2;3;4] 1 = 24.
@@ -778,7 +764,7 @@ Example fold_example3 :
   fold app  [[1];[];[2;3];[4]] [] = [1;2;3;4].
 Proof. reflexivity. Qed.
 
-(** **** 练习：1 星, advanced (fold_types_different)  
+(** **** 练习：1 星, advanced (fold_types_different) 
 
     我们观察到 [fold] 由 [X] 和 [Y] 这_'两个'_类型变量参数化，形参 [f]
     则是个接受 [X] 和 [Y] 并返回 [Y] 的二元操作符。你能想出一种 [X] 和
@@ -812,8 +798,7 @@ Proof. reflexivity. Qed.
 (** 实际上，我们已经见过的多参函数也是讲函数作为数据传入的例子。
     为了理解为什么，请回想 [plus] 的类型。 *)
 
-Check plus.
-(* ==> nat -> nat -> nat *)
+Check plus : nat -> nat -> nat.
 
 (** 该表达式中的每个 [->] 实际上都是一个类型上的_'二元'_操作符。
     该操作符是_'右结合'_的，因此 [plus] 的类型其实是 [nat -> (nat -> nat)]
@@ -824,21 +809,21 @@ Check plus.
     Application）'_。 *)
 
 Definition plus3 := plus 3.
-Check plus3.
+Check plus3 : nat -> nat.
 
 Example test_plus3 :    plus3 4 = 7.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 Example test_plus3' :   doit3times plus3 0 = 9.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 Example test_plus3'' :  doit3times (plus 3) 0 = 9.
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (* ################################################################# *)
 (** * 附加练习 *)
 
 Module Exercises.
 
-(** **** 练习：2 星, standard (fold_length)  
+(** **** 练习：2 星, standard (fold_length) 
 
     列表的很多通用函数都可以通过 [fold] 来实现。例如，下面是
     [length] 的另一种实现： *)
@@ -859,7 +844,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (fold_map)  
+(** **** 练习：3 星, standard (fold_map) 
 
     我们也可以用 [fold] 来定义 [map]。请完成下面的 [fold_map]。 *)
 
@@ -875,7 +860,7 @@ Definition fold_map {X Y: Type} (f: X -> Y) (l: list X) : list Y
 Definition manual_grade_for_fold_map : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, advanced (currying)  
+(** **** 练习：2 星, advanced (currying) 
 
     在 Coq 中，函数 [f : A -> B -> C] 的类型其实是 [A -> (B -> C)]。
     也就是说，如果给 [f] 一个类型为 [A] 的值，它就会给你函数 [f' : B -> C]。
@@ -903,7 +888,7 @@ Definition prod_uncurry {X Y Z : Type}
 (** 举一个柯里化用途的（平凡的）例子，我们可以用它来缩短之前看到的一个例子： *)
 
 Example test_map1': map (plus 3) [2;0;2] = [5;3;5].
-Proof. reflexivity.  Qed.
+Proof. reflexivity. Qed.
 
 (** 思考练习：在运行以下指令之前，你能计算出 [prod_curry] 和 [prod_uncurry] 的类型吗？ *)
 
@@ -924,7 +909,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, advanced (nth_error_informal)  
+(** **** 练习：2 星, advanced (nth_error_informal) 
 
     回想 [nth_error] 函数的定义：
 
@@ -936,7 +921,7 @@ Proof.
 
    请写出以下定理的非形式化证明：
 
-   forall X n l, length l = n -> @nth_error X l n = None
+   forall X l n, length l = n -> @nth_error X l n = None
 *)
 (* 请在此处解答 *)
 
@@ -1060,4 +1045,4 @@ End Church.
 End Exercises.
 
 
-(* Sun Jan 5 03:17:34 UTC 2020 *)
+(* 2020年1月16日 *)

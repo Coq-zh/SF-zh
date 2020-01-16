@@ -85,7 +85,7 @@ From PLF Require Import Imp.
 
 Definition Assertion := state -> Prop.
 
-(** **** 练习：1 星, standard, optional (assertions)  
+(** **** 练习：1 星, standard, optional (assertions) 
 
     用中文重新表述下列断言（或者用你最喜欢的语言）。 *)
 
@@ -97,8 +97,10 @@ Definition as3 : Assertion :=
 Definition as4 : Assertion :=
   fun st => st Z * st Z <= st X /\
             ~ (((S (st Z)) * (S (st Z))) <= st X).
-Definition as5 : Assertion := fun st => True.
-Definition as6 : Assertion := fun st => False.
+Definition as5 : Assertion :=
+  fun st => st Z = max (st X) (st Y).
+Definition as6 : Assertion := fun st => True.
+Definition as7: Assertion := fun st => False.
 (* 请在此处解答 *)
 End ExAssertions.
 (** [] *)
@@ -108,7 +110,8 @@ End ExAssertions.
     (2) 状态 [st] 是唯一我们希望用来再断言中查找变量的状态（我们将不会
     讨论在同一时间的两种不同状态。
     当我们非正式地讨论某些例子的时候，我们会简化一下：我们把开头的
-    [fun st =>] 去掉，并且用 [X] 来代替 [st X] 所以，我们将把
+    [fun st =>] 去掉，并且用 [X] 来代替 [st X] 所以，我们将把*)
+(**
 
       fun st => (st Z) * (st Z) <= m /\
                 ~ ((S (st Z)) * (S (st Z)) <= m)
@@ -143,6 +146,75 @@ Open Scope hoare_spec_scope.
 Notation "P <<->> Q" :=
   (P ->> Q /\ Q ->> P) (at level 80) : hoare_spec_scope.
 
+(** We can actually make our informal convention for writing assertions
+    without explicit mention of states work in formal Coq too.
+    This technique uses Coq coercions and anotation scopes (much
+    as we did with [%imp] in [Imp]) to automatically lift
+    [aexp]s, numbers, and [Prop]s into [Assertion]s when they appear
+    in the [%assertion] scope or when Coq knows the type of an
+    expression is [Assertion]. *)
+
+Definition Aexp : Type := state -> nat.
+
+Definition assert_of_Prop (P : Prop) : Assertion := fun _ => P.
+Definition Aexp_of_nat (n : nat) : Aexp := fun _ => n.
+
+Definition Aexp_of_aexp (a : aexp) : Aexp := fun st => aeval st a.
+
+Coercion assert_of_Prop : Sortclass >-> Assertion.
+Coercion Aexp_of_nat : nat >-> Aexp.
+Coercion Aexp_of_aexp : aexp >-> Aexp.
+
+Arguments assert_of_Prop /.
+Arguments Aexp_of_nat /.
+Arguments Aexp_of_aexp /.
+
+Bind Scope assertion_scope with Assertion.
+Bind Scope assertion_scope with Aexp.
+Delimit Scope assertion_scope with assertion.
+
+Notation assert P := (P%assertion : Assertion).
+Notation mkAexp a := (a%assertion : Aexp).
+
+Notation "~ P" := (fun st => ~ assert P st) : assertion_scope.
+Notation "P /\ Q" := (fun st => assert P st /\ assert Q st) : assertion_scope.
+Notation "P \/ Q" := (fun st => assert P st \/ assert Q st) : assertion_scope.
+Notation "P -> Q" := (fun st => assert P st ->  assert Q st) : assertion_scope.
+Notation "P <-> Q" := (fun st => assert P st <->  assert Q st) : assertion_scope.
+Notation "a = b" := (fun st => mkAexp a st = mkAexp b st) : assertion_scope.
+Notation "a <> b" := (fun st => mkAexp a st <> mkAexp b st) : assertion_scope.
+Notation "a <= b" := (fun st => mkAexp a st <= mkAexp b st) : assertion_scope.
+Notation "a < b" := (fun st => mkAexp a st < mkAexp b st) : assertion_scope.
+Notation "a >= b" := (fun st => mkAexp a st >= mkAexp b st) : assertion_scope.
+Notation "a > b" := (fun st => mkAexp a st > mkAexp b st) : assertion_scope.
+Notation "a + b" := (fun st => mkAexp a st + mkAexp b st) : assertion_scope.
+Notation "a - b" := (fun st => mkAexp a st - mkAexp b st) : assertion_scope.
+Notation "a * b" := (fun st => mkAexp a st * mkAexp b st) : assertion_scope.
+
+(** One small limitation of this approach is that we don't have
+    an automatic way to coerce function applications that appear
+    within an assertion to make appropriate use of the state.
+    Instead, we use an explicit [ap] operator to lift the function. *)
+
+Definition ap {X} (f : nat -> X) (x : Aexp) :=
+  fun st => f (x st).
+
+Definition ap2 {X} (f : nat -> nat -> X) (x : Aexp) (y : Aexp) (st : state) :=
+  f (x st) (y st).
+
+Module ExPrettyAssertions.
+Definition as1 : Assertion := X = 3.
+Definition as2 : Assertion := X <= Y.
+Definition as3 : Assertion := X = 3 \/ X <= Y.
+Definition as4 : Assertion :=
+  Z * Z <= X /\
+            ~ (((ap S Z) * (ap S Z)) <= X).
+Definition as5 : Assertion :=
+  Z = ap2 max X Y.
+Definition as6 : Assertion := True.
+Definition as7 : Assertion := False.
+End ExPrettyAssertions.
+
 (* ################################################################# *)
 (** * 霍尔三元组 *)
 
@@ -170,15 +242,15 @@ Definition hoare_triple
     利的：
 
        {{P}} c {{Q}}.
-
-    （传统的记号是 [{P} c {Q}]，不过单花括号已经被用在 Coq 中其
+*)
+(** （传统的记号是 [{P} c {Q}]，不过单花括号已经被用在 Coq 中其
     它东西上了。*)
 
 Notation "{{ P }}  c  {{ Q }}" :=
   (hoare_triple P c Q) (at level 90, c at next level)
   : hoare_spec_scope.
 
-(** **** 练习：1 星, standard, optional (triples)  
+(** **** 练习：1 星, standard, optional (triples) 
 
     用中文重新表述下列霍尔三元组。
 
@@ -198,11 +270,11 @@ Notation "{{ P }}  c  {{ Q }}" :=
       c
       {{(Z * Z) <= m /\ ~ (((S Z) * (S Z)) <= m)}}
 *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：1 星, standard, optional (valid_triples)  
+(** **** 练习：1 星, standard, optional (valid_triples) 
 
     下列的霍尔三元组是否_'有效'_，亦即，表述的 [P]、[c]、[Q] 之间的
     关系是否为真？
@@ -229,7 +301,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
         WHILE ~(X = 0) DO X ::= X + 1 END
       {{X = 100}}
 *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -325,7 +397,7 @@ Proof.
 (** 因为 [P] 是一个任意的 Coq 断言，我们不能直接“编辑”它的文本部分。不
     过，我们可以通过将 [P] 在下述新的状态中计算来达到相同的效果：*)
 
-Definition assn_sub X a P : Assertion :=
+Definition assn_sub X a (P:Assertion) : Assertion :=
   fun (st : state) =>
     P (X !-> aeval st a ; st).
 
@@ -400,9 +472,9 @@ Proof.
 (** 下述是一个利用这个规则的形式化证明。*)
 
 Example assn_sub_example :
-  {{(fun st => st X < 5) [X |-> X + 1]}}
+  {{(X < 5) [X |-> X + 1]}}
   X ::= X + 1
-  {{fun st => st X < 5}}.
+  {{X < 5}}.
 Proof.
   (* 课上已完成 *)
   apply hoare_asgn.  Qed.
@@ -413,7 +485,7 @@ Proof.
 
     我们会在下一节中了解怎么做。*)
 
-(** **** 练习：2 星, standard (hoare_asgn_examples)  
+(** **** 练习：2 星, standard (hoare_asgn_examples) 
 
     将下列非正式的霍尔三元组……
 
@@ -434,7 +506,7 @@ Proof.
 Definition manual_grade_for_hoare_asgn_examples : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard, recommended (hoare_asgn_wrong)  
+(** **** 练习：2 星, standard, recommended (hoare_asgn_wrong) 
 
     几乎所有人在看赋值规则第一眼就会觉得它是反向的。如果你还感觉很
     迷惑，思考一些“正向”的规则可能有帮助。这里是一个看起来挺自然的
@@ -453,7 +525,7 @@ Definition manual_grade_for_hoare_asgn_examples : option (nat*string) := None.
 Definition manual_grade_for_hoare_asgn_wrong : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：3 星, advanced (hoare_asgn_fwd)  
+(** **** 练习：3 星, advanced (hoare_asgn_fwd) 
 
     然而，通过引入一个_'参数'_ [m]（一个 Coq 整数）来记录 [X] 原
     来的值，我们可以定义一个赋值的证明规则，它可以，直觉上讲，“正向地
@@ -479,7 +551,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, advanced, optional (hoare_asgn_fwd_exists)  
+(** **** 练习：2 星, advanced, optional (hoare_asgn_fwd_exists) 
 
     另外一种定义正向赋值规则的方式是，对变量在赋值之前的值做存在量化。
     证明这是正确的。
@@ -569,18 +641,18 @@ Proof.
 (** 例如，我们可以这样应用第一条规则：
 
       {{ True }} ->>
-      {{ 1 = 1 }}
+      {{ (X = 1) [X |-> 1] }}
     X ::= 1
       {{ X = 1 }}
 
     或者，形式化地：*)
 
 Example hoare_asgn_example1 :
-  {{fun st => True}} X ::= 1 {{fun st => st X = 1}}.
+  {{True}} X ::= 1 {{X = 1}}.
 Proof.
   (* 课上已完成 *)
   apply hoare_consequence_pre
-    with (P' := (fun st => st X = 1) [X |-> 1]).
+    with (P' := (X = 1) [X |-> 1]).
   apply hoare_asgn.
   intros st H. unfold assn_sub, t_update. simpl. reflexivity.
 Qed.
@@ -595,15 +667,15 @@ Qed.
    或者，形式化地：*)
 
 Example assn_sub_example2 :
-  {{(fun st => st X < 4)}}
+  {{X < 4}}
   X ::= X + 1
-  {{fun st => st X < 5}}.
+  {{X < 5}}.
 Proof.
   (* 课上已完成 *)
   apply hoare_consequence_pre
-    with (P' := (fun st => st X < 5) [X |-> X + 1]).
+    with (P' := (X < 5) [X |-> X + 1]).
   apply hoare_asgn.
-  intros st H. unfold assn_sub, t_update. simpl. omega.
+  intros st H. unfold assn_sub, t_update. simpl in *. omega.
 Qed.
 
 (** 最后，为了证明中的方便，我们有一个组合起来的缩放规则，可以让
@@ -645,9 +717,9 @@ Proof.
     再填上。” *)
 
 Example hoare_asgn_example1' :
-  {{fun st => True}}
+  {{True}}
   X ::= 1
-  {{fun st => st X = 1}}.
+  {{X = 1}}.
 Proof.
   eapply hoare_consequence_pre.
   apply hoare_asgn.
@@ -687,10 +759,12 @@ Lemma silly2 :
   Q 42.
 Proof.
   intros P Q HP HQ. eapply HQ. destruct HP as [y HP'].
+  Fail apply HP'.
 
-(** 在这里使用 [apply HP'] 将会失败并产生如下错误：
+(** 在这里使用 [apply HP'] 将会失败并产生如下错误，这里省略了一些细节：
 
-      Error: Impossible to unify "?175" with "y".
+      Unable to unify "?y@{...}" with "y" (cannot instantiate
+      "?y" because "y" is not in its scope: ...
 
     有一个简单的解决办法：把 [destruct HP] 提到 [eapply HQ] _'之前'_。 *)
 Abort.
@@ -720,7 +794,7 @@ Proof.
   intros P Q HP HQ. destruct HP as [y HP']. eapply HQ. eassumption.
 Qed.
 
-(** **** 练习：2 星, standard (hoare_asgn_examples_2)  
+(** **** 练习：2 星, standard (hoare_asgn_examples_2) 
 
     将下述的非形式化霍尔三元组
 
@@ -792,23 +866,23 @@ Proof.
 
 (** 下面是一个同时包括赋值和组合的例子。 *)
 
-Example hoare_asgn_example3 : forall a n,
-  {{fun st => aeval st a = n}}
+Example hoare_asgn_example3 : forall (a:aexp) (n:nat),
+  {{(a = n)%assertion}}
   X ::= a;; SKIP
-  {{fun st => st X = n}}.
+  {{X = n}}.
 Proof.
   intros a n. eapply hoare_seq.
   - (* 组合右侧 *)
     apply hoare_skip.
   - (* 组合左侧 *)
     eapply hoare_consequence_pre. apply hoare_asgn.
-    intros st H. subst. reflexivity.
+    intros st H. simpl in *. subst. reflexivity.
 Qed.
 
 (** 我们一般会将 [hoare_seq] 和
     [hoare_consequence_pre] 以及 [eapply] 策略一起使用，如上所示。*)
 
-(** **** 练习：2 星, standard, recommended (hoare_asgn_example4)  
+(** **** 练习：2 星, standard, recommended (hoare_asgn_example4) 
 
     将这个“标注程序”翻译成正式证明：
 
@@ -823,14 +897,14 @@ Qed.
    （带 “[->>]” 的标记代表了使用 [hoare_consequence_pre]。） *)
 
 Example hoare_asgn_example4 :
-  {{fun st => True}}
+  {{True}}
   X ::= 1;; Y ::= 2
-  {{fun st => st X = 1 /\ st Y = 2}}.
+  {{ (X = 1 /\ Y = 2)}}.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (swap_exercise)  
+(** **** 练习：3 星, standard (swap_exercise) 
 
     写一个 Imp 程序 [c]，用来交换变量 [X] 和 [Y] 并且说明
     它符合如下规范：
@@ -845,21 +919,21 @@ Definition swap_program : com
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
 Theorem swap_exercise :
-  {{fun st => st X <= st Y}}
+  {{X <= Y}}
   swap_program
-  {{fun st => st Y <= st X}}.
+  {{Y <= X}}.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (hoarestate1)  
+(** **** 练习：3 星, standard (hoarestate1) 
 
     解释为何下列命题无法被证明：
 
       forall (a : aexp) (n : nat),
          {{fun st => aeval st a = n}}
            X ::= 3;; Y ::= a
-         {{fun st => st Y = n}}.
+         {{Y = n}}.
 *)
 
 (* 请在此处解答 *)
@@ -896,7 +970,8 @@ Definition manual_grade_for_hoarestate1 : option (nat*string) := None.
 (** 不过我们还是可以表述得更精确。在“THEN”分支中，[b] 化简为
     [true]，而在“ELSE”分支中我们知道它化简为 [false]。
     我们可以让这个信息作为 [c1] 和 [c2] 的假设出现可以让我们分别研究
-    [c1] 和 [c2] 的行为（亦即它们为什么能导出后置条件 [Q]）。
+    [c1] 和 [c2] 的行为（亦即它们为什么能导出后置条件 [Q]）。*)
+(**
 
               {{P /\   b}} c1 {{Q}}
               {{P /\ ~ b}} c2 {{Q}}
@@ -912,6 +987,10 @@ Definition manual_grade_for_hoarestate1 : option (nat*string) := None.
 
 Definition bassn b : Assertion :=
   fun st => (beval st b = true).
+
+Coercion bassn : bexp >-> Assertion.
+
+Arguments bassn /.
 
 (** 下列是一些有关于 [bassn] 的有用的引理：*)
 
@@ -930,10 +1009,14 @@ Proof.
 
 (** 现在我们就可以形式化条件命令的证明规则，并且证明它的正确性。*)
 
-Theorem hoare_if : forall P Q b c1 c2,
+Theorem hoare_if : forall P Q (b:bexp) c1 c2,
+  {{ P /\ b }} c1 {{Q}} ->
+  {{ P /\ ~ b}} c2 {{Q}} ->
+  {{P}} TEST b THEN c1 ELSE c2 FI {{Q}}.
+(* Theorem hoare_if : forall P Q b c1 c2,
   {{fun st => P st /\ bassn b st}} c1 {{Q}} ->
   {{fun st => P st /\ ~ (bassn b st)}} c2 {{Q}} ->
-  {{P}} TEST b THEN c1 ELSE c2 FI {{Q}}.
+  {{P}} TEST b THEN c1 ELSE c2 FI {{Q}}. *)
 Proof.
   intros P Q b c1 c2 HTrue HFalse st st' HE HP.
   inversion HE; subst.
@@ -954,12 +1037,12 @@ Proof.
 (** 下面是刚刚例子的形式化证明，我们用规则来证明程序符合规范。*)
 
 Example if_example :
-    {{fun st => True}}
+    {{True}}
   TEST X = 0
     THEN Y ::= 2
     ELSE Y ::= X + 1
   FI
-    {{fun st => st X <= st Y}}.
+    {{X <= Y}}.
 Proof.
   (* 课上已完成 *)
   apply hoare_if.
@@ -975,17 +1058,17 @@ Proof.
     simpl; intros st _. omega.
 Qed.
 
-(** **** 练习：2 星, standard (if_minus_plus)  
+(** **** 练习：2 星, standard (if_minus_plus) 
 
     用 [hoare_if] 证明下面的三元组。不要使用 [unfold hoare_triple]。*)
 
 Theorem if_minus_plus :
-  {{fun st => True}}
+  {{True}}
   TEST X <= Y
     THEN Z ::= Y - X
     ELSE Y ::= X + Z
   FI
-  {{fun st => st Y = st X + st Z}}.
+  {{Y = X + Z}}.
 Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
@@ -993,7 +1076,7 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** 练习：单侧条件 *)
 
-(** **** 练习：4 星, standard (if1_hoare)  
+(** **** 练习：4 星, standard (if1_hoare) 
 
     在这个练习中我们考虑对 Imp 加入形如 [IF1 b THEN c FI] 的“单边条件”。
     这里 [b] 是个布尔表达式而 [c] 是一个命令。如果 [b] 化简为 [true]， [c]
@@ -1015,6 +1098,8 @@ Inductive com : Type :=
   | CWhile : bexp -> com -> com
   | CIf1 : bexp -> com -> com.
 
+Bind Scope imp_scope with com.
+
 Notation "'SKIP'" :=
   CSkip : imp_scope.
 Notation "c1 ;; c2" :=
@@ -1033,7 +1118,6 @@ Notation "'IF1' b 'THEN' c 'FI'" :=
 
 Reserved Notation "st '=[' c ']=>' st'" (at level 40).
 
-Open Scope imp_scope.
 Inductive ceval : com -> state -> state -> Prop :=
   | E_Skip : forall st,
       st =[ SKIP ]=> st
@@ -1063,7 +1147,6 @@ Inductive ceval : com -> state -> state -> Prop :=
 (* 请在此处解答 *)
 
   where "st '=[' c ']=>' st'" := (ceval c st st').
-Close Scope imp_scope.
 
 (** 现在我们把霍尔三元组的定义和记号重新写在这里。*)
 
@@ -1097,11 +1180,11 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
     的那些都拷到这来。*)
 
 Lemma hoare_if1_good :
-  {{ fun st => st X + st Y = st Z }}
+  {{ X + Y = Z }}
   (IF1 ~(Y = 0) THEN
     X ::= X + Y
-  FI)%imp
-  {{ fun st => st X = st Z }}.
+  FI)
+  {{ X = Z }}.
 Proof. (* 请在此处解答 *) Admitted.
 
 End If1.
@@ -1137,7 +1220,7 @@ Definition manual_grade_for_if1_hoare : option (nat*string) := None.
 
 (** 不过就像我们在上面对条件语句分析时那样，我们还会有一点附加
     的信息：除了 [P] 成立以外，[b] 会在执行完毕以后化简为 [false]。
-    所以，我们可以再添补一下后置条件： 
+    所以，我们可以再添补一下后置条件：
 
       {{P}} WHILE b DO c END {{P /\ ~ b}}
 *)
@@ -1146,20 +1229,20 @@ Definition manual_grade_for_if1_hoare : option (nat*string) := None.
     的时候成立，我们当然需要保证命令 [c] 执行后 [P] 成立。
     进一步说，因为 [P] 在 [c] 第一次执行前成立，每次 [c] 执行完成
     都会重新满足作为后置条件的 [P]，我们可以假设 [P] 在 [c] 执行前
-    就成立。总结为以下规则：
+    就成立。总结为以下规则：*)
+(**
 
                    {{P}} c {{P}}
         -----------------------------------
         {{P}} WHILE b DO c END {{P /\ ~ b}}
-
-    这几乎就是我们想要的规则，不过它还有一点可以改进的地方：在循环体
+*)
+(** 这几乎就是我们想要的规则，不过它还有一点可以改进的地方：在循环体
     开始是的时候，我们不止知道 [P] 成立，还有条件 [b] 会在当前状态
     中化简为 [true]。*)
 
 (** 这给我们带来了一点额外的信息用来推论 [c] （用来说明它结束时
-    满足不变式）。
-
-    而这会将我们导向此规则的最终版本：
+    满足不变式）。*)
+(** 而这会将我们导向此规则的最终版本：
 
                {{P /\ b}} c {{P}}
         ----------------------------------  (hoare_while)
@@ -1168,9 +1251,9 @@ Definition manual_grade_for_if1_hoare : option (nat*string) := None.
     断言 [P] 叫做_'循环不变式（invariant of the loop）'_。
 *)
 
-Theorem hoare_while : forall P b c,
-  {{fun st => P st /\ bassn b st}} c {{P}} ->
-  {{P}} WHILE b DO c END {{fun st => P st /\ ~ (bassn b st)}}.
+Theorem hoare_while : forall P (b:bexp) c,
+  {{P /\ b}} c {{P}} ->
+  {{P}} WHILE b DO c END {{P /\ ~ b}}.
 Proof.
   intros P b c Hhoare st st' He HP.
   (* 像之前见到过的，我们需要对 [He] 做归纳来推理。
@@ -1199,10 +1282,10 @@ Qed.
     即使它很明显_'不是'_只由循环体所导出。*)
 
 Example while_example :
-    {{fun st => st X <= 3}}
+    {{X <= 3}}
   WHILE X <= 2
   DO X ::= X + 1 END
-    {{fun st => st X = 3}}.
+    {{X = 3}}.
 Proof.
   eapply hoare_consequence_post.
   apply hoare_while.
@@ -1213,7 +1296,7 @@ Proof.
   unfold bassn, assert_implies. intros st [Hle Hb].
     simpl in Hb. destruct ((st X) <=? 2) eqn : Heqle.
     exfalso. apply Hb; reflexivity.
-    apply leb_iff_conv in Heqle. omega.
+    apply leb_iff_conv in Heqle. simpl in *. omega.
 Qed.
 (** 我们可以使用 WHILE 规则来证明下列的霍尔三元组。 *)
 
@@ -1222,7 +1305,7 @@ Theorem always_loop_hoare : forall P Q,
 Proof.
   (* 课上已完成 *)
   intros P Q.
-  apply hoare_consequence_pre with (P' := fun st : state => True).
+  apply hoare_consequence_pre with (P' := (True:Assertion)).
   eapply hoare_consequence_post.
   apply hoare_while.
   - (* 循环体维持不变式 *)
@@ -1244,7 +1327,7 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** 练习：[REPEAT] *)
 
-(** **** 练习：4 星, advanced (hoare_repeat)  
+(** **** 练习：4 星, advanced (hoare_repeat) 
 
     在这个练习中，我们会往 Imp 里面加一种新的命令：[REPEAT] c [UNTIL] b [END]。
     请你写出 [REPEAT] 的求值规则，并且写一个关于它的霍尔逻辑证明规则。
@@ -1396,12 +1479,12 @@ Definition manual_grade_for_hoare_repeat : option (nat*string) := None.
 (* ################################################################# *)
 (** * 附加练习 *)
 
-(** **** 练习：3 星, standard (hoare_havoc)  
+(** **** 练习：3 星, standard (hoare_havoc) 
 
     在这个练习中我们将会为一种 [HAVOC] 命令实现证明规则，这个命令类似于
     [Imp] 中的 [any] 表达式。
 
-    首先我们把这些命令放在一个分离的模块里，并且把命令的语法和粗略语义
+    首先我们把这些命令放在一个独立的模块中，并且把命令的语法和大致语义
     写下来。*)
 
 Module Himp.
@@ -1459,7 +1542,7 @@ Inductive ceval : com -> state -> state -> Prop :=
 
 where "st '=[' c ']=>' st'" := (ceval c st st').
 
-(** 对霍尔三元组的定义和之前完全一致。 *)
+(** 霍尔三元组的定义和之前完全一致。 *)
 
 Definition hoare_triple (P:Assertion) (c:com) (Q:Assertion) : Prop :=
   forall st st', st =[ c ]=> st' -> P st -> Q st'.
@@ -1467,6 +1550,17 @@ Definition hoare_triple (P:Assertion) (c:com) (Q:Assertion) : Prop :=
 Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
                                   (at level 90, c at next level)
                                   : hoare_spec_scope.
+
+(** 前置条件的缩放规则和之前完全一样。 *)
+
+Theorem hoare_consequence_pre : forall (P P' Q : Assertion) c,
+  {{P'}} c {{Q}} ->
+  P ->> P' ->
+  {{P}} c {{Q}}.
+Proof.
+  intros P P' Q c Hhoare Himp.
+  intros st st' Hc HP. apply (Hhoare st st').
+  assumption. apply Himp. assumption. Qed.
 
 (** 请通过定义 [havoc_pre] 来创建一个关于 [HAVOC] 的证明规则，并
     证明此规则是正确的。*)
@@ -1478,6 +1572,19 @@ Theorem hoare_havoc : forall (Q : Assertion) (X : string),
   {{ havoc_pre X Q }} HAVOC X {{ Q }}.
 Proof.
   (* 请在此处解答 *) Admitted.
+
+(** Complete the following proof without changing any of the provided
+    commands. If you find that it can't be completed, your definition of
+    [havoc_pre] is probably too strong. Find a way to relax it so that
+    [havoc_post] can be proved. *)
+
+Theorem havoc_post : forall (P : Assertion) (X : string),
+  {{ P }} HAVOC X {{ fun st => exists (n:nat), P [X |-> n] st }}.
+Proof.
+  intros P X. eapply hoare_consequence_pre.
+  - apply hoare_havoc.
+  - unfold assert_implies, assn_sub.
+    (* 请在此处解答 *) Admitted.
 
 End Himp.
 (** [] *)
@@ -1597,10 +1704,9 @@ Notation "{{ P }}  c  {{ Q }}" :=
     它们可以被 [ASSUME] 语句导出却不能被 [ASSERT] 导出。然后证明任何关于
     [ASSERT] 的三元组换成 [ASSUME] 也是正确的。*)
 
-Theorem assert_assume_differ : exists P b Q,
+Theorem assert_assume_differ : exists (P:Assertion) b (Q:Assertion),
        ({{P}} ASSUME b {{Q}})
   /\ ~ ({{P}} ASSERT b {{Q}}).
-Proof.
 (* 请在此处解答 *) Admitted.
 
 Theorem assert_implies_assume : forall P b Q,
@@ -1677,9 +1783,9 @@ Proof.
   eexists. split. reflexivity. assumption.
 Qed.
 
-Theorem hoare_if : forall P Q b c1 c2,
-  {{fun st => P st /\ bassn b st}} c1 {{Q}} ->
-  {{fun st => P st /\ ~ (bassn b st)}} c2 {{Q}} ->
+Theorem hoare_if : forall P Q (b:bexp) c1 c2,
+  {{ P /\ b}} c1 {{Q}} ->
+  {{ P /\ ~ b}} c2 {{Q}} ->
   {{P}} TEST b THEN c1 ELSE c2 FI {{Q}}.
 Proof.
   intros P Q b c1 c2 HTrue HFalse st st' HE HP.
@@ -1695,9 +1801,9 @@ Proof.
       split. assumption.
       apply bexp_eval_false. assumption. Qed.
 
-Theorem hoare_while : forall P b c,
-  {{fun st => P st /\ bassn b st}} c {{P}} ->
-  {{P}} WHILE b DO c END {{fun st => P st /\ ~ (bassn b st)}}.
+Theorem hoare_while : forall P (b:bexp) c,
+  {{P /\ b}} c {{P}} ->
+  {{P}} WHILE b DO c END {{ P /\ ~b}}.
 Proof.
   intros P b c Hhoare st st' He HP.
   remember (WHILE b DO c END) as wcom eqn:Heqwcom.
@@ -1725,15 +1831,15 @@ Proof.
 Qed.
 
 Example assert_assume_example:
-  {{fun st => True}}
+  {{True}}
   ASSUME (X = 1);;
   X ::= X + 1;;
   ASSERT (X = 2)
-  {{fun st => True}}.
+  {{True}}.
 Proof.
 (* 请在此处解答 *) Admitted.
 
 End HoareAssertAssume.
 (** [] *)
 
-(* Sun Jan 5 03:18:34 UTC 2020 *)
+(* 2020年1月16日 *)

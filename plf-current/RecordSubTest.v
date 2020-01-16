@@ -64,8 +64,8 @@ idtac " ".
 idtac "#> Examples.subtyping_example_3".
 idtac "Possible points: 1".
 check_type @Examples.subtyping_example_3 (
-(Arrow RNil (RCons Examples.j Examples.A RNil) <:
- Arrow (RCons Examples.k Examples.B RNil) RNil)).
+(Arrow RNil (RCons "j" Examples.A RNil) <:
+ Arrow (RCons "k" Examples.B RNil) RNil)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples.subtyping_example_3.
@@ -78,10 +78,8 @@ idtac " ".
 idtac "#> Examples.subtyping_example_4".
 idtac "Possible points: 2".
 check_type @Examples.subtyping_example_4 (
-(RCons Examples.x Examples.A
-   (RCons Examples.y Examples.B (RCons Examples.z Examples.C RNil)) <:
- RCons Examples.z Examples.C
-   (RCons Examples.y Examples.B (RCons Examples.x Examples.A RNil)))).
+(RCons "x" Examples.A (RCons "y" Examples.B (RCons "z" Examples.C RNil)) <:
+ RCons "z" Examples.C (RCons "y" Examples.B (RCons "x" Examples.A RNil)))).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples.subtyping_example_4.
@@ -103,9 +101,8 @@ idtac "#> Examples2.typing_example_0".
 idtac "Possible points: 1".
 check_type @Examples2.typing_example_0 (
 (@Maps.empty ty
- |- rcons Examples.k (abs Examples.z Examples.A (var Examples.z))
-      (rcons Examples.j (abs Examples.z Examples.B (var Examples.z)) rnil) \in
- Examples.TRcd_kj)).
+ |- rcons "k" (abs "z" Examples.A (var "z"))
+      (rcons "j" (abs "z" Examples.B (var "z")) rnil) \in Examples.TRcd_kj)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples2.typing_example_0.
@@ -119,8 +116,8 @@ idtac "#> Examples2.typing_example_1".
 idtac "Possible points: 2".
 check_type @Examples2.typing_example_1 (
 (@Maps.empty ty
- |- app (abs Examples.x Examples.TRcd_j (rproj (var Examples.x) Examples.j))
-      Examples2.trcd_kj \in Arrow Examples.B Examples.B)).
+ |- app (abs "x" Examples.TRcd_j (rproj (var "x") "j")) Examples2.trcd_kj \in
+ Arrow Examples.B Examples.B)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions Examples2.typing_example_1.
@@ -147,7 +144,20 @@ idtac " ".
 idtac "Max points - standard: 15".
 idtac "Max points - advanced: 15".
 idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
+idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- Examples.subtyping_example_1 ---------".
@@ -170,4 +180,4 @@ idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Jan 5 03:19:25 UTC 2020 *)
+(* 2020年1月16日 *)

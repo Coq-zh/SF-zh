@@ -66,7 +66,7 @@ Fixpoint evalF (t : tm) : nat :=
   end.
 
 (** 这是用同样风格描述的等价求值器，只是用归纳关系来定义。
-    我们使用记号 [t ==> n] 来表达“[t] 求值到 [n]”。 
+    我们使用记号 [t ==> n] 来表达“[t] 求值到 [n]”。
 
                                ---------                               (E_Const)
                                C n ==> n
@@ -90,7 +90,7 @@ where " t '==>' n " := (eval t n).
 
 Module SimpleArith1.
 
-(** 现在，我们展示对应的_'小步'_求值关系。 
+(** 现在，我们展示对应的_'小步'_求值关系。
 
     
                      -------------------------------        (ST_PlusConstConst)
@@ -144,7 +144,7 @@ Example test_step_1 :
 Proof.
   apply ST_Plus1. apply ST_PlusConstConst.  Qed.
 
-(** **** 练习：1 星, standard (test_step_2)  
+(** **** 练习：1 星, standard (test_step_2) 
 
     当求和操作的左侧表达式已经完成求值，其右侧表达式可向前一步：
     如果 [t2] 可向前一步到 [t2']，那么 [P (C n) t2] 可向前一步到 [P (C n) t2']： *)
@@ -220,21 +220,21 @@ Proof.
   unfold deterministic. intros x y1 y2 Hy1 Hy2.
   generalize dependent y2.
   induction Hy1; intros y2 Hy2.
-  - (* ST_PlusConstConst *) inversion Hy2.
+  - (* ST_PlusConstConst *) inversion Hy2; subst.
     + (* ST_PlusConstConst *) reflexivity.
     + (* ST_Plus1 *) inversion H2.
     + (* ST_Plus2 *) inversion H2.
-  - (* ST_Plus1 *) inversion Hy2.
+  - (* ST_Plus1 *) inversion Hy2; subst.
     + (* ST_PlusConstConst *)
-      rewrite <- H0 in Hy1. inversion Hy1.
+      inversion Hy1.
     + (* ST_Plus1 *)
       rewrite <- (IHHy1 t1'0).
       reflexivity. assumption.
     + (* ST_Plus2 *)
-      rewrite <- H in Hy1. inversion Hy1.
-  - (* ST_Plus2 *) inversion Hy2.
+      inversion Hy1.
+  - (* ST_Plus2 *) inversion Hy2; subst.
     + (* ST_PlusConstConst *)
-      rewrite <- H1 in Hy1. inversion Hy1.
+      inversion Hy1.
     + (* ST_Plus1 *) inversion H2.
     + (* ST_Plus2 *)
       rewrite <- (IHHy1 t2'0).
@@ -334,8 +334,8 @@ Inductive value : tm -> Prop :=
                               t2 --> t2'
                          --------------------                        (ST_Plus2)
                          P v1 t2 --> P v1 t2'
-
-    再一次地，变量名在这里包含了重要的信息：按照惯例，[v1] 涉及到值，
+*)
+(** 再一次地，变量名在这里包含了重要的信息：按照惯例，[v1] 涉及到值，
     而 [t1] 和 [t2] 涉及到任意的项。（在这种约定下，显式的 [value] 假设也
     许是多余的。在这里仍然保留它，主要是为了在非形式化的和 Coq 的规则之间
     建立起密切的对应关系，但为简单起见，后面的非形式化规则中我们便会省略掉它。） *)
@@ -358,7 +358,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '-->' t' " := (step t t').
 
-(** **** 练习：3 星, standard, recommended (redo_determinism)  
+(** **** 练习：3 星, standard, recommended (redo_determinism) 
 
     作为这一改变的完备性检查，让我们重新验证一下确定性。
     下面是它的非形式化证明：
@@ -484,9 +484,9 @@ Qed.
 
 (** 确实，容易错误地写下使它们_'不'_一致的定义。 *)
 
-(** **** 练习：3 星, standard, optional (value_not_same_as_normal_form1)  
+(** **** 练习：3 星, standard, optional (value_not_same_as_normal_form1) 
 
-    我们可能错误地定义了 [value] 使它包括了还没有完成归约的项。 
+    我们可能错误地定义了 [value] 使它包括了还没有完成归约的项。
 
     （如果你不想亲自动手在 Coq 中完成这个和下一个练习，
     也请思考一下，尝试找到一个这样的项。）*)
@@ -521,7 +521,7 @@ End Temp1.
 
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (value_not_same_as_normal_form2)  
+(** **** 练习：2 星, standard, optional (value_not_same_as_normal_form2) 
 
     或许，我们错误地定义了 [step] 使它允许继续归约一个值。 *)
 
@@ -555,7 +555,7 @@ Proof.
 End Temp2.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (value_not_same_as_normal_form3)  
+(** **** 练习：3 星, standard, optional (value_not_same_as_normal_form3) 
 
     最后，我们还可能通过 [value] 和 [step] 定义了某些不是值但已无法继续由
     [step] 关系进行归约的项。这些项被称作_'卡住了（stuck）'_。在这种情况是由语义
@@ -617,7 +617,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '-->' t' " := (step t t').
 
-(** **** 练习：1 星, standard (smallstep_bools)  
+(** **** 练习：1 星, standard (smallstep_bools) 
 
     下列哪些命题是可被证明的？（这只是一个思考练习，但如果你想挑战一下自己，
     可以尝试在 Coq 中证明你的答案。） *)
@@ -654,7 +654,7 @@ Definition bool_step_prop3 :=
 Definition manual_grade_for_smallstep_bools : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (progress_bool)  
+(** **** 练习：3 星, standard, optional (progress_bool) 
 
     我们之前对加法表达式证明了其可进性，我们也可以证明布尔表达式的可进性。 *)
 
@@ -673,7 +673,7 @@ Proof.
 
 Module Temp5.
 
-(** **** 练习：2 星, standard (smallstep_bool_shortcut)  
+(** **** 练习：2 星, standard (smallstep_bool_shortcut) 
 
     假设我们想要为布尔表达式的单步归约关系添加“短路（short circuit）”，
     这样当条件语句的 [then] 和 [else] 分支有相同的值时（[tru] 或 [fls]），
@@ -718,7 +718,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (properties_of_altered_step)  
+(** **** 练习：3 星, standard, optional (properties_of_altered_step) 
 
     课程中证明的确定性和强可进性定理对于我们刚刚定义的单步关系也是成立的。
     在我们添加了 [ST_ShortCircuit] 以后……
@@ -727,19 +727,19 @@ Proof.
 
       可选：在 Coq 中证明你的答案。*)
 
-(* 请在此处解答 
+(* 请在此处解答
    - 强可进性是否成立？请回答是或否，并简要解释（一句话即可）你的答案。
 
      可选：在 Coq 中证明你的答案。
 *)
 
-(* 请在此处解答 
+(* 请在此处解答
    - 一般来说，如果从原始的单步关系中拿掉一两个构造子，能否使强可进性不再成立？
      请回答是或否，并简要解释（一句话即可）你的答案。
 
 (* 请在此处解答 *)
-
-    [] *)
+*)
+(** [] *)
 
 End Temp5.
 End Temp4.
@@ -1054,7 +1054,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, advanced (eval__multistep_inf)  
+(** **** 练习：3 星, advanced (eval__multistep_inf) 
 
     请为 [eval__multi_step] 写出详细的非形式化证明。
 
@@ -1094,7 +1094,7 @@ Proof.
 (* ================================================================= *)
 (** ** 额外练习 *)
 
-(** **** 练习：3 星, standard, optional (interp_tm)  
+(** **** 练习：3 星, standard, optional (interp_tm) 
 
     请回忆一下我们还通过函数 [evalF] 定义了对项的大步求值。请证明它等价于其他语义。
     （提示：我刚刚证明了 [eval] 和 [multistep] 是等价的，因此逻辑上讲你可以任意
@@ -1106,7 +1106,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, standard (combined_properties)  
+(** **** 练习：4 星, standard (combined_properties) 
 
     我们分开考虑了算数和条件表达式，这个练习探索了他们之间如何交互。 *)
 
@@ -1534,7 +1534,7 @@ Qed.
 
 Definition stack_multistep st := multi (stack_step st).
 
-(** **** 练习：3 星, advanced (compiler_is_correct)  
+(** **** 练习：3 星, advanced (compiler_is_correct) 
 
     请回忆一下_'逻辑基础'_ [Imp] 一章中对 [compile] 和 [aexp] 的定义。
     我们现在想要证明堆栈机上 [s_compile] 函数的正确性。
@@ -1637,7 +1637,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：1 星, standard, optional (normalize_ex')  
+(** **** 练习：1 星, standard, optional (normalize_ex') 
 
     For comparison, prove it using [apply] instead of [eapply]. *)
 
@@ -1648,4 +1648,4 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(* Sun Jan 5 03:18:35 UTC 2020 *)
+(* 2020年1月16日 *)

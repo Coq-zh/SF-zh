@@ -83,14 +83,6 @@ Print Assumptions double_plus.
 Goal True.
 idtac " ".
 
-idtac "-------------------  destruct_induction  --------------------".
-idtac " ".
-
-idtac "#> Manually graded: destruct_induction".
-idtac "Possible points: 1".
-print_manual_grade manual_grade_for_destruct_induction.
-idtac " ".
-
 idtac "-------------------  plus_comm_informal  --------------------".
 idtac " ".
 
@@ -125,28 +117,41 @@ idtac " ".
 
 idtac "#> Manually graded: binary_inverse_a".
 idtac "Advanced".
-idtac "Possible points: 2".
+idtac "Possible points: 4".
 print_manual_grade manual_grade_for_binary_inverse_a.
 idtac " ".
 
 idtac "#> Manually graded: binary_inverse_b".
 idtac "Advanced".
-idtac "Possible points: 1".
+idtac "Possible points: 2".
 print_manual_grade manual_grade_for_binary_inverse_b.
 idtac " ".
 
 idtac "#> Manually graded: binary_inverse_c".
 idtac "Advanced".
-idtac "Possible points: 2".
+idtac "Possible points: 4".
 print_manual_grade manual_grade_for_binary_inverse_c.
 idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 11".
-idtac "Max points - advanced: 18".
+idtac "Max points - standard: 10".
+idtac "Max points - advanced: 22".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- mult_0_r ---------".
@@ -159,8 +164,6 @@ idtac "---------- plus_assoc ---------".
 Print Assumptions plus_assoc.
 idtac "---------- double_plus ---------".
 Print Assumptions double_plus.
-idtac "---------- destruct_induction ---------".
-idtac "MANUAL".
 idtac "---------- mult_comm ---------".
 Print Assumptions mult_comm.
 idtac "---------- binary_commute ---------".
@@ -177,4 +180,4 @@ idtac "---------- binary_inverse_c ---------".
 idtac "MANUAL".
 Abort.
 
-(* Sun Jan 5 03:17:38 UTC 2020 *)
+(* 2020年1月16日 *)

@@ -2,39 +2,42 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
 <title>ADT: Abstract Data Types</title>
-</head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
 <link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+</head>
 
 <body>
 
 <div id="page">
 
 <div id="header">
-<a href='https://coq-zh.github.io/SF-zh/index.html'>
-<img src='common/media/image/sf_logo_sm.png'></a>
-</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: 函数式算法验证</span><br></br>
+<div id='logoinheader'><a href='https://coq-zh.github.io/SF-zh/'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 3: 函数式算法验证</a></div>
 <ul id='menu'>
-   <a href='toc.html'><li class='section_name'>目录</li></a>
-   <a href='coqindex.html'><li class='section_name'>索引</li></a>
-   <a href='deps.html'><li class='section_name'>路线</li></a>
+   <li class='section_name'><a href='toc.html'>目录</a></li>
+   <li class='section_name'><a href='coqindex.html'>索引</a></li>
+   <li class='section_name'><a href='deps.html'>路线</a></li>
 </ul>
-</a></div>
+</div>
 
 <div id="main">
 
 <h1 class="libtitle">ADT<span class="subtitle">Abstract Data Types</span></h1>
 
+<div class="code">
+</div>
 
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Omega</span>.<br/>
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.omega.Omega.html#"><span class="id" title="library">Omega</span></a>.<br/>
 </div>
 
 <div class="doc">
@@ -42,157 +45,160 @@ Let's consider the concept of lookup tables, indexed by keys that are
    numbers, mapping those keys to values of arbitrary (parametric) type.
    We can express this in Coq as follows: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">TABLE</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">V</span>: <span class="id" type="keyword">Type</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">default</span>: <span class="id" type="var">V</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">table</span>: <span class="id" type="keyword">Type</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">empty</span>: <span class="id" type="var">table</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">get</span>: <span class="id" type="var">key</span> → <span class="id" type="var">table</span> → <span class="id" type="var">V</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="tactic">set</span>: <span class="id" type="var">key</span> → <span class="id" type="var">V</span> → <span class="id" type="var">table</span> → <span class="id" type="var">table</span>.<br/>
-&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">gempty</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span>,   <span class="comment">(*&nbsp;get-empty&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">get</span> <span class="id" type="var">k</span> <span class="id" type="var">empty</span> = <span class="id" type="var">default</span>.<br/>
-&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">gss</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,      <span class="comment">(*&nbsp;get-set-same&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">get</span> <span class="id" type="var">k</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
-&nbsp;<span class="id" type="keyword">Axiom</span> <span class="id" type="var">gso</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">j</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,    <span class="comment">(*&nbsp;get-set-other&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">j</span> ≠ <span class="id" type="var">k</span> → <span class="id" type="var">get</span> <span class="id" type="var">j</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">get</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
-<span class="id" type="keyword">End</span> <span class="id" type="var">TABLE</span>.<br/>
+<br/>
+<span class="id" title="keyword">Module</span> <span class="id" title="keyword">Type</span> <a name="TABLE"><span class="id" title="module">TABLE</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="TABLE.V"><span class="id" title="axiom">V</span></a>: <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="TABLE.default"><span class="id" title="axiom">default</span></a>: <a class="idref" href="ADT.html#TABLE.V"><span class="id" title="axiom">V</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="TABLE.table"><span class="id" title="axiom">table</span></a>: <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TABLE.key"><span class="id" title="definition">key</span></a> := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="TABLE.empty"><span class="id" title="axiom">empty</span></a>: <a class="idref" href="ADT.html#TABLE.table"><span class="id" title="axiom">table</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="TABLE.get"><span class="id" title="axiom">get</span></a>: <a class="idref" href="ADT.html#TABLE.key"><span class="id" title="definition">key</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#TABLE.table"><span class="id" title="axiom">table</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#TABLE.V"><span class="id" title="axiom">V</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="TABLE.set"><span class="id" title="axiom">set</span></a>: <a class="idref" href="ADT.html#TABLE.key"><span class="id" title="definition">key</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#TABLE.V"><span class="id" title="axiom">V</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#TABLE.table"><span class="id" title="axiom">table</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#TABLE.table"><span class="id" title="axiom">table</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Axiom</span> <a name="TABLE.gempty"><span class="id" title="axiom">gempty</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">k</span>,   <span class="comment">(*&nbsp;get-empty&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ADT.html#TABLE.get"><span class="id" title="axiom">get</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#TABLE.empty"><span class="id" title="axiom">empty</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#TABLE.default"><span class="id" title="axiom">default</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Axiom</span> <a name="TABLE.gss"><span class="id" title="axiom">gss</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span>,      <span class="comment">(*&nbsp;get-set-same&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ADT.html#TABLE.get"><span class="id" title="axiom">get</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> (<a class="idref" href="ADT.html#TABLE.set"><span class="id" title="axiom">set</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Axiom</span> <a name="TABLE.gso"><span class="id" title="axiom">gso</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">j</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span>,    <span class="comment">(*&nbsp;get-set-other&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#TABLE.get"><span class="id" title="axiom">get</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> (<a class="idref" href="ADT.html#TABLE.set"><span class="id" title="axiom">set</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#TABLE.get"><span class="id" title="axiom">get</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="ADT.html#TABLE"><span class="id" title="module">TABLE</span></a>.<br/>
 </div>
 
 <div class="doc">
-This means:  in any <span class="inlinecode"><span class="id" type="keyword">Module</span></span> that satisfies this <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span>,
-   there's a type <span class="inlinecode"><span class="id" type="var">table</span></span> of lookup-tables, a type <span class="inlinecode"><span class="id" type="var">V</span></span> of values,
-   and operators <span class="inlinecode"><span class="id" type="var">empty</span></span>, <span class="inlinecode"><span class="id" type="var">get</span></span>, <span class="inlinecode"><span class="id" type="tactic">set</span></span> that satisfy the axioms
-   <span class="inlinecode"><span class="id" type="var">gempty</span></span>, <span class="inlinecode"><span class="id" type="var">gss</span></span>, and <span class="inlinecode"><span class="id" type="var">gso</span></span>.
+This means:  in any <span class="inlinecode"><span class="id" title="keyword">Module</span></span> that satisfies this <span class="inlinecode"><span class="id" title="keyword">Module</span></span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span>,
+   there's a type <span class="inlinecode"><span class="id" title="var">table</span></span> of lookup-tables, a type <span class="inlinecode"><span class="id" title="var">V</span></span> of values,
+   and operators <span class="inlinecode"><span class="id" title="var">empty</span></span>, <span class="inlinecode"><span class="id" title="var">get</span></span>, <span class="inlinecode"><span class="id" title="tactic">set</span></span> that satisfy the axioms
+   <span class="inlinecode"><span class="id" title="var">gempty</span></span>, <span class="inlinecode"><span class="id" title="var">gss</span></span>, and <span class="inlinecode"><span class="id" title="var">gso</span></span>.
 
 <div class="paragraph"> </div>
 
-  It's easy to make an implementation of <span class="inlinecode"><span class="id" type="var">TABLE</span></span>, using <span class="inlinecode"><span class="id" type="var">Maps</span></span>.
-  Just for example, let's choose <span class="inlinecode"><span class="id" type="var">V</span></span> to be <span class="inlinecode"><span class="id" type="keyword">Type</span></span>. 
+  It's easy to make an implementation of <span class="inlinecode"><span class="id" title="var">TABLE</span></span>, using <span class="inlinecode"><span class="id" title="var">Maps</span></span>.
+  Just for example, let's choose <span class="inlinecode"><span class="id" title="var">V</span></span> to be <span class="inlinecode"><span class="id" title="keyword">Type</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">VFA</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Maps</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">MapsTable</span> &lt;: <span class="id" type="var">TABLE</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">V</span> := <span class="id" type="keyword">Type</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">default</span>: <span class="id" type="var">V</span> := <span class="id" type="keyword">Prop</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">table</span> := <span class="id" type="var">total_map</span> <span class="id" type="var">V</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> : <span class="id" type="var">table</span> := <span class="id" type="var">t_empty</span> <span class="id" type="var">default</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">get</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">V</span> := <span class="id" type="var">m</span> <span class="id" type="var">k</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">set</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">v</span>: <span class="id" type="var">V</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">table</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">t_update</span> <span class="id" type="var">m</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span>.<br/>
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gempty</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span>, <span class="id" type="var">get</span> <span class="id" type="var">k</span> <span class="id" type="var">empty</span> = <span class="id" type="var">default</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gss</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">get</span> <span class="id" type="var">k</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">get</span>, <span class="id" type="tactic">set</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_eq</span>. <span class="id" type="keyword">Qed</span>.<br/>
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gso</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">j</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>, <span class="id" type="var">j</span>≠<span class="id" type="var">k</span> → <span class="id" type="var">get</span> <span class="id" type="var">j</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">get</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">get</span>, <span class="id" type="tactic">set</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_neq</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">congruence</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
-<span class="id" type="keyword">End</span> <span class="id" type="var">MapsTable</span>.<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">VFA</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="library">Maps</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Module</span> <a name="MapsTable"><span class="id" title="module">MapsTable</span></a> &lt;: <a class="idref" href="ADT.html#TABLE"><span class="id" title="module">TABLE</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="MapsTable.V"><span class="id" title="definition">V</span></a> := <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="MapsTable.default"><span class="id" title="definition">default</span></a>: <a class="idref" href="ADT.html#MapsTable.V"><span class="id" title="definition">V</span></a> := <span class="id" title="keyword">Prop</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="MapsTable.table"><span class="id" title="definition">table</span></a> := <span class="id" title="definition">total_map</span> <a class="idref" href="ADT.html#MapsTable.V"><span class="id" title="definition">V</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="MapsTable.key"><span class="id" title="definition">key</span></a> := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="MapsTable.empty"><span class="id" title="definition">empty</span></a> : <a class="idref" href="ADT.html#MapsTable.table"><span class="id" title="definition">table</span></a> := <span class="id" title="definition">t_empty</span> <a class="idref" href="ADT.html#MapsTable.default"><span class="id" title="definition">default</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="MapsTable.get"><span class="id" title="definition">get</span></a> (<span class="id" title="var">k</span>: <a class="idref" href="ADT.html#MapsTable.key"><span class="id" title="definition">key</span></a>) (<span class="id" title="var">m</span>: <a class="idref" href="ADT.html#MapsTable.table"><span class="id" title="definition">table</span></a>) : <a class="idref" href="ADT.html#MapsTable.V"><span class="id" title="definition">V</span></a> := <a class="idref" href="ADT.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="MapsTable.set"><span class="id" title="definition">set</span></a> (<span class="id" title="var">k</span>: <a class="idref" href="ADT.html#MapsTable.key"><span class="id" title="definition">key</span></a>) (<span class="id" title="var">v</span>: <a class="idref" href="ADT.html#MapsTable.V"><span class="id" title="definition">V</span></a>) (<span class="id" title="var">m</span>: <a class="idref" href="ADT.html#MapsTable.table"><span class="id" title="definition">table</span></a>) : <a class="idref" href="ADT.html#MapsTable.table"><span class="id" title="definition">table</span></a> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="definition">t_update</span> <a class="idref" href="ADT.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="MapsTable.gempty"><span class="id" title="lemma">gempty</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">k</span>, <a class="idref" href="ADT.html#MapsTable.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#MapsTable.empty"><span class="id" title="definition">empty</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#MapsTable.default"><span class="id" title="definition">default</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="MapsTable.gss"><span class="id" title="lemma">gss</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span>,  <a class="idref" href="ADT.html#MapsTable.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> (<a class="idref" href="ADT.html#MapsTable.set"><span class="id" title="definition">set</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="ADT.html#MapsTable.get"><span class="id" title="definition">get</span></a>, <a class="idref" href="ADT.html#MapsTable.set"><span class="id" title="definition">set</span></a>. <span class="id" title="tactic">apply</span> <span class="id" title="axiom">t_update_eq</span>. <span class="id" title="keyword">Qed</span>.<br/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="MapsTable.gso"><span class="id" title="lemma">gso</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">j</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span>, <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a><a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#MapsTable.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> (<a class="idref" href="ADT.html#MapsTable.set"><span class="id" title="definition">set</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#MapsTable.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="ADT.html#MapsTable.get"><span class="id" title="definition">get</span></a>, <a class="idref" href="ADT.html#MapsTable.set"><span class="id" title="definition">set</span></a>. <span class="id" title="tactic">apply</span> <span class="id" title="axiom">t_update_neq</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">congruence</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="ADT.html#MapsTable"><span class="id" title="module">MapsTable</span></a>.<br/>
 </div>
 
 <div class="doc">
-In summary: to make a <span class="inlinecode"><span class="id" type="keyword">Module</span></span> that implements a <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span>,
-   you need to provide a <span class="inlinecode"><span class="id" type="keyword">Definition</span></span> or <span class="inlinecode"><span class="id" type="keyword">Theorem</span></span> in the <span class="inlinecode"><span class="id" type="keyword">Module</span></span>,
-   whose type matches the corresponding <span class="inlinecode"><span class="id" type="keyword">Parameter</span></span> or <span class="inlinecode"><span class="id" type="keyword">Axiom</span></span> in the
-   <span class="inlinecode"><span class="id" type="keyword">Module</span></span> <span class="inlinecode"><span class="id" type="keyword">Type</span></span>. 
+In summary: to make a <span class="inlinecode"><span class="id" title="keyword">Module</span></span> that implements a <span class="inlinecode"><span class="id" title="keyword">Module</span></span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span>,
+   you need to provide a <span class="inlinecode"><span class="id" title="keyword">Definition</span></span> or <span class="inlinecode"><span class="id" title="keyword">Theorem</span></span> in the <span class="inlinecode"><span class="id" title="keyword">Module</span></span>,
+   whose type matches the corresponding <span class="inlinecode"><span class="id" title="keyword">Parameter</span></span> or <span class="inlinecode"><span class="id" title="keyword">Axiom</span></span> in the
+   <span class="inlinecode"><span class="id" title="keyword">Module</span></span> <span class="inlinecode"><span class="id" title="keyword">Type</span></span>. 
 <div class="paragraph"> </div>
 
  Now, let's calculate: put 1 and then 3 into a map, then lookup 1. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">MapsTable.get</span> 1 (<span class="id" type="var">MapsTable.set</span> 3 <span class="id" type="var">unit</span> (<span class="id" type="var">MapsTable.set</span> 1 <span class="id" type="var">bool</span> <span class="id" type="var">MapsTable.empty</span>)).<br/>
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="ADT.html#get"><span class="id" title="definition">MapsTable.get</span></a> 1 (<a class="idref" href="ADT.html#set"><span class="id" title="definition">MapsTable.set</span></a> 3 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#unit"><span class="id" title="inductive">unit</span></a> (<a class="idref" href="ADT.html#set"><span class="id" title="definition">MapsTable.set</span></a> 1 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> <a class="idref" href="ADT.html#empty"><span class="id" title="definition">MapsTable.empty</span></a>)).<br/>
 &nbsp;<span class="comment">(*&nbsp;=&nbsp;bool&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-An _Abstract Data Type_ comprises:
-
-<div class="paragraph"> </div>
-
+An <i>Abstract Data Type</i> comprises:
 <ul class="doclist">
-<li> A _type_ with a hidden representation (in this case, <span class="inlinecode"><span class="id" type="var">t</span></span>).
+<li> A <i>type</i> with a hidden representation (in this case, <span class="inlinecode"><span class="id" title="var">t</span></span>).
 
 </li>
-<li> Interface functions that operate on that type (<span class="inlinecode"><span class="id" type="var">empty</span></span>, <span class="inlinecode"><span class="id" type="var">get</span></span>, <span class="inlinecode"><span class="id" type="tactic">set</span></span>).
+<li> Interface functions that operate on that type (<span class="inlinecode"><span class="id" title="var">empty</span></span>, <span class="inlinecode"><span class="id" title="var">get</span></span>, <span class="inlinecode"><span class="id" title="tactic">set</span></span>).
 
 </li>
-<li> Axioms about the interaction of those functions (<span class="inlinecode"><span class="id" type="var">gempty</span></span>, <span class="inlinecode"><span class="id" type="var">gss</span></span>, <span class="inlinecode"><span class="id" type="var">gso</span></span>).
+<li> Axioms about the interaction of those functions (<span class="inlinecode"><span class="id" title="var">gempty</span></span>, <span class="inlinecode"><span class="id" title="var">gss</span></span>, <span class="inlinecode"><span class="id" title="var">gso</span></span>).
 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
- So, <span class="inlinecode"><span class="id" type="var">MapsTable</span></span> is an implementation of the <span class="inlinecode"><span class="id" type="var">TABLE</span></span> abstract type.
+ So, <span class="inlinecode"><span class="id" title="var">MapsTable</span></span> is an implementation of the <span class="inlinecode"><span class="id" title="var">TABLE</span></span> abstract type.
 
 <div class="paragraph"> </div>
 
-   The problem with <span class="inlinecode"><span class="id" type="var">MapsTable</span></span> is that the <span class="inlinecode"><span class="id" type="var">Maps</span></span> implementation is 
-   very inefficient: linear time per <span class="inlinecode"><span class="id" type="var">get</span></span> operation. If you do a sequence
-   of <span class="inlinecode"><span class="id" type="var">N</span></span> <span class="inlinecode"><span class="id" type="var">get</span></span> and <span class="inlinecode"><span class="id" type="tactic">set</span></span> operations, it can take time quadratic in <span class="inlinecode"><span class="id" type="var">N</span></span>.
+   The problem with <span class="inlinecode"><span class="id" title="var">MapsTable</span></span> is that the <span class="inlinecode"><span class="id" title="var">Maps</span></span> implementation is 
+   very inefficient: linear time per <span class="inlinecode"><span class="id" title="var">get</span></span> operation. If you do a sequence
+   of <span class="inlinecode"><span class="id" title="var">N</span></span> <span class="inlinecode"><span class="id" title="var">get</span></span> and <span class="inlinecode"><span class="id" title="tactic">set</span></span> operations, it can take time quadratic in <span class="inlinecode"><span class="id" title="var">N</span></span>.
    For a more efficient implementation, let's use our search trees. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">VFA</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">SearchTree</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">TreeTable</span> &lt;: <span class="id" type="var">TABLE</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">V</span> := <span class="id" type="keyword">Type</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">default</span> : <span class="id" type="var">V</span> := <span class="id" type="keyword">Prop</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">table</span> := <span class="id" type="var">tree</span> <span class="id" type="var">V</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> : <span class="id" type="var">table</span> := <span class="id" type="var">empty_tree</span> <span class="id" type="var">V</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">get</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">V</span> := <span class="id" type="var">lookup</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">m</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">set</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">v</span>: <span class="id" type="var">V</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">table</span> :=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">insert</span> <span class="id" type="var">V</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">m</span>.<br/>
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gempty</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span>, <span class="id" type="var">get</span> <span class="id" type="var">k</span> <span class="id" type="var">empty</span> = <span class="id" type="var">default</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gss</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">get</span> <span class="id" type="var">k</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">get</span>, <span class="id" type="tactic">set</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">unrealistically_strong_can_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">t</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">as</span> [<span class="id" type="var">cts</span> <span class="id" type="var">H</span>].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">H<sub>0</sub></span> := <span class="id" type="var">insert_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span> <span class="id" type="var">cts</span> <span class="id" type="var">H</span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">H<sub>1</sub></span> := <span class="id" type="var">lookup_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>0</sub></span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_eq</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">VFA</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="SearchTree.html#"><span class="id" title="library">SearchTree</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Module</span> <a name="TreeTable"><span class="id" title="module">TreeTable</span></a> &lt;: <a class="idref" href="ADT.html#TABLE"><span class="id" title="module">TABLE</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable.V"><span class="id" title="definition">V</span></a> := <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable.default"><span class="id" title="definition">default</span></a> : <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a> := <span class="id" title="keyword">Prop</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable.table"><span class="id" title="definition">table</span></a> := <a class="idref" href="SearchTree.html#tree"><span class="id" title="inductive">tree</span></a> <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable.key"><span class="id" title="definition">key</span></a> := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable.empty"><span class="id" title="definition">empty</span></a> : <a class="idref" href="ADT.html#TreeTable.table"><span class="id" title="definition">table</span></a> := <a class="idref" href="SearchTree.html#empty_tree"><span class="id" title="definition">empty_tree</span></a> <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable.get"><span class="id" title="definition">get</span></a> (<span class="id" title="var">k</span>: <a class="idref" href="ADT.html#TreeTable.key"><span class="id" title="definition">key</span></a>) (<span class="id" title="var">m</span>: <a class="idref" href="ADT.html#TreeTable.table"><span class="id" title="definition">table</span></a>) : <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a> := <a class="idref" href="SearchTree.html#lookup"><span class="id" title="definition">lookup</span></a> <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#TreeTable.default"><span class="id" title="definition">default</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#m"><span class="id" title="variable">m</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable.set"><span class="id" title="definition">set</span></a> (<span class="id" title="var">k</span>: <a class="idref" href="ADT.html#TreeTable.key"><span class="id" title="definition">key</span></a>) (<span class="id" title="var">v</span>: <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a>) (<span class="id" title="var">m</span>: <a class="idref" href="ADT.html#TreeTable.table"><span class="id" title="definition">table</span></a>) : <a class="idref" href="ADT.html#TreeTable.table"><span class="id" title="definition">table</span></a> :=<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="SearchTree.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#m"><span class="id" title="variable">m</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="TreeTable.gempty"><span class="id" title="lemma">gempty</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">k</span>, <a class="idref" href="ADT.html#TreeTable.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#TreeTable.empty"><span class="id" title="definition">empty</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#TreeTable.default"><span class="id" title="definition">default</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="TreeTable.gss"><span class="id" title="lemma">gss</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span>,  <a class="idref" href="ADT.html#TreeTable.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> (<a class="idref" href="ADT.html#TreeTable.set"><span class="id" title="definition">set</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="ADT.html#TreeTable.get"><span class="id" title="definition">get</span></a>, <a class="idref" href="ADT.html#TreeTable.set"><span class="id" title="definition">set</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="SearchTree.html#unrealistically_strong_can_relate"><span class="id" title="axiom">unrealistically_strong_can_relate</span></a> <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#TreeTable.default"><span class="id" title="definition">default</span></a> <span class="id" title="var">t</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">as</span> [<span class="id" title="var">cts</span> <span class="id" title="var">H</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H<sub>0</sub></span> := <a class="idref" href="SearchTree.html#insert_relate"><span class="id" title="axiom">insert_relate</span></a> <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#TreeTable.default"><span class="id" title="definition">default</span></a> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span> <span class="id" title="var">cts</span> <span class="id" title="var">H</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H<sub>1</sub></span> := <a class="idref" href="SearchTree.html#lookup_relate"><span class="id" title="axiom">lookup_relate</span></a> <a class="idref" href="ADT.html#TreeTable.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#TreeTable.default"><span class="id" title="definition">default</span></a> <span class="id" title="var">k</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">H<sub>0</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">H<sub>1</sub></span>. <span class="id" title="tactic">apply</span> <span class="id" title="axiom">t_update_eq</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab88"></a><h4 class="section">练习：3 星, standard (TreeTable_gso)</h4>
- Prove this using techniques similar to the proof of <span class="inlinecode"><span class="id" type="var">gss</span></span> just above. 
+<a name="lab89"></a><h4 class="section">练习：3 星, standard (TreeTable_gso)</h4>
+ Prove this using techniques similar to the proof of <span class="inlinecode"><span class="id" title="var">gss</span></span> just above. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gso</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">j</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">j</span>≠<span class="id" type="var">k</span> → <span class="id" type="var">get</span> <span class="id" type="var">j</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">get</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="TreeTable.gso"><span class="id" title="lemma">gso</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">j</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span>,  <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a><a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#TreeTable.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> (<a class="idref" href="ADT.html#TreeTable.set"><span class="id" title="definition">set</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#TreeTable.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="code code-tight">
-<span class="id" type="keyword">End</span> <span class="id" type="var">TreeTable</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">End</span> <a class="idref" href="ADT.html#TreeTable"><span class="id" title="module">TreeTable</span></a>.<br/>
 </div>
 
 <div class="doc">
 But suppose we don't have an unrealistically strong can-relate theorem? 
    Remember the type of the "ordinary" can_relate: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> <span class="id" type="var">can_relate</span>.<br/>
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="SearchTree.html#can_relate"><span class="id" title="axiom">can_relate</span></a>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;&nbsp;:&nbsp;forall&nbsp;(V&nbsp;:&nbsp;Type)&nbsp;(default&nbsp;:&nbsp;V)&nbsp;(t&nbsp;:&nbsp;tree&nbsp;V),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;t&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exists&nbsp;cts&nbsp;:&nbsp;total_map&nbsp;V,&nbsp;Abs&nbsp;V&nbsp;default&nbsp;t&nbsp;cts&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-This requires that <span class="inlinecode"><span class="id" type="var">t</span></span> have the <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> property, or in general,
-   any value of type <span class="inlinecode"><span class="id" type="var">table</span></span> should be well-formed, that is, should satisfy
+This requires that <span class="inlinecode"><span class="id" title="var">t</span></span> have the <span class="inlinecode"><span class="id" title="var">SearchTree</span></span> property, or in general,
+   any value of type <span class="inlinecode"><span class="id" title="var">table</span></span> should be well-formed, that is, should satisfy
    the representation invariant.  We must ensure that  the client of an ADT
    cannot "forge" values, that is, cannot coerce the representation type into
    the abstract type; especially ill-formed values of the representation type.
@@ -202,131 +208,136 @@ This requires that <span class="inlinecode"><span class="id" type="var">t</span>
 
 <div class="paragraph"> </div>
 
-<a name="lab89"></a><h1 class="section">A Brief Excursion into Dependent Types</h1>
+<a name="lab90"></a><h1 class="section">A Brief Excursion into Dependent Types</h1>
 
 <div class="paragraph"> </div>
 
    We can enforce the representation invariant in Coq using dependent types.
-   Suppose <span class="inlinecode"><span class="id" type="var">P</span></span> is a predicate
-   on type <span class="inlinecode"><span class="id" type="var">A</span></span>, that is, <span class="inlinecode"><span class="id" type="var">P</span>:</span> <span class="inlinecode"><span class="id" type="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="keyword">Prop</span></span>.  Suppose <span class="inlinecode"><span class="id" type="var">x</span></span> is a value of type <span class="inlinecode"><span class="id" type="var">A</span></span>,
-   and <span class="inlinecode"><span class="id" type="var">proof</span>:</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span></span> is the name of the theorem that <span class="inlinecode"><span class="id" type="var">x</span></span> satisfies <span class="inlinecode"><span class="id" type="var">P</span></span>.
-   Then <span class="inlinecode"></span> <span class="inlinecode">(<span class="id" type="var">exist</span></span> <span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">proof</span>)</span> <span class="inlinecode"></span> is a "package" of two things: <span class="inlinecode"><span class="id" type="var">x</span></span>, along with the
-   proof of <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">x</span>)</span>.  The type of <span class="inlinecode">(<span style='font-size:120%;'>&exist;</span></span> <span class="inlinecode"><span class="id" type="var">x</span>,</span> <span class="inlinecode"><span class="id" type="var">proof</span>)</span> is written as <span class="inlinecode">{<span class="id" type="var">x</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" type="var">P</span></span> <span class="inlinecode"><span class="id" type="var">x</span>}</span>.
+   Suppose <span class="inlinecode"><span class="id" title="var">P</span></span> is a predicate
+   on type <span class="inlinecode"><span class="id" title="var">A</span></span>, that is, <span class="inlinecode"><span class="id" title="var">P</span>:</span> <span class="inlinecode"><span class="id" title="var">A</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="keyword">Prop</span></span>.  Suppose <span class="inlinecode"><span class="id" title="var">x</span></span> is a value of type <span class="inlinecode"><span class="id" title="var">A</span></span>,
+   and <span class="inlinecode"><span class="id" title="var">proof</span>:</span> <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">x</span></span> is the name of the theorem that <span class="inlinecode"><span class="id" title="var">x</span></span> satisfies <span class="inlinecode"><span class="id" title="var">P</span></span>.
+   Then <span class="inlinecode"></span> <span class="inlinecode">(<span class="id" title="var">exist</span></span> <span class="inlinecode"><span class="id" title="var">x</span>,</span> <span class="inlinecode"><span class="id" title="var">proof</span>)</span> <span class="inlinecode"></span> is a "package" of two things: <span class="inlinecode"><span class="id" title="var">x</span></span>, along with the
+   proof of <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">x</span>)</span>.  The type of <span class="inlinecode">(<span class="id" title="tactic">∃</span></span> <span class="inlinecode"><span class="id" title="var">x</span>,</span> <span class="inlinecode"><span class="id" title="var">proof</span>)</span> is written as <span class="inlinecode">{<span class="id" title="var">x</span></span> <span class="inlinecode">|</span> <span class="inlinecode"><span class="id" title="var">P</span></span> <span class="inlinecode"><span class="id" title="var">x</span>}</span>.
 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> <span class="id" type="var">exist</span>. <span class="comment">(*&nbsp;forall&nbsp;{A&nbsp;:&nbsp;Type}&nbsp;(P&nbsp;:&nbsp;A&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop)&nbsp;(x&nbsp;:&nbsp;A),<br/>
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#exist"><span class="id" title="constructor">exist</span></a>. <span class="comment">(*&nbsp;forall&nbsp;{A&nbsp;:&nbsp;Type}&nbsp;(P&nbsp;:&nbsp;A&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop)&nbsp;(x&nbsp;:&nbsp;A),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;x&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;{x&nbsp;|&nbsp;P&nbsp;x}&nbsp;&nbsp;*)</span><br/>
-<span class="id" type="keyword">Check</span> <span class="id" type="var">proj1_sig</span>. <span class="comment">(*&nbsp;forall&nbsp;{A&nbsp;:&nbsp;Type}&nbsp;{P&nbsp;:&nbsp;A&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop},<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#proj1_sig"><span class="id" title="definition">proj1_sig</span></a>. <span class="comment">(*&nbsp;forall&nbsp;{A&nbsp;:&nbsp;Type}&nbsp;{P&nbsp;:&nbsp;A&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop},<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{x&nbsp;|&nbsp;P&nbsp;x}&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;A&nbsp;*)</span><br/>
-<span class="id" type="keyword">Check</span> <span class="id" type="var">proj2_sig</span>. <span class="comment">(*&nbsp;forall&nbsp;(A&nbsp;:&nbsp;Type)&nbsp;{P&nbsp;:&nbsp;A&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop}<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#proj2_sig"><span class="id" title="definition">proj2_sig</span></a>. <span class="comment">(*&nbsp;forall&nbsp;(A&nbsp;:&nbsp;Type)&nbsp;{P&nbsp;:&nbsp;A&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop}<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(e&nbsp;:&nbsp;{x&nbsp;|&nbsp;P&nbsp;x}),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P&nbsp;(proj1_sig&nbsp;e)&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-We'll apply that idea to search trees.  The type <span class="inlinecode"><span class="id" type="var">A</span></span> will be <span class="inlinecode"><span class="id" type="var">tree</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span>.
-  The predicate <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">x</span>)</span> will be <span class="inlinecode"><span class="id" type="var">SearchTree</span>(<span class="id" type="var">x</span>)</span>. 
+We'll apply that idea to search trees.  The type <span class="inlinecode"><span class="id" title="var">A</span></span> will be <span class="inlinecode"><span class="id" title="var">tree</span></span> <span class="inlinecode"><span class="id" title="var">V</span></span>.
+  The predicate <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">x</span>)</span> will be <span class="inlinecode"><span class="id" title="var">SearchTree</span>(<span class="id" title="var">x</span>)</span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Module</span> <span class="id" type="var">TreeTable2</span> &lt;: <span class="id" type="var">TABLE</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">V</span> := <span class="id" type="keyword">Type</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">default</span> : <span class="id" type="var">V</span> := <span class="id" type="keyword">Prop</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">table</span> := {<span class="id" type="var">x</span> | <span class="id" type="var">SearchTree</span> <span class="id" type="var">V</span> <span class="id" type="var">x</span>}.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">key</span> := <span class="id" type="var">nat</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> : <span class="id" type="var">table</span> := <br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="var">exist</span> (<span class="id" type="var">SearchTree</span> <span class="id" type="var">V</span>) (<span class="id" type="var">empty_tree</span> <span class="id" type="var">V</span>) (<span class="id" type="var">empty_tree_SearchTree</span> <span class="id" type="var">V</span>).<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">get</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">V</span> := <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">lookup</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> (<span class="id" type="var">proj1_sig</span> <span class="id" type="var">m</span>)).<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="tactic">set</span> (<span class="id" type="var">k</span>: <span class="id" type="var">key</span>) (<span class="id" type="var">v</span>: <span class="id" type="var">V</span>) (<span class="id" type="var">m</span>: <span class="id" type="var">table</span>) : <span class="id" type="var">table</span> :=<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="var">exist</span> (<span class="id" type="var">SearchTree</span> <span class="id" type="var">V</span>) (<span class="id" type="var">insert</span> <span class="id" type="var">V</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> (<span class="id" type="var">proj1_sig</span> <span class="id" type="var">m</span>)) <br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">insert_SearchTree</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> (<span class="id" type="var">proj2_sig</span> <span class="id" type="var">m</span>)).<br/><hr class='doublespaceincode'/>
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gempty</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span>, <span class="id" type="var">get</span> <span class="id" type="var">k</span> <span class="id" type="var">empty</span> = <span class="id" type="var">default</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gss</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">get</span> <span class="id" type="var">k</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">v</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">get</span>, <span class="id" type="tactic">set</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">table</span> <span class="id" type="keyword">in</span> <span class="id" type="var">t</span>.<br/>
+<br/>
+<span class="id" title="keyword">Module</span> <a name="TreeTable2"><span class="id" title="module">TreeTable2</span></a> &lt;: <a class="idref" href="ADT.html#TABLE"><span class="id" title="module">TABLE</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable2.V"><span class="id" title="definition">V</span></a> := <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable2.default"><span class="id" title="definition">default</span></a> : <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a> := <span class="id" title="keyword">Prop</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable2.table"><span class="id" title="definition">table</span></a> := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5b63cb9ed0fed82566685c66e56592e<sub>4</sub>"><span class="id" title="notation">{</span></a><span class="id" title="var">x</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5b63cb9ed0fed82566685c66e56592e<sub>4</sub>"><span class="id" title="notation">|</span></a> <a class="idref" href="SearchTree.html#SearchTree"><span class="id" title="inductive">SearchTree</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#5b63cb9ed0fed82566685c66e56592e<sub>4</sub>"><span class="id" title="notation">}</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable2.key"><span class="id" title="definition">key</span></a> := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable2.empty"><span class="id" title="definition">empty</span></a> : <a class="idref" href="ADT.html#TreeTable2.table"><span class="id" title="definition">table</span></a> := <br/>
+&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#exist"><span class="id" title="constructor">exist</span></a> (<a class="idref" href="SearchTree.html#SearchTree"><span class="id" title="inductive">SearchTree</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a>) (<a class="idref" href="SearchTree.html#empty_tree"><span class="id" title="definition">empty_tree</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a>) (<a class="idref" href="SearchTree.html#empty_tree_SearchTree"><span class="id" title="axiom">empty_tree_SearchTree</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a>).<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable2.get"><span class="id" title="definition">get</span></a> (<span class="id" title="var">k</span>: <a class="idref" href="ADT.html#TreeTable2.key"><span class="id" title="definition">key</span></a>) (<span class="id" title="var">m</span>: <a class="idref" href="ADT.html#TreeTable2.table"><span class="id" title="definition">table</span></a>) : <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a> := <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="SearchTree.html#lookup"><span class="id" title="definition">lookup</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#TreeTable2.default"><span class="id" title="definition">default</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#proj1_sig"><span class="id" title="definition">proj1_sig</span></a> <a class="idref" href="ADT.html#m"><span class="id" title="variable">m</span></a>)).<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="TreeTable2.set"><span class="id" title="definition">set</span></a> (<span class="id" title="var">k</span>: <a class="idref" href="ADT.html#TreeTable2.key"><span class="id" title="definition">key</span></a>) (<span class="id" title="var">v</span>: <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a>) (<span class="id" title="var">m</span>: <a class="idref" href="ADT.html#TreeTable2.table"><span class="id" title="definition">table</span></a>) : <a class="idref" href="ADT.html#TreeTable2.table"><span class="id" title="definition">table</span></a> :=<br/>
+&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#exist"><span class="id" title="constructor">exist</span></a> (<a class="idref" href="SearchTree.html#SearchTree"><span class="id" title="inductive">SearchTree</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a>) (<a class="idref" href="SearchTree.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#proj1_sig"><span class="id" title="definition">proj1_sig</span></a> <a class="idref" href="ADT.html#m"><span class="id" title="variable">m</span></a>)) <br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="SearchTree.html#insert_SearchTree"><span class="id" title="axiom">insert_SearchTree</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Specif.html#proj2_sig"><span class="id" title="definition">proj2_sig</span></a> <a class="idref" href="ADT.html#m"><span class="id" title="variable">m</span></a>)).<br/><hr class='doublespaceincode'/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="TreeTable2.gempty"><span class="id" title="lemma">gempty</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">k</span>, <a class="idref" href="ADT.html#TreeTable2.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#TreeTable2.empty"><span class="id" title="definition">empty</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#TreeTable2.default"><span class="id" title="definition">default</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/><hr class='doublespaceincode'/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="TreeTable2.gss"><span class="id" title="lemma">gss</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span>,  <a class="idref" href="ADT.html#TreeTable2.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> (<a class="idref" href="ADT.html#TreeTable2.set"><span class="id" title="definition">set</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="ADT.html#TreeTable2.get"><span class="id" title="definition">get</span></a>, <a class="idref" href="ADT.html#TreeTable2.set"><span class="id" title="definition">set</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="ADT.html#TreeTable2.table"><span class="id" title="definition">table</span></a> <span class="id" title="tactic">in</span> <span class="id" title="var">t</span>.<br/>
 </div>
 
 <div class="doc">
-Now: <span class="inlinecode"><span class="id" type="var">t</span></span> is a package with two components: 
+Now: <span class="inlinecode"><span class="id" title="var">t</span></span> is a package with two components: 
      The first component is a tree, and the second component is 
      a proof that the first component has the SearchTree property.
-    We can destruct <span class="inlinecode"><span class="id" type="var">t</span></span> to see that more clearly. 
+    We can destruct <span class="inlinecode"><span class="id" title="var">t</span></span> to see that more clearly. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> <span class="id" type="var">t</span> <span class="id" type="keyword">as</span> [<span class="id" type="var">a</span> <span class="id" type="var">Ha</span>].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Watch&nbsp;what&nbsp;this&nbsp;<span class="inlinecode"><span class="id" type="tactic">simpl</span></span>&nbsp;does:&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Now&nbsp;we&nbsp;can&nbsp;use&nbsp;<span class="inlinecode"><span class="id" type="var">can_relate</span></span>&nbsp;instead&nbsp;of&nbsp;<span class="inlinecode"><span class="id" type="var">unrealistically_strong_can_relate</span></span>:&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">can_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">a</span> <span class="id" type="var">Ha</span>) <span class="id" type="keyword">as</span> [<span class="id" type="var">cts</span> <span class="id" type="var">H</span>].<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">insert_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">a</span> <span class="id" type="var">cts</span> <span class="id" type="var">H</span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">pose</span> <span class="id" type="var">proof</span> (<span class="id" type="var">lookup_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span> <span class="id" type="var">k</span> <span class="id" type="var">_</span> <span class="id" type="var">_</span> <span class="id" type="var">H<sub>0</sub></span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">H<sub>1</sub></span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_eq</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">t</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">a</span> <span class="id" title="var">Ha</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Watch&nbsp;what&nbsp;this&nbsp;<span class="inlinecode"><span class="id" title="tactic">simpl</span></span>&nbsp;does:&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">(*&nbsp;Now&nbsp;we&nbsp;can&nbsp;use&nbsp;<span class="inlinecode"><span class="id" title="var">can_relate</span></span>&nbsp;instead&nbsp;of&nbsp;<span class="inlinecode"><span class="id" title="var">unrealistically_strong_can_relate</span></span>:&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="SearchTree.html#can_relate"><span class="id" title="axiom">can_relate</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#TreeTable2.default"><span class="id" title="definition">default</span></a> <span class="id" title="var">a</span> <span class="id" title="var">Ha</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">cts</span> <span class="id" title="var">H</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="SearchTree.html#insert_relate"><span class="id" title="axiom">insert_relate</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#TreeTable2.default"><span class="id" title="definition">default</span></a> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">a</span> <span class="id" title="var">cts</span> <span class="id" title="var">H</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> (<a class="idref" href="SearchTree.html#lookup_relate"><span class="id" title="axiom">lookup_relate</span></a> <a class="idref" href="ADT.html#TreeTable2.V"><span class="id" title="definition">V</span></a> <a class="idref" href="ADT.html#TreeTable2.default"><span class="id" title="definition">default</span></a> <span class="id" title="var">k</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">H<sub>0</sub></span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">H<sub>1</sub></span>. <span class="id" title="tactic">apply</span> <span class="id" title="axiom">t_update_eq</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab90"></a><h4 class="section">练习：3 星, standard (TreeTable_gso)</h4>
- Prove this using techniques similar to the proof of <span class="inlinecode"><span class="id" type="var">gss</span></span> just above;
-     don't use <span class="inlinecode"><span class="id" type="var">unrealistically_strong_can_relate</span></span>. 
+<a name="lab91"></a><h4 class="section">练习：3 星, standard (TreeTable_gso)</h4>
+ Prove this using techniques similar to the proof of <span class="inlinecode"><span class="id" title="var">gss</span></span> just above;
+     don't use <span class="inlinecode"><span class="id" title="var">unrealistically_strong_can_relate</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-&nbsp;<span class="id" type="keyword">Theorem</span> <span class="id" type="var">gso</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">j</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>,  <span class="id" type="var">j</span>≠<span class="id" type="var">k</span> → <span class="id" type="var">get</span> <span class="id" type="var">j</span> (<span class="id" type="tactic">set</span> <span class="id" type="var">k</span> <span class="id" type="var">v</span> <span class="id" type="var">t</span>) = <span class="id" type="var">get</span> <span class="id" type="var">j</span> <span class="id" type="var">t</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+&nbsp;<span class="id" title="keyword">Theorem</span> <a name="TreeTable2.gso"><span class="id" title="lemma">gso</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">j</span> <span class="id" title="var">k</span> <span class="id" title="var">v</span> <span class="id" title="var">t</span>,  <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a><a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#TreeTable2.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> (<a class="idref" href="ADT.html#TreeTable2.set"><span class="id" title="definition">set</span></a> <a class="idref" href="ADT.html#k"><span class="id" title="variable">k</span></a> <a class="idref" href="ADT.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#TreeTable2.get"><span class="id" title="definition">get</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="ADT.html#t"><span class="id" title="variable">t</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="code code-tight">
-<span class="id" type="keyword">End</span> <span class="id" type="var">TreeTable2</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">End</span> <a class="idref" href="ADT.html#TreeTable2"><span class="id" title="module">TreeTable2</span></a>.<br/>
 </div>
 
 <div class="doc">
 (End of the brief excursion into dependent types.) 
 <div class="paragraph"> </div>
 
-<a name="lab91"></a><h1 class="section">Summary of Abstract Data Type Proofs</h1>
+<a name="lab92"></a><h1 class="section">Summary of Abstract Data Type Proofs</h1>
 
 </div>
-<div class="code code-space">
+<div class="code">
 
 <br/>
-<span class="id" type="keyword">Section</span> <span class="id" type="var">ADT_SUMMARY</span>.<br/>
-<span class="id" type="keyword">Variable</span> <span class="id" type="var">V</span>: <span class="id" type="keyword">Type</span>.<br/>
-<span class="id" type="keyword">Variable</span> <span class="id" type="var">default</span>: <span class="id" type="var">V</span>.<br/>
+<span class="id" title="keyword">Section</span> <a name="ADT_SUMMARY"><span class="id" title="section">ADT_SUMMARY</span></a>.<br/>
+<span class="id" title="keyword">Variable</span> <a name="ADT_SUMMARY.V"><span class="id" title="variable">V</span></a>: <span class="id" title="keyword">Type</span>.<br/>
+<span class="id" title="keyword">Variable</span> <a name="ADT_SUMMARY.default"><span class="id" title="variable">default</span></a>: <a class="idref" href="ADT.html#ADT_SUMMARY.V"><span class="id" title="variable">V</span></a>.<br/>
 </div>
 
 <div class="doc">
-Step 1.  Define a _representation invariant_.
+Step 1.  Define a <i>representation invariant</i>.
   (In the case of search trees,
-  the representation invariant is the <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> predicate.)
-  Prove that each operation on the data type _preserves_ the 
+  the representation invariant is the <span class="inlinecode"><span class="id" title="var">SearchTree</span></span> predicate.)
+  Prove that each operation on the data type <i>preserves</i> the 
   representation invariant.  For example: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> (<span class="id" type="var">empty_tree_SearchTree</span> <span class="id" type="var">V</span>).<br/>
+<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="SearchTree.html#empty_tree_SearchTree"><span class="id" title="axiom">empty_tree_SearchTree</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.V"><span class="id" title="variable">V</span></a>).<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;(empty_tree&nbsp;V)&nbsp;*)</span><br/>
-<span class="id" type="keyword">Check</span> (<span class="id" type="var">insert_SearchTree</span> <span class="id" type="var">V</span>).<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="SearchTree.html#insert_SearchTree"><span class="id" title="axiom">insert_SearchTree</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.V"><span class="id" title="variable">V</span></a>).<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;forall&nbsp;(k&nbsp;:&nbsp;key)&nbsp;(v&nbsp;:&nbsp;V)&nbsp;(t&nbsp;:&nbsp;tree&nbsp;V),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;t&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;SearchTree&nbsp;V&nbsp;(insert&nbsp;V&nbsp;k&nbsp;v&nbsp;t)&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-Notice two things:  Any operator (such as <span class="inlinecode"><span class="id" type="var">insert</span></span>) that takes a <span class="inlinecode"><span class="id" type="var">tree</span></span> _parameter_
-   can _assume_ that the parameter satisfies the representation invariant.
-   That is, the <span class="inlinecode"><span class="id" type="var">insert_SearchTree</span></span> theorem takes a premise, <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode"><span class="id" type="var">t</span></span>.
+Notice two things:  Any operator (such as <span class="inlinecode"><span class="id" title="var">insert</span></span>) that takes a <span class="inlinecode"><span class="id" title="var">tree</span></span> <i>parameter</i>
+   can <i>assume</i> that the parameter satisfies the representation invariant.
+   That is, the <span class="inlinecode"><span class="id" title="var">insert_SearchTree</span></span> theorem takes a premise, <span class="inlinecode"><span class="id" title="var">SearchTree</span></span> <span class="inlinecode"><span class="id" title="var">V</span></span> <span class="inlinecode"><span class="id" title="var">t</span></span>.
 
 <div class="paragraph"> </div>
 
-   Any operator that produces a <span class="inlinecode"><span class="id" type="var">tree</span></span> _result_ must prove that the result
+   Any operator that produces a <span class="inlinecode"><span class="id" title="var">tree</span></span> <i>result</i> must prove that the result
    satisfies the representation invariant.  Thus, the conclusions,
-   <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode">(<span class="id" type="var">empty_tree</span></span> <span class="inlinecode"><span class="id" type="var">V</span>)</span>  and  <span class="inlinecode"><span class="id" type="var">SearchTree</span></span> <span class="inlinecode"><span class="id" type="var">V</span></span> <span class="inlinecode">(<span class="id" type="var">empty_tree</span></span> <span class="inlinecode"><span class="id" type="var">V</span>)</span>
+   <span class="inlinecode"><span class="id" title="var">SearchTree</span></span> <span class="inlinecode"><span class="id" title="var">V</span></span> <span class="inlinecode">(<span class="id" title="var">empty_tree</span></span> <span class="inlinecode"><span class="id" title="var">V</span>)</span>  and  <span class="inlinecode"><span class="id" title="var">SearchTree</span></span> <span class="inlinecode"><span class="id" title="var">V</span></span> <span class="inlinecode">(<span class="id" title="var">empty_tree</span></span> <span class="inlinecode"><span class="id" title="var">V</span>)</span>
    of the two theorems above.
 
 <div class="paragraph"> </div>
@@ -334,35 +345,37 @@ Notice two things:  Any operator (such as <span class="inlinecode"><span class="
    Finally, any operator that produces a result of "base type", has no obligation
    to prove that the result satisfies the representation invariant; that wouldn't
    make any sense anyway, because the types wouldn't match.  That is,
-   there's no "lookup_SearchTree" theorem, because <span class="inlinecode"><span class="id" type="var">lookup</span></span> doesn't
-   return a result that's a <span class="inlinecode"><span class="id" type="var">tree</span></span>.
+   there's no "lookup_SearchTree" theorem, because <span class="inlinecode"><span class="id" title="var">lookup</span></span> doesn't
+   return a result that's a <span class="inlinecode"><span class="id" title="var">tree</span></span>.
 
 <div class="paragraph"> </div>
 
-   Step 2.  Define an _abstraction relation_.
-     (In the case of search trees, it's the <span class="inlinecode"><span class="id" type="var">Abs</span></span> relation.
+   Step 2.  Define an <i>abstraction relation</i>.
+     (In the case of search trees, it's the <span class="inlinecode"><span class="id" title="var">Abs</span></span> relation.
      This relates the data structure to some mathematical
      value that is (presumably) simpler to reason about. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> (<span class="id" type="var">Abs</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span>). <span class="comment">(*&nbsp;tree&nbsp;V&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;total_map&nbsp;V&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop&nbsp;*)</span><br/>
+<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="SearchTree.html#Abs"><span class="id" title="inductive">Abs</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.V"><span class="id" title="variable">V</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.default"><span class="id" title="variable">default</span></a>). <span class="comment">(*&nbsp;tree&nbsp;V&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;total_map&nbsp;V&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;Prop&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-For each operator, prove that:  assuming each <span class="inlinecode"><span class="id" type="var">tree</span></span> argument satisfies
-    the representation invariant _and_ the abstraction relation, prove that
+For each operator, prove that:  assuming each <span class="inlinecode"><span class="id" title="var">tree</span></span> argument satisfies
+    the representation invariant <i>and</i> the abstraction relation, prove that
     the results also satisfy the appropriate abstraction relation. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> (<span class="id" type="var">empty_tree_relate</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span>). <span class="comment">(*<br/>
+<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="SearchTree.html#empty_tree_relate"><span class="id" title="lemma">empty_tree_relate</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.V"><span class="id" title="variable">V</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.default"><span class="id" title="variable">default</span></a>). <span class="comment">(*<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Abs&nbsp;V&nbsp;default&nbsp;(empty_tree&nbsp;V)&nbsp;(t_empty&nbsp;default)&nbsp;&nbsp;&nbsp;&nbsp;*)</span><br/>
-<span class="id" type="keyword">Check</span> (<span class="id" type="var">lookup_relate'</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span>). <span class="comment">(*&nbsp;forall&nbsp;k&nbsp;t&nbsp;cts,<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="SearchTree.html#lookup_relate'"><span class="id" title="lemma">lookup_relate'</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.V"><span class="id" title="variable">V</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.default"><span class="id" title="variable">default</span></a>). <span class="comment">(*&nbsp;forall&nbsp;k&nbsp;t&nbsp;cts,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;t&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Abs&nbsp;V&nbsp;default&nbsp;t&nbsp;cts&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lookup&nbsp;V&nbsp;default&nbsp;k&nbsp;t&nbsp;=&nbsp;cts&nbsp;(Id&nbsp;k)&nbsp;&nbsp;*)</span><br/>
-<span class="id" type="keyword">Check</span> (<span class="id" type="var">insert_relate'</span> <span class="id" type="var">V</span> <span class="id" type="var">default</span>). <span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;k&nbsp;v&nbsp;t&nbsp;cts,<br/>
+<span class="id" title="keyword">Check</span> (<a class="idref" href="SearchTree.html#insert_relate'"><span class="id" title="lemma">insert_relate'</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.V"><span class="id" title="variable">V</span></a> <a class="idref" href="ADT.html#ADT_SUMMARY.default"><span class="id" title="variable">default</span></a>). <span class="comment">(*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;k&nbsp;v&nbsp;t&nbsp;cts,<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SearchTree&nbsp;V&nbsp;t&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Abs&nbsp;V&nbsp;default&nbsp;t&nbsp;cts&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Abs&nbsp;V&nbsp;default&nbsp;(insert&nbsp;V&nbsp;k&nbsp;v&nbsp;t)&nbsp;(t_update&nbsp;cts&nbsp;(Id&nbsp;k)&nbsp;v)&nbsp;*)</span><br/>
@@ -372,171 +385,180 @@ For each operator, prove that:  assuming each <span class="inlinecode"><span cla
 Step 3.  Using the representation invariant and the abstraction relation,
     prove that all the axioms of your ADT are valid.  For example... 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> <span class="id" type="var">TreeTable2.gso</span>. <span class="comment">(*<br/>
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="ADT.html#gso"><span class="id" title="axiom">TreeTable2.gso</span></a>. <span class="comment">(*<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;forall&nbsp;(j&nbsp;k&nbsp;:&nbsp;TreeTable2.key)&nbsp;(v&nbsp;:&nbsp;TreeTable2.V)<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(t&nbsp;:&nbsp;TreeTable2.table),<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;j&nbsp;&lt;&gt;&nbsp;k&nbsp;<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TreeTable2.get&nbsp;j&nbsp;(TreeTable2.set&nbsp;k&nbsp;v&nbsp;t)&nbsp;=&nbsp;TreeTable2.get&nbsp;j&nbsp;t&nbsp;&nbsp;*)</span><br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">End</span> <span class="id" type="var">ADT_SUMMARY</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="ADT.html#ADT_SUMMARY"><span class="id" title="section">ADT_SUMMARY</span></a>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab92"></a><h1 class="section">Exercise in Data Abstraction</h1>
+<a name="lab93"></a><h1 class="section">Exercise in Data Abstraction</h1>
 
 <div class="paragraph"> </div>
 
  The rest of this chapter is optional. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">List</span>.<br/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
+<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#"><span class="id" title="library">List</span></a>.<br/>
+<span class="id" title="keyword">Import</span> <span class="id" title="var">ListNotations</span>.<br/>
 </div>
 
 <div class="doc">
 Here's the Fibonacci function. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">fibonacci</span> (<span class="id" type="var">n</span>: <span class="id" type="var">nat</span>) := <br/>
-&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span><br/>
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="fibonacci"><span class="id" title="definition">fibonacci</span></a> (<span class="id" title="var">n</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) := <br/>
+&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">with</span><br/>
 &nbsp;| 0 ⇒ 1 <br/>
-&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">i</span> ⇒ <span class="id" type="keyword">match</span> <span class="id" type="var">i</span> <span class="id" type="keyword">with</span> 0 ⇒ 1 | <span class="id" type="var">S</span> <span class="id" type="var">j</span> ⇒ <span class="id" type="var">fibonacci</span> <span class="id" type="var">i</span> + <span class="id" type="var">fibonacci</span> <span class="id" type="var">j</span> <span class="id" type="keyword">end</span><br/>
-&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> <span class="id" type="var">fibonacci</span> [0;1;2;3;4;5;6].<br/>
+&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">i</span> ⇒ <span class="id" title="keyword">match</span> <span class="id" title="var">i</span> <span class="id" title="keyword">with</span> 0 ⇒ 1 | <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">j</span> ⇒ <a class="idref" href="ADT.html#fibonacci"><span class="id" title="definition">fibonacci</span></a> <span class="id" title="var">i</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="ADT.html#fibonacci"><span class="id" title="definition">fibonacci</span></a> <span class="id" title="var">j</span> <span class="id" title="keyword">end</span><br/>
+&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> <a class="idref" href="ADT.html#fibonacci"><span class="id" title="definition">fibonacci</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>6<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>.<br/>
 </div>
 
 <div class="doc">
 Here's a silly little program that computes the Fibonacci function. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="tactic">repeat</span> {<span class="id" type="var">A</span>} (<span class="id" type="var">f</span>: <span class="id" type="var">A</span>→<span class="id" type="var">A</span>) (<span class="id" type="var">x</span>: <span class="id" type="var">A</span>) <span class="id" type="var">n</span> :=<br/>
-&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span> <span class="id" type="var">O</span> ⇒ <span class="id" type="var">x</span> | <span class="id" type="var">S</span> <span class="id" type="var">n'</span> ⇒ <span class="id" type="var">f</span> (<span class="id" type="tactic">repeat</span> <span class="id" type="var">f</span> <span class="id" type="var">x</span> <span class="id" type="var">n'</span>) <span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">step</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
-&nbsp;<span class="id" type="var">List.cons</span> (<span class="id" type="var">nth</span> 0 <span class="id" type="var">al</span> 0 + <span class="id" type="var">nth</span> 1 <span class="id" type="var">al</span> 0) <span class="id" type="var">al</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> (<span class="id" type="tactic">repeat</span> <span class="id" type="var">step</span> [1;0;0]) [0;1;2;3;4;5].<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">fib</span> <span class="id" type="var">n</span> := <span class="id" type="var">nth</span> 0 (<span class="id" type="tactic">repeat</span> <span class="id" type="var">step</span> [1;0;0] <span class="id" type="var">n</span>) 0.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> <span class="id" type="var">fib</span> [0;1;2;3;4;5;6].<br/>
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="repeat"><span class="id" title="definition">repeat</span></a> {<span class="id" title="var">A</span>} (<span class="id" title="var">f</span>: <a class="idref" href="ADT.html#A"><span class="id" title="variable">A</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><a class="idref" href="ADT.html#A"><span class="id" title="variable">A</span></a>) (<span class="id" title="var">x</span>: <a class="idref" href="ADT.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">n</span> :=<br/>
+&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">with</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a> ⇒ <a class="idref" href="ADT.html#x"><span class="id" title="variable">x</span></a> | <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">n'</span> ⇒ <a class="idref" href="ADT.html#f"><span class="id" title="variable">f</span></a> (<a class="idref" href="ADT.html#repeat"><span class="id" title="definition">repeat</span></a> <a class="idref" href="ADT.html#f"><span class="id" title="variable">f</span></a> <a class="idref" href="ADT.html#x"><span class="id" title="variable">x</span></a> <span class="id" title="var">n'</span>) <span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="step"><span class="id" title="definition">step</span></a> (<span class="id" title="var">al</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
+&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#cons"><span class="id" title="abbreviation">List.cons</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#nth"><span class="id" title="definition">nth</span></a> 0 <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> 0 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#nth"><span class="id" title="definition">nth</span></a> 1 <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> 0) <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> (<a class="idref" href="ADT.html#repeat"><span class="id" title="definition">repeat</span></a> <a class="idref" href="ADT.html#step"><span class="id" title="definition">step</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="fib"><span class="id" title="definition">fib</span></a> <span class="id" title="var">n</span> := <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#nth"><span class="id" title="definition">nth</span></a> 0 (<a class="idref" href="ADT.html#repeat"><span class="id" title="definition">repeat</span></a> <a class="idref" href="ADT.html#step"><span class="id" title="definition">step</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a> <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a>) 0.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> <a class="idref" href="ADT.html#fib"><span class="id" title="definition">fib</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>6<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>.<br/>
 </div>
 
 <div class="doc">
 Here's a strange "List" module. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Module</span> <span class="id" type="keyword">Type</span> <span class="id" type="var">LISTISH</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">list</span>: <span class="id" type="keyword">Type</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">create</span> : <span class="id" type="var">nat</span> → <span class="id" type="var">nat</span> → <span class="id" type="var">nat</span> → <span class="id" type="var">list</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">cons</span>: <span class="id" type="var">nat</span> → <span class="id" type="var">list</span> → <span class="id" type="var">list</span>.<br/>
-&nbsp;<span class="id" type="keyword">Parameter</span> <span class="id" type="var">nth</span>: <span class="id" type="var">nat</span> → <span class="id" type="var">list</span> → <span class="id" type="var">nat</span>.<br/>
-<span class="id" type="keyword">End</span> <span class="id" type="var">LISTISH</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Module</span> <span class="id" type="var">L</span> &lt;: <span class="id" type="var">LISTISH</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">list</span> := (<span class="id" type="var">nat</span>*<span class="id" type="var">nat</span>*<span class="id" type="var">nat</span>)%<span class="id" type="var">type</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">create</span> (<span class="id" type="var">a</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>: <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> := (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>,<span class="id" type="var">c</span>).<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">cons</span> (<span class="id" type="var">i</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">il</span> : <span class="id" type="var">list</span>) := <span class="id" type="keyword">match</span> <span class="id" type="var">il</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>,<span class="id" type="var">c</span>) ⇒ (<span class="id" type="var">i</span>,<span class="id" type="var">a</span>,<span class="id" type="var">b</span>) <span class="id" type="keyword">end</span>.<br/>
-&nbsp;<span class="id" type="keyword">Definition</span> <span class="id" type="var">nth</span> (<span class="id" type="var">n</span>: <span class="id" type="var">nat</span>) (<span class="id" type="var">al</span>: <span class="id" type="var">list</span>) := <br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">al</span> <span class="id" type="keyword">with</span> (<span class="id" type="var">a</span>,<span class="id" type="var">b</span>,<span class="id" type="var">c</span>) ⇒<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span> 0 ⇒ <span class="id" type="var">a</span> | 1 ⇒ <span class="id" type="var">b</span> | 2 ⇒ <span class="id" type="var">c</span> | <span class="id" type="var">_</span> ⇒ 0 <span class="id" type="keyword">end</span><br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
-<span class="id" type="keyword">End</span> <span class="id" type="var">L</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">sixlist</span> := <span class="id" type="var">L.cons</span> 0 (<span class="id" type="var">L.cons</span> 1 (<span class="id" type="var">L.cons</span> 2 (<span class="id" type="var">L.create</span> 3 4 5))).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> (<span class="id" type="keyword">fun</span> <span class="id" type="var">i</span> ⇒ <span class="id" type="var">L.nth</span> <span class="id" type="var">i</span> <span class="id" type="var">sixlist</span>) [0;1;2;3;4;5;6;7].<br/>
+<br/>
+<span class="id" title="keyword">Module</span> <span class="id" title="keyword">Type</span> <a name="LISTISH"><span class="id" title="module">LISTISH</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="LISTISH.list"><span class="id" title="axiom">list</span></a>: <span class="id" title="keyword">Type</span>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="LISTISH.create"><span class="id" title="axiom">create</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#LISTISH.list"><span class="id" title="axiom">list</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="LISTISH.cons"><span class="id" title="axiom">cons</span></a>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#LISTISH.list"><span class="id" title="axiom">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#LISTISH.list"><span class="id" title="axiom">list</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Parameter</span> <a name="LISTISH.nth"><span class="id" title="axiom">nth</span></a>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="ADT.html#LISTISH.list"><span class="id" title="axiom">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="ADT.html#LISTISH"><span class="id" title="module">LISTISH</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Module</span> <a name="L"><span class="id" title="module">L</span></a> &lt;: <a class="idref" href="ADT.html#LISTISH"><span class="id" title="module">LISTISH</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="L.list"><span class="id" title="definition">list</span></a> := (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>)%<span class="id" title="keyword">type</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="L.create"><span class="id" title="definition">create</span></a> (<span class="id" title="var">a</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="ADT.html#L.list"><span class="id" title="definition">list</span></a> := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">(</span></a><a class="idref" href="ADT.html#a"><span class="id" title="variable">a</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><a class="idref" href="ADT.html#b"><span class="id" title="variable">b</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><a class="idref" href="ADT.html#c"><span class="id" title="variable">c</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">)</span></a>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="L.cons"><span class="id" title="definition">cons</span></a> (<span class="id" title="var">i</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">il</span> : <a class="idref" href="ADT.html#L.list"><span class="id" title="definition">list</span></a>) := <span class="id" title="keyword">match</span> <a class="idref" href="ADT.html#il"><span class="id" title="variable">il</span></a> <span class="id" title="keyword">with</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">(</span></a><span class="id" title="var">a</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><span class="id" title="var">b</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><span class="id" title="var">c</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">)</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">(</span></a><a class="idref" href="ADT.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><span class="id" title="var">a</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><span class="id" title="var">b</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">)</span></a> <span class="id" title="keyword">end</span>.<br/>
+&nbsp;<span class="id" title="keyword">Definition</span> <a name="L.nth"><span class="id" title="definition">nth</span></a> (<span class="id" title="var">n</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">al</span>: <a class="idref" href="ADT.html#L.list"><span class="id" title="definition">list</span></a>) := <br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> <span class="id" title="keyword">with</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">(</span></a><span class="id" title="var">a</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><span class="id" title="var">b</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">,</span></a><span class="id" title="var">c</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#44400027531d4bc3f586a1997dc874c<sub>0</sub>"><span class="id" title="notation">)</span></a> ⇒<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">with</span> 0 ⇒ <span class="id" title="var">a</span> | 1 ⇒ <span class="id" title="var">b</span> | 2 ⇒ <span class="id" title="var">c</span> | <span class="id" title="var">_</span> ⇒ 0 <span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">End</span> <a class="idref" href="ADT.html#L"><span class="id" title="module">L</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="sixlist"><span class="id" title="definition">sixlist</span></a> := <a class="idref" href="ADT.html#cons"><span class="id" title="definition">L.cons</span></a> 0 (<a class="idref" href="ADT.html#cons"><span class="id" title="definition">L.cons</span></a> 1 (<a class="idref" href="ADT.html#cons"><span class="id" title="definition">L.cons</span></a> 2 (<a class="idref" href="ADT.html#create"><span class="id" title="definition">L.create</span></a> 3 4 5))).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> (<span class="id" title="keyword">fun</span> <span class="id" title="var">i</span> ⇒ <a class="idref" href="ADT.html#nth"><span class="id" title="definition">L.nth</span></a> <a class="idref" href="ADT.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="ADT.html#sixlist"><span class="id" title="definition">sixlist</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>6<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>7<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>.<br/>
 </div>
 
 <div class="doc">
-Module <span class="inlinecode"><span class="id" type="var">L</span></span> implements _approximations_ of lists: it can remember
+Module <span class="inlinecode"><span class="id" title="var">L</span></span> implements <i>approximations</i> of lists: it can remember
     the first three elements, and forget the rest.  Now watch: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">stepish</span> (<span class="id" type="var">al</span>: <span class="id" type="var">L.list</span>) : <span class="id" type="var">L.list</span> :=<br/>
-&nbsp;<span class="id" type="var">L.cons</span> (<span class="id" type="var">L.nth</span> 0 <span class="id" type="var">al</span> + <span class="id" type="var">L.nth</span> 1 <span class="id" type="var">al</span>) <span class="id" type="var">al</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> (<span class="id" type="tactic">repeat</span> <span class="id" type="var">stepish</span> (<span class="id" type="var">L.create</span> 1 0 0)) [0;1;2;3;4;5].<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">fibish</span> <span class="id" type="var">n</span> := <span class="id" type="var">L.nth</span> 0 (<span class="id" type="tactic">repeat</span> <span class="id" type="var">stepish</span>  (<span class="id" type="var">L.create</span> 1 0 0) <span class="id" type="var">n</span>).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">map</span> <span class="id" type="var">fibish</span> [0;1;2;3;4;5;6].<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="stepish"><span class="id" title="definition">stepish</span></a> (<span class="id" title="var">al</span>: <a class="idref" href="ADT.html#list"><span class="id" title="definition">L.list</span></a>) : <a class="idref" href="ADT.html#list"><span class="id" title="definition">L.list</span></a> :=<br/>
+&nbsp;<a class="idref" href="ADT.html#cons"><span class="id" title="definition">L.cons</span></a> (<a class="idref" href="ADT.html#nth"><span class="id" title="definition">L.nth</span></a> 0 <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="ADT.html#nth"><span class="id" title="definition">L.nth</span></a> 1 <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a>) <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> (<a class="idref" href="ADT.html#repeat"><span class="id" title="definition">repeat</span></a> <a class="idref" href="ADT.html#stepish"><span class="id" title="definition">stepish</span></a> (<a class="idref" href="ADT.html#create"><span class="id" title="definition">L.create</span></a> 1 0 0)) <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="fibish"><span class="id" title="definition">fibish</span></a> <span class="id" title="var">n</span> := <a class="idref" href="ADT.html#nth"><span class="id" title="definition">L.nth</span></a> 0 (<a class="idref" href="ADT.html#repeat"><span class="id" title="definition">repeat</span></a> <a class="idref" href="ADT.html#stepish"><span class="id" title="definition">stepish</span></a>  (<a class="idref" href="ADT.html#create"><span class="id" title="definition">L.create</span></a> 1 0 0) <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#map"><span class="id" title="definition">map</span></a> <a class="idref" href="ADT.html#fibish"><span class="id" title="definition">fibish</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>0<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>6<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>.<br/>
 </div>
 
 <div class="doc">
 This little theorem may be useful in the next exercise. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nth_firstn</span>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">A</span> <span class="id" type="var">d</span> <span class="id" type="var">i</span> <span class="id" type="var">j</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">A</span>), <span class="id" type="var">i</span>&lt;<span class="id" type="var">j</span> → <span class="id" type="var">nth</span> <span class="id" type="var">i</span> (<span class="id" type="var">firstn</span> <span class="id" type="var">j</span> <span class="id" type="var">al</span>) <span class="id" type="var">d</span> = <span class="id" type="var">nth</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span> <span class="id" type="var">d</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="nth_firstn"><span class="id" title="lemma">nth_firstn</span></a>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">A</span> <span class="id" title="var">d</span> <span class="id" title="var">i</span> <span class="id" title="var">j</span> (<span class="id" title="var">al</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="ADT.html#A"><span class="id" title="variable">A</span></a>), <a class="idref" href="ADT.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a><a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#nth"><span class="id" title="definition">nth</span></a> <a class="idref" href="ADT.html#i"><span class="id" title="variable">i</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#firstn"><span class="id" title="definition">firstn</span></a> <a class="idref" href="ADT.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a>) <a class="idref" href="ADT.html#d"><span class="id" title="variable">d</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#nth"><span class="id" title="definition">nth</span></a> <a class="idref" href="ADT.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="ADT.html#d"><span class="id" title="variable">d</span></a>.<br/>
 <div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
 <div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="id" type="tactic">induction</span> <span class="id" type="var">i</span>; <span class="id" type="tactic">destruct</span> <span class="id" type="var">j</span>,<span class="id" type="var">al</span>; <span class="id" type="tactic">simpl</span>; <span class="id" type="tactic">intros</span>; <span class="id" type="tactic">auto</span>; <span class="id" type="tactic">try</span> <span class="id" type="tactic">omega</span>.<br/>
-<span class="id" type="tactic">apply</span> <span class="id" type="var">IHi</span>. <span class="id" type="tactic">omega</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="id" title="tactic">induction</span> <span class="id" title="var">i</span>; <span class="id" title="tactic">destruct</span> <span class="id" title="var">j</span>,<span class="id" title="var">al</span>; <span class="id" title="tactic">simpl</span>; <span class="id" title="tactic">intros</span>; <span class="id" title="tactic">auto</span>; <span class="id" title="tactic">try</span> <span class="id" title="tactic">omega</span>.<br/>
+<span class="id" title="tactic">apply</span> <span class="id" title="var">IHi</span>. <span class="id" title="tactic">omega</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 </div>
 
 <div class="doc">
-<a name="lab93"></a><h4 class="section">练习：4 星, standard, optional (listish_abstraction)</h4>
- In this exercise we will not need a _representation invariant_.
+<a name="lab94"></a><h4 class="section">练习：4 星, standard, optional (listish_abstraction)</h4>
+ In this exercise we will not need a <i>representation invariant</i>.
     Define an abstraction relation: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">L_Abs</span>: <span class="id" type="var">L.list</span> → <span class="id" type="var">List.list</span> <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> :=<br/>
+<br/>
+<span class="id" title="keyword">Inductive</span> <a name="L_Abs"><span class="id" title="inductive">L_Abs</span></a>: <a class="idref" href="ADT.html#list"><span class="id" title="definition">L.list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#list"><span class="id" title="abbreviation">List.list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span> :=<br/>
 &nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
 &nbsp;.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">O_Abs</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span> := <span class="id" type="var">L_Abs</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="O_Abs"><span class="id" title="definition">O_Abs</span></a> <span class="id" title="var">al</span> <span class="id" title="var">al'</span> := <a class="idref" href="ADT.html#L_Abs"><span class="id" title="inductive">L_Abs</span></a> <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="ADT.html#al'"><span class="id" title="variable">al'</span></a>.<br/><hr class='doublespaceincode'/>
 <span class="comment">(*&nbsp;State&nbsp;these&nbsp;theorems&nbsp;using&nbsp;O_Abs,&nbsp;not&nbsp;L_Abs.<br/>
 &nbsp;&nbsp;&nbsp;You'll&nbsp;see&nbsp;why&nbsp;below,&nbsp;at&nbsp;"Opaque".&nbsp;*)</span><br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">create_relate</span> : <span class="id" type="var">True</span>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">cons_relate</span> : <span class="id" type="var">True</span>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">nth_relate</span> : <span class="id" type="var">True</span>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<span class="id" title="keyword">Lemma</span> <a name="create_relate"><span class="id" title="lemma">create_relate</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#True"><span class="id" title="inductive">True</span></a>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Lemma</span> <a name="cons_relate"><span class="id" title="lemma">cons_relate</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#True"><span class="id" title="inductive">True</span></a>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Lemma</span> <a name="nth_relate"><span class="id" title="lemma">nth_relate</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#True"><span class="id" title="inductive">True</span></a>. <span class="comment">(*&nbsp;change&nbsp;this&nbsp;line&nbsp;appropriately&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
 </div>
 
 <div class="doc">
 Now, we will make these operators opaque.  Therefore, in the rest of 
    the proofs in this exercise, you will not unfold their definitions.  Instead, 
-   you will just use the theorems <span class="inlinecode"><span class="id" type="var">create_relate</span></span>, <span class="inlinecode"><span class="id" type="var">cons_relate</span></span>, <span class="inlinecode"><span class="id" type="var">nth_relate</span></span>. 
+   you will just use the theorems <span class="inlinecode"><span class="id" title="var">create_relate</span></span>, <span class="inlinecode"><span class="id" title="var">cons_relate</span></span>, <span class="inlinecode"><span class="id" title="var">nth_relate</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Opaque</span> <span class="id" type="var">L.list</span>.<br/>
-<span class="id" type="var">Opaque</span> <span class="id" type="var">L.create</span>.<br/>
-<span class="id" type="var">Opaque</span> <span class="id" type="var">L.cons</span>.<br/>
-<span class="id" type="var">Opaque</span> <span class="id" type="var">L.nth</span>.<br/>
-<span class="id" type="var">Opaque</span> <span class="id" type="var">O_Abs</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">step_relate</span>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">al</span> <span class="id" type="var">al'</span>,<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="var">O_Abs</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span> → <br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="var">O_Abs</span> (<span class="id" type="var">stepish</span> <span class="id" type="var">al</span>) (<span class="id" type="var">step</span> <span class="id" type="var">al'</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">repeat_step_relate</span>:<br/>
-&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span>, <br/>
-&nbsp;<span class="id" type="var">O_Abs</span> <span class="id" type="var">al</span> <span class="id" type="var">al'</span> →<br/>
-&nbsp;<span class="id" type="var">O_Abs</span> (<span class="id" type="tactic">repeat</span> <span class="id" type="var">stepish</span> <span class="id" type="var">al</span> <span class="id" type="var">n</span>) (<span class="id" type="tactic">repeat</span> <span class="id" type="var">step</span> <span class="id" type="var">al'</span> <span class="id" type="var">n</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">fibish_correct</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>, <span class="id" type="var">fibish</span> <span class="id" type="var">n</span> = <span class="id" type="var">fib</span> <span class="id" type="var">n</span>.<br/>
-<span class="id" type="keyword">Proof</span>. <span class="comment">(*&nbsp;No&nbsp;induction&nbsp;needed&nbsp;in&nbsp;this&nbsp;proof!&nbsp;*)</span><br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Opaque</span> <a class="idref" href="ADT.html#list"><span class="id" title="definition">L.list</span></a>.<br/>
+<span class="id" title="keyword">Opaque</span> <a class="idref" href="ADT.html#create"><span class="id" title="definition">L.create</span></a>.<br/>
+<span class="id" title="keyword">Opaque</span> <a class="idref" href="ADT.html#cons"><span class="id" title="definition">L.cons</span></a>.<br/>
+<span class="id" title="keyword">Opaque</span> <a class="idref" href="ADT.html#nth"><span class="id" title="definition">L.nth</span></a>.<br/>
+<span class="id" title="keyword">Opaque</span> <a class="idref" href="ADT.html#O_Abs"><span class="id" title="definition">O_Abs</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Lemma</span> <a name="step_relate"><span class="id" title="lemma">step_relate</span></a>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">al</span> <span class="id" title="var">al'</span>,<br/>
+&nbsp;&nbsp;&nbsp;<a class="idref" href="ADT.html#O_Abs"><span class="id" title="definition">O_Abs</span></a> <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="ADT.html#al'"><span class="id" title="variable">al'</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <br/>
+&nbsp;&nbsp;&nbsp;<a class="idref" href="ADT.html#O_Abs"><span class="id" title="definition">O_Abs</span></a> (<a class="idref" href="ADT.html#stepish"><span class="id" title="definition">stepish</span></a> <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a>) (<a class="idref" href="ADT.html#step"><span class="id" title="definition">step</span></a> <a class="idref" href="ADT.html#al'"><span class="id" title="variable">al'</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Lemma</span> <a name="repeat_step_relate"><span class="id" title="lemma">repeat_step_relate</span></a>:<br/>
+&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">al</span> <span class="id" title="var">al'</span>, <br/>
+&nbsp;<a class="idref" href="ADT.html#O_Abs"><span class="id" title="definition">O_Abs</span></a> <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="ADT.html#al'"><span class="id" title="variable">al'</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;<a class="idref" href="ADT.html#O_Abs"><span class="id" title="definition">O_Abs</span></a> (<a class="idref" href="ADT.html#repeat"><span class="id" title="definition">repeat</span></a> <a class="idref" href="ADT.html#stepish"><span class="id" title="definition">stepish</span></a> <a class="idref" href="ADT.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a>) (<a class="idref" href="ADT.html#repeat"><span class="id" title="definition">repeat</span></a> <a class="idref" href="ADT.html#step"><span class="id" title="definition">step</span></a> <a class="idref" href="ADT.html#al'"><span class="id" title="variable">al'</span></a> <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Lemma</span> <a name="fibish_correct"><span class="id" title="lemma">fibish_correct</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>, <a class="idref" href="ADT.html#fibish"><span class="id" title="definition">fibish</span></a> <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="ADT.html#fib"><span class="id" title="definition">fib</span></a> <a class="idref" href="ADT.html#n"><span class="id" title="variable">n</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="comment">(*&nbsp;No&nbsp;induction&nbsp;needed&nbsp;in&nbsp;this&nbsp;proof!&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab94"></a><h4 class="section">练习：2 星, standard, optional (fib_time_complexity)</h4>
+<a name="lab95"></a><h4 class="section">练习：2 星, standard, optional (fib_time_complexity)</h4>
  Suppose you run these three programs call-by-value, that is,
      as if they were ML programs.  
-    <span class="inlinecode"><span class="id" type="var">fibonacci</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span>
-    <span class="inlinecode"><span class="id" type="var">fib</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span>
-    <span class="inlinecode"><span class="id" type="var">fibish</span></span> <span class="inlinecode"><span class="id" type="var">N</span></span>
+    <span class="inlinecode"><span class="id" title="var">fibonacci</span></span> <span class="inlinecode"><span class="id" title="var">N</span></span>
+    <span class="inlinecode"><span class="id" title="var">fib</span></span> <span class="inlinecode"><span class="id" title="var">N</span></span>
+    <span class="inlinecode"><span class="id" title="var">fibish</span></span> <span class="inlinecode"><span class="id" title="var">N</span></span>
   What is the asymptotic time complexity (big-Oh run time) of each,
-  as a function of N?  Assume that the <span class="inlinecode"><span class="id" type="var">plus</span></span> function runs in constant time.
+  as a function of N?  Assume that the <span class="inlinecode"><span class="id" title="var">plus</span></span> function runs in constant time.
   You can use terms like "linear," "N log N," "quadratic," "cubic," "exponential."
   Explain your answers briefly.
 
@@ -548,15 +570,18 @@ Now, we will make these operators opaque.  Therefore, in the rest of
 
 <div class="paragraph"> </div>
 
- <span class="proofbox">&#9744;</span> 
+ <font size=-2>&#9744;</font> 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="comment">(*&nbsp;Sun&nbsp;Jan&nbsp;5&nbsp;03:20:54&nbsp;UTC&nbsp;2020&nbsp;*)</span><br/>
+<br/>
+<span class="comment">(*&nbsp;2020年1月16日&nbsp;*)</span><br/>
 </div>
 </div>
 
-
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
 
 </div>
 

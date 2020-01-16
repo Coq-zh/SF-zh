@@ -369,7 +369,7 @@ Qed.
     和其它策略的工作就是指导 Coq 去构造证明；如果构造过程发散（即不停机），
     那就意味着我们构造证明失败，而非构造出了错误的证明。 *)
 
-(** **** 练习：3 星, standard (optimize_0plus_b_sound)  
+(** **** 练习：3 星, standard (optimize_0plus_b_sound) 
 
     由于 [optimize_0plus] 变换不会改变 [aexp] 的值，
     因此我们可以将它应用到所有出现在 [bexp] 中的 [aexp] 上而不改变
@@ -385,13 +385,13 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, standard, optional (optimize)  
+(** **** 练习：4 星, standard, optional (optimize) 
 
     _'设计练习'_：[optimize_0plus] 函数只是众多算术和布尔表达式优化的方法之一。
     请编写一个更加聪明的优化器并证明它的正确性。（最容易的方法就是从小处着手：
     一开始只添加单个简单的优化并证明它的正确性，然后逐渐增加其它更有趣的优化。） *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -533,10 +533,10 @@ Inductive aevalR : aexp -> nat -> Prop :=
 
 End TooHardToRead.
 
-(** 如果 [aevalR] 有中缀记法的话会很方便。我们用 [e \\ n]
+(** 如果 [aevalR] 有中缀记法的话会很方便。我们用 [e ==> n]
     表示算术表达式 [e] 求值为 [n]。 *)
 
-Notation "e '\\' n"
+Notation "e '==>' n"
          := (aevalR e n)
             (at level 50, left associativity)
          : type_scope.
@@ -544,24 +544,24 @@ Notation "e '\\' n"
 End aevalR_first_try.
 
 (** 实际上，Coq 提供了一种在 [aevalR] 自身内使用此记法的方式。
-    这样可以避免在进行涉及 [e \\ n] 形式的证明时，必须向前引用
+    这样可以避免在进行涉及 [e ==> n] 形式的证明时，必须向前引用
     [aevalR e n] 形式的定义的情况，从而减少混淆。
 
     具体做法是，我们先“保留”该记法，然后在给出定义的同时声明它的意义。*)
 
-Reserved Notation "e '\\' n" (at level 90, left associativity).
+Reserved Notation "e '==>' n" (at level 90, left associativity).
 
 Inductive aevalR : aexp -> nat -> Prop :=
   | E_ANum (n : nat) :
-      (ANum n) \\ n
+      (ANum n) ==> n
   | E_APlus (e1 e2 : aexp) (n1 n2 : nat) :
-      (e1 \\ n1) -> (e2 \\ n2) -> (APlus e1 e2) \\ (n1 + n2)
+      (e1 ==> n1) -> (e2 ==> n2) -> (APlus e1 e2) ==> (n1 + n2)
   | E_AMinus (e1 e2 : aexp) (n1 n2 : nat) :
-      (e1 \\ n1) -> (e2 \\ n2) -> (AMinus e1 e2) \\ (n1 - n2)
+      (e1 ==> n1) -> (e2 ==> n2) -> (AMinus e1 e2) ==> (n1 - n2)
   | E_AMult (e1 e2 : aexp) (n1 n2 : nat) :
-      (e1 \\ n1) -> (e2 \\ n2) -> (AMult e1 e2) \\ (n1 * n2)
+      (e1 ==> n1) -> (e2 ==> n2) -> (AMult e1 e2) ==> (n1 * n2)
 
-  where "e '\\' n" := (aevalR e n) : type_scope.
+  where "e '==>' n" := (aevalR e n) : type_scope.
 
 (* ================================================================= *)
 (** ** 推理规则的记法 *)
@@ -580,10 +580,10 @@ Inductive aevalR : aexp -> nat -> Prop :=
 
     ...的推理规则写作：
 
-                               e1 \\ n1
-                               e2 \\ n2
+                               e1 ==> n1
+                               e2 ==> n2
                          --------------------                (E_APlus)
-                         APlus e1 e2 \\ n1+n2
+                         APlus e1 e2 ==> n1+n2
 *)
 
 (** 形式上来说，推理规则没什么深刻的含义：它们只是蕴含关系。
@@ -595,28 +595,28 @@ Inductive aevalR : aexp -> nat -> Prop :=
     这一点要么会忽略，要么会通过类似于“令 [aevalR] 为对以下规则封闭的最小关系...”
     的句子来表述。 *)
 
-(** 例如，[\\] 是对以下规则封闭的最小关系：
+(** 例如，[==>] 是对以下规则封闭的最小关系：
 
                              -----------                               (E_ANum)
-                             ANum n \\ n
+                             ANum n ==> n
 
-                               e1 \\ n1
-                               e2 \\ n2
+                               e1 ==> n1
+                               e2 ==> n2
                          --------------------                         (E_APlus)
-                         APlus e1 e2 \\ n1+n2
+                         APlus e1 e2 ==> n1+n2
 
-                               e1 \\ n1
-                               e2 \\ n2
+                               e1 ==> n1
+                               e2 ==> n2
                         ---------------------                        (E_AMinus)
-                        AMinus e1 e2 \\ n1-n2
+                        AMinus e1 e2 ==> n1-n2
 
-                               e1 \\ n1
-                               e2 \\ n2
+                               e1 ==> n1
+                               e2 ==> n2
                          --------------------                         (E_AMult)
-                         AMult e1 e2 \\ n1*n2
+                         AMult e1 e2 ==> n1*n2
 *)
 
-(** **** 练习：1 星, standard, optional (beval_rules)  
+(** **** 练习：1 星, standard, optional (beval_rules) 
 
     下面是 Coq 中 [beval] 函数的定义：
 
@@ -643,7 +643,7 @@ Definition manual_grade_for_beval_rules : option (nat*string) := None.
 (** 求值的函数式定义与关系式定义之间的一致性证明非常直观： *)
 
 Theorem aeval_iff_aevalR : forall a n,
-  (a \\ n) <-> aeval a = n.
+  (a ==> n) <-> aeval a = n.
 Proof.
  split.
  - (* -> *)
@@ -680,7 +680,7 @@ Qed.
 (** 我们可以利用泛策略将此证明缩减到很短。 *)
 
 Theorem aeval_iff_aevalR' : forall a n,
-  (a \\ n) <-> aeval a = n.
+  (a ==> n) <-> aeval a = n.
 Proof.
   (* 课上已完成 *)
   split.
@@ -692,7 +692,7 @@ Proof.
        try apply IHa1; try apply IHa2; reflexivity.
 Qed.
 
-(** **** 练习：3 星, standard (bevalR)  
+(** **** 练习：3 星, standard (bevalR) 
 
     用和 [aevalR] 同样的方式写出关系 [bevalR]，并证明它等价于 [beval]。 *)
 
@@ -728,25 +728,29 @@ Inductive aexp : Type :=
   | ADiv (a1 a2 : aexp).         (* <--- 新增 *)
 
 (** 扩展 [aeval] 的定义来处理此讯算并不是很直观（我们要返回什么作为
-    [ADiv (ANum 5) (ANum 0)] 的结果？）。然而扩展 [aevalR] 却很直观。*)
+    [ADiv (ANum 5) (ANum 0)] 的结果？）。然而扩展 [aevalR] 却很简单。*)
 
-Reserved Notation "e '\\' n"
+Reserved Notation "e '==>' n"
                   (at level 90, left associativity).
 
 Inductive aevalR : aexp -> nat -> Prop :=
   | E_ANum (n : nat) :
-      (ANum n) \\ n
+      (ANum n) ==> n
   | E_APlus (a1 a2 : aexp) (n1 n2 : nat) :
-      (a1 \\ n1) -> (a2 \\ n2) -> (APlus a1 a2) \\ (n1 + n2)
+      (a1 ==> n1) -> (a2 ==> n2) -> (APlus a1 a2) ==> (n1 + n2)
   | E_AMinus (a1 a2 : aexp) (n1 n2 : nat) :
-      (a1 \\ n1) -> (a2 \\ n2) -> (AMinus a1 a2) \\ (n1 - n2)
+      (a1 ==> n1) -> (a2 ==> n2) -> (AMinus a1 a2) ==> (n1 - n2)
   | E_AMult (a1 a2 : aexp) (n1 n2 : nat) :
-      (a1 \\ n1) -> (a2 \\ n2) -> (AMult a1 a2) \\ (n1 * n2)
-  | E_ADiv (a1 a2 : aexp) (n1 n2 n3 : nat) :
-      (a1 \\ n1) -> (a2 \\ n2) -> (n2 > 0) ->
-      (mult n2 n3 = n1) -> (ADiv a1 a2) \\ n3
+      (a1 ==> n1) -> (a2 ==> n2) -> (AMult a1 a2) ==> (n1 * n2)
+  | E_ADiv (a1 a2 : aexp) (n1 n2 n3 : nat) :          (* <----- NEW *)
+      (a1 ==> n1) -> (a2 ==> n2) -> (n2 > 0) ->
+      (mult n2 n3 = n1) -> (ADiv a1 a2) ==> n3
 
-where "a '\\' n" := (aevalR a n) : type_scope.
+where "a '==>' n" := (aevalR a n) : type_scope.
+
+(** Notice that the evaluation relation has now become _partial_:
+    There are some inputs for which it simply does not specify an
+    output. *)
 
 End aevalR_division.
 
@@ -757,7 +761,7 @@ Module aevalR_extended.
     _'概率上的'_选择 -- 我们没有为结果指定任何具体的概率分布，只是说了
     _'可能的结果'_。） *)
 
-Reserved Notation "e '\\' n" (at level 90, left associativity).
+Reserved Notation "e '==>' n" (at level 90, left associativity).
 
 Inductive aexp : Type :=
   | AAny                           (* <--- NEW *)
@@ -771,17 +775,17 @@ Inductive aexp : Type :=
 
 Inductive aevalR : aexp -> nat -> Prop :=
   | E_Any (n : nat) :
-      AAny \\ n                        (* <--- NEW *)
+      AAny ==> n                        (* <--- NEW *)
   | E_ANum (n : nat) :
-      (ANum n) \\ n
+      (ANum n) ==> n
   | E_APlus (a1 a2 : aexp) (n1 n2 : nat) :
-      (a1 \\ n1) -> (a2 \\ n2) -> (APlus a1 a2) \\ (n1 + n2)
+      (a1 ==> n1) -> (a2 ==> n2) -> (APlus a1 a2) ==> (n1 + n2)
   | E_AMinus (a1 a2 : aexp) (n1 n2 : nat) :
-      (a1 \\ n1) -> (a2 \\ n2) -> (AMinus a1 a2) \\ (n1 - n2)
+      (a1 ==> n1) -> (a2 ==> n2) -> (AMinus a1 a2) ==> (n1 - n2)
   | E_AMult (a1 a2 : aexp) (n1 n2 : nat) :
-      (a1 \\ n1) -> (a2 \\ n2) -> (AMult a1 a2) \\ (n1 * n2)
+      (a1 ==> n1) -> (a2 ==> n2) -> (AMult a1 a2) ==> (n1 * n2)
 
-where "a '\\' n" := (aevalR a n) : type_scope.
+where "a '==>' n" := (aevalR a n) : type_scope.
 
 End aevalR_extended.
 
@@ -796,7 +800,7 @@ End aevalR_extended.
 
 (** 另一方面，函数式定义通常会更方便：
      - 函数的定义是确定性的，且在所有参数上定义；而对于关系式定义来说，
-       我们需要这些性质时必须显式地证明它们。
+       我们需要这些性质时必须显式地_'证明'_它们。
      - 有了函数，我们还可以利用 Coq 的计算机制在证明过程中简化表达式。
 
     此外，函数还可以直接从 Gallina“提取”出 OCaml 或 Haskell 的可执行代码。 *)
@@ -809,7 +813,7 @@ End aevalR_extended.
 (** * 带变量的表达式 *)
 
 (** 让我们回到 Imp 的定义上来。接下来我们要为算术和布尔表达式加上变量。
-    为简单起见，我们会假设所有变量是都全局的，且它们只保存数值。 *)
+   为简单起见，我们会假设所有变量是都全局的，且它们只保存数值。 *)
 
 (* ================================================================= *)
 (** ** 状态 *)
@@ -861,7 +865,7 @@ Inductive bexp : Type :=
   | BAnd (b1 b2 : bexp).
 
 (* ================================================================= *)
-(** ** 记法 
+(** ** 记法
 
     要让 Imp 程序更易读写，我们引入了一些记法和隐式转换（Coercion）。
 
@@ -894,10 +898,12 @@ Notation "x && y" := (BAnd x y) (at level 40, left associativity) : imp_scope.
 Notation "'~' b" := (BNot b) (at level 75, right associativity) : imp_scope.
 
 (** 现在我们可以用 [3 + (X * 2)] 来代替 [APlus 3 (AMult X 2)] 了，同样可以用
-    [true && !(X <= 4)] 来代替 [BAnd true (BNot (BLe X 4))]。 *)
+    [true && !(X <= 4)] 来代替 [BAnd true (BNot (BLe X 4))]。
+    然而这只有在我们告诉 Coq 在恰当的记法作用域中用 [%imp] 解析我们的表达式时，
+    或者当 Coq 知道该表达式的类型（[aexp] 或 [bexp]）被「限定」为使用该记法作用域时才可行。 *)
 
-Definition example_aexp := (3 + (X * 2))%imp : aexp.
-Definition example_bexp := (true && ~(X <= 4))%imp : bexp.
+Definition example_aexp : aexp := 3 + (X * 2).
+Definition example_bexp : bexp := true && ~(X <= 4).
 
 (** 强制转换有一点不便之处，即它会略微提高人类推导表达式类型的难度。
     如果你感到有点困惑，请用 [Set Printing Coercions] 来查看具体发生了什么。 *)
@@ -905,7 +911,7 @@ Definition example_bexp := (true && ~(X <= 4))%imp : bexp.
 Set Printing Coercions.
 
 Print example_bexp.
-(* ===> example_bexp = bool_to_bexp true && ~ (AId X <= ANum 4) *)
+(* ===> (example_bexp = bool_to_bexp true && ~ (AId X <= ANum 4))%imp *)
 
 Unset Printing Coercions.
 
@@ -940,15 +946,15 @@ Definition empty_st := (_ !-> 0).
 
 (** 现在我们可以为“单例状态（singleton state）”添加新的记法了，
     即只有一个绑定到值的变量。 *)
-Notation "a '!->' x" := (t_update empty_st a x) (at level 100).
+Notation "x '!->' v" := (t_update empty_st x v) (at level 100).
 
 Example aexp1 :
-    aeval (X !-> 5) (3 + (X * 2))%imp
+    aeval (X !-> 5) (3 + (X * 2))
   = 13.
 Proof. reflexivity. Qed.
 
 Example bexp1 :
-    beval (X !-> 5) (true && ~(X <= 4))%imp
+    beval (X !-> 5) (true && ~(X <= 4))
   = true.
 Proof. reflexivity. Qed.
 
@@ -967,7 +973,7 @@ Proof. reflexivity. Qed.
          | WHILE b DO c END
 
     （为了能够使用 Coq 的记法机制来定义 Imp 语法，我们选择了这种略尴尬的具体语法。
-    具体来说，我们使用了 [TEST] 来避免与表中库中的 [if] 记法相冲突。） 
+    具体来说，我们使用了 [TEST] 来避免与表中库中的 [if] 记法相冲突。）
     例如，下面是用 Imp 编写的阶乘：
 
      Z ::= X;;
@@ -1010,7 +1016,7 @@ Definition fact_in_coq : com :=
   WHILE ~(Z = 0) DO
     Y ::= Y * Z;;
     Z ::= Z - 1
-  END)%imp.
+  END).
 
 (* ================================================================= *)
 (** ** 脱糖记法 *)
@@ -1046,7 +1052,7 @@ Print fact_in_coq.
    WHILE ~ (AId Z = ANum 0) DO
      Y ::= AId Y * AId Z;;
      Z ::= AId Z - ANum 1
-   END)%imp
+   END)
        : com *)
 Unset Printing Coercions.
 
@@ -1108,7 +1114,7 @@ Definition subtract_slowly_body : com :=
 Definition subtract_slowly : com :=
   (WHILE ~(X = 0) DO
     subtract_slowly_body
-  END)%imp.
+  END).
 
 Definition subtract_3_from_5_slowly : com :=
   X ::= 3 ;;
@@ -1301,7 +1307,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (pup_to_n)  
+(** **** 练习：3 星, standard, optional (pup_to_n) 
 
     写一个 Imp 程序对从 [1] 到 [X] 进行求值（包括：将 [1 + 2 + ... + X]) 赋予变量 [Y]。
    证明此程序对于 [X] = [2] 会按预期执行（这可能比你预想的还要棘手）。 *)
@@ -1335,8 +1341,7 @@ Theorem ceval_deterministic: forall c st st1 st2,
 Proof.
   intros c st st1 st2 E1 E2.
   generalize dependent st2.
-  induction E1;
-           intros st2 E2; inversion E2; subst.
+  induction E1; intros st2 E2; inversion E2; subst.
   - (* E_Skip *) reflexivity.
   - (* E_Ass *) reflexivity.
   - (* E_Seq *)
@@ -1344,21 +1349,21 @@ Proof.
     { (* 对断言的证明 *) apply IHE1_1; assumption. }
     subst st'0.
     apply IHE1_2. assumption.
-  - (* E_IfTrue，b1 求值为 true *)
+  - (* E_IfTrue，b 求值为 true *)
       apply IHE1. assumption.
-  - (* E_IfTrue，b1 求值为 false（矛盾） *)
+  - (* E_IfTrue，b 求值为 false（矛盾） *)
       rewrite H in H5. discriminate H5.
-  - (* E_IfFalse, b1 求值为 true（矛盾） *)
+  - (* E_IfFalse, b 求值为 true（矛盾） *)
     rewrite H in H5. discriminate H5.
-  - (* E_IfFalse，b1 求值为 false *)
+  - (* E_IfFalse，b 求值为 false *)
       apply IHE1. assumption.
-  - (* E_WhileFalse，b1 求值为 false *)
+  - (* E_WhileFalse，b 求值为 false *)
     reflexivity.
-  - (* E_WhileFalse，b1 求值为 true（矛盾） *)
+  - (* E_WhileFalse，b 求值为 true（矛盾） *)
     rewrite H in H2. discriminate H2.
-  - (* E_WhileTrue, b1 求值为 false（矛盾） *)
+  - (* E_WhileTrue, b 求值为 false（矛盾） *)
     rewrite H in H4. discriminate H4.
-  - (* E_WhileTrue，b1 求值为 true *)
+  - (* E_WhileTrue，b 求值为 true *)
       assert (st' = st'0) as EQ1.
       { (* 对断言的证明 *) apply IHE1_1; assumption. }
       subst st'0.
@@ -1384,7 +1389,7 @@ Proof.
   inversion Heval. subst. clear Heval. simpl.
   apply t_update_eq.  Qed.
 
-(** **** 练习：3 星, standard, recommended (XtimesYinZ_spec)  
+(** **** 练习：3 星, standard, optional (XtimesYinZ_spec) 
 
     叙述并证明 [XtimesYinZ] 的规范（Specification）。 *)
 
@@ -1408,7 +1413,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (no_whiles_eqv)  
+(** **** 练习：3 星, standard (no_whiles_eqv) 
 
     考虑以下函数： *)
 
@@ -1442,10 +1447,10 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, standard (no_whiles_terminating)  
+(** **** 练习：4 星, standard (no_whiles_terminating) 
 
     不涉及 [WHILE] 循环的 Imp 程序一定会终止。请陈述并证明定理
-    [no_whiles_terminating] 来说明这一点。 
+    [no_whiles_terminating] 来说明这一点。
 
     按照你的偏好使用 [no_whiles] 或 [no_whilesR]。 *)
 
@@ -1458,7 +1463,7 @@ Definition manual_grade_for_no_whiles_terminating : option (nat*string) := None.
 (* ################################################################# *)
 (** * 附加练习 *)
 
-(** **** 练习：3 星, standard (stack_compiler)  
+(** **** 练习：3 星, standard (stack_compiler) 
 
     旧式惠普计算器的编程语言类似于 Forth 和 Postscript，而其抽象机器类似于
     Java 虚拟机，即所有对算术表达式的求值都使用_'栈'_来进行。例如，表达式
@@ -1531,12 +1536,12 @@ Fixpoint s_compile (e : aexp) : list sinstr
 (** 在定义完 [s_compile] 之后，请证明以下示例来测试它是否起作用。 *)
 
 Example s_compile1 :
-  s_compile (X - (2 * Y))%imp
+  s_compile (X - (2 * Y))
   = [SLoad X; SPush 2; SLoad Y; SMult; SMinus].
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced (stack_compiler_correct)  
+(** **** 练习：4 星, advanced (stack_compiler_correct) 
 
     现在我们将证明在之前练习中实现的编译器的正确性。记住当栈中的元素少于两个时，
     规范并未指定 [SPlus]、[SMinus] 或 [SMult] 指令的行为。
@@ -1551,7 +1556,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (short_circuit)  
+(** **** 练习：3 星, standard, optional (short_circuit) 
 
     大部分现代编程语言对布尔 [and] 运算提供了“短路求值”的方法：要对
     [BAnd b1 b2] 进行求值，首先对 [b1] 求值。如果结果为 [false]，那么整个
@@ -1563,12 +1568,12 @@ Proof.
     在更大的语言中该表达式可能会发散，此时短路求值的 [BAnd] _'并不'_
     等价于原始版本，因为它能让更多程序终止。） *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
 Module BreakImp.
-(** **** 练习：4 星, advanced (break_imp)  
+(** **** 练习：4 星, advanced (break_imp) 
 
     像 C 和 Java 这样的指令式语言通常会包含 [break] 或类似地语句来中断循环的执行。
     在本练习中，我们考虑如何为 Imp 加上 [break]。首先，我们需要丰富语言的指令。 *)
@@ -1702,7 +1707,7 @@ Proof.
 (** [] *)
 End BreakImp.
 
-(** **** 练习：4 星, standard, optional (add_for_loop)  
+(** **** 练习：4 星, standard, optional (add_for_loop) 
 
     为该语言添加 C 风格的 [for] 循环指令，更新 [ceval] 的定义来定义
     [for] 循环，按需添加 [for] 循环的情况使得本文件中的所有证明都被
@@ -1713,9 +1718,9 @@ End BreakImp.
     (c) 一个在循环的每次迭代最后执行的语句，以及 (d) 一个创建循环体的语句
     （你不必关心为 [for] 构造一个具体的记法，不过如果你喜欢，可以随意去做。） *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
 
-(* Sun Jan 5 03:18:34 UTC 2020 *)
+(* 2020年1月16日 *)

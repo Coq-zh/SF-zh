@@ -114,7 +114,7 @@ Print eqb.
 End VerySlow.
 
 (* ################################################################# *)
-(** * Efficient Positive Numbers 
+(** * Efficient Positive Numbers
 
     We can do better; we _must_ do better.  In fact, Coq's integer type,
      called [Z], is a binary representation (not unary), so that operations
@@ -228,7 +228,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (addc_correct)  
+(** **** 练习：3 星, standard (addc_correct) 
 
     You may use [omega] in this proof if you want, along with induction
     of course.  But really, using [omega] is an anachronism in a sense:
@@ -307,7 +307,7 @@ induction x; destruct y; simpl.
      Proof: it's structurally inductive on the height of [x]. *)
 
 (* ================================================================= *)
-(** ** Coq's Integer Type, [Z] 
+(** ** Coq's Integer Type, [Z]
 
     Coq's integer type is constructed from positive numbers: *)
 
@@ -506,7 +506,7 @@ End FastEnough.
     in which case, [1+c] takes worst-case [log N], and average-case
     constant time. *)
 
-(** **** 练习：2 星, standard (successor_of_Z_constant_time)  
+(** **** 练习：2 星, standard (successor_of_Z_constant_time) 
 
     Explain why the average-case time for successor of a binary
      integer, with carry, is constant time.  Assume that the input integer
@@ -544,7 +544,7 @@ Lemma look_leaf:
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard (look_ins_same)  
+(** **** 练习：2 星, standard (look_ins_same) 
 
     This is a rather simple induction. *)
 
@@ -552,7 +552,7 @@ Lemma look_ins_same: forall {A} a k (v:A) t, look a k (ins a k v t) = v.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (look_ins_same)  
+(** **** 练习：3 星, standard (look_ins_same) 
 
     Induction on j? Induction on t?   Do you feel lucky? *)
 
@@ -621,7 +621,7 @@ Definition abstract {A: Type} (t: trie_table A) (n: nat) : A :=
 Definition Abs {A: Type} (t: trie_table A) (m: total_map A) :=
   abstract t = m.
 
-(** **** 练习：2 星, standard (is_trie)  
+(** **** 练习：2 星, standard (is_trie) 
 
     If you picked a _really simple_ representation invariant, these should be easy.
     Later, if you need to change the representation invariant in order to
@@ -635,7 +635,7 @@ Theorem insert_is_trie: forall {A} i x (t: trie_table A),
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard (empty_relate)  
+(** **** 练习：2 星, standard (empty_relate) 
 
     Just unfold a bunch of definitions, use [extensionality], and
     use one of the lemmas you proved above, in the section
@@ -647,7 +647,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard (lookup_relate)  
+(** **** 练习：2 星, standard (lookup_relate) 
 
     Given the abstraction relation we've chosen, this one should be really simple. *)
 
@@ -656,7 +656,7 @@ Theorem lookup_relate: forall {A} i (t: trie_table A) m,
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (insert_relate)  
+(** **** 练习：3 星, standard (insert_relate) 
 
     Given the abstraction relation we've chosen, this one should NOT be simple.
    However, you've already done the heavy lifting, with the lemmas
@@ -687,7 +687,7 @@ try (apply empty_relate).
 (* 请在此处解答 *) Admitted.
 
 (* ################################################################# *)
-(** * Conclusion 
+(** * Conclusion
 
     Efficient functional maps with (positive) integer keys are one of the most
    important data structures in functional programming.  They are used for
@@ -703,4 +703,4 @@ try (apply empty_relate).
   but [FMaps] uses different names for the functions [insert] and [lookup],
   and also provides several other operations on maps.  *)
 
-(* Sun Jan 5 03:20:54 UTC 2020 *)
+(* 2020年1月16日 *)

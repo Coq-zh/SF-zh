@@ -181,7 +181,7 @@ inv H1.
 Qed.
 
 (* ================================================================= *)
-(** ** SortA_equivlistA_eqlistA 
+(** ** SortA_equivlistA_eqlistA
 
     Suppose two lists [al,bl] are "equivalent:" they contain the same set of elements
     (modulo an equivalence relation [eqA] on elements, perhaps in different orders, 
@@ -259,7 +259,7 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(** ** S.remove and S.elements 
+(** ** S.remove and S.elements
 
     The [FSets] interface (and therefore our [Module S]) provides these two functions: *)
 
@@ -329,7 +329,7 @@ Lemma InA_map_fst_key:
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (Sorted_lt_key)  
+(** **** 练习：3 星, standard (Sorted_lt_key) 
 
     The function [M.lt_key] compares two elements of an [M.elements] list,
     that is, two pairs of type [positive*A], by just comparing their first elements
@@ -492,7 +492,7 @@ Definition remove_node (n: node) (g: graph) : graph :=
   M.map (S.remove n) (M.remove n g).
 
 (* ================================================================= *)
-(** ** Some Proofs in Support of Termination 
+(** ** Some Proofs in Support of Termination
 
     We need to prove some lemmas related to the termination of the algorithm
   before we can actually define the [Function]. *)
@@ -596,4 +596,4 @@ Compute (M.elements (color palette G)). (* = [(4, 1); (2, 3); (6, 2); (1, 2); (5
   nodes [6] and [1] with [2], and node [5] with color [1]. *)
 
 
-(* Sun Jan 5 03:20:54 UTC 2020 *)
+(* 2020年1月16日 *)

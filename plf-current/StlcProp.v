@@ -130,7 +130,7 @@ Proof with eauto.
       inversion H as [t1' Hstp]. exists (test t1' t2 t3)...
 Qed.
 
-(** **** 练习：3 星, advanced (progress_from_term_ind)  
+(** **** 练习：3 星, advanced (progress_from_term_ind) 
 
     Show that progress can also be proved by induction on terms
     instead of induction on typing derivations. *)
@@ -235,7 +235,7 @@ Definition closed (t:tm) :=
     term is an open term; the closed terms are a subset of the open ones.
     "Open" precisely means "possibly containing free variables.") *)
 
-(** **** 练习：1 星, standard (afi)  
+(** **** 练习：1 星, standard (afi) 
 
     In the space below, write out the rules of the [appears_free_in]
     relation in informal inference-rule notation.  (Use whatever
@@ -301,7 +301,7 @@ Proof.
   induction H;
          intros; try solve [inversion H0; eauto].
   - (* afi_abs *)
-    inversion H1; subst.
+    inversion H1; subst; clear H1.
     apply IHappears_free_in in H7.
     rewrite update_neq in H7; assumption.
 Qed.
@@ -460,14 +460,12 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
         since [y] does not appear free in [\y:T11. t12], the context
         invariance lemma yields [Gamma |- t \in T].
 
-        Second, suppose [x <> y].  We know [x|->U; y|->T11; Gamma
-        |- t12 \in T12] by inversion of the typing relation, from
-        which [y|->T11; x|->U; Gamma |- t12 \in T12] follows by
-        the context invariance lemma, so the IH applies, giving us
-        [y|->T11; Gamma |- [x:=v]t12 \in T12].  By [T_Abs],
-        [Gamma |- \y:T11. [x:=v]t12 \in T11->T12], and by the
-        definition of substitution (noting that [x <> y]), [Gamma |-
-        \y:T11. [x:=v]t12 \in T11->T12] as required.
+        Second, suppose [x <> y].  We know [y|->T11; x|->U; Gamma
+        |- t12 \in T12] by inversion of the typing relation.
+        Since [x <> y], we have 
+        [y|->T11; x|->U; Gamma = x|->U; y|->T11; Gamma].
+        So the IH applies, giving us
+        [y|->T11; Gamma |- [x:=v]t12 \in T12].  
 
       - If [t] is an application [t1 t2], the result follows
         straightforwardly from the definition of substitution and the
@@ -495,12 +493,12 @@ Proof with eauto.
   - (* var *)
     rename s into y. destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
-      subst.
+      clear H; subst.
       rewrite update_eq in H2.
-      inversion H2; subst.
+      inversion H2; subst; clear H2.
       eapply context_invariance. eassumption.
       apply typable_empty__closed in Ht'. unfold closed in Ht'.
-      intros.  apply (Ht' x0) in H0. inversion H0.
+      intros. exfalso; eapply Ht'; eassumption.
     + (* x<>y *)
       apply T_Var. rewrite update_neq in H2...
   - (* abs *)
@@ -509,11 +507,8 @@ Proof with eauto.
     + (* x=y *)
       subst. rewrite update_shadow in H5. apply H5.
     + (* x<>y *)
-      apply IHt. eapply context_invariance...
-      intros z Hafi. unfold update, t_update.
-      destruct (eqb_stringP y z) as [Hyz | Hyz]; subst; trivial.
-      rewrite <- eqb_string_false_iff in Hxy.
-      rewrite Hxy...
+      apply IHt.
+      rewrite update_permute...
 Qed.
 
 (* ================================================================= *)
@@ -586,7 +581,7 @@ Proof with eauto.
       inversion HT1...
 Qed.
 
-(** **** 练习：2 星, standard, recommended (subject_expansion_stlc)  
+(** **** 练习：2 星, standard, recommended (subject_expansion_stlc) 
 
     An exercise in the [Types] chapter asked about the _subject
     expansion_ property for the simple language of arithmetic and
@@ -608,7 +603,7 @@ Definition manual_grade_for_subject_expansion_stlc : option (nat*string) := None
 (* ################################################################# *)
 (** * Type Soundness *)
 
-(** **** 练习：2 星, standard, optional (type_soundness)  
+(** **** 练习：2 星, standard, optional (type_soundness) 
 
     Put progress and preservation together and show that a well-typed
     term can _never_ reach a stuck state.  *)
@@ -630,7 +625,7 @@ Proof.
 (* ################################################################# *)
 (** * Uniqueness of Types *)
 
-(** **** 练习：3 星, standard (unique_types)  
+(** **** 练习：3 星, standard (unique_types) 
 
     Another nice property of the STLC is that types are unique: a
     given term (in a given context) has at most one type. *)
@@ -646,7 +641,7 @@ Proof.
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** 练习：1 星, standard (progress_preservation_statement)  
+(** **** 练习：1 星, standard (progress_preservation_statement) 
 
     Without peeking at their statements above, write down the progress
     and preservation theorems for the simply typed lambda-calculus (as
@@ -658,7 +653,7 @@ Proof.
 Definition manual_grade_for_progress_preservation_statement : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (stlc_variation1)  
+(** **** 练习：2 星, standard (stlc_variation1) 
 
     Suppose we add a new term [zap] with the following reduction rule
 
@@ -687,7 +682,7 @@ and the following typing rule:
 Definition manual_grade_for_stlc_variation1 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (stlc_variation2)  
+(** **** 练习：2 星, standard (stlc_variation2) 
 
     Suppose instead that we add a new term [foo] with the following
     reduction rules:
@@ -715,7 +710,7 @@ Definition manual_grade_for_stlc_variation1 : option (nat*string) := None.
 Definition manual_grade_for_stlc_variation2 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (stlc_variation3)  
+(** **** 练习：2 星, standard (stlc_variation3) 
 
     Suppose instead that we remove the rule [ST_App1] from the [step]
     relation. Which of the following properties of the STLC remain
@@ -735,7 +730,7 @@ Definition manual_grade_for_stlc_variation2 : option (nat*string) := None.
 Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (stlc_variation4)  
+(** **** 练习：2 星, standard, optional (stlc_variation4) 
 
     Suppose instead that we add the following new rule to the
     reduction relation:
@@ -754,10 +749,10 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (* 请在此处解答 *)
       - Preservation
 (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, optional (stlc_variation5)  
+(** **** 练习：2 星, standard, optional (stlc_variation5) 
 
     Suppose instead that we add the following new rule to the typing
     relation:
@@ -778,10 +773,10 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (* 请在此处解答 *)
       - Preservation
 (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, optional (stlc_variation6)  
+(** **** 练习：2 星, standard, optional (stlc_variation6) 
 
     Suppose instead that we add the following new rule to the typing
     relation:
@@ -802,10 +797,10 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (* 请在此处解答 *)
       - Preservation
 (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, optional (stlc_variation7)  
+(** **** 练习：2 星, standard, optional (stlc_variation7) 
 
     Suppose we add the following new rule to the typing relation
     of the STLC:
@@ -824,8 +819,8 @@ Definition manual_grade_for_stlc_variation3 : option (nat*string) := None.
 (* 请在此处解答 *)
       - Preservation
 (* 请在此处解答 *)
-
-    [] *)
+*)
+(** [] *)
 
 End STLCProp.
 
@@ -860,7 +855,7 @@ Inductive tm : Type :=
   | mlt : tm -> tm -> tm
   | test0 : tm -> tm -> tm -> tm.
 
-(** **** 练习：5 星, standard (stlc_arith)  
+(** **** 练习：5 星, standard (stlc_arith) 
 
     Finish formalizing the definition and properties of the STLC
     extended with arithmetic. This is a longer exercise. Specifically:
@@ -905,4 +900,4 @@ Definition manual_grade_for_stlc_arith : option (nat*string) := None.
 
 End STLCArith.
 
-(* Sun Jan 5 03:18:35 UTC 2020 *)
+(* 2020年1月16日 *)

@@ -50,7 +50,7 @@
 *)
 
 (* ################################################################# *)
-(** * Module Signature 
+(** * Module Signature
 
     This is the "signature" of a correct implementation of priority queues
  where the keys are natural numbers.   Using [nat] for the key type is
@@ -270,4 +270,4 @@ Proof.
 
 End List_Priqueue.
 
-(* Sun Jan 5 03:20:54 UTC 2020 *)
+(* 2020年1月16日 *)

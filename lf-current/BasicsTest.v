@@ -92,15 +92,15 @@ Print Assumptions plus_id_exercise.
 Goal True.
 idtac " ".
 
-idtac "-------------------  mult_S_1  --------------------".
+idtac "-------------------  mult_n_1  --------------------".
 idtac " ".
 
-idtac "#> mult_S_1".
+idtac "#> mult_n_1".
 idtac "Possible points: 2".
-check_type @mult_S_1 ((forall n m : nat, m = S n -> m * (1 + n) = m * m)).
+check_type @mult_n_1 ((forall n : nat, n * 1 = n)).
 idtac "Assumptions:".
 Abort.
-Print Assumptions mult_S_1.
+Print Assumptions mult_n_1.
 Goal True.
 idtac " ".
 
@@ -128,7 +128,7 @@ Print Assumptions zero_nbeq_plus_1.
 Goal True.
 idtac " ".
 
-idtac "-------------------  indentity_fn_applied_twice  --------------------".
+idtac "-------------------  identity_fn_applied_twice  --------------------".
 idtac " ".
 
 idtac "#> identity_fn_applied_twice".
@@ -153,9 +153,58 @@ idtac " ".
 idtac "-------------------  binary  --------------------".
 idtac " ".
 
-idtac "#> Manually graded: binary".
-idtac "Possible points: 3".
-print_manual_grade manual_grade_for_binary.
+idtac "#> test_bin_incr1".
+idtac "Possible points: 0.5".
+check_type @test_bin_incr1 ((incr (B Z) = A (B Z))).
+idtac "Assumptions:".
+Abort.
+Print Assumptions test_bin_incr1.
+Goal True.
+idtac " ".
+
+idtac "#> test_bin_incr2".
+idtac "Possible points: 0.5".
+check_type @test_bin_incr2 ((incr (A (B Z)) = B (B Z))).
+idtac "Assumptions:".
+Abort.
+Print Assumptions test_bin_incr2.
+Goal True.
+idtac " ".
+
+idtac "#> test_bin_incr3".
+idtac "Possible points: 0.5".
+check_type @test_bin_incr3 ((incr (B (B Z)) = A (A (B Z)))).
+idtac "Assumptions:".
+Abort.
+Print Assumptions test_bin_incr3.
+Goal True.
+idtac " ".
+
+idtac "#> test_bin_incr4".
+idtac "Possible points: 0.5".
+check_type @test_bin_incr4 ((bin_to_nat (A (B Z)) = 2)).
+idtac "Assumptions:".
+Abort.
+Print Assumptions test_bin_incr4.
+Goal True.
+idtac " ".
+
+idtac "#> test_bin_incr5".
+idtac "Possible points: 0.5".
+check_type @test_bin_incr5 ((bin_to_nat (incr (B Z)) = 1 + bin_to_nat (B Z))).
+idtac "Assumptions:".
+Abort.
+Print Assumptions test_bin_incr5.
+Goal True.
+idtac " ".
+
+idtac "#> test_bin_incr6".
+idtac "Possible points: 0.5".
+check_type @test_bin_incr6 ((bin_to_nat (incr (incr (B Z))) = 2 + bin_to_nat (B Z))).
+idtac "Assumptions:".
+Abort.
+Print Assumptions test_bin_incr6.
+Goal True.
 idtac " ".
 
 idtac " ".
@@ -163,7 +212,20 @@ idtac " ".
 idtac "Max points - standard: 15".
 idtac "Max points - advanced: 15".
 idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
+idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- test_nandb4 ---------".
@@ -176,8 +238,8 @@ idtac "---------- test_ltb3 ---------".
 Print Assumptions test_ltb3.
 idtac "---------- plus_id_exercise ---------".
 Print Assumptions plus_id_exercise.
-idtac "---------- mult_S_1 ---------".
-Print Assumptions mult_S_1.
+idtac "---------- mult_n_1 ---------".
+Print Assumptions mult_n_1.
 idtac "---------- andb_true_elim2 ---------".
 Print Assumptions andb_true_elim2.
 idtac "---------- zero_nbeq_plus_1 ---------".
@@ -186,10 +248,20 @@ idtac "---------- identity_fn_applied_twice ---------".
 Print Assumptions identity_fn_applied_twice.
 idtac "---------- negation_fn_applied_twice ---------".
 idtac "MANUAL".
-idtac "---------- binary ---------".
-idtac "MANUAL".
+idtac "---------- test_bin_incr1 ---------".
+Print Assumptions test_bin_incr1.
+idtac "---------- test_bin_incr2 ---------".
+Print Assumptions test_bin_incr2.
+idtac "---------- test_bin_incr3 ---------".
+Print Assumptions test_bin_incr3.
+idtac "---------- test_bin_incr4 ---------".
+Print Assumptions test_bin_incr4.
+idtac "---------- test_bin_incr5 ---------".
+Print Assumptions test_bin_incr5.
+idtac "---------- test_bin_incr6 ---------".
+Print Assumptions test_bin_incr6.
 idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Jan 5 03:17:37 UTC 2020 *)
+(* 2020年1月16日 *)

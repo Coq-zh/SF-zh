@@ -8,7 +8,7 @@
   Read the [Extract] chapter to see what can be done about that.) *)
 
 (* ################################################################# *)
-(** * Required Reading 
+(** * Required Reading
   Binomial Queues https://www.cs.princeton.edu/~appel/Binom.pdf
   by Andrew W. Appel, 2016.
 
@@ -233,7 +233,7 @@ Inductive tree_elems: tree -> list key -> Prop :=
            Permutation b (v::bl++br) ->
            tree_elems (Node v tl tr) b.
 
-(** **** 练习：3 星, standard (priqueue_elems)  
+(** **** 练习：3 星, standard (priqueue_elems) 
 
     Make an inductive definition, similar to [tree_elems], to relate
   a priority queue  "l"  to a list of all its elements.
@@ -256,7 +256,7 @@ Definition Abs (p: priqueue) (al: list key) := priqueue_elems p al.
 (* ================================================================= *)
 (** ** Sanity Checks on the Abstraction Relation *)
 
-(** **** 练习：2 星, standard (tree_elems_ext)  
+(** **** 练习：2 星, standard (tree_elems_ext) 
 
     Extensionality theorem for the tree_elems relation *)
 
@@ -271,7 +271,7 @@ Theorem tree_perm: forall t e1 e2,
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard (priqueue_elems_ext)  
+(** **** 练习：2 星, standard (priqueue_elems_ext) 
 
     To prove [priqueue_elems_ext], you should almost be able to cut-and-paste the
    proof of [tree_elems_ext], with just a few edits.  *)
@@ -306,7 +306,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (smash_elems)  
+(** **** 练习：3 星, standard (smash_elems) 
 
      Warning:  This proof is rather long. *)
 
@@ -388,13 +388,13 @@ End BinomQueue.
 (* ################################################################# *)
 (** * Measurement. *)
 
-(** **** 练习：5 星, standard, optional (binom_measurement)  
+(** **** 练习：5 星, standard, optional (binom_measurement) 
 
     Adapt the program (but not necessarily the proof) to use Ocaml integers
   as keys, in the style shown in [Extract].   Write an ML program to
   exercise it with random inputs.  Compare the runtime to the implementation
   from [Priqueue], also adapted for Ocaml integers.
+*)
+(** [] *)
 
-    [] *)
-
-(* Sun Jan 5 03:20:54 UTC 2020 *)
+(* 2020年1月16日 *)

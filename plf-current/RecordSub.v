@@ -370,7 +370,7 @@ Proof with (eauto using wf_rcd_lookup).
     + (* subtype *)
       inversion H. subst. inversion H5. subst...  Qed.
 
-(** **** 练习：3 星, standard (rcd_types_match_informal)  
+(** **** 练习：3 星, standard (rcd_types_match_informal) 
 
     Write a careful informal proof of the [rcd_types_match]
     lemma. *)
@@ -975,4 +975,4 @@ Proof with eauto.
        for [tr]'s typing derivation, [T_RCons], and a use of the
        [step_preserves_record_tm] lemma. *)
 
-(* Sun Jan 5 03:18:36 UTC 2020 *)
+(* 2020年1月16日 *)

@@ -369,7 +369,7 @@ repeat  match goal with
  repeat (constructor; auto).
 Qed.
 
-(** **** 练习：2 星, standard (ins_SearchTree)  
+(** **** 练习：2 星, standard (ins_SearchTree) 
 
     This one is pretty easy, even without proof automation.
   Copy-paste your proof of insert_SearchTree from Extract.v.
@@ -454,7 +454,7 @@ Ltac contents_equivalent_prover :=
  auto;
  omega.
 
-(** **** 练习：4 星, standard (balance_relate)  
+(** **** 练习：4 星, standard (balance_relate) 
 
     You will need proof automation for this one.  Study the methods used
   in [ins_not_E] and [balance_SearchTree], and try them here.
@@ -581,7 +581,7 @@ Check insert_relate.
      (1) preserves the representation invariant, and
      (2) respects the abstraction relation. *)
 
-(** **** 练习：4 星, standard, optional (elements)  
+(** **** 练习：4 星, standard, optional (elements) 
 
     Prove the correctness of the [elements] function.  Because [elements]
     does not pay attention to colors, and does not rebalance the tree,
@@ -627,7 +627,7 @@ Proof.
    stay approximately balanced; this tells us important information about
    their efficiency. *)
 
-(** **** 练习：4 星, standard (is_redblack_properties)   
+(** **** 练习：4 星, standard (is_redblack_properties)  
 
     The relation [is_redblack] ensures that there are exactly [n] black 
    nodes in every path from the root to a leaf, and that there are never
@@ -729,7 +729,7 @@ Insert and lookup 20000 consecutive integers in 0. seconds.
 *)
 
 (* ################################################################# *)
-(** * Success! 
+(** * Success!
 
     The benchmark measurements above (and in Extract.v) demonstrate that:
   - On random insertions, red-black trees are slightly faster than ordinary BSTs
@@ -740,4 +740,4 @@ Insert and lookup 20000 consecutive integers in 0. seconds.
      consecutive insertions (0.015 seconds) as on the random (0.016 seconds).
 *)
 
-(* Sun Jan 5 03:20:54 UTC 2020 *)
+(* 2020年1月16日 *)

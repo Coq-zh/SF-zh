@@ -15,7 +15,7 @@ Module Type QuickChickSig.
 (* ################################################################# *)
 (** * The [Show] Typeclass *)
 
-(** [Show] typeclass allows the test case to be printed as a string. 
+(** [Show] typeclass allows the test case to be printed as a string.
 
     
     Class Show (A : Type) : Type :=
@@ -220,7 +220,7 @@ Parameter choose :
 
 (** [GenSized] and [Gen] are typeclasses whose instances can be generated
     randomly. More specifically, [GenSized] depends on a generator for any given
-    natural number that indicate the size of output. 
+    natural number that indicate the size of output.
 
     
     Class GenSized (A : Type) := { arbitrarySized : nat -> G A }.
@@ -254,7 +254,7 @@ Declare Instance genPair :
     for generators of type [A], it provides constrained variants for
     generators of type [A] such that [P : A -> Prop] holds of all
     generated values.  Since it is not guaranteed that any such [A]
-    exist, these generators are partial.  
+    exist, these generators are partial. 
 
     
      Class GenSizedSuchThat (A : Type) (P : A -> Prop) :=
@@ -296,7 +296,7 @@ Notation "'genST' x" := (@arbitraryST _ x _) (at level 70).
 
 (** [Shrink] is a typeclass whose instances have an operation for
     shrinking larger elements to smaller ones, allowing QuickChick to
-    search for a minimal counter example when errors occur. 
+    search for a minimal counter example when errors occur.
 
     
     Class Shrink (A : Type) :=
@@ -317,7 +317,7 @@ Declare Instance shrinkOption {A : Type} `{Shrink A} : Shrink (option A).
 (* ================================================================= *)
 (** ** The [Arbitrary] Typeclass *)
 
-(** The [Arbitrary] typeclass combines generation and shrinking. 
+(** The [Arbitrary] typeclass combines generation and shrinking.
 
     
     Class Arbitrary (A : Type) `{Gen A} `{Shrink A}.
@@ -350,7 +350,7 @@ Declare Instance ArbitraryOfGenShrink :
 (** [Checker] is the opaque type of QuickChick properties. *)
 Parameter Checker : Type.
 
-(** The [Checkable] class indicates we can check a type A. 
+(** The [Checkable] class indicates we can check a type A.
 
     
     Class Checkable (A : Type) : Type :=
@@ -454,9 +454,9 @@ End QcNotation.
 (** * Decidability *)
 
 (* ================================================================= *)
-(** ** The [Dec] Typeclass 
+(** ** The [Dec] Typeclass
 
-    Decidability typeclass using ssreflect's 'decidable'. 
+    Decidability typeclass using ssreflect's 'decidable'.
 
     
      Class Dec (P : Prop) : Type := { dec : decidable P }.
@@ -492,8 +492,8 @@ Declare Instance Eq__Dec {A} `{H : Dec_Eq A} (x y : A) : Dec (x = y).
 (** Since deciding equalities is a very common requirement in testing,
     QuickChick provides a tactic that can define instances of the form
     [Dec (x = y)]. 
-
-    
+*)
+(** 
      Ltac dec_eq. 
 *)
 
@@ -562,14 +562,14 @@ Declare Instance Dec_string (m n : string) : Dec (m = n).
     instances. *)
 
 (** The [Sample] command samples a generator. The argument [g] needs
-    to have type [G A] for some showable type [A]. 
+    to have type [G A] for some showable type [A].
 
     
     Sample g.
 *)
 
 (** The main testing command, [QuickChick], runs a test. The argument
-    [prop] must belong to a type that is an instance of [Checkable]. 
+    [prop] must belong to a type that is an instance of [Checkable].
 
     
      QuickChick prop.
@@ -599,7 +599,7 @@ Record Args :=
       chatty     : bool
     }.
 
-(** Instead of record updates, you should overwrite extraction constants. 
+(** Instead of record updates, you should overwrite extraction constants.
 
     
    Extract Constant defNumTests    => "10000".
@@ -713,4 +713,4 @@ End QcDoNotation.
 
 End QuickChickSig.
 
-(* Sun Jan 5 03:22:15 UTC 2020 *)
+(* 2020年1月16日 *)

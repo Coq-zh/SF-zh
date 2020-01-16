@@ -2,35 +2,37 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
 <title>Induction: 归纳证明</title>
-</head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+</head>
 
 <body>
 
 <div id="page">
 
 <div id="header">
-<a href='https://coq-zh.github.io/SF-zh/index.html'>
-<img src='common/media/image/sf_logo_sm.png'></a>
-</br><a href='index.html'>  <span class='booktitleinheader'>Volume 1: 逻辑基础</span><br></br>
+<div id='logoinheader'><a href='https://coq-zh.github.io/SF-zh/'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 1: 逻辑基础</a></div>
 <ul id='menu'>
-   <a href='toc.html'><li class='section_name'>目录</li></a>
-   <a href='coqindex.html'><li class='section_name'>索引</li></a>
-   <a href='deps.html'><li class='section_name'>路线</li></a>
+   <li class='section_name'><a href='toc.html'>目录</a></li>
+   <li class='section_name'><a href='coqindex.html'>索引</a></li>
+   <li class='section_name'><a href='deps.html'>路线</a></li>
 </ul>
-</a></div>
+</div>
 
 <div id="main">
 
 <h1 class="libtitle">Induction<span class="subtitle">归纳证明</span></h1>
 
+<div class="code">
+</div>
 
 <div class="doc">
 
@@ -38,66 +40,67 @@
 
  在开始之前，我们需要把上一章中所有的定义都导入进来： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">LF</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">Basics</span>.<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">LF</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="Basics.html#"><span class="id" title="library">Basics</span></a>.<br/>
 </div>
 
 <div class="doc">
-For the <span class="inlinecode"><span class="id" type="keyword">Require</span></span> <span class="inlinecode"><span class="id" type="keyword">Export</span></span> to work, Coq needs to be able to
-    find a compiled version of <span class="inlinecode"><span class="id" type="var">Basics.v</span></span>, called <span class="inlinecode"><span class="id" type="var">Basics.vo</span></span>, in a directory
-    associated with the prefix <span class="inlinecode"><span class="id" type="var">LF</span></span>.  This file is analogous to the <span class="inlinecode">.<span class="id" type="var">class</span></span>
-    files compiled from <span class="inlinecode">.<span class="id" type="var">java</span></span> source files and the <span class="inlinecode">.<span class="id" type="var">o</span></span> files compiled from
-    <span class="inlinecode">.<span class="id" type="var">c</span></span> files.
+For the <span class="inlinecode"><span class="id" title="keyword">Require</span></span> <span class="inlinecode"><span class="id" title="keyword">Export</span></span> to work, Coq needs to be able to
+    find a compiled version of <span class="inlinecode"><span class="id" title="var">Basics.v</span></span>, called <span class="inlinecode"><span class="id" title="var">Basics.vo</span></span>, in a directory
+    associated with the prefix <span class="inlinecode"><span class="id" title="var">LF</span></span>.  This file is analogous to the <span class="inlinecode">.<span class="id" title="var">class</span></span>
+    files compiled from <span class="inlinecode">.<span class="id" title="var">java</span></span> source files and the <span class="inlinecode">.<span class="id" title="var">o</span></span> files compiled from
+    <span class="inlinecode">.<span class="id" title="var">c</span></span> files.
 
 <div class="paragraph"> </div>
 
-    First create a file named <span class="inlinecode"><span class="id" type="var">_CoqProject</span></span> containing the following line
+    First create a file named <span class="inlinecode"><span class="id" title="var">_CoqProject</span></span> containing the following line
     (if you obtained the whole volume "Logical Foundations" as a single
-    archive, a <span class="inlinecode"><span class="id" type="var">_CoqProject</span></span> should already exist and you can skip this step):
+    archive, a <span class="inlinecode"><span class="id" title="var">_CoqProject</span></span> should already exist and you can skip this step):
 
 <div class="paragraph"> </div>
 
-      <span class="inlinecode">-<span class="id" type="var">Q</span></span> <span class="inlinecode">.</span> <span class="inlinecode"><span class="id" type="var">LF</span></span>
+      <span class="inlinecode">-<span class="id" title="var">Q</span></span> <span class="inlinecode">.</span> <span class="inlinecode"><span class="id" title="var">LF</span></span>
 
 <div class="paragraph"> </div>
 
-    This maps the current directory ("<span class="inlinecode">.</span>", which contains <span class="inlinecode"><span class="id" type="var">Basics.v</span></span>,
-    <span class="inlinecode"><span class="id" type="var">Induction.v</span></span>, etc.) to the prefix (or "logical directory") "<span class="inlinecode"><span class="id" type="var">LF</span></span>".
-    PG and CoqIDE read <span class="inlinecode"><span class="id" type="var">_CoqProject</span></span> automatically, so they know to where to
-    look for the file <span class="inlinecode"><span class="id" type="var">Basics.vo</span></span> corresponding to the library <span class="inlinecode"><span class="id" type="var">LF.Basics</span></span>.
+    This maps the current directory ("<span class="inlinecode">.</span>", which contains <span class="inlinecode"><span class="id" title="var">Basics.v</span></span>,
+    <span class="inlinecode"><span class="id" title="var">Induction.v</span></span>, etc.) to the prefix (or "logical directory") "<span class="inlinecode"><span class="id" title="var">LF</span></span>".
+    PG and CoqIDE read <span class="inlinecode"><span class="id" title="var">_CoqProject</span></span> automatically, so they know to where to
+    look for the file <span class="inlinecode"><span class="id" title="var">Basics.vo</span></span> corresponding to the library <span class="inlinecode"><span class="id" title="var">LF.Basics</span></span>.
 
 <div class="paragraph"> </div>
 
-    Once <span class="inlinecode"><span class="id" type="var">_CoqProject</span></span> is thus created, there are various ways to build
-    <span class="inlinecode"><span class="id" type="var">Basics.vo</span></span>:
+    Once <span class="inlinecode"><span class="id" title="var">_CoqProject</span></span> is thus created, there are various ways to build
+    <span class="inlinecode"><span class="id" title="var">Basics.vo</span></span>:
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
 <li> In Proof General: The compilation can be made to happen automatically
-       when you submit the <span class="inlinecode"><span class="id" type="keyword">Require</span></span> line above to PG, by setting the emacs
-       variable <span class="inlinecode"><span class="id" type="var">coq</span>-<span class="id" type="var">compile</span>-<span class="id" type="keyword">before</span>-<span class="id" type="var">require</span></span> to <span class="inlinecode"><span class="id" type="var">t</span></span>.
+       when you submit the <span class="inlinecode"><span class="id" title="keyword">Require</span></span> line above to PG, by setting the emacs
+       variable <span class="inlinecode"><span class="id" title="var">coq</span>-<span class="id" title="var">compile</span>-<span class="id" title="keyword">before</span>-<span class="id" title="var">require</span></span> to <span class="inlinecode"><span class="id" title="var">t</span></span>.
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> In CoqIDE: Open <span class="inlinecode"><span class="id" type="var">Basics.v</span></span>; then, in the "Compile" menu, click
+<li> In CoqIDE: Open <span class="inlinecode"><span class="id" title="var">Basics.v</span></span>; then, in the "Compile" menu, click
        on "Compile Buffer".
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> From the command line: Generate a <span class="inlinecode"><span class="id" type="var">Makefile</span></span> using the <span class="inlinecode"><span class="id" type="var">coq_makefile</span></span>
+<li> From the command line: Generate a <span class="inlinecode"><span class="id" title="var">Makefile</span></span> using the <span class="inlinecode"><span class="id" title="var">coq_makefile</span></span>
        utility, that comes installed with Coq (if you obtained the whole
-       volume as a single archive, a <span class="inlinecode"><span class="id" type="var">Makefile</span></span> should already exist
+       volume as a single archive, a <span class="inlinecode"><span class="id" title="var">Makefile</span></span> should already exist
        and you can skip this step):
 
 <div class="paragraph"> </div>
 
-         <span class="inlinecode"><span class="id" type="var">coq_makefile</span></span> <span class="inlinecode">-<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">_CoqProject</span></span> <span class="inlinecode">*.<span class="id" type="var">v</span></span> <span class="inlinecode">-<span class="id" type="var">o</span></span> <span class="inlinecode"><span class="id" type="var">Makefile</span></span>
+         <span class="inlinecode"><span class="id" title="var">coq_makefile</span></span> <span class="inlinecode">-<span class="id" title="var">f</span></span> <span class="inlinecode"><span class="id" title="var">_CoqProject</span></span> <span class="inlinecode">*.<span class="id" title="var">v</span></span> <span class="inlinecode">-<span class="id" title="var">o</span></span> <span class="inlinecode"><span class="id" title="var">Makefile</span></span>
 
 <div class="paragraph"> </div>
 
@@ -106,12 +109,12 @@ For the <span class="inlinecode"><span class="id" type="keyword">Require</span><
 
 <div class="paragraph"> </div>
 
-       Then you can compile <span class="inlinecode"><span class="id" type="var">Basics.v</span></span> by running <span class="inlinecode"><span class="id" type="var">make</span></span> with the corresponding
-       <span class="inlinecode">.<span class="id" type="var">vo</span></span> file as a target:
+       Then you can compile <span class="inlinecode"><span class="id" title="var">Basics.v</span></span> by running <span class="inlinecode"><span class="id" title="var">make</span></span> with the corresponding
+       <span class="inlinecode">.<span class="id" title="var">vo</span></span> file as a target:
 
 <div class="paragraph"> </div>
 
-         <span class="inlinecode"><span class="id" type="var">make</span></span> <span class="inlinecode"><span class="id" type="var">Basics.vo</span></span>
+         <span class="inlinecode"><span class="id" title="var">make</span></span> <span class="inlinecode"><span class="id" title="var">Basics.vo</span></span>
 
 <div class="paragraph"> </div>
 
@@ -119,22 +122,22 @@ For the <span class="inlinecode"><span class="id" type="keyword">Require</span><
 
 <div class="paragraph"> </div>
 
-         <span class="inlinecode"><span class="id" type="var">make</span></span>
+         <span class="inlinecode"><span class="id" title="var">make</span></span>
 
 <div class="paragraph"> </div>
 
-       Under the hood, <span class="inlinecode"><span class="id" type="var">make</span></span> uses the Coq compiler, <span class="inlinecode"><span class="id" type="var">coqc</span></span>.  You can also
-       run <span class="inlinecode"><span class="id" type="var">coqc</span></span> directly:
+       Under the hood, <span class="inlinecode"><span class="id" title="var">make</span></span> uses the Coq compiler, <span class="inlinecode"><span class="id" title="var">coqc</span></span>.  You can also
+       run <span class="inlinecode"><span class="id" title="var">coqc</span></span> directly:
 
 <div class="paragraph"> </div>
 
-         <span class="inlinecode"><span class="id" type="var">coqc</span></span> <span class="inlinecode">-<span class="id" type="var">Q</span></span> <span class="inlinecode">.</span> <span class="inlinecode"><span class="id" type="var">LF</span></span> <span class="inlinecode"><span class="id" type="var">Basics.v</span></span>
+         <span class="inlinecode"><span class="id" title="var">coqc</span></span> <span class="inlinecode">-<span class="id" title="var">Q</span></span> <span class="inlinecode">.</span> <span class="inlinecode"><span class="id" title="var">LF</span></span> <span class="inlinecode"><span class="id" title="var">Basics.v</span></span>
 
 <div class="paragraph"> </div>
 
-       But <span class="inlinecode"><span class="id" type="var">make</span></span> also calculates dependencies between source files to compile
-       them in the right order, so <span class="inlinecode"><span class="id" type="var">make</span></span> should generally be prefered over
-       explicit <span class="inlinecode"><span class="id" type="var">coqc</span></span>.
+       But <span class="inlinecode"><span class="id" title="var">make</span></span> also calculates dependencies between source files to compile
+       them in the right order, so <span class="inlinecode"><span class="id" title="var">make</span></span> should generally be prefered over
+       explicit <span class="inlinecode"><span class="id" title="var">coqc</span></span>.
 
 </li>
 </ul>
@@ -142,7 +145,7 @@ For the <span class="inlinecode"><span class="id" type="keyword">Require</span><
 <div class="paragraph"> </div>
 
     如果你遇到了问题（例如，稍后你可能会在本文件中遇到缺少标识符的提示），
-    那可能是因为没有正确设置 Coq 的“加载路径”。指令 <span class="inlinecode"><span class="id" type="keyword">Print</span></span> <span class="inlinecode"><span class="id" type="var">LoadPath</span>.</span>
+    那可能是因为没有正确设置 Coq 的“加载路径”。指令 <span class="inlinecode"><span class="id" title="keyword">Print</span></span> <span class="inlinecode"><span class="id" title="var">LoadPath</span>.</span>
     能帮你理清这类问题。
 
 <div class="paragraph"> </div>
@@ -151,244 +154,254 @@ For the <span class="inlinecode"><span class="id" type="keyword">Require</span><
 
 <div class="paragraph"> </div>
 
-        <span class="inlinecode"><span class="id" type="var">Compiled</span></span> <span class="inlinecode"><span class="id" type="var">library</span></span> <span class="inlinecode"><span class="id" type="var">Foo</span></span> <span class="inlinecode"><span class="id" type="var">makes</span></span> <span class="inlinecode"><span class="id" type="var">inconsistent</span></span> <span class="inlinecode"><span class="id" type="var">assumptions</span></span> <span class="inlinecode"><span class="id" type="var">over</span></span>
-        <span class="inlinecode"><span class="id" type="var">library</span></span> <span class="inlinecode"><span class="id" type="var">Bar</span></span>
+        <span class="inlinecode"><span class="id" title="var">Compiled</span></span> <span class="inlinecode"><span class="id" title="var">library</span></span> <span class="inlinecode"><span class="id" title="var">Foo</span></span> <span class="inlinecode"><span class="id" title="var">makes</span></span> <span class="inlinecode"><span class="id" title="var">inconsistent</span></span> <span class="inlinecode"><span class="id" title="var">assumptions</span></span> <span class="inlinecode"><span class="id" title="var">over</span></span>
+        <span class="inlinecode"><span class="id" title="var">library</span></span> <span class="inlinecode"><span class="id" title="var">Bar</span></span>
 
 <div class="paragraph"> </div>
 
     check whether you have multiple installations of Coq on your machine.
-    It may be that commands (like <span class="inlinecode"><span class="id" type="var">coqc</span></span>) that you execute in a terminal
+    It may be that commands (like <span class="inlinecode"><span class="id" title="var">coqc</span></span>) that you execute in a terminal
     window are getting a different version of Coq than commands executed by
     Proof General or CoqIDE.
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> Another common reason is that the library <span class="inlinecode"><span class="id" type="var">Bar</span></span> was modified and
-      recompiled without also recompiling <span class="inlinecode"><span class="id" type="var">Foo</span></span> which depends on it.  Recompile
-      <span class="inlinecode"><span class="id" type="var">Foo</span></span>, or everything if too many files are affected.  (Using the third
-      solution above: <span class="inlinecode"><span class="id" type="var">make</span></span> <span class="inlinecode"><span class="id" type="var">clean</span>;</span> <span class="inlinecode"><span class="id" type="var">make</span></span>.)
+<li> Another common reason is that the library <span class="inlinecode"><span class="id" title="var">Bar</span></span> was modified and
+      recompiled without also recompiling <span class="inlinecode"><span class="id" title="var">Foo</span></span> which depends on it.  Recompile
+      <span class="inlinecode"><span class="id" title="var">Foo</span></span>, or everything if too many files are affected.  (Using the third
+      solution above: <span class="inlinecode"><span class="id" title="var">make</span></span> <span class="inlinecode"><span class="id" title="var">clean</span>;</span> <span class="inlinecode"><span class="id" title="var">make</span></span>.)
 
 </li>
 </ul>
-    再给 CoqIDE 用户一点技巧：如果你看到了 <span class="inlinecode"><span class="id" type="var">Error</span>:</span> <span class="inlinecode"><span class="id" type="var">Unable</span></span> <span class="inlinecode"><span class="id" type="var">to</span></span> <span class="inlinecode"><span class="id" type="var">locate</span></span>
-    <span class="inlinecode"><span class="id" type="var">library</span></span> <span class="inlinecode"><span class="id" type="var">Basics</span></span>，那么可能的原因是用 <b>CoqIDE</b> 编译的代码和在指令行用
-    <b>coqc</b> 编译的不一致。这通常在系统中安装了两个不兼容的 <span class="inlinecode"><span class="id" type="var">coqc</span></span> 时发生
-    （一个与 CoqIDE 关联，另一个与指令行的 <span class="inlinecode"><span class="id" type="var">coqc</span></span> 关联）。这种情况的变通方法
-    就是只使用 CoqIDE 来编译（即从菜单中选择“make”）并完全避免使用 <span class="inlinecode"><span class="id" type="var">coqc</span></span>。 
+
+<div class="paragraph"> </div>
+
+    再给 CoqIDE 用户一点技巧：如果你看到了 <span class="inlinecode"><span class="id" title="var">Error</span>:</span> <span class="inlinecode"><span class="id" title="var">Unable</span></span> <span class="inlinecode"><span class="id" title="var">to</span></span> <span class="inlinecode"><span class="id" title="var">locate</span></span>
+    <span class="inlinecode"><span class="id" title="var">library</span></span> <span class="inlinecode"><span class="id" title="var">Basics</span></span>，那么可能的原因是用 <i>'CoqIDE'</i> 编译的代码和在指令行用
+    <i>'coqc'</i> 编译的不一致。这通常在系统中安装了两个不兼容的 <span class="inlinecode"><span class="id" title="var">coqc</span></span> 时发生
+    （一个与 CoqIDE 关联，另一个与指令行的 <span class="inlinecode"><span class="id" title="var">coqc</span></span> 关联）。这种情况的变通方法
+    就是只使用 CoqIDE 来编译（即从菜单中选择“make”）并完全避免使用 <span class="inlinecode"><span class="id" title="var">coqc</span></span>。 
 </div>
 
 <div class="doc">
-<a name="lab48"></a><h1 class="section">归纳法证明</h1>
+<a name="lab49"></a><h1 class="section">归纳法证明</h1>
 
 <div class="paragraph"> </div>
 
  我们在上一章中通过基于化简的简单论据证明了 <span class="inlinecode">0</span> 是 <span class="inlinecode">+</span> 的左幺元。
-    我们也观察到，当我们打算证明 <span class="inlinecode">0</span> 也是 <span class="inlinecode">+</span> 的 <b>右</b> 幺元时... 
+    我们也观察到，当我们打算证明 <span class="inlinecode">0</span> 也是 <span class="inlinecode">+</span> 的 <i>'右'</i> 幺元时... 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_n_O_firsttry</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>:<span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> = <span class="id" type="var">n</span> + 0.<br/>
-</div>
-
-<div class="doc">
-...事情就没这么简单了。只应用 <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span> 的话不起作用，因为 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode">0</span>
-    中的 <span class="inlinecode"><span class="id" type="var">n</span></span> 是任意未知数，所以在 <span class="inlinecode">+</span> 的定义中 <span class="inlinecode"><span class="id" type="keyword">match</span></span> 匹配无法被化简。 
-</div>
-<div class="code code-tight">
-
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="comment">(*&nbsp;Does&nbsp;nothing!&nbsp;*)</span><br/>
-<span class="id" type="keyword">Abort</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_n_O_firsttry"><span class="id" title="lemma">plus_n_O_firsttry</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> 0.<br/>
 </div>
 
 <div class="doc">
-即便用 <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 分类讨论也不会有所改善：诚然，我们能够轻易地证明 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span>
-    时的情况；但在证明对于某些 <span class="inlinecode"><span class="id" type="var">n'</span></span> 而言 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span> 时，我们又会遇到和此前相同的问题。 
+...事情就没这么简单了。只应用 <span class="inlinecode"><span class="id" title="tactic">reflexivity</span></span> 的话不起作用，因为 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode">0</span>
+    中的 <span class="inlinecode"><span class="id" title="var">n</span></span> 是任意未知数，所以在 <span class="inlinecode">+</span> 的定义中 <span class="inlinecode"><span class="id" title="keyword">match</span></span> 匹配无法被化简。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_n_O_secondtry</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>:<span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> = <span class="id" type="var">n</span> + 0.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">n</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">n'</span>] <span class="id" type="var">eqn</span>:<span class="id" type="var">E</span>.<br/>
+<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="comment">(*&nbsp;Does&nbsp;nothing!&nbsp;*)</span><br/>
+<span class="id" title="keyword">Abort</span>.<br/>
+</div>
+
+<div class="doc">
+即便用 <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> 分类讨论也不会有所改善：诚然，我们能够轻易地证明 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span>
+    时的情况；但在证明对于某些 <span class="inlinecode"><span class="id" title="var">n'</span></span> 而言 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span> 时，我们又会遇到和此前相同的问题。 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_n_O_secondtry"><span class="id" title="lemma">plus_n_O_secondtry</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> 0.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">n</span> <span class="id" title="keyword">as</span> [| <span class="id" title="var">n'</span>] <span class="id" title="var">eqn</span>:<span class="id" title="var">E</span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;0&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>. <span class="comment">(*&nbsp;虽然目前还没啥问题...&nbsp;*)</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>. <span class="comment">(*&nbsp;虽然目前还没啥问题...&nbsp;*)</span><br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;S&nbsp;n'&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="comment">(*&nbsp;...不过我们又卡在这儿了&nbsp;*)</span><br/>
-<span class="id" type="keyword">Abort</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="comment">(*&nbsp;...不过我们又卡在这儿了&nbsp;*)</span><br/>
+<span class="id" title="keyword">Abort</span>.<br/>
 </div>
 
 <div class="doc">
-虽然还可以用 <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span> 再推进一步，但由于 <span class="inlinecode"><span class="id" type="var">n</span></span> 可以任意大，
+虽然还可以用 <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span> 再推进一步，但由于 <span class="inlinecode"><span class="id" title="var">n</span></span> 可以任意大，
     如果照这个思路继续证明的话，我们永远也证不完。 
 <div class="paragraph"> </div>
 
  为了证明这种关于数字、列表等归纳定义的集合的有趣事实，
-    我们通常需要一个更强大的推理原理：<b>归纳</b>。
+    我们通常需要一个更强大的推理原理：<i>'归纳'</i>。
 
 <div class="paragraph"> </div>
 
-    回想一下 <b>自然数的归纳法则</b>，你也许曾在高中的数学课上，在某门离散数学课上或
-    在其它类似的课上学到过它：若 <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">n</span>)</span> 为关于自然数的命题，而当我们想要证明 <span class="inlinecode"><span class="id" type="var">P</span></span>
-    对于所有自然数 <span class="inlinecode"><span class="id" type="var">n</span></span> 都成立时，可以这样推理：
-
-<div class="paragraph"> </div>
-
+    回想一下 <i>'自然数的归纳法则'</i>，你也许曾在高中的数学课上，在某门离散数学课上或
+    在其它类似的课上学到过它：若 <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">n</span>)</span> 为关于自然数的命题，而当我们想要证明 <span class="inlinecode"><span class="id" title="var">P</span></span>
+    对于所有自然数 <span class="inlinecode"><span class="id" title="var">n</span></span> 都成立时，可以这样推理：
 <ul class="doclist">
-<li> 证明 <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">O</span>)</span> 成立；
+<li> 证明 <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">O</span>)</span> 成立；
 
 </li>
-<li> 证明对于任何 <span class="inlinecode"><span class="id" type="var">n'</span></span>，若 <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">n'</span>)</span> 成立，那么 <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span>)</span> 也成立。
+<li> 证明对于任何 <span class="inlinecode"><span class="id" title="var">n'</span></span>，若 <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">n'</span>)</span> 成立，那么 <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span>)</span> 也成立。
 
 </li>
-<li> 最后得出 <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">n</span>)</span> 对于所有 <span class="inlinecode"><span class="id" type="var">n</span></span> 都成立的结论。
+<li> 最后得出 <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">n</span>)</span> 对于所有 <span class="inlinecode"><span class="id" title="var">n</span></span> 都成立的结论。
 
 </li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    在 Coq 中的步骤也一样：我们以证明 <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">n</span>)</span> 对于所有 <span class="inlinecode"><span class="id" type="var">n</span></span> 都成立的目标开始，
-    然后（通过应用 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> 策略）把它分为两个子目标：一个是我们必须证明
-    <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">O</span>)</span> 成立，另一个是我们必须证明 <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">n'</span>)</span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">P</span>(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span>)</span>。下面就是对该定理的用法： 
+    在 Coq 中的步骤也一样：我们以证明 <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">n</span>)</span> 对于所有 <span class="inlinecode"><span class="id" title="var">n</span></span> 都成立的目标开始，
+    然后（通过应用 <span class="inlinecode"><span class="id" title="tactic">induction</span></span> 策略）把它分为两个子目标：一个是我们必须证明
+    <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">O</span>)</span> 成立，另一个是我们必须证明 <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">n'</span>)</span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">P</span>(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span>)</span>。下面就是对该定理的用法： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_n_O</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>:<span class="id" type="var">nat</span>, <span class="id" type="var">n</span> = <span class="id" type="var">n</span> + 0.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">n</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">n'</span> <span class="id" type="var">IHn'</span>].<br/>
-&nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;0&nbsp;*)</span>    <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;S&nbsp;n'&nbsp;*)</span> <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">IHn'</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_n_O"><span class="id" title="lemma">plus_n_O</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>, <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> 0.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span>. <span class="id" title="tactic">induction</span> <span class="id" title="var">n</span> <span class="id" title="keyword">as</span> [| <span class="id" title="var">n'</span> <span class="id" title="var">IHn'</span>].<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;0&nbsp;*)</span>    <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;S&nbsp;n'&nbsp;*)</span> <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">IHn'</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-和 <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> 一样，<span class="inlinecode"><span class="id" type="tactic">induction</span></span> 策略也能通过 <span class="inlinecode"><span class="id" type="keyword">as</span>...</span> 从句为引入到
-    子目标中的变量指定名字。由于这次有两个子目标，因此 <span class="inlinecode"><span class="id" type="keyword">as</span>...</span> 有两部分，用 <span class="inlinecode">|</span>
-    隔开。（严格来说，我们可以忽略 <span class="inlinecode"><span class="id" type="keyword">as</span>...</span> 从句，Coq 会为它们选择名字。
+和 <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> 一样，<span class="inlinecode"><span class="id" title="tactic">induction</span></span> 策略也能通过 <span class="inlinecode"><span class="id" title="keyword">as</span>...</span> 从句为引入到
+    子目标中的变量指定名字。由于这次有两个子目标，因此 <span class="inlinecode"><span class="id" title="keyword">as</span>...</span> 有两部分，用 <span class="inlinecode">|</span>
+    隔开。（严格来说，我们可以忽略 <span class="inlinecode"><span class="id" title="keyword">as</span>...</span> 从句，Coq 会为它们选择名字。
     然而在实践中这样不好，因为让 Coq 自行选择名字的话更容易导致理解上的困难。）
 
 <div class="paragraph"> </div>
 
-    在第一个子目标中 <span class="inlinecode"><span class="id" type="var">n</span></span> 被 <span class="inlinecode">0</span> 所取代。由于没有新的变量会被引入，因此 <span class="inlinecode"><span class="id" type="keyword">as</span></span> <span class="inlinecode">...</span>
+    在第一个子目标中 <span class="inlinecode"><span class="id" title="var">n</span></span> 被 <span class="inlinecode">0</span> 所取代。由于没有新的变量会被引入，因此 <span class="inlinecode"><span class="id" title="keyword">as</span></span> <span class="inlinecode">...</span>
     字句的第一部分为空；而当前的目标会变成 <span class="inlinecode">0</span> <span class="inlinecode">+</span> <span class="inlinecode">0</span> <span class="inlinecode">=</span> <span class="inlinecode">0</span>：使用化简就能得到此结论。
 
 <div class="paragraph"> </div>
 
-    在第二个子目标中，<span class="inlinecode"><span class="id" type="var">n</span></span> 被 <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span> 所取代，而对 <span class="inlinecode"><span class="id" type="var">n'</span></span> 的归纳假设（Inductive
-    Hypothesis），即 <span class="inlinecode"><span class="id" type="var">n'</span></span> <span class="inlinecode">+</span> <span class="inlinecode">0</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">n'</span></span> 则以 <span class="inlinecode"><span class="id" type="var">IHn'</span></span> 为名被添加到了上下文中。
-    这两个名字在 <span class="inlinecode"><span class="id" type="keyword">as</span>...</span> 从句的第二部分中指定。在此上下文中，待证目标变成了
-    <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode">0</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span>；它可被化简为 <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode">(<span class="id" type="var">n'</span></span> <span class="inlinecode">+</span> <span class="inlinecode">0)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span>，而此结论可通过
-    <span class="inlinecode"><span class="id" type="var">IHn'</span></span> 得出。 
+    在第二个子目标中，<span class="inlinecode"><span class="id" title="var">n</span></span> 被 <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span> 所取代，而对 <span class="inlinecode"><span class="id" title="var">n'</span></span> 的归纳假设（Inductive
+    Hypothesis），即 <span class="inlinecode"><span class="id" title="var">n'</span></span> <span class="inlinecode">+</span> <span class="inlinecode">0</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">n'</span></span> 则以 <span class="inlinecode"><span class="id" title="var">IHn'</span></span> 为名被添加到了上下文中。
+    这两个名字在 <span class="inlinecode"><span class="id" title="keyword">as</span>...</span> 从句的第二部分中指定。在此上下文中，待证目标变成了
+    <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode">0</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span>；它可被化简为 <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">n'</span></span> <span class="inlinecode">+</span> <span class="inlinecode">0)</span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span>，而此结论可通过
+    <span class="inlinecode"><span class="id" title="var">IHn'</span></span> 得出。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">minus_diag</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">minus</span> <span class="id" type="var">n</span> <span class="id" type="var">n</span> = 0.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="minus_diag"><span class="id" title="lemma">minus_diag</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>,<br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#minus"><span class="id" title="abbreviation">minus</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> 0.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;课上已完成&nbsp;*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">n</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">n'</span> <span class="id" type="var">IHn'</span>].<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span>. <span class="id" title="tactic">induction</span> <span class="id" title="var">n</span> <span class="id" title="keyword">as</span> [| <span class="id" title="var">n'</span> <span class="id" title="var">IHn'</span>].<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;0&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;S&nbsp;n'&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rewrite</span> → <span class="id" type="var">IHn'</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">rewrite</span> → <span class="id" title="var">IHn'</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-（其实在这些证明中我们并不需要 <span class="inlinecode"><span class="id" type="tactic">intros</span></span>：当 <span class="inlinecode"><span class="id" type="tactic">induction</span></span>
+（其实在这些证明中我们并不需要 <span class="inlinecode"><span class="id" title="tactic">intros</span></span>：当 <span class="inlinecode"><span class="id" title="tactic">induction</span></span>
     策略被应用到包含量化变量的目标中时，它会自动将需要的变量移到上下文中。） 
 <div class="paragraph"> </div>
 
-<a name="lab49"></a><h4 class="section">练习：2 星, standard, recommended (basic_induction)</h4>
+<a name="lab50"></a><h4 class="section">练习：2 星, standard, recommended (basic_induction)</h4>
  用归纳法证明以下命题。你可能需要之前的证明结果。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">mult_0_r</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>:<span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> * 0 = 0.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_n_Sm</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">S</span> (<span class="id" type="var">n</span> + <span class="id" type="var">m</span>) = <span class="id" type="var">n</span> + (<span class="id" type="var">S</span> <span class="id" type="var">m</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_comm</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> + <span class="id" type="var">m</span> = <span class="id" type="var">m</span> + <span class="id" type="var">n</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_assoc</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> + (<span class="id" type="var">m</span> + <span class="id" type="var">p</span>) = (<span class="id" type="var">n</span> + <span class="id" type="var">m</span>) + <span class="id" type="var">p</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="mult_0_r"><span class="id" title="lemma">mult_0_r</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> 0 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> 0.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_n_Sm"><span class="id" title="lemma">plus_n_Sm</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> (<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_comm"><span class="id" title="lemma">plus_comm</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_assoc"><span class="id" title="lemma">plus_assoc</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab50"></a><h4 class="section">练习：2 星, standard (double_plus)</h4>
+<a name="lab51"></a><h4 class="section">练习：2 星, standard (double_plus)</h4>
  考虑以下函数，它将其参数乘以二： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">double</span> (<span class="id" type="var">n</span>:<span class="id" type="var">nat</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">n</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">O</span> ⇒ <span class="id" type="var">O</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">S</span> <span class="id" type="var">n'</span> ⇒ <span class="id" type="var">S</span> (<span class="id" type="var">S</span> (<span class="id" type="var">double</span> <span class="id" type="var">n'</span>))<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">end</span>.<br/>
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="double"><span class="id" title="definition">double</span></a> (<span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#O"><span class="id" title="constructor">O</span></a><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <span class="id" title="var">n'</span> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> (<a class="idref" href="Induction.html#double"><span class="id" title="definition">double</span></a> <span class="id" title="var">n'</span>))<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
 </div>
 
 <div class="doc">
-用归纳法证明以下关于 <span class="inlinecode"><span class="id" type="var">double</span></span> 的简单事实： 
+用归纳法证明以下关于 <span class="inlinecode"><span class="id" title="var">double</span></span> 的简单事实： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">double_plus</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>, <span class="id" type="var">double</span> <span class="id" type="var">n</span> = <span class="id" type="var">n</span> + <span class="id" type="var">n</span> .<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="double_plus"><span class="id" title="lemma">double_plus</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>, <a class="idref" href="Induction.html#double"><span class="id" title="definition">double</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> .<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab51"></a><h4 class="section">练习：2 星, standard, optional (evenb_S)</h4>
- 我们的 <span class="inlinecode"><span class="id" type="var">evenb</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span> 定义对 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">-</span> <span class="inlinecode">2</span> 的递归调用不大方便。这让证明 <span class="inlinecode"><span class="id" type="var">evenb</span></span> <span class="inlinecode"><span class="id" type="var">n</span></span>
-    时更难对 <span class="inlinecode"><span class="id" type="var">n</span></span> 进行归纳，因此我们需要一个关于 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">-</span> <span class="inlinecode">2</span> 的归纳假设。
-    以下引理赋予了 <span class="inlinecode"><span class="id" type="var">evenb</span></span> <span class="inlinecode">(<span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> 另一个特征，使其在归纳时能够更好地工作： 
+<a name="lab52"></a><h4 class="section">练习：2 星, standard, optional (evenb_S)</h4>
+ 我们的 <span class="inlinecode"><span class="id" title="var">evenb</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> 定义对 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">-</span> <span class="inlinecode">2</span> 的递归调用不大方便。这让证明 <span class="inlinecode"><span class="id" title="var">evenb</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span>
+    时更难对 <span class="inlinecode"><span class="id" title="var">n</span></span> 进行归纳，因此我们需要一个关于 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">-</span> <span class="inlinecode">2</span> 的归纳假设。
+    以下引理赋予了 <span class="inlinecode"><span class="id" title="var">evenb</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span>)</span> 另一个特征，使其在归纳时能够更好地工作： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">evenb_S</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">evenb</span> (<span class="id" type="var">S</span> <span class="id" type="var">n</span>) = <span class="id" type="var">negb</span> (<span class="id" type="var">evenb</span> <span class="id" type="var">n</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="evenb_S"><span class="id" title="lemma">evenb_S</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Basics.html#evenb"><span class="id" title="definition">evenb</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Basics.html#negb"><span class="id" title="definition">negb</span></a> (<a class="idref" href="Basics.html#evenb"><span class="id" title="definition">evenb</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab52"></a><h4 class="section">练习：1 星, standard (destruct_induction)</h4>
- 请简要说明一下 <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> 策略和 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> 策略之间的区别。
+<a name="lab53"></a><h4 class="section">练习：1 星, standard, optional (destruct_induction)</h4>
+ 请简要说明一下 <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> 策略和 <span class="inlinecode"><span class="id" title="tactic">induction</span></span> 策略之间的区别。
 
 <div class="paragraph"> </div>
 
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
 
 </div>
-<div class="code code-tight">
+<div class="code">
 
+<br/>
 <span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_destruct_induction</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="manual_grade_for_destruct_induction"><span class="id" title="definition">manual_grade_for_destruct_induction</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab53"></a><h1 class="section">证明里的证明</h1>
+<a name="lab54"></a><h1 class="section">证明里的证明</h1>
 
 <div class="paragraph"> </div>
 
@@ -396,94 +409,97 @@ For the <span class="inlinecode"><span class="id" type="keyword">Require</span><
     后面的定理引用之前的定理。但有时一个证明会需要一些繁杂琐碎的事实，
     而这些事实缺乏普遍性，以至于我们甚至都不应该给它们单独取顶级的名字。
     此时，如果能仅在需要时简单地陈述并立即证明所需的“子定理”就会很方便。
-    我们可以用 <span class="inlinecode"><span class="id" type="tactic">assert</span></span> 策略来做到。例如，我们之前对 <span class="inlinecode"><span class="id" type="var">mult_0_plus</span></span>
-    定理的证明引用了前一个名为 <span class="inlinecode"><span class="id" type="var">plus_O_n</span></span> 的定理，而我们只需内联使用 <span class="inlinecode"><span class="id" type="tactic">assert</span></span>
-    就能陈述并证明 <span class="inlinecode"><span class="id" type="var">plus_O_n</span></span>： 
+    我们可以用 <span class="inlinecode"><span class="id" title="tactic">assert</span></span> 策略来做到。例如，我们之前对 <span class="inlinecode"><span class="id" title="var">mult_0_plus</span></span>
+    定理的证明引用了前一个名为 <span class="inlinecode"><span class="id" title="var">plus_O_n</span></span> 的定理，而我们只需内联使用 <span class="inlinecode"><span class="id" title="tactic">assert</span></span>
+    就能陈述并证明 <span class="inlinecode"><span class="id" title="var">plus_O_n</span></span>： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">mult_0_plus'</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;(0 + <span class="id" type="var">n</span>) * <span class="id" type="var">m</span> = <span class="id" type="var">n</span> * <span class="id" type="var">m</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">H</span>: 0 + <span class="id" type="var">n</span> = <span class="id" type="var">n</span>). { <span class="id" type="tactic">reflexivity</span>. }<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> → <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="mult_0_plus'"><span class="id" title="lemma">mult_0_plus'</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">(</span></a>0 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H</span>: 0 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <span class="id" title="var">n</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <span class="id" title="var">n</span>). { <span class="id" title="tactic">reflexivity</span>. }<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> → <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<span class="inlinecode"><span class="id" type="tactic">assert</span></span> 策略引入两个子目标。第一个为断言本身，通过给它加前缀 <span class="inlinecode"><span class="id" type="var">H</span>:</span>
-    我们将该断言命名为 <span class="inlinecode"><span class="id" type="var">H</span></span>。（当然也可以用 <span class="inlinecode"><span class="id" type="keyword">as</span></span> 来命名该断言，与之前的
-    <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> 和 <span class="inlinecode"><span class="id" type="tactic">induction</span></span> 一样。例如 <span class="inlinecode"><span class="id" type="tactic">assert</span></span> <span class="inlinecode">(0</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> <span class="inlinecode"><span class="id" type="keyword">as</span></span> <span class="inlinecode"><span class="id" type="var">H</span></span>。）
+<span class="inlinecode"><span class="id" title="tactic">assert</span></span> 策略引入两个子目标。第一个为断言本身，通过给它加前缀 <span class="inlinecode"><span class="id" title="var">H</span>:</span>
+    我们将该断言命名为 <span class="inlinecode"><span class="id" title="var">H</span></span>。（当然也可以用 <span class="inlinecode"><span class="id" title="keyword">as</span></span> 来命名该断言，与之前的
+    <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> 和 <span class="inlinecode"><span class="id" title="tactic">induction</span></span> 一样。例如 <span class="inlinecode"><span class="id" title="tactic">assert</span></span> <span class="inlinecode">(0</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">n</span>)</span> <span class="inlinecode"><span class="id" title="keyword">as</span></span> <span class="inlinecode"><span class="id" title="var">H</span></span>。）
     注意我们用花括号 <span class="inlinecode">{</span> <span class="inlinecode">...</span> <span class="inlinecode">}</span> 将该断言的证明括了起来。这样不仅方便阅读，
     同时也能在交互使用 Coq 时更容易看出该子目标何时得证。第二个目标
-    与之前执行 <span class="inlinecode"><span class="id" type="tactic">assert</span></span> 时一样，只是这次在上下文中，我们有了名为 <span class="inlinecode"><span class="id" type="var">H</span></span> 的前提
-    <span class="inlinecode">0</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">n</span></span>。也就是说，<span class="inlinecode"><span class="id" type="tactic">assert</span></span> 生成的第一个子目标是我们必须证明的已断言的事实，
+    与之前执行 <span class="inlinecode"><span class="id" title="tactic">assert</span></span> 时一样，只是这次在上下文中，我们有了名为 <span class="inlinecode"><span class="id" title="var">H</span></span> 的前提
+    <span class="inlinecode">0</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">n</span></span>。也就是说，<span class="inlinecode"><span class="id" title="tactic">assert</span></span> 生成的第一个子目标是我们必须证明的已断言的事实，
     而在第二个子目标中，我们可以使用已断言的事实在一开始尝试证明的事情上取得进展。 
 <div class="paragraph"> </div>
 
- 另一个 <span class="inlinecode"><span class="id" type="tactic">assert</span></span> 的例子... 
+ 另一个 <span class="inlinecode"><span class="id" title="tactic">assert</span></span> 的例子... 
 <div class="paragraph"> </div>
 
- 举例来说，假如我们要证明 <span class="inlinecode">(<span class="id" type="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">m</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode">(<span class="id" type="var">p</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">q</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode">(<span class="id" type="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode">(<span class="id" type="var">p</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">q</span>)</span>。
-    <span class="inlinecode">=</span> 两边唯一不同的就是内层第一个子式中 <span class="inlinecode">+</span> 的参数 <span class="inlinecode"><span class="id" type="var">m</span></span> 和 <span class="inlinecode"><span class="id" type="var">n</span></span> 交换了位置，
-    我们似乎可以用加法交换律（<span class="inlinecode"><span class="id" type="var">plus_comm</span></span>）来改写它。然而，
-    <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span> 策略并不知道应该作用在 <b>哪里</b>。本命题中 <span class="inlinecode">+</span> 用了三次 ，
-    结果 <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" type="var">plus_comm</span></span> 只对 <b>最外层</b> 起了作用... 
+ 举例来说，假如我们要证明 <span class="inlinecode">(<span class="id" title="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">m</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode">(<span class="id" title="var">p</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">q</span>)</span> <span class="inlinecode">=</span> <span class="inlinecode">(<span class="id" title="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">n</span>)</span> <span class="inlinecode">+</span> <span class="inlinecode">(<span class="id" title="var">p</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">q</span>)</span>。
+    <span class="inlinecode">=</span> 两边唯一不同的就是内层第一个子式中 <span class="inlinecode">+</span> 的参数 <span class="inlinecode"><span class="id" title="var">m</span></span> 和 <span class="inlinecode"><span class="id" title="var">n</span></span> 交换了位置，
+    我们似乎可以用加法交换律（<span class="inlinecode"><span class="id" title="var">plus_comm</span></span>）来改写它。然而，
+    <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> 策略并不知道应该作用在 <i>'哪里'</i>。本命题中 <span class="inlinecode">+</span> 用了三次 ，
+    结果 <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> <span class="inlinecode">→</span> <span class="inlinecode"><span class="id" title="var">plus_comm</span></span> 只对 <i>'最外层'</i> 起了作用... 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_rearrange_firsttry</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">n</span> + <span class="id" type="var">m</span>) + (<span class="id" type="var">p</span> + <span class="id" type="var">q</span>) = (<span class="id" type="var">m</span> + <span class="id" type="var">n</span>) + (<span class="id" type="var">p</span> + <span class="id" type="var">q</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_rearrange_firsttry"><span class="id" title="lemma">plus_rearrange_firsttry</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#q"><span class="id" title="variable">q</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#q"><span class="id" title="variable">q</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;我们只需要将&nbsp;(m&nbsp;+&nbsp;n)&nbsp;交换为&nbsp;(n&nbsp;+&nbsp;m)...&nbsp;看起来&nbsp;plus_comm&nbsp;能搞定！*)</span><br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> → <span class="id" type="var">plus_comm</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> → <a class="idref" href="Induction.html#plus_comm"><span class="id" title="axiom">plus_comm</span></a>.<br/>
 &nbsp;&nbsp;<span class="comment">(*&nbsp;搞不定...&nbsp;Coq&nbsp;选错了要改写的加法！&nbsp;*)</span><br/>
-<span class="id" type="keyword">Abort</span>.<br/>
+<span class="id" title="keyword">Abort</span>.<br/>
 </div>
 
 <div class="doc">
-为了在需要的地方使用 <span class="inlinecode"><span class="id" type="var">plus_comm</span></span>，我们可以（为此这里讨论的 <span class="inlinecode"><span class="id" type="var">m</span></span> 和 <span class="inlinecode"><span class="id" type="var">n</span></span>）
-    引入一个局部引理来陈述 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span></span>，之后用 <span class="inlinecode"><span class="id" type="var">plus_comm</span></span> 证明它，
+为了在需要的地方使用 <span class="inlinecode"><span class="id" title="var">plus_comm</span></span>，我们可以（为此这里讨论的 <span class="inlinecode"><span class="id" title="var">m</span></span> 和 <span class="inlinecode"><span class="id" title="var">n</span></span>）
+    引入一个局部引理来陈述 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">n</span></span>，之后用 <span class="inlinecode"><span class="id" title="var">plus_comm</span></span> 证明它，
     并用它来进行期望的改写。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_rearrange</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">n</span> + <span class="id" type="var">m</span>) + (<span class="id" type="var">p</span> + <span class="id" type="var">q</span>) = (<span class="id" type="var">m</span> + <span class="id" type="var">n</span>) + (<span class="id" type="var">p</span> + <span class="id" type="var">q</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> <span class="id" type="var">q</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">assert</span> (<span class="id" type="var">H</span>: <span class="id" type="var">n</span> + <span class="id" type="var">m</span> = <span class="id" type="var">m</span> + <span class="id" type="var">n</span>).<br/>
-&nbsp;&nbsp;{ <span class="id" type="tactic">rewrite</span> → <span class="id" type="var">plus_comm</span>. <span class="id" type="tactic">reflexivity</span>. }<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> → <span class="id" type="var">H</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_rearrange"><span class="id" title="lemma">plus_rearrange</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#q"><span class="id" title="variable">q</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#q"><span class="id" title="variable">q</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">H</span>: <span class="id" title="var">n</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <span class="id" title="var">m</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <span class="id" title="var">m</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <span class="id" title="var">n</span>).<br/>
+&nbsp;&nbsp;{ <span class="id" title="tactic">rewrite</span> → <a class="idref" href="Induction.html#plus_comm"><span class="id" title="axiom">plus_comm</span></a>. <span class="id" title="tactic">reflexivity</span>. }<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> → <span class="id" title="var">H</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab54"></a><h1 class="section">形式化证明 vs. 非形式化证明</h1>
+<a name="lab55"></a><h1 class="section">形式化证明 vs. 非形式化证明</h1>
 
 <div class="paragraph"> </div>
 
- <div class="quote"><b>“非形式化证明是算法，形式化证明是代码。”</b></div> 
+ <div class="quote">“<i>'非形式化证明是算法，形式化证明是代码。'</i>”</div> 
 <div class="paragraph"> </div>
 
  数学声明的成功证明由什么构成？这个问题已经困扰了哲学家数千年，
-    不过这儿有个还算凑合的定义：数学命题 <span class="inlinecode"><span class="id" type="var">P</span></span> 的证明是一段书面（或口头）的文本，
-    它对 <span class="inlinecode"><span class="id" type="var">P</span></span> 的真实性进行无可辩驳的论证，逐步说服读者或听者使其确信 <span class="inlinecode"><span class="id" type="var">P</span></span> 为真。
+    不过这儿有个还算凑合的定义：数学命题 <span class="inlinecode"><span class="id" title="var">P</span></span> 的证明是一段书面（或口头）的文本，
+    它对 <span class="inlinecode"><span class="id" title="var">P</span></span> 的真实性进行无可辩驳的论证，逐步说服读者或听者使其确信 <span class="inlinecode"><span class="id" title="var">P</span></span> 为真。
     也就是说，证明是一种交流行为。
 
 <div class="paragraph"> </div>
 
     交流活动会涉及不同类型的读者。一方面，“读者”可以是像 Coq 这样的程序，
-    此时灌输的“确信”是 <span class="inlinecode"><span class="id" type="var">P</span></span> 能够从一个确定的，由形式化逻辑规则组成的集合中
+    此时灌输的“确信”是 <span class="inlinecode"><span class="id" title="var">P</span></span> 能够从一个确定的，由形式化逻辑规则组成的集合中
     机械地推导出来，而证明则是指导程序检验这一事实的方法。这种方法就是
-    <b>形式化</b> 证明。
+    <i>'形式化'</i> 证明。
 
 <div class="paragraph"> </div>
 
     另一方面，读者也可以是人类，这种情况下证明可以用英语或其它自然语言写出，
-    因此必然是 <b>非形式化</b> 的，此时成功的标准不太明确。一个“有效的”证明是让读者
-    相信 <span class="inlinecode"><span class="id" type="var">P</span></span>。但同一个证明可能被很多不同的读者阅读，其中一些人可能会被某种特定
+    因此必然是 <i>'非形式化'</i> 的，此时成功的标准不太明确。一个“有效的”证明是让读者
+    相信 <span class="inlinecode"><span class="id" title="var">P</span></span>。但同一个证明可能被很多不同的读者阅读，其中一些人可能会被某种特定
     的表述论证方式说服，而其他人则不会。有些读者太爱钻牛角尖，或者缺乏经验，
     或者只是单纯地过于愚钝；说服他们的唯一方法就是细致入微地进行论证。
     不过熟悉这一领域的读者可能会觉得所有细节都太过繁琐，让他们无法抓住
@@ -501,33 +517,35 @@ For the <span class="inlinecode"><span class="id" type="keyword">Require</span><
 
     由于我们在本课程中使用 Coq，因此会重度使用形式化证明。但这并不意味着我们
     可以完全忽略掉非形式化的证明过程！形式化证明在很多方面都非常有用，
-    不过它们对人类之间的思想交流而言 <b>并不</b> 十分高效。 
+    不过它们对人类之间的思想交流而言 <i>'并不'</i> 十分高效。 
 <div class="paragraph"> </div>
 
  例如，下面是一段加法结合律的证明： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_assoc'</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> + (<span class="id" type="var">m</span> + <span class="id" type="var">p</span>) = (<span class="id" type="var">n</span> + <span class="id" type="var">m</span>) + <span class="id" type="var">p</span>.<br/>
-<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">n</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">n'</span> <span class="id" type="var">IHn'</span>]. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rewrite</span> → <span class="id" type="var">IHn'</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_assoc'"><span class="id" title="lemma">plus_assoc'</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span>. <span class="id" title="tactic">induction</span> <span class="id" title="var">n</span> <span class="id" title="keyword">as</span> [| <span class="id" title="var">n'</span> <span class="id" title="var">IHn'</span>]. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">rewrite</span> → <span class="id" title="var">IHn'</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
 Coq 对此表示十分满意。然而人类却很难理解它。我们可以用注释和标号让它
     的结构看上去更清晰一点... 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_assoc''</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> + (<span class="id" type="var">m</span> + <span class="id" type="var">p</span>) = (<span class="id" type="var">n</span> + <span class="id" type="var">m</span>) + <span class="id" type="var">p</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span>. <span class="id" type="tactic">induction</span> <span class="id" type="var">n</span> <span class="id" type="keyword">as</span> [| <span class="id" type="var">n'</span> <span class="id" type="var">IHn'</span>].<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_assoc''"><span class="id" title="lemma">plus_assoc''</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span>. <span class="id" title="tactic">induction</span> <span class="id" title="var">n</span> <span class="id" title="keyword">as</span> [| <span class="id" title="var">n'</span> <span class="id" title="var">IHn'</span>].<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;0&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
 &nbsp;&nbsp;- <span class="comment">(*&nbsp;n&nbsp;=&nbsp;S&nbsp;n'&nbsp;*)</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">rewrite</span> → <span class="id" type="var">IHn'</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">rewrite</span> → <span class="id" title="var">IHn'</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
@@ -539,67 +557,44 @@ Coq 对此表示十分满意。然而人类却很难理解它。我们可以用�
     一个（迂腐的）数学家可能把证明写成这样： 
 <div class="paragraph"> </div>
 
+<ul class="doclist">
+<li> <i>'定理'</i>：对于任何 <span class="inlinecode"><span class="id" title="var">n</span></span>、<span class="inlinecode"><span class="id" title="var">m</span></span> 和 <span class="inlinecode"><span class="id" title="var">p</span></span>，
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">n</span> + (<span class="id" title="var">m</span> + <span class="id" title="var">p</span>) = (<span class="id" title="var">n</span> + <span class="id" title="var">m</span>) + <span class="id" title="var">p</span>.
+<div class="paragraph"> </div>
+
+</span>    <i>'证明'</i>：对 <span class="inlinecode"><span class="id" title="var">n</span></span> 使用归纳法。
 
 <div class="paragraph"> </div>
 
 <ul class="doclist">
-<li> <b>定理</b>：对于任何 <span class="inlinecode"><span class="id" type="var">n</span></span>、<span class="inlinecode"><span class="id" type="var">m</span></span> 和 <span class="inlinecode"><span class="id" type="var">p</span></span>，
-
+<li> 首先，设 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span>。我们必须证明
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0 + (<span class="id" title="var">m</span> + <span class="id" title="var">p</span>) = (0 + <span class="id" title="var">m</span>) + <span class="id" title="var">p</span>.
 <div class="paragraph"> </div>
 
-<div class="code code-tight">
-&nbsp;&nbsp;&nbsp;<span class="id" type="var">n</span>&nbsp;+&nbsp;(<span class="id" type="var">m</span>&nbsp;+&nbsp;<span class="id" type="var">p</span>)&nbsp;=&nbsp;(<span class="id" type="var">n</span>&nbsp;+&nbsp;<span class="id" type="var">m</span>)&nbsp;+&nbsp;<span class="id" type="var">p</span>.
-<div class="paragraph"> </div>
-
-</div>
-    <b>证明</b>：对 <span class="inlinecode"><span class="id" type="var">n</span></span> 使用归纳法。
-
-<div class="paragraph"> </div>
-
-<ul class="doclist">
-<li> 首先，设 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span>。我们必须证明
-
-<div class="paragraph"> </div>
-
-<div class="code code-tight">
-&nbsp;&nbsp;0&nbsp;+&nbsp;(<span class="id" type="var">m</span>&nbsp;+&nbsp;<span class="id" type="var">p</span>)&nbsp;=&nbsp;(0&nbsp;+&nbsp;<span class="id" type="var">m</span>)&nbsp;+&nbsp;<span class="id" type="var">p</span>.
-<div class="paragraph"> </div>
-
-</div>
-      此结论可从 <span class="inlinecode">+</span> 的定义直接得到。
+</span>      此结论可从 <span class="inlinecode">+</span> 的定义直接得到。
 
 <div class="paragraph"> </div>
 
 
 </li>
-<li> 然后，设 <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">S</span></span> <span class="inlinecode"><span class="id" type="var">n'</span></span>，其中
-
+<li> 然后，设 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span>，其中
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">n'</span> + (<span class="id" title="var">m</span> + <span class="id" title="var">p</span>) = (<span class="id" title="var">n'</span> + <span class="id" title="var">m</span>) + <span class="id" title="var">p</span>.
 <div class="paragraph"> </div>
 
-<div class="code code-tight">
-&nbsp;&nbsp;<span class="id" type="var">n'</span>&nbsp;+&nbsp;(<span class="id" type="var">m</span>&nbsp;+&nbsp;<span class="id" type="var">p</span>)&nbsp;=&nbsp;(<span class="id" type="var">n'</span>&nbsp;+&nbsp;<span class="id" type="var">m</span>)&nbsp;+&nbsp;<span class="id" type="var">p</span>.
+</span>      我们必须证明
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">S</span> <span class="id" title="var">n'</span>) + (<span class="id" title="var">m</span> + <span class="id" title="var">p</span>) = ((<span class="id" title="var">S</span> <span class="id" title="var">n'</span>) + <span class="id" title="var">m</span>) + <span class="id" title="var">p</span>.
 <div class="paragraph"> </div>
 
-</div>
-      我们必须证明
-
+</span>      根据 <span class="inlinecode">+</span> 的定义，该式可写成
+<br/>
+<span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">S</span> (<span class="id" title="var">n'</span> + (<span class="id" title="var">m</span> + <span class="id" title="var">p</span>)) = <span class="id" title="var">S</span> ((<span class="id" title="var">n'</span> + <span class="id" title="var">m</span>) + <span class="id" title="var">p</span>),
 <div class="paragraph"> </div>
 
-<div class="code code-tight">
-&nbsp;&nbsp;(<span class="id" type="var">S</span>&nbsp;<span class="id" type="var">n'</span>)&nbsp;+&nbsp;(<span class="id" type="var">m</span>&nbsp;+&nbsp;<span class="id" type="var">p</span>)&nbsp;=&nbsp;((<span class="id" type="var">S</span>&nbsp;<span class="id" type="var">n'</span>)&nbsp;+&nbsp;<span class="id" type="var">m</span>)&nbsp;+&nbsp;<span class="id" type="var">p</span>.
-<div class="paragraph"> </div>
-
-</div>
-      根据 <span class="inlinecode">+</span> 的定义，该式可写成
-
-<div class="paragraph"> </div>
-
-<div class="code code-tight">
-&nbsp;&nbsp;<span class="id" type="var">S</span>&nbsp;(<span class="id" type="var">n'</span>&nbsp;+&nbsp;(<span class="id" type="var">m</span>&nbsp;+&nbsp;<span class="id" type="var">p</span>))&nbsp;=&nbsp;<span class="id" type="var">S</span>&nbsp;((<span class="id" type="var">n'</span>&nbsp;+&nbsp;<span class="id" type="var">m</span>)&nbsp;+&nbsp;<span class="id" type="var">p</span>),
-<div class="paragraph"> </div>
-
-</div>
-      它由归纳假设直接得出。<b>证毕</b>。 
+</span>      它由归纳假设直接得出。<i>'证毕'</i>。 
 </li>
 </ul>
 
@@ -608,15 +603,15 @@ Coq 对此表示十分满意。然而人类却很难理解它。我们可以用�
 
 <div class="paragraph"> </div>
 
- 证明的总体形式大体类似，当然这并非偶然：Coq 的设计使其 <span class="inlinecode"><span class="id" type="tactic">induction</span></span>
+ 证明的总体形式大体类似，当然这并非偶然：Coq 的设计使其 <span class="inlinecode"><span class="id" title="tactic">induction</span></span>
     策略会像数学家写出的标号那样，按相同的顺序生成相同的子目标。但在细节上则有
-    明显的不同：形式化证明在某些方面更为明确（例如对 <span class="inlinecode"><span class="id" type="tactic">reflexivity</span></span> 的使用），
+    明显的不同：形式化证明在某些方面更为明确（例如对 <span class="inlinecode"><span class="id" title="tactic">reflexivity</span></span> 的使用），
     但在其它方面则不够明确（特别是 Coq 证明中任何一处的“证明状态”都是完全
     隐含的，而非形式化证明则经常反复告诉读者目前证明进行的状态）。 
 <div class="paragraph"> </div>
 
-<a name="lab55"></a><h4 class="section">练习：2 星, advanced, recommended (plus_comm_informal)</h4>
- 将你对 <span class="inlinecode"><span class="id" type="var">plus_comm</span></span> 的解答翻译成非形式化证明：
+<a name="lab56"></a><h4 class="section">练习：2 星, advanced, recommended (plus_comm_informal)</h4>
+ 将你对 <span class="inlinecode"><span class="id" title="var">plus_comm</span></span> 的解答翻译成非形式化证明：
 
 <div class="paragraph"> </div>
 
@@ -627,195 +622,197 @@ Coq 对此表示十分满意。然而人类却很难理解它。我们可以用�
     Proof: <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
 
 </div>
-<div class="code code-tight">
+<div class="code">
 
+<br/>
 <span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_plus_comm_informal</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="manual_grade_for_plus_comm_informal"><span class="id" title="definition">manual_grade_for_plus_comm_informal</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab56"></a><h4 class="section">练习：2 星, standard, optional (eqb_refl_informal)</h4>
- 以 <span class="inlinecode"><span class="id" type="var">plus_assoc</span></span> 的非形式化证明为范本，写出以下定理的非形式化证明。
+<a name="lab57"></a><h4 class="section">练习：2 星, standard, optional (eqb_refl_informal)</h4>
+ 以 <span class="inlinecode"><span class="id" title="var">plus_assoc</span></span> 的非形式化证明为范本，写出以下定理的非形式化证明。
     不要只是用中文来解释 Coq 策略！
 
 <div class="paragraph"> </div>
 
-    定理：对于任何 <span class="inlinecode"><span class="id" type="var">n</span></span>，均有 <span class="inlinecode"><span class="id" type="var">true</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">n</span></span> <span class="inlinecode">=?</span> <span class="inlinecode"><span class="id" type="var">n</span></span>。
+    定理：对于任何 <span class="inlinecode"><span class="id" title="var">n</span></span>，均有 <span class="inlinecode"><span class="id" title="var">true</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=?</span> <span class="inlinecode"><span class="id" title="var">n</span></span>。
 
 <div class="paragraph"> </div>
 
     证明： <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/>
- <span class="proofbox">&#9744;</span> 
+ <font size=-2>&#9744;</font> 
 </div>
 
 <div class="doc">
-<a name="lab57"></a><h1 class="section">更多练习</h1>
+<a name="lab58"></a><h1 class="section">更多练习</h1>
 
 <div class="paragraph"> </div>
 
-<a name="lab58"></a><h4 class="section">练习：3 星, standard, recommended (mult_comm)</h4>
- 用 <span class="inlinecode"><span class="id" type="tactic">assert</span></span> 来帮助证明此定理。你应该不需要对 <span class="inlinecode"><span class="id" type="var">plus_swap</span></span> 进行归纳。 
+<a name="lab59"></a><h4 class="section">练习：3 星, standard, recommended (mult_comm)</h4>
+ 用 <span class="inlinecode"><span class="id" title="tactic">assert</span></span> 来帮助证明此定理。你应该不需要对 <span class="inlinecode"><span class="id" title="var">plus_swap</span></span> 进行归纳。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_swap</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> + (<span class="id" type="var">m</span> + <span class="id" type="var">p</span>) = <span class="id" type="var">m</span> + (<span class="id" type="var">n</span> + <span class="id" type="var">p</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_swap"><span class="id" title="lemma">plus_swap</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
 </div>
 
 <div class="doc">
-现在证明乘法交换律。（你在证明过程中可能需要定义并证明一个独立的辅助定理。
-    你可能会用上 <span class="inlinecode"><span class="id" type="var">plus_swap</span></span>。） 
+现在证明乘法交换律。（你在证明过程中可能想要定义并证明一个辅助定理。
+    提示：<span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">×</span> <span class="inlinecode">(1</span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">k</span>)</span> 是什么？） 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">mult_comm</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">m</span> <span class="id" type="var">n</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">m</span> * <span class="id" type="var">n</span> = <span class="id" type="var">n</span> * <span class="id" type="var">m</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="mult_comm"><span class="id" title="lemma">mult_comm</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">m</span> <span class="id" title="var">n</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab59"></a><h4 class="section">练习：3 星, standard, optional (more_exercises)</h4>
- 找一张纸。对于以下定理，首先请 <b>思考</b> (a) 它能否能只用化简和改写来证明，
-    (b) 它还需要分类讨论（<span class="inlinecode"><span class="id" type="tactic">destruct</span></span>），以及 (c) 它还需要归纳证明。先写下你的
+<a name="lab60"></a><h4 class="section">练习：3 星, standard, optional (more_exercises)</h4>
+ 找一张纸。对于以下定理，首先请 <i>'思考'</i> (a) 它能否能只用化简和改写来证明，
+    (b) 它还需要分类讨论（<span class="inlinecode"><span class="id" title="tactic">destruct</span></span>），以及 (c) 它还需要归纳证明。先写下你的
     预判，然后填写下面的证明（你的纸不用交上来，这只是鼓励你先思考再行动！） 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Check</span> <span class="id" type="var">leb</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">leb_refl</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>:<span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">true</span> = (<span class="id" type="var">n</span> &lt;=? <span class="id" type="var">n</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">zero_nbeq_S</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>:<span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;0 =? (<span class="id" type="var">S</span> <span class="id" type="var">n</span>) = <span class="id" type="var">false</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">andb_false_r</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">b</span> : <span class="id" type="var">bool</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">andb</span> <span class="id" type="var">b</span> <span class="id" type="var">false</span> = <span class="id" type="var">false</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_ble_compat_l</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> &lt;=? <span class="id" type="var">m</span> = <span class="id" type="var">true</span> → (<span class="id" type="var">p</span> + <span class="id" type="var">n</span>) &lt;=? (<span class="id" type="var">p</span> + <span class="id" type="var">m</span>) = <span class="id" type="var">true</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">S_nbeq_0</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>:<span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">S</span> <span class="id" type="var">n</span>) =? 0 = <span class="id" type="var">false</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">mult_1_l</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>:<span class="id" type="var">nat</span>, 1 * <span class="id" type="var">n</span> = <span class="id" type="var">n</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">all3_spec</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">b</span> <span class="id" type="var">c</span> : <span class="id" type="var">bool</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">orb</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">andb</span> <span class="id" type="var">b</span> <span class="id" type="var">c</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">orb</span> (<span class="id" type="var">negb</span> <span class="id" type="var">b</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">negb</span> <span class="id" type="var">c</span>))<br/>
-&nbsp;&nbsp;= <span class="id" type="var">true</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">mult_plus_distr_r</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;(<span class="id" type="var">n</span> + <span class="id" type="var">m</span>) * <span class="id" type="var">p</span> = (<span class="id" type="var">n</span> * <span class="id" type="var">p</span>) + (<span class="id" type="var">m</span> * <span class="id" type="var">p</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">mult_assoc</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> * (<span class="id" type="var">m</span> * <span class="id" type="var">p</span>) = (<span class="id" type="var">n</span> * <span class="id" type="var">m</span>) * <span class="id" type="var">p</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Check</span> <a class="idref" href="Basics.html#leb"><span class="id" title="definition">leb</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="leb_refl"><span class="id" title="lemma">leb_refl</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Basics.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="Basics.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">&lt;=?</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="zero_nbeq_S"><span class="id" title="lemma">zero_nbeq_S</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;0 <a class="idref" href="Basics.html#97a8d8c92e88d1d68fb55a13a4fcfc6d"><span class="id" title="notation">=?</span></a> <a class="idref" href="Basics.html#97a8d8c92e88d1d68fb55a13a4fcfc6d"><span class="id" title="notation">(</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a><a class="idref" href="Basics.html#97a8d8c92e88d1d68fb55a13a4fcfc6d"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Basics.html#false"><span class="id" title="constructor">false</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="andb_false_r"><span class="id" title="lemma">andb_false_r</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">b</span> : <a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Basics.html#andb"><span class="id" title="definition">andb</span></a> <a class="idref" href="Induction.html#b"><span class="id" title="variable">b</span></a> <a class="idref" href="Basics.html#false"><span class="id" title="constructor">false</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Basics.html#false"><span class="id" title="constructor">false</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_ble_compat_l"><span class="id" title="lemma">plus_ble_compat_l</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="Basics.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">&lt;=?</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Basics.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Basics.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a><a class="idref" href="Basics.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">)</span></a> <a class="idref" href="Basics.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">&lt;=?</span></a> <a class="idref" href="Basics.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="Basics.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Basics.html#true"><span class="id" title="constructor">true</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="S_nbeq_0"><span class="id" title="lemma">S_nbeq_0</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Basics.html#97a8d8c92e88d1d68fb55a13a4fcfc6d"><span class="id" title="notation">(</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#S"><span class="id" title="constructor">S</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a><a class="idref" href="Basics.html#97a8d8c92e88d1d68fb55a13a4fcfc6d"><span class="id" title="notation">)</span></a> <a class="idref" href="Basics.html#97a8d8c92e88d1d68fb55a13a4fcfc6d"><span class="id" title="notation">=?</span></a> 0 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Basics.html#false"><span class="id" title="constructor">false</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="mult_1_l"><span class="id" title="lemma">mult_1_l</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>, 1 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="all3_spec"><span class="id" title="lemma">all3_spec</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">b</span> <span class="id" title="var">c</span> : <a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Basics.html#orb"><span class="id" title="definition">orb</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Basics.html#andb"><span class="id" title="definition">andb</span></a> <a class="idref" href="Induction.html#b"><span class="id" title="variable">b</span></a> <a class="idref" href="Induction.html#c"><span class="id" title="variable">c</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Basics.html#orb"><span class="id" title="definition">orb</span></a> (<a class="idref" href="Basics.html#negb"><span class="id" title="definition">negb</span></a> <a class="idref" href="Induction.html#b"><span class="id" title="variable">b</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Basics.html#negb"><span class="id" title="definition">negb</span></a> <a class="idref" href="Induction.html#c"><span class="id" title="variable">c</span></a>))<br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Basics.html#true"><span class="id" title="constructor">true</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="mult_plus_distr_r"><span class="id" title="lemma">mult_plus_distr_r</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Theorem</span> <a name="mult_assoc"><span class="id" title="lemma">mult_assoc</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#697e4695610f677ae98a52af81f779d<sub>2</sub>"><span class="id" title="notation">×</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab60"></a><h4 class="section">练习：2 星, standard, optional (eqb_refl)</h4>
- 证明以下定理。（把 <span class="inlinecode"><span class="id" type="var">true</span></span> 放在等式左边可能看起来有点奇怪，不过 Coq 标准库中
+<a name="lab61"></a><h4 class="section">练习：2 星, standard, optional (eqb_refl)</h4>
+ 证明以下定理。（把 <span class="inlinecode"><span class="id" title="var">true</span></span> 放在等式左边可能看起来有点奇怪，不过 Coq 标准库中
     就是这样表示的，我们照做就是。无论按哪个方向改写都一样好用，所以无论我们如何
     表示定理，用起来都没问题。） 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">eqb_refl</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">true</span> = (<span class="id" type="var">n</span> =? <span class="id" type="var">n</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="eqb_refl"><span class="id" title="lemma">eqb_refl</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Basics.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="Basics.html#97a8d8c92e88d1d68fb55a13a4fcfc6d"><span class="id" title="notation">=?</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab61"></a><h4 class="section">练习：2 星, standard, optional (plus_swap')</h4>
- <span class="inlinecode"><span class="id" type="tactic">replace</span></span> 策略允许你指定一个具体的要改写的子项和你想要将它改写成的项：
-    <span class="inlinecode"><span class="id" type="tactic">replace</span></span> <span class="inlinecode">(<span class="id" type="var">t</span>)</span> <span class="inlinecode"><span class="id" type="keyword">with</span></span> <span class="inlinecode">(<span class="id" type="var">u</span>)</span> 会将目标中表达式 <span class="inlinecode"><span class="id" type="var">t</span></span>（的所有副本）替换为表达式 <span class="inlinecode"><span class="id" type="var">u</span></span>，
-    并生成 <span class="inlinecode"><span class="id" type="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">u</span></span> 作为附加的子目标。在简单的 <span class="inlinecode"><span class="id" type="tactic">rewrite</span></span> 作用在目标错误的部分上时
+<a name="lab62"></a><h4 class="section">练习：2 星, standard, optional (plus_swap')</h4>
+ <span class="inlinecode"><span class="id" title="tactic">replace</span></span> 策略允许你指定一个具体的要改写的子项和你想要将它改写成的项：
+    <span class="inlinecode"><span class="id" title="tactic">replace</span></span> <span class="inlinecode">(<span class="id" title="var">t</span>)</span> <span class="inlinecode"><span class="id" title="keyword">with</span></span> <span class="inlinecode">(<span class="id" title="var">u</span>)</span> 会将目标中表达式 <span class="inlinecode"><span class="id" title="var">t</span></span>（的所有副本）替换为表达式 <span class="inlinecode"><span class="id" title="var">u</span></span>，
+    并生成 <span class="inlinecode"><span class="id" title="var">t</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">u</span></span> 作为附加的子目标。在简单的 <span class="inlinecode"><span class="id" title="tactic">rewrite</span></span> 作用在目标错误的部分上时
     这种做法通常很有用。
 
 <div class="paragraph"> </div>
 
-   用 <span class="inlinecode"><span class="id" type="tactic">replace</span></span> 策略来证明 <span class="inlinecode"><span class="id" type="var">plus_swap'</span></span>，除了无需 <span class="inlinecode"><span class="id" type="tactic">assert</span></span> <span class="inlinecode">(<span class="id" type="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" type="var">n</span>)</span>
-   外和 <span class="inlinecode"><span class="id" type="var">plus_swap</span></span> 一样。 
+   用 <span class="inlinecode"><span class="id" title="tactic">replace</span></span> 策略来证明 <span class="inlinecode"><span class="id" title="var">plus_swap'</span></span>，除了无需 <span class="inlinecode"><span class="id" title="tactic">assert</span></span> <span class="inlinecode">(<span class="id" title="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">m</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">m</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">n</span>)</span>
+   外和 <span class="inlinecode"><span class="id" title="var">plus_swap</span></span> 一样。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">plus_swap'</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span> <span class="id" type="var">m</span> <span class="id" type="var">p</span> : <span class="id" type="var">nat</span>,<br/>
-&nbsp;&nbsp;<span class="id" type="var">n</span> + (<span class="id" type="var">m</span> + <span class="id" type="var">p</span>) = <span class="id" type="var">m</span> + (<span class="id" type="var">n</span> + <span class="id" type="var">p</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="plus_swap'"><span class="id" title="lemma">plus_swap'</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span> <span class="id" title="var">m</span> <span class="id" title="var">p</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>,<br/>
+&nbsp;&nbsp;<a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">(</span></a><a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">+</span></a> <a class="idref" href="Induction.html#p"><span class="id" title="variable">p</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#b3eea360671e1b32b18a26e15b3aace3"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab62"></a><h4 class="section">练习：3 星, standard, recommended (binary_commute)</h4>
- 回忆一下你在 <a href="Basics.html"><span class="inlineref">Basics</span></a> 中为练习 <span class="inlinecode"><span class="id" type="var">binary</span></span> 编写的 <span class="inlinecode"><span class="id" type="var">incr</span></span> 和 <span class="inlinecode"><span class="id" type="var">bin_to_nat</span></span>
+<a name="lab63"></a><h4 class="section">练习：3 星, standard, recommended (binary_commute)</h4>
+ 回忆一下你在 <a href="Basics.html"><span class="inlineref">Basics</span></a> 中为练习 <span class="inlinecode"><span class="id" title="var">binary</span></span> 编写的 <span class="inlinecode"><span class="id" title="var">incr</span></span> 和 <span class="inlinecode"><span class="id" title="var">bin_to_nat</span></span>
     函数。证明下图可交换。
-
-<div class="paragraph"> </div>
-
-<div class="code code-tight">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">incr</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bin</span>&nbsp;--------------------<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;<span class="id" type="var">bin</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">bin_to_nat</span>&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;<span class="id" type="var">bin_to_nat</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">v</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">v</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">nat</span>&nbsp;--------------------<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>&nbsp;<span class="id" type="var">nat</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">S</span>
-<div class="paragraph"> </div>
-
-</div>
+<pre>
+                            incr
+              bin --------------------<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> bin
+               |                           |
+    bin_to_nat |                           |  bin_to_nat
+               |                           |
+               v                           v
+              nat --------------------<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:6%;'><span style='letter-spacing:-.2em;'>-</span><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> nat
+                             S
+</pre>
     也就是说，一个二进制数先自增然后将它转换为（一进制）自然数，和先将它转换为
-    自然数后再自增会产生相同的结果。将你的定理命名为 <span class="inlinecode"><span class="id" type="var">bin_to_nat_pres_incr</span></span>
+    自然数后再自增会产生相同的结果。将你的定理命名为 <span class="inlinecode"><span class="id" title="var">bin_to_nat_pres_incr</span></span>
     （“pres”即“preserves”的简写，意为“保持原状”）。
 
 <div class="paragraph"> </div>
 
-    在开始做这个练习之前，将你在 <span class="inlinecode"><span class="id" type="var">binary</span></span> 练习的解中的定义复制到这里，
+    在开始做这个练习之前，将你在 <span class="inlinecode"><span class="id" title="var">binary</span></span> 练习的解中的定义复制到这里，
     让这个文件可以被单独评分。若你想要更改你的原始定义以便让此属性更易证明，
     请自便！ 
 </div>
-<div class="code code-tight">
+<div class="code">
 
+<br/>
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/><hr class='doublespaceincode'/>
 <span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_binary_commute</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="manual_grade_for_binary_commute"><span class="id" title="definition">manual_grade_for_binary_commute</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab63"></a><h4 class="section">练习：5 星, advanced (binary_inverse)</h4>
+<a name="lab64"></a><h4 class="section">练习：5 星, advanced (binary_inverse)</h4>
  This is a further continuation of the previous exercises about
     binary numbers.  You may find you need to go back and change your
     earlier definitions to get things to work here.
@@ -825,70 +822,77 @@ Coq 对此表示十分满意。然而人类却很难理解它。我们可以用�
     (a) First, write a function to convert natural numbers to binary
         numbers. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">nat_to_bin</span> (<span class="id" type="var">n</span>:<span class="id" type="var">nat</span>) : <span class="id" type="var">bin</span><br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Fixpoint</span> <a name="nat_to_bin"><span class="id" title="definition">nat_to_bin</span></a> (<span class="id" title="var">n</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="Basics.html#bin"><span class="id" title="inductive">bin</span></a><br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;将本行替换成&nbsp;":=&nbsp;_你的_定义_&nbsp;."&nbsp;*)</span>. <span class="id" title="var">Admitted</span>.<br/>
 </div>
 
 <div class="doc">
-Prove that, if we start with any <span class="inlinecode"><span class="id" type="var">nat</span></span>, convert it to binary, and
-    convert it back, we get the same <span class="inlinecode"><span class="id" type="var">nat</span></span> we started with.  (Hint: If
-    your definition of <span class="inlinecode"><span class="id" type="var">nat_to_bin</span></span> involved any extra functions, you
+Prove that, if we start with any <span class="inlinecode"><span class="id" title="var">nat</span></span>, convert it to binary, and
+    convert it back, we get the same <span class="inlinecode"><span class="id" title="var">nat</span></span> we started with.  (Hint: If
+    your definition of <span class="inlinecode"><span class="id" title="var">nat_to_bin</span></span> involved any extra functions, you
     may need to prove a subsidiary lemma showing how such functions
-    relate to <span class="inlinecode"><span class="id" type="var">nat_to_bin</span></span>.) 
+    relate to <span class="inlinecode"><span class="id" title="var">nat_to_bin</span></span>.) 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">nat_bin_nat</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">n</span>, <span class="id" type="var">bin_to_nat</span> (<span class="id" type="var">nat_to_bin</span> <span class="id" type="var">n</span>) = <span class="id" type="var">n</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="nat_bin_nat"><span class="id" title="lemma">nat_bin_nat</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">n</span>, <a class="idref" href="Basics.html#bin_to_nat"><span class="id" title="axiom">bin_to_nat</span></a> (<a class="idref" href="Induction.html#nat_to_bin"><span class="id" title="axiom">nat_to_bin</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Induction.html#n"><span class="id" title="variable">n</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/><hr class='doublespaceincode'/>
 <span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_binary_inverse_a</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="manual_grade_for_binary_inverse_a"><span class="id" title="definition">manual_grade_for_binary_inverse_a</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/>
 </div>
 
 <div class="doc">
 (b) One might naturally expect that we should also prove the
-        opposite direction &mdash; that starting with a binary number,
+        opposite direction -- that starting with a binary number,
         converting to a natural, and then back to binary should yield
         the same number we started with.  However, this is not the
         case!  Explain (in a comment) what the problem is. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
+<br/>
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/><hr class='doublespaceincode'/>
 <span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_binary_inverse_b</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="manual_grade_for_binary_inverse_b"><span class="id" title="definition">manual_grade_for_binary_inverse_b</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/>
 </div>
 
 <div class="doc">
-(c) Define a normalization function &mdash; i.e., a function
-        <span class="inlinecode"><span class="id" type="var">normalize</span></span> going directly from <span class="inlinecode"><span class="id" type="var">bin</span></span> to <span class="inlinecode"><span class="id" type="var">bin</span></span> (i.e., _not_ by
-        converting to <span class="inlinecode"><span class="id" type="var">nat</span></span> and back) such that, for any binary number
-        <span class="inlinecode"><span class="id" type="var">b</span></span>, converting <span class="inlinecode"><span class="id" type="var">b</span></span> to a natural and then back to binary yields
-        <span class="inlinecode">(<span class="id" type="var">normalize</span></span> <span class="inlinecode"><span class="id" type="var">b</span>)</span>.  Prove it.  (Warning: This part is a bit
-        tricky &mdash; you may end up defining several auxiliary lemmas.
+(c) Define a normalization function -- i.e., a function
+        <span class="inlinecode"><span class="id" title="var">normalize</span></span> going directly from <span class="inlinecode"><span class="id" title="var">bin</span></span> to <span class="inlinecode"><span class="id" title="var">bin</span></span> (i.e., <i>not</i> by
+        converting to <span class="inlinecode"><span class="id" title="var">nat</span></span> and back) such that, for any binary number
+        <span class="inlinecode"><span class="id" title="var">b</span></span>, converting <span class="inlinecode"><span class="id" title="var">b</span></span> to a natural and then back to binary yields
+        <span class="inlinecode">(<span class="id" title="var">normalize</span></span> <span class="inlinecode"><span class="id" title="var">b</span>)</span>.  Prove it.  (Warning: This part is a bit
+        tricky -- you may end up defining several auxiliary lemmas.
         One good way to find out what you need is to start by trying
         to prove the main statement, see where you get stuck, and see
-        if you can find a lemma &mdash; perhaps requiring its own inductive
-        proof &mdash; that will allow the main proof to make progress.) Don't
-        define thi using nat_to_bin and bin_to_nat! 
+        if you can find a lemma -- perhaps requiring its own inductive
+        proof -- that will allow the main proof to make progress.) Don't
+        define this using <span class="inlinecode"><span class="id" title="var">nat_to_bin</span></span> and <span class="inlinecode"><span class="id" title="var">bin_to_nat</span></span>! 
 </div>
-<div class="code code-tight">
+<div class="code">
 
+<br/>
 <span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span><br/><hr class='doublespaceincode'/>
 <span class="comment">(*&nbsp;请勿修改下面这一行：&nbsp;*)</span><br/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">manual_grade_for_binary_inverse_c</span> : <span class="id" type="var">option</span> (<span class="id" type="var">nat</span>*<span class="id" type="var">string</span>) := <span class="id" type="var">None</span>.<br/>
+<span class="id" title="keyword">Definition</span> <a name="manual_grade_for_binary_inverse_c"><span class="id" title="definition">manual_grade_for_binary_inverse_c</span></a> : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#d19c7eafd0e2d195d10df94b392087b<sub>5</sub>"><span class="id" title="notation">×</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="code code-tight">
+<div class="code">
 
-<span class="comment">(*&nbsp;Sun&nbsp;Jan&nbsp;5&nbsp;03:17:33&nbsp;UTC&nbsp;2020&nbsp;*)</span><br/>
+<br/>
+<span class="comment">(*&nbsp;2020年1月16日&nbsp;*)</span><br/>
 </div>
 </div>
 
-
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
 
 </div>
 

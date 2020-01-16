@@ -168,6 +168,8 @@ Definition optimize_correct_prop (e : exp) := eval (optimize e) = eval e?.
 (** 
 
     (*! QuickChick optimize_correct_prop. *)
+*)
+(**
 
     QuickChecking optimize_correct_prop
     +++ Passed 10000 tests (0 discards)
@@ -498,4 +500,4 @@ Definition compiles_correctly (e : exp) := (execute [] (compile e)) = [eval e]?.
 (** For more information on the tool's flags, look at the reference manual
     in [QuickChickInterface].
 *)
-(* Sun Jan 5 03:22:15 UTC 2020 *)
+(* 2020年1月16日 *)

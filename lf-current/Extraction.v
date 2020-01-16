@@ -116,4 +116,4 @@ Extraction "imp.ml" empty_st ceval_step parse.
 (** 有关提取的更多详情见_'软件基础'_第三卷_'已验证的函数式算法'_中的
     Extract 一章。 *)
 
-(* Sun Jan 5 03:17:35 UTC 2020 *)
+(* 2020年1月16日 *)

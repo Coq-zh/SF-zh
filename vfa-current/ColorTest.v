@@ -86,7 +86,7 @@ idtac "-------------------  cardinal_map  --------------------".
 idtac " ".
 
 idtac "#> cardinal_map".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @cardinal_map (
 (forall (A B : Type) (f : A -> B) (g : M.t A),
  @M.cardinal B (@M.map A B f g) = @M.cardinal A g)).
@@ -100,7 +100,7 @@ idtac "-------------------  Sremove_cardinal_less  --------------------".
 idtac " ".
 
 idtac "#> Sremove_cardinal_less".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @Sremove_cardinal_less (
 (forall (i : S.elt) (s : S.t),
  S.In i s -> S.cardinal (S.remove i s) < S.cardinal s)).
@@ -114,7 +114,7 @@ idtac "-------------------  Mremove_elements  --------------------".
 idtac " ".
 
 idtac "#> Mremove_elements".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @Mremove_elements (
 (forall (A : Type) (i : M.key) (s : M.t A),
  @M.In A i s ->
@@ -243,7 +243,7 @@ idtac "-------------------  color_correct  --------------------".
 idtac " ".
 
 idtac "#> color_correct".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @color_correct (
 (forall (palette : S.t) (g : graph),
  no_selfloop g -> undirected g -> coloring_ok palette g (color palette g))).
@@ -255,10 +255,32 @@ idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 43".
-idtac "Max points - advanced: 43".
+idtac "Max points - standard: 51".
+idtac "Max points - advanced: 51".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "functional_extensionality_dep".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "int".
+idtac "int2Z".
+idtac "ltb_lt".
+idtac "ltb".
+idtac "Extract.int".
+idtac "Extract.int2Z".
+idtac "Extract.ltb_lt".
+idtac "Extract.ltb".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- Sremove_elements ---------".
@@ -295,4 +317,4 @@ idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Jan 5 03:21:35 UTC 2020 *)
+(* 2020年1月16日 *)

@@ -242,7 +242,7 @@ End STLCChecker.
 (* ################################################################# *)
 (** * Exercises *)
 
-(** **** 练习：5 星, standard (typechecker_extensions)  
+(** **** 练习：5 星, standard (typechecker_extensions) 
 
     In this exercise we'll extend the typechecker to deal with the
     extended features discussed in chapter [MoreStlc].  Your job
@@ -458,7 +458,7 @@ Qed. (* ... and uncomment this one *)
 End TypecheckerExtensions.
 (** [] *)
 
-(** **** 练习：5 星, standard, optional (stlc_step_function)  
+(** **** 练习：5 星, standard, optional (stlc_step_function) 
 
     Above, we showed how to write a typechecking function and prove it
     sound and complete for the typing relation.  Do the same for the
@@ -487,7 +487,7 @@ Proof. (* 请在此处解答 *) Admitted.
 End StepFunction.
 (** [] *)
 
-(** **** 练习：5 星, standard, optional (stlc_impl)  
+(** **** 练习：5 星, standard, optional (stlc_impl) 
 
     Using the Imp parser described in the [ImpParser] chapter
     of _Logical Foundations_ as a guide, build a parser for extended
@@ -502,4 +502,4 @@ Import StepFunction.
 End StlcImpl.
 (** [] *)
 
-(* Sun Jan 5 03:18:36 UTC 2020 *)
+(* 2020年1月16日 *)

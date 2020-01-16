@@ -48,7 +48,7 @@ idtac "-------------------  ceval_step__ceval_inf  --------------------".
 idtac " ".
 
 idtac "#> Manually graded: ceval_step__ceval_inf".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 print_manual_grade manual_grade_for_ceval_step__ceval_inf.
 idtac " ".
 
@@ -69,10 +69,23 @@ idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 9".
-idtac "Max points - advanced: 9".
+idtac "Max points - standard: 11".
+idtac "Max points - advanced: 11".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- pup_to_n ---------".
@@ -85,4 +98,4 @@ idtac "".
 idtac "********** Advanced **********".
 Abort.
 
-(* Sun Jan 5 03:17:54 UTC 2020 *)
+(* 2020年1月16日 *)

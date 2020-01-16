@@ -457,7 +457,7 @@ Eval compute in if list_nat_eq_dec [1;3;4] [1;4;3] then true else false.
 Eval compute in if list_nat_eq_dec [1;3;4] [1;3;4] then true else false.
  (* = true : bool *)
 
-(** **** 练习：2 星, standard (list_nat_in)  
+(** **** 练习：2 星, standard (list_nat_in) 
 
     Use [in_dec] to build this function. *)
 
@@ -503,4 +503,4 @@ simpl.
    it does.   Either of these two methods is a reasonable way of programming
    with proof.  *)
 
-(* Sun Jan 5 03:20:54 UTC 2020 *)
+(* 2020年1月16日 *)

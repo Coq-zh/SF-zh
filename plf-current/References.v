@@ -275,8 +275,8 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
     assignments:
 
        r:=succ(!r); r:=succ(!r); r:=succ(!r); r:=succ(!r); !r
-
-    Formally, we introduce sequencing as a _derived form_
+*)
+(** Formally, we introduce sequencing as a _derived form_
     [tseq] that expands into an abstraction and an application. *)
 
 Definition tseq t1 t2 :=
@@ -380,13 +380,13 @@ Definition tseq t1 t2 :=
       r2  // yields 1, not 2!
 *)
 
-(** **** 练习：1 星, standard, optional (store_draw)  
+(** **** 练习：1 星, standard, optional (store_draw) 
 
     Draw (on paper) the contents of the store at the point in
     execution where the first two [let]s have finished and the third
     one is about to begin. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -435,7 +435,7 @@ Definition tseq t1 t2 :=
     useful, allowing us to define data structures such as mutable
     lists and trees. *)
 
-(** **** 练习：2 星, standard, recommended (compact_update)  
+(** **** 练习：2 星, standard, recommended (compact_update) 
 
     If we defined [update] more compactly like this
 
@@ -497,7 +497,7 @@ Definition manual_grade_for_compact_update : option (nat*string) := None.
     names for the same storage cell -- one with type [Ref Nat] and the
     other with type [Ref Bool]. *)
 
-(** **** 练习：2 星, standard (type_safety_violation)  
+(** **** 练习：2 星, standard (type_safety_violation) 
 
     Show how this can lead to a violation of type safety. *)
 
@@ -937,7 +937,7 @@ Definition context := partial_map ty.
    [\x:Nat. (!(loc 1)) x, \x:Nat. (!(loc 0)) x]
 *)
 
-(** **** 练习：2 星, standard (cyclic_store)  
+(** **** 练习：2 星, standard (cyclic_store) 
 
     Can you find a term whose reduction will create this particular
     cyclic store? *)
@@ -1148,7 +1148,7 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     typing to the typing relation.  This allows us to type circular
     stores like the one we saw above. *)
 
-(** **** 练习：2 星, standard (store_not_unique)  
+(** **** 练习：2 星, standard (store_not_unique) 
 
     Can you find a store [st], and two
     different store typings [ST1] and [ST2] such that both
@@ -1623,7 +1623,7 @@ Proof with eauto using store_weakening, extends_refl.
     exists ST'...
 Qed.
 
-(** **** 练习：3 星, standard (preservation_informal)  
+(** **** 练习：3 星, standard (preservation_informal) 
 
     Write a careful informal proof of the preservation theorem,
     concentrating on the [T_App], [T_Deref], [T_Assign], and [T_Ref]
@@ -1868,7 +1868,7 @@ Proof with eauto.
   eapply sc_one. compute. apply ST_AppAbs...
 Qed.
 
-(** **** 练习：4 星, standard (factorial_ref)  
+(** **** 练习：4 星, standard (factorial_ref) 
 
     Use the above ideas to implement a factorial function in STLC with
     references.  (There is no need to prove formally that it really
@@ -1893,13 +1893,13 @@ Lemma factorial_4 : exists st,
 Proof.
   eexists. unfold factorial. reduce.
 Qed.
-
-    [] *)
+*)
+(** [] *)
 
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** 练习：5 星, standard, optional (garabage_collector)  
+(** **** 练习：5 星, standard, optional (garabage_collector) 
 
     Challenge problem: modify our formalization to include an account
     of garbage collection, and prove that it satisfies whatever nice
@@ -1911,4 +1911,4 @@ End RefsAndNontermination.
 End STLCRef.
 
 
-(* Sun Jan 5 03:18:36 UTC 2020 *)
+(* 2020年1月16日 *)

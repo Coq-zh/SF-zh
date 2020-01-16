@@ -102,7 +102,7 @@ Fixpoint get_fresh_ids n l :=
   | S n' => get_fresh_ids n' ((fresh l) :: l)
   end.
 
-(** **** 练习：2 星, standard (genId)  
+(** **** 练习：2 星, standard (genId) 
 
     Write a [Gen] instance for [id] using the [elems_]
     combinator and [get_fresh_ids].  *)
@@ -451,7 +451,7 @@ Proof with solve_sum.
   destruct (dec_bound_to Gamma i T); destruct dec; solve_sum.
 Defined.
 
-(** **** 练习：3 星, standard (arbitraryExp)  
+(** **** 练习：3 星, standard (arbitraryExp) 
 
     Derive [Arbitrary] for expressions.  To see how good it is at
     generating _well-typed_ expressions, write a conditional property 
@@ -467,7 +467,7 @@ Defined.
     increase the size until the maximum size is reached, and then
     start over.  What happens when you vary the size bound? *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -507,7 +507,7 @@ Print GOpt.
          : Type -> Type
 *)
 
-(* Check Monad_GOpt. 
+(* Check Monad_GOpt.
 
     
     Monad_GOpt
@@ -845,7 +845,7 @@ Definition expression_soundness_exec :=
   | _ => true
   end)))).   
 
-(* QuickChick expression_soundness_exec. 
+(* QuickChick expression_soundness_exec.
 
     
 
@@ -856,8 +856,8 @@ Definition expression_soundness_exec :=
        TBool
        Some EAnd (EAnd (EEq (EVar 4) (EVar 1)) (EEq (ENum 0) (EVar 4))) EFalse
        *** Failed after 8 tests and 0 shrinks. (0 discards)
-
-    Where is the bug??  Looks like we need some shrinking! *)
+*)
+(** Where is the bug??  Looks like we need some shrinking! *)
 
 (* ================================================================= *)
 (** ** Shrinking for Expressions *)
@@ -879,7 +879,7 @@ Definition expression_soundness_exec_firstshrink :=
   | _ => true
   end)))).   
 
-(* QuickChick expression_soundness_exec_firstshrink. 
+(* QuickChick expression_soundness_exec_firstshrink.
 
     
 << 
@@ -1026,7 +1026,7 @@ Definition shrink_typed_has_type :=
 (* QuickChick shrink_typed_has_type. *)
 
 (* ================================================================= *)
-(** ** Back to Soundness 
+(** ** Back to Soundness
 
     To lift the shrinker to optional expressions, QuickChick provides
     the following function. *)
@@ -1056,7 +1056,7 @@ Definition expression_soundness_exec' :=
   | _ => true
   end)))).   
 
-(* QuickChick expression_soundness_exec'. 
+(* QuickChick expression_soundness_exec'.
 
     
 
@@ -1179,13 +1179,13 @@ Proof with eauto.
     destruct (dec_has_type e Gamma TBool); destruct dec; solve_sum.
 Qed.
 
-(** **** 练习：4 星, standard (arbitrary_well_typed_com)  
+(** **** 练习：4 星, standard (arbitrary_well_typed_com) 
 
     Write a generator and a shrinker for well_typed programs given
     some context [Gamma].  Write some appropriate sanity checks and
     make sure they give expected results. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -1248,13 +1248,13 @@ Conjecture well_typed_state_never_stuck :
   forall c, well_typed_com Gamma c ->
   forall fuel, isFail (ceval fuel st c) = false.
 
-(** **** 练习：4 星, standard (well_typed_state_never_stuck)  
+(** **** 练习：4 星, standard (well_typed_state_never_stuck) 
 
     Write a checker for the above property, find any bugs, and fix them. *)
 
 (* 请在此处解答 *)
 
-(** **** 练习：4 星, standard (ty_eq_polymorphic)  
+(** **** 练习：4 星, standard (ty_eq_polymorphic) 
 
     In the [has_type] relation we allowed equality checks between 
     only arithmetic expressions. Introduce an additional typing 
@@ -1388,7 +1388,7 @@ End GenSTPlayground.
 Conjecture conditional_prop_example : 
   forall (x y : nat), x = y -> x = y.
 
-(* QuickChick conditional_prop_example. 
+(* QuickChick conditional_prop_example.
 
     
   ==>
@@ -1405,4 +1405,4 @@ Conjecture conditional_prop_example :
 (** The first version of this material was developed in collaboration
     with Nicolas Koh. *)
 
-(* Sun Jan 5 03:22:15 UTC 2020 *)
+(* 2020年1月16日 *)

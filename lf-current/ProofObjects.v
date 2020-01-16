@@ -6,7 +6,7 @@ From LF Require Export IndProp.
 (** "_'算法是证明的计算性内容。'_"  --Robert Harper *)
 
 (** 前文已讨论过 Coq 既可以用 [nat]、[list] 等归纳类型及其函数_'编程'_，又可
-    以用归纳命题（如 [even]）、蕴含式、全称量词等工具_'证明'_程序的性质。我们一直
+    以用归纳命题（如 [ev]）、蕴含式、全称量词等工具_'证明'_程序的性质。我们一直
     以来区别对待此两种用法，在很多情况下确实可以这样。但也有迹象表明在 Coq 中编
     程与证明紧密相关。例如，关键字 [Inductive] 同时用于声明数据类型和命题，以及
     [->] 同时用于描述函数类型和逻辑蕴含式。这可并不是语法上的巧合！事实上，在 Coq
@@ -23,22 +23,22 @@ From LF Require Export IndProp.
 
     答曰：类型也！ *)
 
-(** 回顾一下 [even] 这个性质的形式化定义。  *)
+(** 回顾一下 [ev] 这个性质的形式化定义。  *)
 
-Print even.
+Print ev.
 (* ==>
-  Inductive even : nat -> Prop :=
-    | ev_0 : even 0
-    | ev_SS : forall n, even n -> even (S (S n)).
+  Inductive ev : nat -> Prop :=
+    | ev_0 : ev 0
+    | ev_SS : forall n, ev n -> ev (S (S n)).
 *)
 
-(** 试以另一种方式解读“[:]”：以“是……的证明”取代“具有……类型”。例如将定义 [even]
-    第二行的 [ev_0 : even 0] 读作“[ev_0] 是 [[even] 0] 的证明”以代替“[ev_0] 具有
-    [[even] 0] 类型”。 *)
+(** 我们可以换种方式来解读“[:]”：用“是……的证明”而非“具有……类型”。例如将 [ev]
+    定义中第二行的 [ev_0 : ev 0] 读作“[ev_0] 是 [ev 0] 的证明”而非“[ev_0] 的类型为
+    [ev 0]”。 *)
 
-(** 此处 [:] 既在类型层面表达“具有……类型”，又在命题层面表示“证明了……”。这种双关
-    称为_'柯里-霍华德同构（Curry-Howard correspondence）'_。它指出了逻辑与计算之
-    间的深层关联：
+(** 此处 [:] 既在类型层面表达“具有……类型”，又在命题层面表示“是……的证明”。
+    这种双关称为_'柯里-霍华德同构（Curry-Howard correspondence）'_。
+    它指出了逻辑与计算之间的深层联系：
 
                  命题           ~  类型
                  证明           ~  数据值
@@ -47,17 +47,17 @@ Print even.
 
 (** 该同构启发很多看问题的新方法。首先，对 [ev_SS] 构造子的理解变得更加自然： *)
 
-Check ev_SS.
-(* ===> ev_SS : forall n,
-                  even n ->
-                  even (S (S n)) *)
+Check ev_SS
+  : forall n,
+    ev n ->
+    ev (S (S n)).
 
-(** 可以将其读作“[ev_SS] 构造子接受两个参数——数字 [n] 以及命题 [even n]
-    的证明——并产生 [even (S (S n))] 的证明。” *)
+(** 可以将其读作“[ev_SS] 构造子接受两个参数——数字 [n] 以及命题 [ev n]
+    的证明——并产生 [ev (S (S n))] 的证明。” *)
 
-(** 现在让我们回顾一下之前有关 [even] 的一个证明。 *)
+(** 现在让我们回顾一下之前有关 [ev] 的一个证明。 *)
 
-Theorem ev_4 : even 4.
+Theorem ev_4 : ev 4.
 Proof.
   apply ev_SS. apply ev_SS. apply ev_0. Qed.
 
@@ -66,19 +66,19 @@ Proof.
 
 Print ev_4.
 (* ===> ev_4 = ev_SS 2 (ev_SS 0 ev_0)
-     : even 4  *)
+     : ev 4  *)
 
 (** 实际上，我们也可以不借助脚本_'直接'_写出表达式作为证明。 *)
 
-Check (ev_SS 2 (ev_SS 0 ev_0)).
-(* ===> even 4 *)
+Check (ev_SS 2 (ev_SS 0 ev_0))
+  : ev 4.
 
 (** 表达式 [ev_SS 2 (ev_SS 0 ev_0)] 可视为向构造子 [ev_SS] 传入参数 2 和 0
-    等参数，以及对应的 [even 2] 与 [even 0] 之依据所构造的证明。或言之，视 [ev_SS]
+    等参数，以及对应的 [ev 2] 与 [ev 0] 之依据所构造的证明。或言之，视 [ev_SS]
     为“构造证明”之原语，需要给定一个数字，并进一步提供该数为偶数之依据以构造证明。
     其类型表明了它的功能：
 
-    forall n, even n -> even (S (S n))
+      forall n, ev n -> ev (S (S n)),
 
     类似地，多态类型 [forall X, list X] 表明可以将 [nil]
     视为从某类型到由该类型元素组成的空列表的函数。 *)
@@ -87,7 +87,7 @@ Check (ev_SS 2 (ev_SS 0 ev_0)).
     的语法来实例化引理中的全称量化变量，也可以使用该语法提供引理所要求
     的假设。例如： *)
 
-Theorem ev_4': even 4.
+Theorem ev_4': ev 4.
 Proof.
   apply (ev_SS 2 (ev_SS 0 ev_0)).
 Qed.
@@ -95,13 +95,13 @@ Qed.
 (* ################################################################# *)
 (** * 证明脚本 *)
 
-(** 我们一直在讨论的_'证明对象 (proof objects)'_是Coq如何运作的核心。
+(** 我们一直在讨论的_'证明对象 (Proof Objects)'_是Coq如何运作的核心。
     当Coq执行一个证明脚本的时候，在内部，Coq逐渐构造出一个证明对象——
     一个类型是想要证明的命题的项。在 [Proof] 和 [Qed] 之间的策略告诉
     Coq如何构造该项。为了了解这个过程是如何进行的，在下面的策略证明里，
     我们在多个地方使用 [Show Proof] 指令来显示当前证明树的状态。 *)
 
-Theorem ev_4'' : even 4.
+Theorem ev_4'' : ev 4.
 Proof.
   Show Proof.
   apply ev_SS.
@@ -116,35 +116,35 @@ Qed.
     [?Goal] ）的项，并且Coq知道该洞需要什么类型的证据来填补。
 
     每一个洞对应一个子目标。当没有子目标时，代表证明已经完成。此时，我
-    们构造的证明将会以我们在 [Theorem] 里给定的名字被存储在全局环境中。 *)
+    们构造的证明将会被存储在全局环境中，其名字就是在 [Theorem] 中给定的名字 *)
 
 (** 策略证明非常有用且方便，但是它们并不是必要的：原则上，我们总是能够
-    手动构造想要的证据，如下所示。此处我们可以通过 [Definition] （而不
-    是 [Theorem]）来直接给这个证据一个全局名称。 *)
+    手动构造想要的证据，如下所示。此处我们可以通过 [Definition] （而非
+    [Theorem]）来直接给这个证据一个全局名称。 *)
 
-Definition ev_4''' : even 4 :=
+Definition ev_4''' : ev 4 :=
   ev_SS 2 (ev_SS 0 ev_0).
 
 (** 所有这些构造证明的不同方式，对应的存储在全局环境中的证明是完全一样的。 *)
 
 Print ev_4.
-(* ===> ev_4    =   ev_SS 2 (ev_SS 0 ev_0) : even 4 *)
+(* ===> ev_4    =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
 Print ev_4'.
-(* ===> ev_4'   =   ev_SS 2 (ev_SS 0 ev_0) : even 4 *)
+(* ===> ev_4'   =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
 Print ev_4''.
-(* ===> ev_4''  =   ev_SS 2 (ev_SS 0 ev_0) : even 4 *)
+(* ===> ev_4''  =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
 Print ev_4'''.
-(* ===> ev_4''' =   ev_SS 2 (ev_SS 0 ev_0) : even 4 *)
+(* ===> ev_4''' =   ev_SS 2 (ev_SS 0 ev_0) : ev 4 *)
 
-(** **** 练习：2 星, standard (eight_is_even)  
+(** **** 练习：2 星, standard (eight_is_even) 
 
-    写出对应 [even 8] 的策略证明和证明对象。 *)
+    写出对应 [ev 8] 的策略证明和证明对象。 *)
 
-Theorem ev_8 : even 8.
+Theorem ev_8 : ev 8.
 Proof.
   (* 请在此处解答 *) Admitted.
 
-Definition ev_8' : even 8
+Definition ev_8' : ev 8
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
@@ -152,8 +152,8 @@ Definition ev_8' : even 8
 (** * 量词，蕴含式，函数 *)
 
 (** 在Coq的计算世界里（即所有的数据结构和程序存在的地方），有两种值的
-    类型里拥有箭头：_'构造子(Constructors)'_，通过归纳地定义数据类型
-    引入，和_'函数(Functions)'_。
+    类型中拥有箭头：一种是_'构造子(Constructor)'_，它通过归纳地定义数据类型
+    引入，另一种是_'函数(Function)'_。
 
     类似地，在Coq的逻辑世界里（即我们运用证明的地方），有两种方式来给
     与蕴含式需要的证据：构造子，通过归纳地定义命题引入，和...函数！
@@ -161,7 +161,7 @@ Definition ev_8' : even 8
 
 (** 例如，考虑下列陈述： *)
 
-Theorem ev_plus4 : forall n, even n -> even (4 + n).
+Theorem ev_plus4 : forall n, ev n -> ev (4 + n).
 Proof.
   intros n H. simpl.
   apply ev_SS.
@@ -171,32 +171,33 @@ Qed.
 
 (** 对应 [ev_plus4] 的证明对象是什么？
 
-    我们在寻找一个_'类型(Type)'_是 [forall n, even n -> even (4 + n)] 的表达式——也
+    我们在寻找一个_'类型(Type)'_是 [forall n, ev n -> ev (4 + n)] 的表达式——也
     就是说，一个接受两个参数（一个数字和一个证据）并返回一个证据的
     _'函数(Function)'_!
 
     它的证据对象： *)
 
-Definition ev_plus4' : forall n, even n -> even (4 + n) :=
-  fun (n : nat) => fun (H : even n) =>
+Definition ev_plus4' : forall n, ev n -> ev (4 + n) :=
+  fun (n : nat) => fun (H : ev n) =>
     ev_SS (S (S n)) (ev_SS n H).
 
 (** 回顾 [fun n => blah] 意味着“一个函数，给定 [n]，产生 [blah]”，
     并且Coq认为 [4 + n] 和 [S (S (S (S n)))] 是同义词，所以另一种写出
     这个定义的方式是： *)
 
-Definition ev_plus4'' (n : nat) (H : even n)
-                    : even (4 + n) :=
+Definition ev_plus4'' (n : nat) (H : ev n)
+                    : ev (4 + n) :=
   ev_SS (S (S n)) (ev_SS n H).
 
-Check ev_plus4''.
-(* ===>
-     : forall n : nat, even n -> even (4 + n) *)
+Check ev_plus4''
+  : forall n : nat,
+    ev n ->
+    ev (4 + n).
 
 (** 当我们将 [ev_plus4] 证明的命题视为一个函数类型时，我们可以发现一个
-    有趣的现象：第二个参数的类型，[even n]，依赖于第一个参数 [n] 的_'值'_。
+    有趣的现象：第二个参数的类型，[ev n]，依赖于第一个参数 [n] 的_'值'_。
 
-    虽然这样的_'依赖类型 (Dependent types)'_在传统的编程语言中并不存在，
+    虽然这样的_'依赖类型 (Dependent type)'_在传统的编程语言中并不存在，
     但是它们对于编程来说有时候非常有用。最近它们在函数式编程社区里的活
     跃很好地表明了这一点。 *)
 
@@ -212,7 +213,7 @@ Check ev_plus4''.
 (** 例如，考虑下列命题： *)
 
 Definition ev_plus2 : Prop :=
-  forall n, forall (E : even n), even (n + 2).
+  forall n, forall (E : ev n), ev (n + 2).
 
 (** 这个命题的一个证明项会是一个拥有两个参数的函数：一个数字[n]
     和一个表明[n]是偶数的证据[E]。但是对于这个证据来说，名字[E]并没有
@@ -220,12 +221,12 @@ Definition ev_plus2 : Prop :=
     义。因此我们可以使用虚拟标志符[_]来替换真实的名字： *)
 
 Definition ev_plus2' : Prop :=
-  forall n, forall (_ : even n), even (n + 2).
+  forall n, forall (_ : ev n), ev (n + 2).
 
 (** 或者，等同地，我们可以使用更加熟悉的记号： *)
 
 Definition ev_plus2'' : Prop :=
-  forall n, even n -> even (n + 2).
+  forall n, ev n -> ev (n + 2).
 
 (** 总的来说，"[P -> Q]"只是 "[forall (_:P), Q]"的语法糖。 *)
 
@@ -285,7 +286,7 @@ Inductive and (P Q : Prop) : Prop :=
 
 End And.
 
-(** 注意到这个定义与在章节[Poly]中给出的[prod]定义的类型的相似处；
+(** 注意到这个定义与在章节 [Poly] 中给出的 [prod] 定义的类型的相似处；
     唯一的不同之处在于，[prod]的参数是[Type]，而[and]的类型是[Prop]。 *)
 
 Print prod.
@@ -306,9 +307,9 @@ Proof.
   - intros [HP HQ]. split.
     + apply HQ.
     + apply HP.
-  - intros [HP HQ]. split.
-    + apply HQ.
+  - intros [HQ HP]. split.
     + apply HP.
+    + apply HQ.
 Qed.
 
 (** 这解释了为什么一直以来我们能够使用策略来操作[and]的归纳定义。我们
@@ -322,7 +323,7 @@ Definition and_comm'_aux P Q (H : P /\ Q) : Q /\ P :=
 Definition and_comm' P Q : P /\ Q <-> Q /\ P :=
   conj (and_comm'_aux P Q) (and_comm'_aux Q P).
 
-(** **** 练习：2 星, standard, optional (conj_fact)  
+(** **** 练习：2 星, standard, optional (conj_fact) 
 
     构造一个证明对象来证明下列命题。 *)
 
@@ -348,7 +349,7 @@ End Or.
 
     又一次地，我们可以不使用策略，直接写出涉及[or]的定义的证明对象。 *)
 
-(** **** 练习：2 星, standard, optional (or_commut'')  
+(** **** 练习：2 星, standard, optional (or_commut'') 
 
     尝试写下[or_commut]的显式证明对象。（不要使用[Print]来偷看我们已经
     定义的版本！） *)
@@ -376,20 +377,18 @@ End Ex.
 
 (** 我们更加熟悉的类型[exists x, P x]可以转换为一个涉及[ex]的表达式： *)
 
-Check ex (fun n => even n).
-(* ===> exists n : nat, even n
-        : Prop *)
+Check ex (fun n => ev n) : Prop.
 
 (** 下面是我们如何定义一个涉及[ex]的显式证明对象： *)
 
-Definition some_nat_is_even : exists n, even n :=
-  ex_intro even 4 (ev_SS 2 (ev_SS 0 ev_0)).
+Definition some_nat_is_even : exists n, ev n :=
+  ex_intro ev 4 (ev_SS 2 (ev_SS 0 ev_0)).
 
-(** **** 练习：2 星, standard, optional (ex_ev_Sn)  
+(** **** 练习：2 星, standard, optional (ex_ev_Sn) 
 
     完成下列证明对象的定义： *)
 
-Definition ex_ev_Sn : ex (fun n => even (S n))
+Definition ex_ev_Sn : ex (fun n => ev (S n))
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 (** [] *)
 
@@ -465,7 +464,7 @@ Definition four' : 2 + 2 == 1 + 3 :=
 Definition singleton : forall (X:Type) (x:X), []++[x] == x::[]  :=
   fun (X:Type) (x:X) => eq_refl [x].
 
-(** **** 练习：2 星, standard (equality__leibniz_equality)  
+(** **** 练习：2 星, standard (equality__leibniz_equality) 
 
     相等关系的归纳定义隐含了_'Leibniz相等关系(Leibniz equality)'_：当我们
     说“[x]和[y]相等的时候”，我们意味着所有[x]满足的性质[P]，对于[y]
@@ -477,7 +476,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：5 星, standard, optional (leibniz_equality__equality)  
+(** **** 练习：5 星, standard, optional (leibniz_equality__equality) 
 
     请说明，事实上，相等关系的归纳定义和Leibniz相等关系是
     _'等价的(equivalent)'_。 *)
@@ -531,4 +530,4 @@ End MyEquality.
     略会将这个事实加入到上下文中。 *)
 
 
-(* Sun Jan 5 03:17:35 UTC 2020 *)
+(* 2020年1月16日 *)

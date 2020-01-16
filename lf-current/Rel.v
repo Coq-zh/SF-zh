@@ -82,19 +82,19 @@ Proof.
     - apply le_S. apply le_n. }
   discriminate Nonsense.   Qed.
 
-(** **** 练习：2 星, standard, optional (total_relation_not_partial)  
+(** **** 练习：2 星, standard, optional (total_relation_not_partial) 
 
     请证明 [IndProp] 一章练习题中定义的 [total_relation] 不是偏函数。 *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：2 星, standard, optional (empty_relation_partial)  
+(** **** 练习：2 星, standard, optional (empty_relation_partial) 
 
     请证明 [IndProp] 一章练习题中定义的 [empty_relation] 是偏函数。 *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -137,7 +137,7 @@ Proof.
   apply Hnm.
   apply Hmo. Qed.
 
-(** **** 练习：2 星, standard, optional (le_trans_hard_way)  
+(** **** 练习：2 星, standard, optional (le_trans_hard_way) 
 
     我们也可以不用 [le_trans]，直接通过归纳法来证明 [lt_trans]，
     不过这会耗费更多精力。请完成以下定理的证明。 *)
@@ -152,7 +152,7 @@ Proof.
     (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (lt_trans'')  
+(** **** 练习：2 星, standard, optional (lt_trans'') 
 
     再将此定理证明一遍，不过这次要对 [o] 使用归纳法。 *)
 
@@ -182,7 +182,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (le_Sn_n_inf)  
+(** **** 练习：2 星, standard, optional (le_Sn_n_inf) 
 
     请提写出以下定理的非形式化证明：
 
@@ -192,7 +192,7 @@ Proof.
     不过在做形式化证明之前请先尝试写出非形式化的证明。
 
     证明： *)
-    (* 请在此处解答 
+    (* 请在此处解答
 
     [] *)
 
@@ -356,4 +356,4 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(* Sun Jan 5 03:17:35 UTC 2020 *)
+(* 2020年1月16日 *)

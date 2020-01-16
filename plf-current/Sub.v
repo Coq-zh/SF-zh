@@ -335,7 +335,7 @@ From PLF Require Import Smallstep.
       depth subtyping or no arrow subtyping, depending how you look at
       it). *)
 
-(** **** 练习：2 星, standard, recommended (arrow_sub_wrong)  
+(** **** 练习：2 星, standard, recommended (arrow_sub_wrong) 
 
     Suppose we had incorrectly defined subtyping as covariant on both
     the right and the left of arrow types:
@@ -427,7 +427,7 @@ Definition manual_grade_for_arrow_sub_wrong : option (nat*string) := None.
 (* ================================================================= *)
 (** ** Exercises *)
 
-(** **** 练习：1 星, standard, optional (subtype_instances_tf_1)  
+(** **** 练习：1 星, standard, optional (subtype_instances_tf_1) 
 
     Suppose we have types [S], [T], [U], and [V] with [S <: T]
     and [U <: V].  Which of the following subtyping assertions
@@ -450,7 +450,7 @@ Definition manual_grade_for_arrow_sub_wrong : option (nat*string) := None.
 
     [] *)
 
-(** **** 练习：2 星, standard (subtype_order)  
+(** **** 练习：2 星, standard (subtype_order) 
 
     The following types happen to form a linear order with respect to subtyping:
     - [Top]
@@ -470,7 +470,7 @@ of the five types above. It may be unrelated to some of them.
 Definition manual_grade_for_subtype_order : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：1 星, standard (subtype_instances_tf_2)  
+(** **** 练习：1 星, standard (subtype_instances_tf_2) 
 
     Which of the following statements are true?  Write _true_ or
     _false_ after each one.
@@ -505,7 +505,7 @@ Definition manual_grade_for_subtype_order : option (nat*string) := None.
 Definition manual_grade_for_subtype_instances_tf_2 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：1 星, standard (subtype_concepts_tf)  
+(** **** 练习：1 星, standard (subtype_concepts_tf) 
 
     Which of the following statements are true, and which are false?
     - There exists a type that is a supertype of every other type.
@@ -540,7 +540,7 @@ Definition manual_grade_for_subtype_instances_tf_2 : option (nat*string) := None
 Definition manual_grade_for_subtype_concepts_tf : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (proper_subtypes)  
+(** **** 练习：2 星, standard (proper_subtypes) 
 
     Is the following statement true or false?  Briefly explain your
     answer.  (Here [Base n] stands for a base type, where [n] is
@@ -557,7 +557,7 @@ Definition manual_grade_for_subtype_concepts_tf : option (nat*string) := None.
 Definition manual_grade_for_proper_subtypes : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (small_large_1)  
+(** **** 练习：2 星, standard (small_large_1) 
    - What is the _smallest_ type [T] ("smallest" in the subtype
      relation) that makes the following assertion true?  (Assume we
      have [Unit] among the base types and [unit] as a constant of this
@@ -573,7 +573,7 @@ Definition manual_grade_for_proper_subtypes : option (nat*string) := None.
 Definition manual_grade_for_small_large_1 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (small_large_2)  
+(** **** 练习：2 星, standard (small_large_2) 
    - What is the _smallest_ type [T] that makes the following
      assertion true?
 
@@ -587,7 +587,7 @@ Definition manual_grade_for_small_large_1 : option (nat*string) := None.
 Definition manual_grade_for_small_large_2 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (small_large_3)  
+(** **** 练习：2 星, standard, optional (small_large_3) 
    - What is the _smallest_ type [T] that makes the following
      assertion true?
 
@@ -597,7 +597,7 @@ Definition manual_grade_for_small_large_2 : option (nat*string) := None.
 
     [] *)
 
-(** **** 练习：2 星, standard (small_large_4)  
+(** **** 练习：2 星, standard (small_large_4) 
    - What is the _smallest_ type [T] that makes the following
      assertion true?
 
@@ -613,7 +613,7 @@ Definition manual_grade_for_small_large_2 : option (nat*string) := None.
 Definition manual_grade_for_small_large_4 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (smallest_1)  
+(** **** 练习：2 星, standard (smallest_1) 
 
     What is the _smallest_ type [T] that makes the following
     assertion true?
@@ -626,7 +626,7 @@ Definition manual_grade_for_small_large_4 : option (nat*string) := None.
 Definition manual_grade_for_smallest_1 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：2 星, standard (smallest_2)  
+(** **** 练习：2 星, standard (smallest_2) 
 
     What is the _smallest_ type [T] that makes the following
     assertion true?
@@ -638,7 +638,7 @@ Definition manual_grade_for_smallest_1 : option (nat*string) := None.
 Definition manual_grade_for_smallest_2 : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：3 星, standard, optional (count_supertypes)  
+(** **** 练习：3 星, standard, optional (count_supertypes) 
 
     How many supertypes does the record type [{x:A, y:C->C}] have?  That is,
     how many different types [T] are there such that [{x:A, y:C->C} <:
@@ -648,7 +648,7 @@ Definition manual_grade_for_smallest_2 : option (nat*string) := None.
 
     [] *)
 
-(** **** 练习：2 星, standard (pair_permutation)  
+(** **** 练习：2 星, standard (pair_permutation) 
 
     The subtyping rule for product types
 
@@ -834,7 +834,7 @@ Example subtyping_example_0 :
   (* C->Bool <: C->Top *)
 Proof. auto. Qed.
 
-(** **** 练习：2 星, standard, optional (subtyping_judgements)  
+(** **** 练习：2 星, standard, optional (subtyping_judgements) 
 
     (Leave this exercise [Admitted] until after you have finished adding product
     types to the language -- see exercise [products] -- at least up to 
@@ -953,14 +953,14 @@ Import Examples.
 (** **** 练习：1 星, standard, optional (typing_example_0)  *)
 (* empty |- ((\z:A.z), (\z:B.z))
          \in (A->A * B->B) *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
 (** **** 练习：2 星, standard, optional (typing_example_1)  *)
 (* empty |- (\x:(Top * B->B). x.snd) ((\z:A.z), (\z:B.z))
          \in B->B *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -968,7 +968,7 @@ Import Examples.
 (* empty |- (\z:(C->C)->(Top * B->B). (z (\x:C.x)).snd)
               (\z:C->C. ((\z:A.z), (\z:B.z)))
          \in B->B *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -1555,7 +1555,7 @@ Qed.
 (* ================================================================= *)
 (** ** Exercises *)
 
-(** **** 练习：2 星, standard (variations)  
+(** **** 练习：2 星, standard (variations) 
 
     Each part of this problem suggests a different way of changing the
     definition of the STLC with Unit and subtyping.  (These changes
@@ -1614,7 +1614,7 @@ Definition manual_grade_for_variations : option (nat*string) := None.
 (* ################################################################# *)
 (** * Exercise: Adding Products *)
 
-(** **** 练习：5 星, standard (products)  
+(** **** 练习：5 星, standard (products) 
 
     Adding pairs, projections, and product types to the system we have
     defined is a relatively straightforward matter.  Carry out this
@@ -1646,4 +1646,4 @@ Definition manual_grade_for_variations : option (nat*string) := None.
 Definition manual_grade_for_products : option (nat*string) := None.
 (** [] *)
 
-(* Sun Jan 5 03:18:36 UTC 2020 *)
+(* 2020年1月16日 *)

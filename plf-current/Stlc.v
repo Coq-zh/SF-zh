@@ -28,14 +28,14 @@ From PLF Require Import Smallstep.
         - 应用
 
     这给了我们如下的抽象语法构造（先以非形式化的 BNF 记法写下——后面我们
-    会形式化它）。 
+    会形式化它）。
 
        t ::= x                         variable
-           | \x:T1.t2                  abstraction
-           | t1 t2                     application
+           | \x:T.t                    abstraction
+           | t t                       application
            | tru                       constant true
            | fls                       constant false
-           | test t1 then t2 else t3   conditional
+           | test t then t else t      conditional
 *)
 
 (** 函数抽象 [\x:T.t] 中的 [\] 符号一般写作希腊字母“lambda”（本演算系统由此得名）。
@@ -58,7 +58,8 @@ From PLF Require Import Smallstep.
 
       - [\x:Bool. tru]
 
-        总是接受（布尔值）参数并返回 [tru] 的常量函数。
+        总是接受（布尔值）参数并返回 [tru] 的常量函数。*)
+(**
       - [\x:Bool. \y:Bool. x]
 
         接受两个布尔值做参数，并返回第一个参数的函数。（在 Coq 中，二元函数
@@ -90,7 +91,8 @@ From PLF Require Import Smallstep.
 
     STLC 的_'类型（types）'_包括 [Bool]，其用于把 [tru] 和 [fls] 这些常量
     和其他产生布尔值的复杂计算归为一类；还有_'函数类型（arrow types）'_，用于把函
-    数归为一类。
+    数归为一类。*)
+(**
 
       T ::= Bool
           | T -> T
@@ -332,7 +334,7 @@ where "'[' x ':=' s ']' t" := (subst x s t).
 
 (** 对于这个问题，更详细的讨论可参考 [Aydemir 2008] (in Bib.v)。*)
 
-(** **** 练习：3 星, standard (substi_correct)  
+(** **** 练习：3 星, standard (substi_correct) 
 
     上面我们使用了 Coq 的 [Fixpoint] 功能将替换定义为一个_'函数'_。
     假设，现在我们想要将替换定义为一个归纳的_'关系'_ [substi]。作为开始，我们给出了
@@ -378,8 +380,8 @@ Proof.
                               t2 --> t2'
                            ----------------                           (ST_App2)
                            v1 t2 --> v1 t2'
-
-    ……还有对条件语句的规则：
+*)
+(** ……还有对条件语句的规则：
 
                     --------------------------------               (ST_TestTru)
                     (test tru then t1 else t2) --> t1
@@ -529,7 +531,7 @@ Lemma step_example4' :
   app idBB (app notB tru) -->* fls.
 Proof. normalize.  Qed.
 
-(** **** 练习：2 星, standard (step_example5)  
+(** **** 练习：2 星, standard (step_example5) 
 
     请分别使用和不使用 [normalize] 证明以下命题。 *)
 
@@ -661,7 +663,7 @@ Proof with auto using update_eq.
   apply T_Var...
 Qed.
 
-(** **** 练习：2 星, standard, optional (typing_example_2_full)  
+(** **** 练习：2 星, standard, optional (typing_example_2_full) 
 
     请在不使用 [auto]，[eauto]，[eapply]（或者 [...]）的情况下证明同一个命题： *)
 
@@ -675,11 +677,10 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard (typing_example_3)  
+(** **** 练习：2 星, standard (typing_example_3) 
 
-    请形式化地证明以下类型导出式成立：
-
-    
+    请形式化地证明以下类型导出式成立：*)
+(** 
        empty |- \x:Bool->B. \y:Bool->Bool. \z:Bool.
                    y (x z)
              \in T.
@@ -712,17 +713,17 @@ Example typing_nonexample_1 :
                (app (var x) (var y)))) \in
         T.
 Proof.
-  intros Hc. inversion Hc.
+  intros Hc. destruct Hc as [T Hc].
   (* The [clear] tactic is useful here for tidying away bits of
      the context that we're not going to need again. *)
-  inversion H. subst. clear H.
-  inversion H5. subst. clear H5.
-  inversion H4. subst. clear H4.
-  inversion H2. subst. clear H2.
-  inversion H5. subst. clear H5.
-  inversion H1.  Qed.
+  inversion Hc; subst; clear Hc.
+  inversion H4; subst; clear H4.
+  inversion H5; subst; clear H5 H4.
+  inversion H2; subst; clear H2.
+  discriminate H1.
+Qed.
 
-(** **** 练习：3 星, standard, optional (typing_nonexample_3)  
+(** **** 练习：3 星, standard, optional (typing_nonexample_3) 
 
     另一个例子：
 
@@ -742,4 +743,4 @@ Proof.
 
 End STLC.
 
-(* Sun Jan 5 03:18:35 UTC 2020 *)
+(* 2020年1月16日 *)

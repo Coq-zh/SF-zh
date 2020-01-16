@@ -118,7 +118,7 @@ Proof. reflexivity. Qed.
     extensionality axiom, which is discussed in the [Logic]
     chapter and included in the Coq standard library.) *)
 
-(** **** 练习：1 星, standard, optional (t_apply_empty)  
+(** **** 练习：1 星, standard, optional (t_apply_empty) 
 
     First, the empty map returns its default element for all keys: *)
 Lemma t_apply_empty:  forall A x v, @t_empty A v x = v.
@@ -126,7 +126,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (t_update_eq)  
+(** **** 练习：2 星, standard, optional (t_update_eq) 
 
     Next, if we update a map [m] at a key [x] with a new value [v]
     and then look up [x] in the map resulting from the [update], we
@@ -138,7 +138,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (t_update_neq)  
+(** **** 练习：2 星, standard, optional (t_update_neq) 
 
     On the other hand, if we update a map [m] at a key [x1] and then
     look up a _different_ key [x2] in the resulting map, we get the
@@ -152,7 +152,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：2 星, standard, optional (t_update_shadow)  
+(** **** 练习：2 星, standard, optional (t_update_shadow) 
 
     If we update a map [m] at a key [x] with a value [v1] and then
     update again with the same key [x] and another value [v2], the
@@ -172,7 +172,7 @@ Proof.
     by proving a fundamental _reflection lemma_ relating the equality
     proposition on [id]s with the boolean function [eqb_id]. *)
 
-(** **** 练习：2 星, standard (eqb_idP)  
+(** **** 练习：2 星, standard (eqb_idP) 
 
     Use the proof of [eqb_natP] in chapter [IndProp] as a template to
     prove the following: *)
@@ -187,7 +187,7 @@ Proof.
     [eqb_id x1 x2] and generate hypotheses about the equality (in the
     sense of [=]) of [x1] and [x2]. *)
 
-(** **** 练习：2 星, standard (t_update_same)  
+(** **** 练习：2 星, standard (t_update_same) 
 
     Using the example in chapter [IndProp] as a template, use
     [eqb_idP] to prove the following theorem, which states that if we
@@ -200,7 +200,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard, recommended (t_update_permute)  
+(** **** 练习：3 星, standard, recommended (t_update_permute) 
 
     Use [eqb_idP] to prove one final property of the [update]
     function: If we update a map [m] at two distinct keys, it doesn't
@@ -281,4 +281,4 @@ Proof.
   apply t_update_permute.
 Qed.
 
-(* Sun Jan 5 03:20:53 UTC 2020 *)
+(* 2020年1月16日 *)

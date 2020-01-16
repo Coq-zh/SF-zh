@@ -151,16 +151,29 @@ idtac " ".
 
 idtac "#> Manually graded: prog_pres_bigstep".
 idtac "Advanced".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 print_manual_grade manual_grade_for_prog_pres_bigstep.
 idtac " ".
 
 idtac " ".
 
 idtac "Max points - standard: 20".
-idtac "Max points - advanced: 30".
+idtac "Max points - advanced: 32".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- some_term_is_stuck ---------".
@@ -191,4 +204,4 @@ idtac "---------- prog_pres_bigstep ---------".
 idtac "MANUAL".
 Abort.
 
-(* Sun Jan 5 03:18:57 UTC 2020 *)
+(* 2020年1月16日 *)

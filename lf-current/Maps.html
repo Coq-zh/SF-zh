@@ -2,54 +2,56 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
 <title>Maps: 全映射与偏映射</title>
-</head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
 <link href="common/css/lf.css" rel="stylesheet" type="text/css"/>
+</head>
 
 <body>
 
 <div id="page">
 
 <div id="header">
-<a href='https://coq-zh.github.io/SF-zh/index.html'>
-<img src='common/media/image/sf_logo_sm.png'></a>
-</br><a href='index.html'>  <span class='booktitleinheader'>Volume 1: 逻辑基础</span><br></br>
+<div id='logoinheader'><a href='https://coq-zh.github.io/SF-zh/'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 1: 逻辑基础</a></div>
 <ul id='menu'>
-   <a href='toc.html'><li class='section_name'>目录</li></a>
-   <a href='coqindex.html'><li class='section_name'>索引</li></a>
-   <a href='deps.html'><li class='section_name'>路线</li></a>
+   <li class='section_name'><a href='toc.html'>目录</a></li>
+   <li class='section_name'><a href='coqindex.html'>索引</a></li>
+   <li class='section_name'><a href='deps.html'>路线</a></li>
 </ul>
-</a></div>
+</div>
 
 <div id="main">
 
 <h1 class="libtitle">Maps<span class="subtitle">全映射与偏映射</span></h1>
 
-
-<div class="doc">
-
-<div class="paragraph"> </div>
-
- <b>映射（Map）</b>（或<b>字典（Dictionary）</b>）是一种非常普遍的数据结构，
-    在编程语言理论中尤甚，而之后的章节中我们会多次用到它。
-    映射也适合运用之前学过的概念进行研究，包括如何在高阶函数之外构建数据结构
-    （见 <span class="inlinecode"><span class="id" type="var">Basics</span></span> 和 <span class="inlinecode"><span class="id" type="var">Poly</span></span>）以及通过互映来精简证明（见 <span class="inlinecode"><span class="id" type="var">IndProp</span></span>）。
-
-<div class="paragraph"> </div>
-
-    我们会定义两种映射：在查找的键不存在时，<b>全映射</b>会返回“默认”元素，
-    而<b>偏映射</b>则会返回一个 <span class="inlinecode"><span class="id" type="var">option</span></span> 来指示成功还是失败。后者根据前者来定义，
-    它使用 <span class="inlinecode"><span class="id" type="var">None</span></span> 默认元素。 
+<div class="code">
 </div>
 
 <div class="doc">
-<a name="lab254"></a><h1 class="section">Coq 标准库</h1>
+
+<div class="paragraph"> </div>
+
+ <i>'映射（Map）'</i>（或<i>'字典（Dictionary）'</i>）是一种非常普遍的数据结构，
+    在编程语言理论中尤甚，而之后的章节中我们会多次用到它。
+    映射也适合运用之前学过的概念进行研究，包括如何在高阶函数之外构建数据结构
+    （见 <span class="inlinecode"><span class="id" title="var">Basics</span></span> 和 <span class="inlinecode"><span class="id" title="var">Poly</span></span>）以及通过互映来精简证明（见 <span class="inlinecode"><span class="id" title="var">IndProp</span></span>）。
+
+<div class="paragraph"> </div>
+
+    我们会定义两种映射：在查找的键不存在时，<i>'全映射'</i>会返回“默认”元素，
+    而<i>'偏映射'</i>则会返回一个 <span class="inlinecode"><span class="id" title="var">option</span></span> 来指示成功还是失败。后者根据前者来定义，
+    它使用 <span class="inlinecode"><span class="id" title="var">None</span></span> 默认元素。 
+</div>
+
+<div class="doc">
+<a name="lab255"></a><h1 class="section">Coq 标准库</h1>
 
 <div class="paragraph"> </div>
 
@@ -57,20 +59,21 @@
 
 <div class="paragraph"> </div>
 
-    和我们目前学过的章节不同，本章无需通过 <span class="inlinecode"><span class="id" type="keyword">Require</span></span> <span class="inlinecode"><span class="id" type="keyword">Import</span></span> 导入之前的章节
+    和我们目前学过的章节不同，本章无需通过 <span class="inlinecode"><span class="id" title="keyword">Require</span></span> <span class="inlinecode"><span class="id" title="keyword">Import</span></span> 导入之前的章节
     （自然也就不会间接导入更早的章节）。从本章开始，我们我们将直接从
     Coq 标准库中导入需要的定义和定理。然而应该不会注意到多大差别，
     因为我们一直小心地将自己的定义和定理的命名与标准库中的部分保持一致，
     无论它们在哪里重复。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Arith.Arith</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Bool.Bool</span>.<br/>
-<span class="id" type="keyword">Require</span> <span class="id" type="keyword">Export</span> <span class="id" type="var">Coq.Strings.String</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Logic.FunctionalExtensionality</span>.<br/>
-<span class="id" type="var">From</span> <span class="id" type="var">Coq</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Lists.List</span>.<br/>
-<span class="id" type="keyword">Import</span> <span class="id" type="var">ListNotations</span>.<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.Arith.html#"><span class="id" title="library">Arith.Arith</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#"><span class="id" title="library">Bool.Bool</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#"><span class="id" title="library">Coq.Strings.String</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Logic.FunctionalExtensionality.html#"><span class="id" title="library">Logic.FunctionalExtensionality</span></a>.<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">Coq</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#"><span class="id" title="library">Lists.List</span></a>.<br/>
+<span class="id" title="keyword">Import</span> <span class="id" title="var">ListNotations</span>.<br/>
 </div>
 
 <div class="doc">
@@ -79,165 +82,178 @@
 
 <div class="paragraph"> </div>
 
-    <span class="inlinecode"><span class="id" type="var">Search</span></span> 指令可用于查找涉及具体类型对象的定理。我们花点时间来熟悉一下它。 
+    <span class="inlinecode"><span class="id" title="keyword">Search</span></span> 指令可用于查找涉及具体类型对象的定理。我们花点时间来熟悉一下它。 
 </div>
 
 <div class="doc">
-<a name="lab255"></a><h1 class="section">标识符</h1>
+<a name="lab256"></a><h1 class="section">标识符</h1>
 
 <div class="paragraph"> </div>
 
- 首先我们需要键的类型来对映射进行索引。在 <span class="inlinecode"><span class="id" type="var">Lists.v</span></span> 中，
-    我们为类似的目的引入了 <span class="inlinecode"><span class="id" type="var">id</span></span> 类型。而在<b>《软件基础》</b>后面的部分，
-    我们会使用 Coq 标准库中的 <span class="inlinecode"><span class="id" type="var">string</span></span> 类型。 
+ 首先我们需要键的类型来对映射进行索引。在 <span class="inlinecode"><span class="id" title="var">Lists.v</span></span> 中，
+    我们为类似的目的引入了 <span class="inlinecode"><span class="id" title="var">id</span></span> 类型。而在<i>'《软件基础》'</i>后面的部分，
+    我们会使用 Coq 标准库中的 <span class="inlinecode"><span class="id" title="var">string</span></span> 类型。 
 <div class="paragraph"> </div>
 
- 为了比较字符串，我们定义了 <span class="inlinecode"><span class="id" type="var">eqb_string</span></span> 函数，它在内部使用 Coq
-    字符串库中的 <span class="inlinecode"><span class="id" type="var">string_dec</span></span> 函数。 
+ 为了比较字符串，我们定义了 <span class="inlinecode"><span class="id" title="var">eqb_string</span></span> 函数，它在内部使用 Coq
+    字符串库中的 <span class="inlinecode"><span class="id" title="var">string_dec</span></span> 函数。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">eqb_string</span> (<span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">string</span>) : <span class="id" type="var">bool</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">if</span> <span class="id" type="var">string_dec</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="keyword">then</span> <span class="id" type="var">true</span> <span class="id" type="keyword">else</span> <span class="id" type="var">false</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="eqb_string"><span class="id" title="definition">eqb_string</span></a> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">if</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string_dec"><span class="id" title="definition">string_dec</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>.<br/>
 </div>
 
 <div class="doc">
-（函数 <span class="inlinecode"><span class="id" type="var">string_dec</span></span> 来自于 Coq 的字符串标准库。如果你查看
-    <span class="inlinecode"><span class="id" type="var">string_dec</span></span> 的结果类型，就会发现其返回值的类型并不是 <span class="inlinecode"><span class="id" type="var">bool</span></span>，
-    而是一个形如 <span class="inlinecode">{<span class="id" type="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" type="var">y</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{<span class="id" type="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" type="var">y</span>}</span> 的类型，叫做 <span class="inlinecode"><span class="id" type="var">sumbool</span></span> 类型，
-    它可以看做“带有证据的布尔类型”。形式上来说，一个 <span class="inlinecode"><span class="id" type="var">sumbool</span></span>
-    类型的元素要么是两个东西相等的证明，要么就是它们不相等的证明，
+（函数 <span class="inlinecode"><span class="id" title="var">string_dec</span></span> 来自于 Coq 的字符串标准库。如果你查看
+    <span class="inlinecode"><span class="id" title="var">string_dec</span></span> 的结果类型，就会发现其返回值的类型并不是 <span class="inlinecode"><span class="id" title="var">bool</span></span>，
+    而是一个形如 <span class="inlinecode">{<span class="id" title="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">y</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{<span class="id" title="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" title="var">y</span>}</span> 的类型，叫做 <span class="inlinecode"><span class="id" title="var">sumbool</span></span> 类型，
+    它可以看做“带有证据的布尔类型”。形式上来说，一个 <span class="inlinecode">{<span class="id" title="var">x</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">y</span>}</span> <span class="inlinecode">+</span> <span class="inlinecode">{<span class="id" title="var">x</span></span> <span class="inlinecode">≠</span> <span class="inlinecode"><span class="id" title="var">y</span>}</span>
+    类型的元素要么是 <span class="inlinecode"><span class="id" title="var">x</span></span> 和 <span class="inlinecode"><span class="id" title="var">y</span></span> 的相等的证明，要么就是它们不相等的证明，
     与一个标签一起来指出具体是哪一个。不过就目前来说，你可以把它当做一个
-    花哨的 <span class="inlinecode"><span class="id" type="var">bool</span></span>。） 
+    花哨的 <span class="inlinecode"><span class="id" title="var">bool</span></span>。） 
 <div class="paragraph"> </div>
 
  现在我们需要一些关于字符串相等性的基本性质... 
 </div>
-<div class="code code-tight">
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">eqb_string_refl</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">s</span> : <span class="id" type="var">string</span>, <span class="id" type="var">true</span> = <span class="id" type="var">eqb_string</span> <span class="id" type="var">s</span> <span class="id" type="var">s</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Theorem</span> <a name="eqb_string_refl"><span class="id" title="lemma">eqb_string_refl</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">s</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>, <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <a class="idref" href="Maps.html#s"><span class="id" title="variable">s</span></a> <a class="idref" href="Maps.html#s"><span class="id" title="variable">s</span></a>.<br/>
 <div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
 <div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
-<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">intros</span> <span class="id" type="var">s</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">eqb_string</span>. <span class="id" type="tactic">destruct</span> (<span class="id" type="var">string_dec</span> <span class="id" type="var">s</span> <span class="id" type="var">s</span>) <span class="id" type="keyword">as</span> [|<span class="id" type="var">Hs</span>].<br/>
-&nbsp;&nbsp;- <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;- <span class="id" type="tactic">destruct</span> <span class="id" type="var">Hs</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">s</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Maps.html#eqb_string"><span class="id" title="definition">eqb_string</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string_dec"><span class="id" title="definition">string_dec</span></a> <span class="id" title="var">s</span> <span class="id" title="var">s</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">Hs_eq</span> | <span class="id" title="var">Hs_not_eq</span>].<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">destruct</span> <span class="id" title="var">Hs_not_eq</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 </div>
 
 <div class="doc">
-以下有用的性质可由类似的字符串引理推出： 
+两个字符串在 <span class="inlinecode"><span class="id" title="var">eqb_string</span></span> 的意义上相等，当且仅当它们在
+    <span class="inlinecode">=</span> 的意义上相等。因此 <span class="inlinecode"><span class="id" title="var">eqb_string</span></span> 中反映了 <span class="inlinecode">=</span>，<a href="IndProp.html"><span class="inlineref">IndProp</span></a>
+    一章中讨论了「互映」的意义。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">eqb_string_true_iff</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">string</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eqb_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> = <span class="id" type="var">true</span> ↔ <span class="id" type="var">x</span> = <span class="id" type="var">y</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="eqb_string_true_iff"><span class="id" title="lemma">eqb_string_true_iff</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#df1ced36fc33ce188051218bca314374"><span class="id" title="notation">↔</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a>.<br/>
 <div class="togglescript" id="proofcontrol2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')"><span class="show"></span></div>
 <div class="proofscript" id="proof2" onclick="toggleDisplay('proof2');toggleDisplay('proofcontrol2')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">eqb_string</span>.<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="tactic">destruct</span> (<span class="id" type="var">string_dec</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>) <span class="id" type="keyword">as</span> [|<span class="id" type="var">Hs</span>].<br/>
-&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">subst</span>. <span class="id" type="tactic">split</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;&nbsp;- <span class="id" type="tactic">split</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">intros</span> <span class="id" type="var">contra</span>. <span class="id" type="tactic">discriminate</span> <span class="id" type="var">contra</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" type="tactic">intros</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">H</span> <span class="id" type="keyword">in</span> <span class="id" type="var">Hs</span>. <span class="id" type="tactic">destruct</span> <span class="id" type="var">Hs</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Maps.html#eqb_string"><span class="id" title="definition">eqb_string</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string_dec"><span class="id" title="definition">string_dec</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) <span class="id" title="keyword">as</span> [<span class="id" title="var">Hs_eq</span> | <span class="id" title="var">Hs_not_eq</span>].<br/>
+&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">rewrite</span> <span class="id" title="var">Hs_eq</span>. <span class="id" title="tactic">split</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">intros</span> <span class="id" title="var">contra</span>. <span class="id" title="tactic">discriminate</span> <span class="id" title="var">contra</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">rewrite</span> <span class="id" title="var">H</span> <span class="id" title="tactic">in</span> <span class="id" title="var">Hs_not_eq</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">Hs_not_eq</span>. <span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 </div>
 
 <div class="doc">
 类似地： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">eqb_string_false_iff</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">string</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">eqb_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> = <span class="id" type="var">false</span> ↔ <span class="id" type="var">x</span> ≠ <span class="id" type="var">y</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="eqb_string_false_iff"><span class="id" title="lemma">eqb_string_false_iff</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#df1ced36fc33ce188051218bca314374"><span class="id" title="notation">↔</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a>.<br/>
 <div class="togglescript" id="proofcontrol3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')"><span class="show"></span></div>
 <div class="proofscript" id="proof3" onclick="toggleDisplay('proof3');toggleDisplay('proofcontrol3')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">eqb_string_true_iff</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">rewrite</span> <span class="id" type="var">not_true_iff_false</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>. <span class="id" title="tactic">rewrite</span> &lt;- <a class="idref" href="Maps.html#eqb_string_true_iff"><span class="id" title="lemma">eqb_string_true_iff</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#not_true_iff_false"><span class="id" title="lemma">not_true_iff_false</span></a>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 </div>
 
 <div class="doc">
-以下方便使用的变体只需通过改写就能得出： 
+以下便于使用的变体只需通过改写就能得出： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">false_eqb_string</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">string</span>,<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="var">x</span> ≠ <span class="id" type="var">y</span> → <span class="id" type="var">eqb_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span> = <span class="id" type="var">false</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="false_eqb_string"><span class="id" title="lemma">false_eqb_string</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>,<br/>
+&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Maps.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>.<br/>
 <div class="togglescript" id="proofcontrol4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')"><span class="show"></span></div>
 <div class="proofscript" id="proof4" onclick="toggleDisplay('proof4');toggleDisplay('proofcontrol4')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">eqb_string_false_iff</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>. <span class="id" title="tactic">rewrite</span> <a class="idref" href="Maps.html#eqb_string_false_iff"><span class="id" title="lemma">eqb_string_false_iff</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">apply</span> <span class="id" title="var">H</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
+<span class="comment">(*&nbsp;/HIDEFROMHTML&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-<a name="lab256"></a><h1 class="section">全映射</h1>
+<a name="lab257"></a><h1 class="section">全映射</h1>
 
 <div class="paragraph"> </div>
 
  在本章中，我们的主要任务就是构建一个偏映射的定义，其行为类似于我们之前在
-    <a href="Lists.html"><span class="inlineref">Lists</span></a>一章中看到的那个，再加上伴随其行为的引理。
+    <a href="Lists.html"><span class="inlineref">Lists</span></a> 一章中看到的那个，再加上伴随其行为的引理。
 
 <div class="paragraph"> </div>
 
-    不过这一次，我们将使用<b>函数</b>而非“键-值”对的列表来构建映射。
-    这种表示方法的优点在于它提供了映射更具<b>外延性</b>的视角，
+    不过这一次，我们将使用<i>'函数'</i>而非“键-值”对的列表来构建映射。
+    这种表示方法的优点在于它提供了映射更具<i>'外延性'</i>的视角，
     即以相同方式回应查询的两个映射将被表示为完全相同的东西（即一模一样的函数），
     而非只是“等价”的数据结构。这反过来简化了使用映射的证明。 
 <div class="paragraph"> </div>
 
- 我们会分两步构建偏映射。首先，我们定义一个<b>全映射</b>类型，
+ 我们会分两步构建偏映射。首先，我们定义一个<i>'全映射'</i>类型，
     它在某个映射中查找不存在的键时会返回默认值。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">total_map</span> (<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) := <span class="id" type="var">string</span> → <span class="id" type="var">A</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="total_map"><span class="id" title="definition">total_map</span></a> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) := <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>.<br/>
 </div>
 
 <div class="doc">
-直观上来说，一个元素类型为 <span class="inlinecode"><span class="id" type="var">A</span></span> 的全映射不过就是个根据 <span class="inlinecode"><span class="id" type="var">string</span></span>
-    来查找 <span class="inlinecode"><span class="id" type="var">A</span></span> 的函数。 
+直观上来说，一个元素类型为 <span class="inlinecode"><span class="id" title="var">A</span></span> 的全映射不过就是个根据 <span class="inlinecode"><span class="id" title="var">string</span></span>
+    来查找 <span class="inlinecode"><span class="id" title="var">A</span></span> 的函数。 
 <div class="paragraph"> </div>
 
- 给定函数 <span class="inlinecode"><span class="id" type="var">t_empty</span></span> 一个默认元素，它会产生一个空的全映射。
+ 给定函数 <span class="inlinecode"><span class="id" title="var">t_empty</span></span> 一个默认元素，它会产生一个空的全映射。
     此映射在应用到任何字符串时都会返回默认元素。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">t_empty</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span> :=<br/>
-&nbsp;&nbsp;(<span class="id" type="keyword">fun</span> <span class="id" type="var">_</span> ⇒ <span class="id" type="var">v</span>).<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="t_empty"><span class="id" title="definition">t_empty</span></a> {<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>} (<span class="id" title="var">v</span> : <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) : <a class="idref" href="Maps.html#total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a> :=<br/>
+&nbsp;&nbsp;(<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a>).<br/>
 </div>
 
 <div class="doc">
-更有趣的是 <span class="inlinecode"><span class="id" type="var">update</span></span> 函数，它和之前一样，接受一个映射 <span class="inlinecode"><span class="id" type="var">m</span></span>、一个键 <span class="inlinecode"><span class="id" type="var">x</span></span>
-    以及一个值 <span class="inlinecode"><span class="id" type="var">v</span></span>，并返回一个将 <span class="inlinecode"><span class="id" type="var">x</span></span> 映射到 <span class="inlinecode"><span class="id" type="var">v</span></span> 的新映射；其它键则与
-    <span class="inlinecode"><span class="id" type="var">m</span></span> 中原来的保持一致。 
+更有趣的是 <span class="inlinecode"><span class="id" title="var">update</span></span> 函数，它和之前一样，接受一个映射 <span class="inlinecode"><span class="id" title="var">m</span></span>、一个键 <span class="inlinecode"><span class="id" title="var">x</span></span>
+    以及一个值 <span class="inlinecode"><span class="id" title="var">v</span></span>，并返回一个将 <span class="inlinecode"><span class="id" title="var">x</span></span> 映射到 <span class="inlinecode"><span class="id" title="var">v</span></span> 的新映射；其它键则与
+    <span class="inlinecode"><span class="id" title="var">m</span></span> 中原来的保持一致。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">t_update</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> : <span class="id" type="var">string</span>) (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">fun</span> <span class="id" type="var">x'</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">eqb_string</span> <span class="id" type="var">x</span> <span class="id" type="var">x'</span> <span class="id" type="keyword">then</span> <span class="id" type="var">v</span> <span class="id" type="keyword">else</span> <span class="id" type="var">m</span> <span class="id" type="var">x'</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="t_update"><span class="id" title="definition">t_update</span></a> {<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>} (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">x</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) (<span class="id" title="var">v</span> : <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">x'</span> ⇒ <span class="id" title="keyword">if</span> <a class="idref" href="Maps.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#x'"><span class="id" title="variable">x'</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a> <span class="id" title="keyword">else</span> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Maps.html#x'"><span class="id" title="variable">x'</span></a>.<br/>
 </div>
 
 <div class="doc">
-此定义是个高阶编程的好例子：<span class="inlinecode"><span class="id" type="var">t_update</span></span> 接受一个<b>函数</b> <span class="inlinecode"><span class="id" type="var">m</span></span>
-    并产生一个新的函数 <span class="inlinecode"><span class="id" type="keyword">fun</span></span> <span class="inlinecode"><span class="id" type="var">x'</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode">...</span>，它的表现与所需的映射一致。 
+此定义是个高阶编程的好例子：<span class="inlinecode"><span class="id" title="var">t_update</span></span> 接受一个<i>'函数'</i> <span class="inlinecode"><span class="id" title="var">m</span></span>
+    并产生一个新的函数 <span class="inlinecode"><span class="id" title="keyword">fun</span></span> <span class="inlinecode"><span class="id" title="var">x'</span></span> <span class="inlinecode">⇒</span> <span class="inlinecode">...</span>，它的表现与所需的映射一致。 
 <div class="paragraph"> </div>
 
- 例如，我们可以构建一个从 <span class="inlinecode"><span class="id" type="var">string</span></span> 到 <span class="inlinecode"><span class="id" type="var">bool</span></span> 的映射，其中 <span class="inlinecode">"<span class="id" type="var">foo</span>"</span>
-    和 <span class="inlinecode">"<span class="id" type="var">bar</span>"</span> 映射到 <span class="inlinecode"><span class="id" type="var">true</span></span>，其它键则映射到 <span class="inlinecode"><span class="id" type="var">false</span></span>，就像这样： 
+ 例如，我们可以构建一个从 <span class="inlinecode"><span class="id" title="var">string</span></span> 到 <span class="inlinecode"><span class="id" title="var">bool</span></span> 的映射，其中 <span class="inlinecode">&quot;<span class="id" title="var">foo</span>&quot;</span>
+    和 <span class="inlinecode">&quot;<span class="id" title="var">bar</span>&quot;</span> 映射到 <span class="inlinecode"><span class="id" title="var">true</span></span>，其它键则映射到 <span class="inlinecode"><span class="id" title="var">false</span></span>，就像这样： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">examplemap</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">t_update</span> (<span class="id" type="var">t_update</span> (<span class="id" type="var">t_empty</span> <span class="id" type="var">false</span>) "foo" <span class="id" type="var">true</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"bar" <span class="id" type="var">true</span>.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="examplemap"><span class="id" title="definition">examplemap</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Maps.html#t_update"><span class="id" title="definition">t_update</span></a> (<a class="idref" href="Maps.html#t_update"><span class="id" title="definition">t_update</span></a> (<a class="idref" href="Maps.html#t_empty"><span class="id" title="definition">t_empty</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>) "foo" <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"bar" <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a>.<br/>
 </div>
 
 <div class="doc">
@@ -246,34 +262,35 @@
 
  首先，我们会使用以下记法，根据一个默认值来创建空的全映射。 
 </div>
-<div class="code code-tight">
-<span class="id" type="keyword">Notation</span> "'_' '!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>' v" := (<span class="id" type="var">t_empty</span> <span class="id" type="var">v</span>)<br/>
-&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Example</span> <span class="id" type="var">example_empty</span> := (<span class="id" type="var">_</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">false</span>).<br/>
+<div class="code">
+<span class="id" title="keyword">Notation</span> <a name="bc1c5e34127128228512ba20d13f5577"><span class="id" title="notation">&quot;</span></a>'_' '!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>' v" := (<a class="idref" href="Maps.html#t_empty"><span class="id" title="definition">t_empty</span></a> <span class="id" title="var">v</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 100, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <a name="example_empty"><span class="id" title="definition">example_empty</span></a> := (<a class="idref" href="Maps.html#bc1c5e34127128228512ba20d13f5577"><span class="id" title="notation">_</span></a> <a class="idref" href="Maps.html#bc1c5e34127128228512ba20d13f5577"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>).<br/>
 </div>
 
 <div class="doc">
 然后，我们引入一种方便的记法，通过一些绑定来扩展现有的映射。 
 </div>
-<div class="code code-tight">
-<span class="id" type="keyword">Notation</span> "x '!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>' v ';' m" := (<span class="id" type="var">t_update</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">v</span> <span class="id" type="tactic">at</span> <span class="id" type="var">next</span> <span class="id" type="var">level</span>, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<div class="code">
+<span class="id" title="keyword">Notation</span> <a name="8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">&quot;</span></a>x '!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span>' v ';' m" := (<a class="idref" href="Maps.html#t_update"><span class="id" title="definition">t_update</span></a> <span class="id" title="var">m</span> <span class="id" title="var">x</span> <span class="id" title="var">v</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 100, <span class="id" title="var">v</span> <span class="id" title="tactic">at</span> <span class="id" title="var">next</span> <span class="id" title="keyword">level</span>, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
 </div>
 
 <div class="doc">
-前面的 <span class="inlinecode"><span class="id" type="var">examplemap</span></span> 现在可以定义如下： 
+前面的 <span class="inlinecode"><span class="id" title="var">examplemap</span></span> 现在可以定义如下： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">examplemap'</span> :=<br/>
-&nbsp;&nbsp;( "bar" !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">true</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;"foo" !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">true</span>;<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">_</span>     !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">false</span><br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="examplemap'"><span class="id" title="definition">examplemap'</span></a> :=<br/>
+&nbsp;&nbsp;( "bar" <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a><a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;"foo" <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a><a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#bc1c5e34127128228512ba20d13f5577"><span class="id" title="notation">_</span></a>     <a class="idref" href="Maps.html#bc1c5e34127128228512ba20d13f5577"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a><br/>
 &nbsp;&nbsp;).<br/>
 </div>
 
 <div class="doc">
-到这里就完成了全映射的定义。注意我们无需定义 <span class="inlinecode"><span class="id" type="var">find</span></span> 操作，
+到这里就完成了全映射的定义。注意我们无需定义 <span class="inlinecode"><span class="id" title="var">find</span></span> 操作，
     因为它不过就是个函数应用！ 
 </div>
 
@@ -284,253 +301,264 @@
  即便你没有进行下面的练习，也要确保透彻地理解以下引理的陈述！ 
 <div class="paragraph"> </div>
 
- （其中有些证明需要函数的外延性公理，我们在<a href="Logic.html"><span class="inlineref">Logic</span></a>一节中讨论过它）。 
+ （其中有些证明需要函数的外延性公理，我们在 <a href="Logic.html"><span class="inlineref">Logic</span></a> 一节中讨论过它）。 
 <div class="paragraph"> </div>
 
-<a name="lab257"></a><h4 class="section">练习：1 星, standard, optional (t_apply_empty)</h4>
+<a name="lab258"></a><h4 class="section">练习：1 星, standard, optional (t_apply_empty)</h4>
  首先，空映射对于所有的键都会返回默认元素（即，空映射总是返回默认元素）： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">t_apply_empty</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> : <span class="id" type="var">string</span>) (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>),<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">_</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v</span>) <span class="id" type="var">x</span> = <span class="id" type="var">v</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="t_apply_empty"><span class="id" title="lemma">t_apply_empty</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">x</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) (<span class="id" title="var">v</span> : <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Maps.html#bc1c5e34127128228512ba20d13f5577"><span class="id" title="notation">_</span></a> <a class="idref" href="Maps.html#bc1c5e34127128228512ba20d13f5577"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a>) <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab258"></a><h4 class="section">练习：2 星, standard, optional (t_update_eq)</h4>
- 接着，如果将映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 的键 <span class="inlinecode"><span class="id" type="var">x</span></span> 关联的值更新为 <span class="inlinecode"><span class="id" type="var">v</span></span>，然后在 <span class="inlinecode"><span class="id" type="var">update</span></span>
-    产生的新映射中查找 <span class="inlinecode"><span class="id" type="var">x</span></span>，就会得到 <span class="inlinecode"><span class="id" type="var">v</span></span>（即，更新某个键的映射，
+<a name="lab259"></a><h4 class="section">练习：2 星, standard, optional (t_update_eq)</h4>
+ 接着，如果将映射 <span class="inlinecode"><span class="id" title="var">m</span></span> 的键 <span class="inlinecode"><span class="id" title="var">x</span></span> 关联的值更新为 <span class="inlinecode"><span class="id" title="var">v</span></span>，然后在 <span class="inlinecode"><span class="id" title="var">update</span></span>
+    产生的新映射中查找 <span class="inlinecode"><span class="id" title="var">x</span></span>，就会得到 <span class="inlinecode"><span class="id" title="var">v</span></span>（即，更新某个键的映射，
     查找它就会得到更新后的值）： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">t_update_eq</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> <span class="id" type="var">v</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v</span> ; <span class="id" type="var">m</span>) <span class="id" type="var">x</span> = <span class="id" type="var">v</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="t_update_eq"><span class="id" title="lemma">t_update_eq</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x</span> <span class="id" title="var">v</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a>) <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab259"></a><h4 class="section">练习：2 星, standard, optional (t_update_neq)</h4>
- 此外，如果将映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 的键 <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> 更新后在返回的结果中查找<b>另一个</b>键
-    <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span>，那么得到的结果与在 <span class="inlinecode"><span class="id" type="var">m</span></span> 中查找它的结果相同
+<a name="lab260"></a><h4 class="section">练习：2 星, standard, optional (t_update_neq)</h4>
+ 此外，如果将映射 <span class="inlinecode"><span class="id" title="var">m</span></span> 的键 <span class="inlinecode"><span class="id" title="var">x<sub>1</sub></span></span> 更新后在返回的结果中查找<i>'另一个'</i>键
+    <span class="inlinecode"><span class="id" title="var">x<sub>2</sub></span></span>，那么得到的结果与在 <span class="inlinecode"><span class="id" title="var">m</span></span> 中查找它的结果相同
     （即，更新某个键的映射，不影响其它键的映射）： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">t_update_neq</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> <span class="id" type="var">v</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">x<sub>1</sub></span> ≠ <span class="id" type="var">x<sub>2</sub></span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x<sub>1</sub></span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v</span> ; <span class="id" type="var">m</span>) <span class="id" type="var">x<sub>2</sub></span> = <span class="id" type="var">m</span> <span class="id" type="var">x<sub>2</sub></span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="t_update_neq"><span class="id" title="lemma">t_update_neq</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span> <span class="id" title="var">v</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a>) <a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab260"></a><h4 class="section">练习：2 星, standard, optional (t_update_shadow)</h4>
- 如果将映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 的键 <span class="inlinecode"><span class="id" type="var">x</span></span> 关联的值更新为 <span class="inlinecode"><span class="id" type="var">v<sub>1</sub></span></span> 后，又将同一个键 <span class="inlinecode"><span class="id" type="var">x</span></span>
-    更新为另一个值 <span class="inlinecode"><span class="id" type="var">v<sub>2</sub></span></span>，那么产生的映射与仅将第二次 <span class="inlinecode"><span class="id" type="var">update</span></span> 应用于 <span class="inlinecode"><span class="id" type="var">m</span></span>
+<a name="lab261"></a><h4 class="section">练习：2 星, standard, optional (t_update_shadow)</h4>
+ 如果将映射 <span class="inlinecode"><span class="id" title="var">m</span></span> 的键 <span class="inlinecode"><span class="id" title="var">x</span></span> 关联的值更新为 <span class="inlinecode"><span class="id" title="var">v<sub>1</sub></span></span> 后，又将同一个键 <span class="inlinecode"><span class="id" title="var">x</span></span>
+    更新为另一个值 <span class="inlinecode"><span class="id" title="var">v<sub>2</sub></span></span>，那么产生的映射与仅将第二次 <span class="inlinecode"><span class="id" title="var">update</span></span> 应用于 <span class="inlinecode"><span class="id" title="var">m</span></span>
     所得到的映射表现一致（即二者应用到同一键时产生的结果相同）： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">t_update_shadow</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">x</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">m</span>) = (<span class="id" type="var">x</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">m</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="t_update_shadow"><span class="id" title="lemma">t_update_shadow</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x</span> <span class="id" title="var">v<sub>1</sub></span> <span class="id" title="var">v<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v<sub>1</sub>"><span class="id" title="variable">v<sub>1</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
- 对于最后两个全映射的引理而言，用<a href="IndProp.html"><span class="inlineref">IndProp</span></a>一章中引入的互映法
-    （Reflection idioms）来证明会十分方便。我们首先通过证明基本的<b>互映引理</b>，
-    将 <span class="inlinecode"><span class="id" type="var">id</span></span> 上的相等关系命题与布尔函数 <span class="inlinecode"><span class="id" type="var">eqb_id</span></span> 关联起来。
+ 对于最后两个全映射的引理而言，用 <a href="IndProp.html"><span class="inlineref">IndProp</span></a> 一章中引入的互映法
+    （Reflection idioms）来证明会十分方便。我们首先通过证明基本的<i>'互映引理'</i>，
+    将字符串上的相等关系命题与布尔函数 <span class="inlinecode"><span class="id" title="var">eqb_string</span></span> 关联起来。
 <div class="paragraph"> </div>
 
-<a name="lab261"></a><h4 class="section">练习：2 星, standard, optional (eqb_stringP)</h4>
- 请仿照<a href="IndProp.html"><span class="inlineref">IndProp</span></a>一章中对 <span class="inlinecode"><span class="id" type="var">eqb_natP</span></span> 的证明来证明以下引理： 
+<a name="lab262"></a><h4 class="section">练习：2 星, standard, optional (eqb_stringP)</h4>
+ 请仿照 <a href="IndProp.html"><span class="inlineref">IndProp</span></a> 一章中对 <span class="inlinecode"><span class="id" title="var">eqb_natP</span></span> 的证明来证明以下引理： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">eqb_stringP</span> : <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span> : <span class="id" type="var">string</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">reflect</span> (<span class="id" type="var">x</span> = <span class="id" type="var">y</span>) (<span class="id" type="var">eqb_string</span> <span class="id" type="var">x</span> <span class="id" type="var">y</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="eqb_stringP"><span class="id" title="lemma">eqb_stringP</span></a> : <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Bool.Bool.html#reflect"><span class="id" title="inductive">reflect</span></a> (<a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a>) (<a class="idref" href="Maps.html#eqb_string"><span class="id" title="definition">eqb_string</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#y"><span class="id" title="variable">y</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
- 现在，给定 <span class="inlinecode"><span class="id" type="var">string</span></span> 类型的字符串 <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span>，我们可以在使用策略
-    <span class="inlinecode"><span class="id" type="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" type="var">eqb_stringP</span></span> <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span>)</span> 对 <span class="inlinecode"><span class="id" type="var">eqb_string</span></span> <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span>
-    的结果进行分类讨论的同时，生成关于 <span class="inlinecode"><span class="id" type="var">x<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" type="var">x<sub>2</sub></span></span> （在 <span class="inlinecode">=</span> 的意义上）
+ 现在，给定 <span class="inlinecode"><span class="id" title="var">string</span></span> 类型的字符串 <span class="inlinecode"><span class="id" title="var">x<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" title="var">x<sub>2</sub></span></span>，我们可以在使用策略
+    <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> <span class="inlinecode">(<span class="id" title="var">eqb_stringP</span></span> <span class="inlinecode"><span class="id" title="var">x<sub>1</sub></span></span> <span class="inlinecode"><span class="id" title="var">x<sub>2</sub></span>)</span> 对 <span class="inlinecode"><span class="id" title="var">eqb_string</span></span> <span class="inlinecode"><span class="id" title="var">x<sub>1</sub></span></span> <span class="inlinecode"><span class="id" title="var">x<sub>2</sub></span></span>
+    的结果进行分类讨论的同时，生成关于 <span class="inlinecode"><span class="id" title="var">x<sub>1</sub></span></span> 和 <span class="inlinecode"><span class="id" title="var">x<sub>2</sub></span></span> （在 <span class="inlinecode">=</span> 的意义上）
     的相等关系前提。 
 <div class="paragraph"> </div>
 
-<a name="lab262"></a><h4 class="section">练习：2 星, standard (t_update_same)</h4>
- 请仿照<a href="IndProp.html"><span class="inlineref">IndProp</span></a>一章中的示例，用 <span class="inlinecode"><span class="id" type="var">eqb_stringP</span></span> 来证明以下定理，
-    它陈述了：如果我们用映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 中已经与键 <span class="inlinecode"><span class="id" type="var">x</span></span> 相关联的值更新了 <span class="inlinecode"><span class="id" type="var">x</span></span>，
-    那么其结果与 <span class="inlinecode"><span class="id" type="var">m</span></span> 相等： 
+<a name="lab263"></a><h4 class="section">练习：2 星, standard (t_update_same)</h4>
+ 请仿照 <a href="IndProp.html"><span class="inlineref">IndProp</span></a> 一章中的示例，用 <span class="inlinecode"><span class="id" title="var">eqb_stringP</span></span> 来证明以下定理，
+    它陈述了：如果我们用映射 <span class="inlinecode"><span class="id" title="var">m</span></span> 中已经与键 <span class="inlinecode"><span class="id" title="var">x</span></span> 相关联的值更新了 <span class="inlinecode"><span class="id" title="var">x</span></span>，
+    那么其结果与 <span class="inlinecode"><span class="id" title="var">m</span></span> 相等： 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">t_update_same</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> ; <span class="id" type="var">m</span>) = <span class="id" type="var">m</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="t_update_same"><span class="id" title="lemma">t_update_same</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab263"></a><h4 class="section">练习：3 星, standard, recommended (t_update_permute)</h4>
- 使用 <span class="inlinecode"><span class="id" type="var">eqb_stringP</span></span> 来证明最后一个 <span class="inlinecode"><span class="id" type="var">update</span></span> 函数的性质：
-    如果我们更新了映射 <span class="inlinecode"><span class="id" type="var">m</span></span> 中两个不同的键，那么更新的顺序无关紧要。 
+<a name="lab264"></a><h4 class="section">练习：3 星, standard, recommended (t_update_permute)</h4>
+ 使用 <span class="inlinecode"><span class="id" title="var">eqb_stringP</span></span> 来证明最后一个 <span class="inlinecode"><span class="id" title="var">update</span></span> 函数的性质：
+    如果我们更新了映射 <span class="inlinecode"><span class="id" title="var">m</span></span> 中两个不同的键，那么更新的顺序无关紧要。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">t_update_permute</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">total_map</span> <span class="id" type="var">A</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">x<sub>2</sub></span> ≠ <span class="id" type="var">x<sub>1</sub></span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x<sub>1</sub></span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">x<sub>2</sub></span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">m</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;=<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x<sub>2</sub></span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">x<sub>1</sub></span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">m</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="t_update_permute"><span class="id" title="lemma">t_update_permute</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#total_map"><span class="id" title="definition">total_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">v<sub>1</sub></span> <span class="id" title="var">v<sub>2</sub></span> <span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v<sub>1</sub>"><span class="id" title="variable">v<sub>1</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="Maps.html#v<sub>1</sub>"><span class="id" title="variable">v<sub>1</sub></span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
 
 <div class="doc">
-<a name="lab264"></a><h1 class="section">偏映射</h1>
+<a name="lab265"></a><h1 class="section">偏映射</h1>
 
 <div class="paragraph"> </div>
 
- 最后，我们在全映射之上定义<b>偏映射</b>。元素类型为 <span class="inlinecode"><span class="id" type="var">A</span></span> 的偏映射不过就是个
-    元素类型为 <span class="inlinecode"><span class="id" type="var">option</span></span> <span class="inlinecode"><span class="id" type="var">A</span></span>，默认元素为 <span class="inlinecode"><span class="id" type="var">None</span></span> 的全映射。 
+ 最后，我们在全映射之上定义<i>'偏映射'</i>。元素类型为 <span class="inlinecode"><span class="id" title="var">A</span></span> 的偏映射不过就是个
+    元素类型为 <span class="inlinecode"><span class="id" title="var">option</span></span> <span class="inlinecode"><span class="id" title="var">A</span></span>，默认元素为 <span class="inlinecode"><span class="id" title="var">None</span></span> 的全映射。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">partial_map</span> (<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) := <span class="id" type="var">total_map</span> (<span class="id" type="var">option</span> <span class="id" type="var">A</span>).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">empty</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="var">t_empty</span> <span class="id" type="var">None</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">update</span> {<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>} (<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> : <span class="id" type="var">string</span>) (<span class="id" type="var">v</span> : <span class="id" type="var">A</span>) :=<br/>
-&nbsp;&nbsp;(<span class="id" type="var">x</span> !<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span> <span class="id" type="var">Some</span> <span class="id" type="var">v</span> ; <span class="id" type="var">m</span>).<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="partial_map"><span class="id" title="definition">partial_map</span></a> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) := <a class="idref" href="Maps.html#total_map"><span class="id" title="definition">total_map</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#option"><span class="id" title="inductive">option</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="empty"><span class="id" title="definition">empty</span></a> {<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>} : <a class="idref" href="Maps.html#partial_map"><span class="id" title="definition">partial_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a> :=<br/>
+&nbsp;&nbsp;<a class="idref" href="Maps.html#t_empty"><span class="id" title="definition">t_empty</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="update"><span class="id" title="definition">update</span></a> {<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>} (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#partial_map"><span class="id" title="definition">partial_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">x</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>) (<span class="id" title="var">v</span> : <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) :=<br/>
+&nbsp;&nbsp;(<a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">!<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>-</span></span>&gt;</span></span></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Maps.html#8d30c24efec4c4217ffea53676b55c2e"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a>).<br/>
 </div>
 
 <div class="doc">
 我们为偏映射引入类似的记法。 
 </div>
-<div class="code code-tight">
-<span class="id" type="keyword">Notation</span> "x '<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span>' v ';' m" := (<span class="id" type="var">update</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span>)<br/>
-&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100, <span class="id" type="var">v</span> <span class="id" type="tactic">at</span> <span class="id" type="var">next</span> <span class="id" type="var">level</span>, <span class="id" type="var">right</span> <span class="id" type="var">associativity</span>).<br/>
+<div class="code">
+<span class="id" title="keyword">Notation</span> <a name="413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">&quot;</span></a>x '<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span>' v ';' m" := (<a class="idref" href="Maps.html#update"><span class="id" title="definition">update</span></a> <span class="id" title="var">m</span> <span class="id" title="var">x</span> <span class="id" title="var">v</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 100, <span class="id" title="var">v</span> <span class="id" title="tactic">at</span> <span class="id" title="var">next</span> <span class="id" title="keyword">level</span>, <span class="id" title="tactic">right</span> <span class="id" title="keyword">associativity</span>).<br/>
 </div>
 
 <div class="doc">
 当最后一种情况为空时，我们也可以隐藏它。 
 </div>
-<div class="code code-tight">
-<span class="id" type="keyword">Notation</span> "x '<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span>' v" := (<span class="id" type="var">update</span> <span class="id" type="var">empty</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span>)<br/>
-&nbsp;&nbsp;(<span class="id" type="tactic">at</span> <span class="id" type="var">level</span> 100).<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Example</span> <span class="id" type="var">examplepmap</span> :=<br/>
-&nbsp;&nbsp;("Church" <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">true</span> ; "Turing" <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">false</span>).<br/>
+<div class="code">
+<span class="id" title="keyword">Notation</span> <a name="02007db97cbde7d2bc4092cba36f71b<sub>6</sub>"><span class="id" title="notation">&quot;</span></a>x '<span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span>' v" := (<a class="idref" href="Maps.html#update"><span class="id" title="definition">update</span></a> <a class="idref" href="Maps.html#empty"><span class="id" title="definition">empty</span></a> <span class="id" title="var">x</span> <span class="id" title="var">v</span>)<br/>
+&nbsp;&nbsp;(<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 100).<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <a name="examplepmap"><span class="id" title="definition">examplepmap</span></a> :=<br/>
+&nbsp;&nbsp;("Church" <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#true"><span class="id" title="constructor">true</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> "Turing" <a class="idref" href="Maps.html#02007db97cbde7d2bc4092cba36f71b<sub>6</sub>"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#false"><span class="id" title="constructor">false</span></a>).<br/>
 </div>
 
 <div class="doc">
 现在我们将所有关于全映射的基本引理直接转换成对应的偏映射引理。 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">apply_empty</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">x</span> : <span class="id" type="var">string</span>),<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;@<span class="id" type="var">empty</span> <span class="id" type="var">A</span> <span class="id" type="var">x</span> = <span class="id" type="var">None</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="apply_empty"><span class="id" title="lemma">apply_empty</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">x</span> : <a class="idref" href="http://coq.inria.fr/library//Coq.Strings.String.html#string"><span class="id" title="inductive">string</span></a>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;@<a class="idref" href="Maps.html#empty"><span class="id" title="definition">empty</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#None"><span class="id" title="constructor">None</span></a>.<br/>
 <div class="togglescript" id="proofcontrol5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')"><span class="show"></span></div>
 <div class="proofscript" id="proof5" onclick="toggleDisplay('proof5');toggleDisplay('proofcontrol5')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">empty</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">t_apply_empty</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Maps.html#empty"><span class="id" title="definition">empty</span></a>. <span class="id" title="tactic">rewrite</span> <a class="idref" href="Maps.html#t_apply_empty"><span class="id" title="axiom">t_apply_empty</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">update_eq</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> <span class="id" type="var">v</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v</span> ; <span class="id" type="var">m</span>) <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">v</span>.<br/>
+<span class="id" title="keyword">Lemma</span> <a name="update_eq"><span class="id" title="lemma">update_eq</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#partial_map"><span class="id" title="definition">partial_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x</span> <span class="id" title="var">v</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a>) <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a>.<br/>
 <div class="togglescript" id="proofcontrol6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')"><span class="show"></span></div>
 <div class="proofscript" id="proof6" onclick="toggleDisplay('proof6');toggleDisplay('proofcontrol6')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">t_update_eq</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Maps.html#update"><span class="id" title="definition">update</span></a>. <span class="id" title="tactic">rewrite</span> <a class="idref" href="Maps.html#t_update_eq"><span class="id" title="axiom">t_update_eq</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">update_neq</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> <span class="id" type="var">v</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">x<sub>2</sub></span> ≠ <span class="id" type="var">x<sub>1</sub></span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x<sub>2</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v</span> ; <span class="id" type="var">m</span>) <span class="id" type="var">x<sub>1</sub></span> = <span class="id" type="var">m</span> <span class="id" type="var">x<sub>1</sub></span>.<br/>
+<span class="id" title="keyword">Theorem</span> <a name="update_neq"><span class="id" title="lemma">update_neq</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#partial_map"><span class="id" title="definition">partial_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span> <span class="id" title="var">v</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a>) <a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a>.<br/>
 <div class="togglescript" id="proofcontrol7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')"><span class="show"></span></div>
 <div class="proofscript" id="proof7" onclick="toggleDisplay('proof7');toggleDisplay('proofcontrol7')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">A</span> <span class="id" type="var">m</span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> <span class="id" type="var">v</span> <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">t_update_neq</span>. <span class="id" type="tactic">reflexivity</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">H</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">m</span> <span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span> <span class="id" title="var">v</span> <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <a class="idref" href="Maps.html#update"><span class="id" title="definition">update</span></a>. <span class="id" title="tactic">rewrite</span> <a class="idref" href="Maps.html#t_update_neq"><span class="id" title="axiom">t_update_neq</span></a>. <span class="id" title="tactic">reflexivity</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">H</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">update_shadow</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">x</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">m</span>) = (<span class="id" type="var">x</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">m</span>).<br/>
+<span class="id" title="keyword">Lemma</span> <a name="update_shadow"><span class="id" title="lemma">update_shadow</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#partial_map"><span class="id" title="definition">partial_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x</span> <span class="id" title="var">v<sub>1</sub></span> <span class="id" title="var">v<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v<sub>1</sub>"><span class="id" title="variable">v<sub>1</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a>.<br/>
 <div class="togglescript" id="proofcontrol8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')"><span class="show"></span></div>
 <div class="proofscript" id="proof8" onclick="toggleDisplay('proof8');toggleDisplay('proofcontrol8')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">A</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>. <span class="id" type="tactic">rewrite</span> <span class="id" type="var">t_update_shadow</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">reflexivity</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">m</span> <span class="id" title="var">x</span> <span class="id" title="var">v<sub>1</sub></span> <span class="id" title="var">v<sub>2</sub></span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Maps.html#update"><span class="id" title="definition">update</span></a>. <span class="id" title="tactic">rewrite</span> <a class="idref" href="Maps.html#t_update_shadow"><span class="id" title="axiom">t_update_shadow</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">reflexivity</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">update_same</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>) <span class="id" type="var">x</span> <span class="id" type="var">v</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">m</span> <span class="id" type="var">x</span> = <span class="id" type="var">Some</span> <span class="id" type="var">v</span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x</span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v</span> ; <span class="id" type="var">m</span>) = <span class="id" type="var">m</span>.<br/>
+<span class="id" title="keyword">Theorem</span> <a name="update_same"><span class="id" title="lemma">update_same</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#partial_map"><span class="id" title="definition">partial_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>) <span class="id" title="var">x</span> <span class="id" title="var">v</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a> <a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#Some"><span class="id" title="constructor">Some</span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v"><span class="id" title="variable">v</span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a>.<br/>
 <div class="togglescript" id="proofcontrol9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')"><span class="show"></span></div>
 <div class="proofscript" id="proof9" onclick="toggleDisplay('proof9');toggleDisplay('proofcontrol9')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">A</span> <span class="id" type="var">m</span> <span class="id" type="var">x</span> <span class="id" type="var">v</span> <span class="id" type="var">H</span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>. <span class="id" type="tactic">rewrite</span> &lt;- <span class="id" type="var">H</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_same</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">m</span> <span class="id" title="var">x</span> <span class="id" title="var">v</span> <span class="id" title="var">H</span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Maps.html#update"><span class="id" title="definition">update</span></a>. <span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">H</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Maps.html#t_update_same"><span class="id" title="axiom">t_update_same</span></a>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">update_permute</span> : <span style='font-size:120%;'>&forall;</span>(<span class="id" type="var">A</span> : <span class="id" type="keyword">Type</span>) (<span class="id" type="var">m</span> : <span class="id" type="var">partial_map</span> <span class="id" type="var">A</span>)<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">x<sub>2</sub></span> ≠ <span class="id" type="var">x<sub>1</sub></span> →<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" type="var">x<sub>1</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">x<sub>2</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">m</span>) = (<span class="id" type="var">x<sub>2</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v<sub>2</sub></span> ; <span class="id" type="var">x<sub>1</sub></span> <span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span> <span class="id" type="var">v<sub>1</sub></span> ; <span class="id" type="var">m</span>).<br/>
+<span class="id" title="keyword">Theorem</span> <a name="update_permute"><span class="id" title="lemma">update_permute</span></a> : <span class="id" title="keyword">∀</span> (<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">m</span> : <a class="idref" href="Maps.html#partial_map"><span class="id" title="definition">partial_map</span></a> <a class="idref" href="Maps.html#A"><span class="id" title="variable">A</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span> <span class="id" title="var">v<sub>1</sub></span> <span class="id" title="var">v<sub>2</sub></span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#32263a1c8b01baecdff9deb038955bc<sub>9</sub>"><span class="id" title="notation">≠</span></a> <a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v<sub>1</sub>"><span class="id" title="variable">v<sub>1</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">(</span></a><a class="idref" href="Maps.html#x<sub>2</sub>"><span class="id" title="variable">x<sub>2</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v<sub>2</sub>"><span class="id" title="variable">v<sub>2</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#x<sub>1</sub>"><span class="id" title="variable">x<sub>1</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation"><span class="nowrap"><span style='font-size:85%;'><span style='vertical-align:5%;'><span style='letter-spacing:-.2em;'>&#x22A2;</span><span style='font-size:90%;'>&gt;</span></span></span></span></span></a> <a class="idref" href="Maps.html#v<sub>1</sub>"><span class="id" title="variable">v<sub>1</sub></span></a> <a class="idref" href="Maps.html#413fa44b816aeb6f565da2a108290ead"><span class="id" title="notation">;</span></a> <a class="idref" href="Maps.html#m"><span class="id" title="variable">m</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">)</span></a>.<br/>
 <div class="togglescript" id="proofcontrol10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')"><span class="show"></span></div>
 <div class="proofscript" id="proof10" onclick="toggleDisplay('proof10');toggleDisplay('proofcontrol10')">
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">intros</span> <span class="id" type="var">A</span> <span class="id" type="var">m</span> <span class="id" type="var">x<sub>1</sub></span> <span class="id" type="var">x<sub>2</sub></span> <span class="id" type="var">v<sub>1</sub></span> <span class="id" type="var">v<sub>2</sub></span>. <span class="id" type="tactic">unfold</span> <span class="id" type="var">update</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">apply</span> <span class="id" type="var">t_update_permute</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">A</span> <span class="id" title="var">m</span> <span class="id" title="var">x<sub>1</sub></span> <span class="id" title="var">x<sub>2</sub></span> <span class="id" title="var">v<sub>1</sub></span> <span class="id" title="var">v<sub>2</sub></span>. <span class="id" title="tactic">unfold</span> <a class="idref" href="Maps.html#update"><span class="id" title="definition">update</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Maps.html#t_update_permute"><span class="id" title="axiom">t_update_permute</span></a>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <br/>
-<span class="comment">(*&nbsp;Sun&nbsp;Jan&nbsp;5&nbsp;03:17:35&nbsp;UTC&nbsp;2020&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;2020年1月16日&nbsp;*)</span><br/>
 </div>
 </div>
 
-
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
 
 </div>
 

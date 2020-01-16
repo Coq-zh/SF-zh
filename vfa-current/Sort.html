@@ -2,35 +2,37 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<link href="common/css/sf.css" rel="stylesheet" type="text/css"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="common/css/sf.css" rel="stylesheet" type="text/css" />
 <title>Sort: Insertion Sort</title>
-</head>
 <link href="common/jquery-ui/jquery-ui.css" rel="stylesheet">
 <script src="common/jquery-ui/external/jquery/jquery.js"></script>
 <script src="common/jquery-ui/jquery-ui.js"></script>
 <script src="common/toggleproofs.js"></script>
 <link href="common/css/vfa.css" rel="stylesheet" type="text/css"/>
+</head>
 
 <body>
 
 <div id="page">
 
 <div id="header">
-<a href='https://coq-zh.github.io/SF-zh/index.html'>
-<img src='common/media/image/sf_logo_sm.png'></a>
-</br><a href='index.html'>  <span class='booktitleinheader'>Volume 3: 函数式算法验证</span><br></br>
+<div id='logoinheader'><a href='https://coq-zh.github.io/SF-zh/'>
+<img src='common/media/image/sf_logo_sm.png' alt='Software Foundations Logo'></a></div>
+<div class='booktitleinheader'><a href='index.html'>Volume 3: 函数式算法验证</a></div>
 <ul id='menu'>
-   <a href='toc.html'><li class='section_name'>目录</li></a>
-   <a href='coqindex.html'><li class='section_name'>索引</li></a>
-   <a href='deps.html'><li class='section_name'>路线</li></a>
+   <li class='section_name'><a href='toc.html'>目录</a></li>
+   <li class='section_name'><a href='coqindex.html'>索引</a></li>
+   <li class='section_name'><a href='deps.html'>路线</a></li>
 </ul>
-</a></div>
+</div>
 
 <div id="main">
 
 <h1 class="libtitle">Sort<span class="subtitle">Insertion Sort</span></h1>
 
+<div class="code">
+</div>
 
 <div class="doc">
 
@@ -40,10 +42,10 @@
     algorithms (quicksort, mergesort, heapsort, etc.).  But for
     smallish inputs, a simple quadratic-time algorithm such as
     insertion sort can actually be faster.  And it's certainly easier
-    to implement &mdash; and to prove correct. 
+    to implement -- and to prove correct. 
 <div class="paragraph"> </div>
 
-<a name="lab21"></a><h1 class="section">Recommended Reading</h1>
+<a name="lab22"></a><h1 class="section">Recommended Reading</h1>
 
 <div class="paragraph"> </div>
 
@@ -52,17 +54,17 @@
 
 <div class="paragraph"> </div>
 
-   Sections 2.0 and 2.1 of _Algorithms, Fourth Edition_,
+   Sections 2.0 and 2.1 of <i>Algorithms, Fourth Edition</i>,
        by Sedgewick and Wayne, Addison Wesley 2011;  or
 
 <div class="paragraph"> </div>
 
-   Section 2.1 of _Introduction to Algorithms, 3rd Edition_,
+   Section 2.1 of <i>Introduction to Algorithms, 3rd Edition</i>,
        by Cormen, Leiserson, and Rivest, MIT Press 2009. 
 </div>
 
 <div class="doc">
-<a name="lab22"></a><h1 class="section">The Insertion-Sort Program</h1>
+<a name="lab23"></a><h1 class="section">The Insertion-Sort Program</h1>
 
 <div class="paragraph"> </div>
 
@@ -70,33 +72,34 @@
    operating on arrays.  But it works just as well as a functional
    program operating on linked lists! 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">From</span> <span class="id" type="var">VFA</span> <span class="id" type="keyword">Require</span> <span class="id" type="keyword">Import</span> <span class="id" type="var">Perm</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">insert</span> (<span class="id" type="var">i</span>:<span class="id" type="var">nat</span>) (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) := <br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">i</span>::<span class="id" type="var">nil</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="keyword">if</span> <span class="id" type="var">i</span> &lt;=? <span class="id" type="var">h</span> <span class="id" type="keyword">then</span> <span class="id" type="var">i</span>::<span class="id" type="var">h</span>::<span class="id" type="var">t</span> <span class="id" type="keyword">else</span> <span class="id" type="var">h</span> :: <span class="id" type="var">insert</span> <span class="id" type="var">i</span> <span class="id" type="var">t</span><br/>
-&nbsp;<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Fixpoint</span> <span class="id" type="var">sort</span> (<span class="id" type="var">l</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) : <span class="id" type="var">list</span> <span class="id" type="var">nat</span> :=<br/>
-&nbsp;&nbsp;<span class="id" type="keyword">match</span> <span class="id" type="var">l</span> <span class="id" type="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">nil</span> ⇒ <span class="id" type="var">nil</span><br/>
-&nbsp;&nbsp;| <span class="id" type="var">h</span>::<span class="id" type="var">t</span> ⇒ <span class="id" type="var">insert</span> <span class="id" type="var">h</span> (<span class="id" type="var">sort</span> <span class="id" type="var">t</span>)<br/>
-<span class="id" type="keyword">end</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Example</span> <span class="id" type="var">sort_pi</span>: <span class="id" type="var">sort</span> [3;1;4;1;5;9;2;6;5;3;5]<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= [1;1;2;3;3;4;5;5;5;6;9].<br/>
+<br/>
+<span class="id" title="var">From</span> <span class="id" title="var">VFA</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Perm.html#"><span class="id" title="library">Perm</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Fixpoint</span> <a name="insert"><span class="id" title="definition">insert</span></a> (<span class="id" title="var">i</span>:<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) (<span class="id" title="var">l</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) := <br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a> ⇒ <a class="idref" href="Sort.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a><br/>
+&nbsp;&nbsp;| <span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> ⇒ <span class="id" title="keyword">if</span> <a class="idref" href="Sort.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Arith.PeanoNat.html#01f84f7b4db7ca25b5fbdf8f04a7bebc"><span class="id" title="notation">&lt;=?</span></a> <span class="id" title="var">h</span> <span class="id" title="keyword">then</span> <a class="idref" href="Sort.html#i"><span class="id" title="variable">i</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> <span class="id" title="keyword">else</span> <span class="id" title="var">h</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a> <a class="idref" href="Sort.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Sort.html#i"><span class="id" title="variable">i</span></a> <span class="id" title="var">t</span><br/>
+&nbsp;<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Fixpoint</span> <a name="sort"><span class="id" title="definition">sort</span></a> (<span class="id" title="var">l</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) : <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a> ⇒ <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a><br/>
+&nbsp;&nbsp;| <span class="id" title="var">h</span><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><span class="id" title="var">t</span> ⇒ <a class="idref" href="Sort.html#insert"><span class="id" title="definition">insert</span></a> <span class="id" title="var">h</span> (<a class="idref" href="Sort.html#sort"><span class="id" title="definition">sort</span></a> <span class="id" title="var">t</span>)<br/>
+<span class="id" title="keyword">end</span>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Example</span> <a name="sort_pi"><span class="id" title="definition">sort_pi</span></a>: <a class="idref" href="Sort.html#sort"><span class="id" title="definition">sort</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>9<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>6<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#1c39bf18749e5cc609e83c0a0ba5a372"><span class="id" title="notation">=</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>2<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>5<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>6<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a>9<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>.<br/>
 <div class="togglescript" id="proofcontrol1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')"><span class="show"></span></div>
 <div class="proofscript" id="proof1" onclick="toggleDisplay('proof1');toggleDisplay('proofcontrol1')">
-<span class="id" type="keyword">Proof</span>. <span class="id" type="tactic">simpl</span>. <span class="id" type="tactic">reflexivity</span>. <span class="id" type="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">Proof</span>. <span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
 </div>
 </div>
 
 <div class="doc">
 What Sedgewick/Wayne and Cormen/Leiserson/Rivest don't acknowlege
     is that the arrays-and-swaps model of sorting is not the only one
-    in the world.  We are writing _functional programs_, where our
+    in the world.  We are writing <i>functional programs</i>, where our
     sequences are (typically) represented as linked lists, and where
-    we do _not_ destructively splice elements into those lists.
+    we do <i>not</i> destructively splice elements into those lists.
     Instead, we build new lists that (sometimes) share structure with
     the old ones.
 
@@ -104,22 +107,20 @@ What Sedgewick/Wayne and Cormen/Leiserson/Rivest don't acknowlege
 
     So, for example: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Eval</span> <span class="id" type="tactic">compute</span> <span class="id" type="keyword">in</span> <span class="id" type="var">insert</span> 7 [1; 3; 4; 8; 12; 14; 18].<br/>
+<br/>
+<span class="id" title="keyword">Eval</span> <span class="id" title="tactic">compute</span> <span class="id" title="tactic">in</span> <a class="idref" href="Sort.html#insert"><span class="id" title="definition">insert</span></a> 7 <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">[</span></a>1<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a> 3<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a> 4<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a> 8<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a> 12<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a> 14<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">;</span></a> 18<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#f83abbde7679bdbfec6afddd39d41e<sub>15</sub>"><span class="id" title="notation">]</span></a>.<br/>
 <span class="comment">(*&nbsp;=&nbsp;<span class="inlinecode">1;</span> <span class="inlinecode">3;</span> <span class="inlinecode">4;</span> <span class="inlinecode">7;</span> <span class="inlinecode">8;</span> <span class="inlinecode">12;</span> <span class="inlinecode">14;</span> <span class="inlinecode">18</span>&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-The tail of this list, <span class="inlinecode">12::14::18::<span class="id" type="var">nil</span></span>, is not disturbed or
-   rebuilt by the <span class="inlinecode"><span class="id" type="var">insert</span></span> algorithm.  The nodes <span class="inlinecode">1::3::4::7::_</span> are
-   new, constructed by <span class="inlinecode"><span class="id" type="var">insert</span></span>.  The first three nodes of the old
-   list, <span class="inlinecode">1::3::4::_</span> will likely be garbage-collected, if no other
+The tail of this list, <span class="inlinecode">12::14::18::<span class="id" title="var">nil</span></span>, is not disturbed or
+   rebuilt by the <span class="inlinecode"><span class="id" title="var">insert</span></span> algorithm.  The nodes <span class="inlinecode">1::3::4::7::<span class="id" title="var">_</span></span> are
+   new, constructed by <span class="inlinecode"><span class="id" title="var">insert</span></span>.  The first three nodes of the old
+   list, <span class="inlinecode">1::3::4::<span class="id" title="var">_</span></span> will likely be garbage-collected, if no other
    data structure is still pointing at them.  Thus, in this typical
    case,
-
-<div class="paragraph"> </div>
-
 <ul class="doclist">
 <li> Time cost = 4X
 
@@ -139,38 +140,40 @@ The tail of this list, <span class="inlinecode">12::14::18::<span class="id" typ
 
 <div class="paragraph"> </div>
 
-   We will not _prove_ such things about the time and space cost, but
-   they are _true_ anyway, and we should keep them in
+   We will not <i>prove</i> such things about the time and space cost, but
+   they are <i>true</i> anyway, and we should keep them in
    consideration. 
 </div>
 
 <div class="doc">
-<a name="lab23"></a><h1 class="section">Specification of Correctness</h1>
+<a name="lab24"></a><h1 class="section">Specification of Correctness</h1>
 
 <div class="paragraph"> </div>
 
  A sorting algorithm must rearrange the elements into a list that
     is totally ordered. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Inductive</span> <span class="id" type="var">sorted</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span> → <span class="id" type="keyword">Prop</span> := <br/>
-| <span class="id" type="var">sorted_nil</span>:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> <span class="id" type="var">nil</span><br/>
-| <span class="id" type="var">sorted_1</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span>,<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">sorted</span> (<span class="id" type="var">x</span>::<span class="id" type="var">nil</span>)<br/>
-| <span class="id" type="var">sorted_cons</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">y</span> <span class="id" type="var">l</span>,<br/>
-&nbsp;&nbsp;&nbsp;<span class="id" type="var">x</span> ≤ <span class="id" type="var">y</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">y</span>::<span class="id" type="var">l</span>) → <span class="id" type="var">sorted</span> (<span class="id" type="var">x</span>::<span class="id" type="var">y</span>::<span class="id" type="var">l</span>).<br/>
+<br/>
+<span class="id" title="keyword">Inductive</span> <a name="sorted"><span class="id" title="inductive">sorted</span></a>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span> := <br/>
+| <a name="sorted_nil"><span class="id" title="constructor">sorted_nil</span></a>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a><br/>
+| <a name="sorted_1"><span class="id" title="constructor">sorted_1</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span>,<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Sort.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nil"><span class="id" title="constructor">nil</span></a>)<br/>
+| <a name="sorted_cons"><span class="id" title="constructor">sorted_cons</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> <span class="id" title="var">l</span>,<br/>
+&nbsp;&nbsp;&nbsp;<a class="idref" href="Sort.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#9b077c369e19739ef880736ba34623ff"><span class="id" title="notation">≤</span></a> <a class="idref" href="Sort.html#y"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Sort.html#y"><span class="id" title="variable">y</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Sort.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="Sort.html#y"><span class="id" title="variable">y</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>).<br/>
 </div>
 
 <div class="doc">
 Is this really the right definition of what it means for a list to
     be sorted?  One might have thought that it should go more like this: 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">sorted'</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) :=<br/>
-&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">i</span> <span class="id" type="var">j</span>, <span class="id" type="var">i</span> &lt; <span class="id" type="var">j</span> &lt; <span class="id" type="var">length</span> <span class="id" type="var">al</span> → <span class="id" type="var">nth</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span> 0 ≤ <span class="id" type="var">nth</span> <span class="id" type="var">j</span> <span class="id" type="var">al</span> 0.<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="sorted'"><span class="id" title="definition">sorted'</span></a> (<span class="id" title="var">al</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) :=<br/>
+&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">i</span> <span class="id" title="var">j</span>, <a class="idref" href="Sort.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#432e31800fc09abd260feb634dbbd1af"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="Sort.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#432e31800fc09abd260feb634dbbd1af"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#nth"><span class="id" title="definition">nth</span></a> <a class="idref" href="Sort.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> 0 <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#9b077c369e19739ef880736ba34623ff"><span class="id" title="notation">≤</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#nth"><span class="id" title="definition">nth</span></a> <a class="idref" href="Sort.html#j"><span class="id" title="variable">j</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> 0.<br/>
 </div>
 
 <div class="doc">
@@ -179,258 +182,271 @@ This is a reasonable definition too.  It should be equivalent.
     equivalent.  For now, let's use the first one to define what it
     means to be a correct sorting algorthm. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Definition</span> <span class="id" type="var">is_a_sorting_algorithm</span> (<span class="id" type="var">f</span>: <span class="id" type="var">list</span> <span class="id" type="var">nat</span> → <span class="id" type="var">list</span> <span class="id" type="var">nat</span>) :=<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">al</span>, <span class="id" type="var">Permutation</span> <span class="id" type="var">al</span> (<span class="id" type="var">f</span> <span class="id" type="var">al</span>) ∧ <span class="id" type="var">sorted</span> (<span class="id" type="var">f</span> <span class="id" type="var">al</span>).<br/>
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="is_a_sorting_algorithm"><span class="id" title="definition">is_a_sorting_algorithm</span></a> (<span class="id" title="var">f</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">al</span>, <a class="idref" href="http://coq.inria.fr/library//Coq.Sorting.Permutation.html#Permutation"><span class="id" title="inductive">Permutation</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> (<a class="idref" href="Sort.html#f"><span class="id" title="variable">f</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a>) <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d82a7d96d3659d805ffe732283716822"><span class="id" title="notation">∧</span></a> <a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Sort.html#f"><span class="id" title="variable">f</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a>).<br/>
 </div>
 
 <div class="doc">
-The result <span class="inlinecode">(<span class="id" type="var">f</span></span> <span class="inlinecode"><span class="id" type="var">al</span>)</span> should not only be a <span class="inlinecode"><span class="id" type="var">sorted</span></span> sequence,
+The result <span class="inlinecode">(<span class="id" title="var">f</span></span> <span class="inlinecode"><span class="id" title="var">al</span>)</span> should not only be a <span class="inlinecode"><span class="id" title="var">sorted</span></span> sequence,
     but it should be some rearrangement (Permutation) of the input sequence. 
 </div>
+<div class="code">
+</div>
 
 <div class="doc">
-<a name="lab24"></a><h1 class="section">Proof of Correctness</h1>
+<a name="lab25"></a><h1 class="section">Proof of Correctness</h1>
 
 <div class="paragraph"> </div>
 
-<a name="lab25"></a><h4 class="section">练习：3 星, standard (insert_perm)</h4>
- Prove the following auxiliary lemma, <span class="inlinecode"><span class="id" type="var">insert_perm</span></span>, which will be
-    useful for proving <span class="inlinecode"><span class="id" type="var">sort_perm</span></span> below.  Your proof will be by
+<a name="lab26"></a><h4 class="section">练习：3 星, standard (insert_perm)</h4>
+ Prove the following auxiliary lemma, <span class="inlinecode"><span class="id" title="var">insert_perm</span></span>, which will be
+    useful for proving <span class="inlinecode"><span class="id" title="var">sort_perm</span></span> below.  Your proof will be by
     induction, but you'll need some of the permutation facts from the
-    library, so first remind yourself by doing <span class="inlinecode"><span class="id" type="var">Search</span></span>. 
+    library, so first remind yourself by doing <span class="inlinecode"><span class="id" title="keyword">Search</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="var">Search</span> <span class="id" type="var">Permutation</span>.<br/><hr class='doublespaceincode'/>
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_perm</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">x</span> <span class="id" type="var">l</span>, <span class="id" type="var">Permutation</span> (<span class="id" type="var">x</span>::<span class="id" type="var">l</span>) (<span class="id" type="var">insert</span> <span class="id" type="var">x</span> <span class="id" type="var">l</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Search</span> <a class="idref" href="http://coq.inria.fr/library//Coq.Sorting.Permutation.html#Permutation"><span class="id" title="inductive">Permutation</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Lemma</span> <a name="insert_perm"><span class="id" title="lemma">insert_perm</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">x</span> <span class="id" title="var">l</span>, <a class="idref" href="http://coq.inria.fr/library//Coq.Sorting.Permutation.html#Permutation"><span class="id" title="inductive">Permutation</span></a> (<a class="idref" href="Sort.html#x"><span class="id" title="variable">x</span></a><a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#0a8150c3c4df34d205c5ed9a427e2ed<sub>5</sub>"><span class="id" title="notation">::</span></a><a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>) (<a class="idref" href="Sort.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Sort.html#x"><span class="id" title="variable">x</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab26"></a><h4 class="section">练习：3 星, standard (sort_perm)</h4>
+<a name="lab27"></a><h4 class="section">练习：3 星, standard (sort_perm)</h4>
  Now prove that sort is a permutation. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">sort_perm</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">l</span>, <span class="id" type="var">Permutation</span> <span class="id" type="var">l</span> (<span class="id" type="var">sort</span> <span class="id" type="var">l</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="sort_perm"><span class="id" title="lemma">sort_perm</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">l</span>, <a class="idref" href="http://coq.inria.fr/library//Coq.Sorting.Permutation.html#Permutation"><span class="id" title="inductive">Permutation</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a> (<a class="idref" href="Sort.html#sort"><span class="id" title="definition">sort</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab27"></a><h4 class="section">练习：4 星, standard (insert_sorted)</h4>
+<a name="lab28"></a><h4 class="section">练习：4 星, standard (insert_sorted)</h4>
  This one is a bit tricky.  However, there just a single induction
-   right at the beginning, and you do _not_ need to use <span class="inlinecode"><span class="id" type="var">insert_perm</span></span>
-   or <span class="inlinecode"><span class="id" type="var">sort_perm</span></span>. 
+   right at the beginning, and you do <i>not</i> need to use <span class="inlinecode"><span class="id" title="var">insert_perm</span></span>
+   or <span class="inlinecode"><span class="id" title="var">sort_perm</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_sorted</span>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">a</span> <span class="id" type="var">l</span>, <span class="id" type="var">sorted</span> <span class="id" type="var">l</span> → <span class="id" type="var">sorted</span> (<span class="id" type="var">insert</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Lemma</span> <a name="insert_sorted"><span class="id" title="lemma">insert_sorted</span></a>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">a</span> <span class="id" title="var">l</span>, <a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Sort.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Sort.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab28"></a><h4 class="section">练习：2 星, standard (sort_sorted)</h4>
+<a name="lab29"></a><h4 class="section">练习：2 星, standard (sort_sorted)</h4>
  This one is easy.   
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">sort_sorted</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">l</span>, <span class="id" type="var">sorted</span> (<span class="id" type="var">sort</span> <span class="id" type="var">l</span>).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="sort_sorted"><span class="id" title="lemma">sort_sorted</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">l</span>, <a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> (<a class="idref" href="Sort.html#sort"><span class="id" title="definition">sort</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>).<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
  Now we wrap it all up.  
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">insertion_sort_correct</span>:<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">is_a_sorting_algorithm</span> <span class="id" type="var">sort</span>.<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" type="tactic">split</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">sort_perm</span>. <span class="id" type="tactic">apply</span> <span class="id" type="var">sort_sorted</span>.<br/>
-<span class="id" type="keyword">Qed</span>.<br/>
+<br/>
+<span class="id" title="keyword">Theorem</span> <a name="insertion_sort_correct"><span class="id" title="lemma">insertion_sort_correct</span></a>:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Sort.html#is_a_sorting_algorithm"><span class="id" title="definition">is_a_sorting_algorithm</span></a> <a class="idref" href="Sort.html#sort"><span class="id" title="definition">sort</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">split</span>. <span class="id" title="tactic">apply</span> <a class="idref" href="Sort.html#sort_perm"><span class="id" title="axiom">sort_perm</span></a>. <span class="id" title="tactic">apply</span> <a class="idref" href="Sort.html#sort_sorted"><span class="id" title="axiom">sort_sorted</span></a>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
 </div>
 
 <div class="doc">
-<a name="lab29"></a><h1 class="section">Making Sure the Specification is Right</h1>
+<a name="lab30"></a><h1 class="section">Making Sure the Specification is Right</h1>
 
 <div class="paragraph"> </div>
 
- It's really important to get the _specification_ right.  You can
+ It's really important to get the <i>specification</i> right.  You can
     prove that your program satisfies its specification (and Coq will
     check that proof for you), but you can't prove that you have the
     right specification.  Therefore, we take the trouble to write two
-    different specifications of sortedness (<span class="inlinecode"><span class="id" type="var">sorted</span></span> and <span class="inlinecode"><span class="id" type="var">sorted'</span></span>),
+    different specifications of sortedness (<span class="inlinecode"><span class="id" title="var">sorted</span></span> and <span class="inlinecode"><span class="id" title="var">sorted'</span></span>),
     and prove that they mean the same thing.  This increases our
     confidence that we have the right specification, though of course
-    it doesn't _prove_ that we do. 
+    it doesn't <i>prove</i> that we do. 
 <div class="paragraph"> </div>
 
-<a name="lab30"></a><h4 class="section">练习：4 星, standard, optional (sorted_sorted')</h4>
+<a name="lab31"></a><h4 class="section">练习：4 星, standard, optional (sorted_sorted')</h4>
 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">sorted_sorted'</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">al</span>, <span class="id" type="var">sorted</span> <span class="id" type="var">al</span> → <span class="id" type="var">sorted'</span> <span class="id" type="var">al</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Lemma</span> <a name="sorted_sorted'"><span class="id" title="lemma">sorted_sorted'</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">al</span>, <a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Sort.html#sorted'"><span class="id" title="definition">sorted'</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a>.<br/>
 </div>
 
 <div class="doc">
-Hint: Instead of doing induction on the list <span class="inlinecode"><span class="id" type="var">al</span></span>, do induction
-    on the _sortedness_ of <span class="inlinecode"><span class="id" type="var">al</span></span>. This proof is a bit tricky, so
+Hint: Instead of doing induction on the list <span class="inlinecode"><span class="id" title="var">al</span></span>, do induction
+    on the <i>sortedness</i> of <span class="inlinecode"><span class="id" title="var">al</span></span>. This proof is a bit tricky, so
     you may have to think about how to approach it, and try out
     one or two different ideas.
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab31"></a><h4 class="section">练习：3 星, standard, optional (sorted</b>sorted)</h4>
+<a name="lab32"></a><h4 class="section">练习：3 星, standard, optional (sorted'_sorted)</h4>
 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">sorted'_sorted</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">al</span>, <span class="id" type="var">sorted'</span> <span class="id" type="var">al</span> → <span class="id" type="var">sorted</span> <span class="id" type="var">al</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Lemma</span> <a name="sorted'_sorted"><span class="id" title="lemma">sorted'_sorted</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">al</span>, <a class="idref" href="Sort.html#sorted'"><span class="id" title="definition">sorted'</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Sort.html#sorted"><span class="id" title="inductive">sorted</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a>.<br/>
 </div>
 
 <div class="doc">
 Here, you can't do induction on the sorted'-ness of the list,
-    because <span class="inlinecode"><span class="id" type="var">sorted'</span></span> is not an inductive predicate. 
+    because <span class="inlinecode"><span class="id" title="var">sorted'</span></span> is not an inductive predicate. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="id" type="keyword">Proof</span>.<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab32"></a><h1 class="section">Proving Correctness from the Alternate Spec</h1>
+<a name="lab33"></a><h1 class="section">Proving Correctness from the Alternate Spec</h1>
 
 <div class="paragraph"> </div>
 
  Depending on how you write the specification of a program, it can
-    be _much_ harder or easier to prove correctness.  We saw that the
-    predicates <span class="inlinecode"><span class="id" type="var">sorted</span></span> and <span class="inlinecode"><span class="id" type="var">sorted'</span></span> are equivalent; but it is really
+    be <i>much</i> harder or easier to prove correctness.  We saw that the
+    predicates <span class="inlinecode"><span class="id" title="var">sorted</span></span> and <span class="inlinecode"><span class="id" title="var">sorted'</span></span> are equivalent; but it is really
     difficult to prove correctness of insertion sort directly from
-    <span class="inlinecode"><span class="id" type="var">sorted'</span></span>.
+    <span class="inlinecode"><span class="id" title="var">sorted'</span></span>.
 
 <div class="paragraph"> </div>
 
     Try it yourself, if you dare!  I managed it, but my proof is quite
     long and complicated.  I found that I needed all these facts:
-
-<div class="paragraph"> </div>
-
 <ul class="doclist">
-<li> <span class="inlinecode"><span class="id" type="var">insert_perm</span></span>, <span class="inlinecode"><span class="id" type="var">sort_perm</span></span>
+<li> <span class="inlinecode"><span class="id" title="var">insert_perm</span></span>, <span class="inlinecode"><span class="id" title="var">sort_perm</span></span>
 
 </li>
-<li> <span class="inlinecode"><span class="id" type="var">Forall_perm</span></span>, <span class="inlinecode"><span class="id" type="var">Permutation_length</span></span>
+<li> <span class="inlinecode"><span class="id" title="var">Forall_perm</span></span>, <span class="inlinecode"><span class="id" title="var">Permutation_length</span></span>
 
 </li>
-<li> <span class="inlinecode"><span class="id" type="var">Permutation_sym</span></span>, <span class="inlinecode"><span class="id" type="var">Permutation_trans</span></span>
+<li> <span class="inlinecode"><span class="id" title="var">Permutation_sym</span></span>, <span class="inlinecode"><span class="id" title="var">Permutation_trans</span></span>
 
 </li>
-<li> a new lemma <span class="inlinecode"><span class="id" type="var">Forall_nth</span></span>, stated below.
+<li> a new lemma <span class="inlinecode"><span class="id" title="var">Forall_nth</span></span>, stated below.
 
 </li>
 </ul>
+
+<div class="paragraph"> </div>
+
     Maybe you will find a better way that's not so complicated.
 
 <div class="paragraph"> </div>
 
-    DO NOT USE <span class="inlinecode"><span class="id" type="var">sorted_sorted'</span></span>, <span class="inlinecode"><span class="id" type="var">sorted'_sorted</span></span>, <span class="inlinecode"><span class="id" type="var">insert_sorted</span></span>, or
-    <span class="inlinecode"><span class="id" type="var">sort_sorted</span></span> in these proofs! 
+    DO NOT USE <span class="inlinecode"><span class="id" title="var">sorted_sorted'</span></span>, <span class="inlinecode"><span class="id" title="var">sorted'_sorted</span></span>, <span class="inlinecode"><span class="id" title="var">insert_sorted</span></span>, or
+    <span class="inlinecode"><span class="id" title="var">sort_sorted</span></span> in these proofs! 
 <div class="paragraph"> </div>
 
-<a name="lab33"></a><h4 class="section">练习：3 星, standard, optional (Forall_nth)</h4>
+<a name="lab34"></a><h4 class="section">练习：3 星, standard, optional (Forall_nth)</h4>
 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">Forall_nth</span>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span>{<span class="id" type="var">A</span>: <span class="id" type="keyword">Type</span>} (<span class="id" type="var">P</span>: <span class="id" type="var">A</span> → <span class="id" type="keyword">Prop</span>) <span class="id" type="var">d</span> (<span class="id" type="var">al</span>: <span class="id" type="var">list</span> <span class="id" type="var">A</span>),<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" type="var">Forall</span> <span class="id" type="var">P</span> <span class="id" type="var">al</span> ↔ (<span style='font-size:120%;'>&forall;</span><span class="id" type="var">i</span>,  <span class="id" type="var">i</span> &lt; <span class="id" type="var">length</span> <span class="id" type="var">al</span> → <span class="id" type="var">P</span> (<span class="id" type="var">nth</span> <span class="id" type="var">i</span> <span class="id" type="var">al</span> <span class="id" type="var">d</span>)).<br/>
-<span class="id" type="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Lemma</span> <a name="Forall_nth"><span class="id" title="lemma">Forall_nth</span></a>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> {<span class="id" title="var">A</span>: <span class="id" title="keyword">Type</span>} (<span class="id" title="var">P</span>: <a class="idref" href="Sort.html#A"><span class="id" title="variable">A</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span>) <span class="id" title="var">d</span> (<span class="id" title="var">al</span>: <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#list"><span class="id" title="inductive">list</span></a> <a class="idref" href="Sort.html#A"><span class="id" title="variable">A</span></a>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#Forall"><span class="id" title="inductive">Forall</span></a> <a class="idref" href="Sort.html#P"><span class="id" title="variable">P</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#df1ced36fc33ce188051218bca314374"><span class="id" title="notation">↔</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#df1ced36fc33ce188051218bca314374"><span class="id" title="notation">(</span></a><span class="id" title="keyword">∀</span> <span class="id" title="var">i</span>,  <a class="idref" href="Sort.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Peano.html#989c98e7ddd65d5bf37c334ff2076de<sub>8</sub>"><span class="id" title="notation">&lt;</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Datatypes.html#length"><span class="id" title="definition">length</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Sort.html#P"><span class="id" title="variable">P</span></a> (<a class="idref" href="http://coq.inria.fr/library//Coq.Lists.List.html#nth"><span class="id" title="definition">nth</span></a> <a class="idref" href="Sort.html#i"><span class="id" title="variable">i</span></a> <a class="idref" href="Sort.html#al"><span class="id" title="variable">al</span></a> <a class="idref" href="Sort.html#d"><span class="id" title="variable">d</span></a>)<a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#df1ced36fc33ce188051218bca314374"><span class="id" title="notation">)</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
-<div class="paragraph"> </div>
-
-<a name="lab34"></a><h4 class="section">练习：4 星, standard, optional (insert_sorted')</h4>
-
-</div>
-<div class="code code-space">
-<span class="id" type="keyword">Lemma</span> <span class="id" type="var">insert_sorted'</span>:<br/>
-&nbsp;&nbsp;<span style='font-size:120%;'>&forall;</span><span class="id" type="var">a</span> <span class="id" type="var">l</span>, <span class="id" type="var">sorted'</span> <span class="id" type="var">l</span> → <span class="id" type="var">sorted'</span> (<span class="id" type="var">insert</span> <span class="id" type="var">a</span> <span class="id" type="var">l</span>).<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
-</div>
-
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
 <a name="lab35"></a><h4 class="section">练习：4 星, standard, optional (insert_sorted')</h4>
 
 </div>
-<div class="code code-space">
-<span class="id" type="keyword">Theorem</span> <span class="id" type="var">sort_sorted'</span>: <span style='font-size:120%;'>&forall;</span><span class="id" type="var">l</span>, <span class="id" type="var">sorted'</span> (<span class="id" type="var">sort</span> <span class="id" type="var">l</span>).<br/>
-<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" type="var">Admitted</span>.<br/>
+<div class="code">
+<span class="id" title="keyword">Lemma</span> <a name="insert_sorted'"><span class="id" title="lemma">insert_sorted'</span></a>:<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">∀</span> <span class="id" title="var">a</span> <span class="id" title="var">l</span>, <a class="idref" href="Sort.html#sorted'"><span class="id" title="definition">sorted'</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a> <a class="idref" href="http://coq.inria.fr/library//Coq.Init.Logic.html#d43e996736952df71ebeeae74d10a287"><span class="id" title="notation">→</span></a> <a class="idref" href="Sort.html#sorted'"><span class="id" title="definition">sorted'</span></a> (<a class="idref" href="Sort.html#insert"><span class="id" title="definition">insert</span></a> <a class="idref" href="Sort.html#a"><span class="id" title="variable">a</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
 </div>
 
-<span class="proofbox">&#9744;</span> 
-<div class="doc less-space">
+<div class="doc"> 
 <div class="paragraph"> </div>
 
-<a name="lab36"></a><h2 class="section">The Moral of This Story</h2>
+<a name="lab36"></a><h4 class="section">练习：4 星, standard, optional (insert_sorted')</h4>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Theorem</span> <a name="sort_sorted'"><span class="id" title="lemma">sort_sorted'</span></a>: <span class="id" title="keyword">∀</span> <span class="id" title="var">l</span>, <a class="idref" href="Sort.html#sorted'"><span class="id" title="definition">sorted'</span></a> (<a class="idref" href="Sort.html#sort"><span class="id" title="definition">sort</span></a> <a class="idref" href="Sort.html#l"><span class="id" title="variable">l</span></a>).<br/>
+<span class="comment">(*&nbsp;请在此处解答&nbsp;*)</span> <span class="id" title="var">Admitted</span>.<br/>
+<font size=-2>&#9744;</font>
+</div>
+
+<div class="doc"> 
+<div class="paragraph"> </div>
+
+<a name="lab37"></a><h2 class="section">The Moral of This Story</h2>
 
 <div class="paragraph"> </div>
 
- The proofs of <span class="inlinecode"><span class="id" type="var">insert_sorted</span></span> and <span class="inlinecode"><span class="id" type="var">sort_sorted</span></span> were easy; the
-    proofs of <span class="inlinecode"><span class="id" type="var">insert_sorted'</span></span> and <span class="inlinecode"><span class="id" type="var">sort_sorted'</span></span> were difficult; and
-    yet <span class="inlinecode"><span class="id" type="var">sorted</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" type="var">sorted'</span></span> <span class="inlinecode"><span class="id" type="var">al</span></span>.  _Different formulations of the
+ The proofs of <span class="inlinecode"><span class="id" title="var">insert_sorted</span></span> and <span class="inlinecode"><span class="id" title="var">sort_sorted</span></span> were easy; the
+    proofs of <span class="inlinecode"><span class="id" title="var">insert_sorted'</span></span> and <span class="inlinecode"><span class="id" title="var">sort_sorted'</span></span> were difficult; and
+    yet <span class="inlinecode"><span class="id" title="var">sorted</span></span> <span class="inlinecode"><span class="id" title="var">al</span></span> <span class="inlinecode">↔</span> <span class="inlinecode"><span class="id" title="var">sorted'</span></span> <span class="inlinecode"><span class="id" title="var">al</span></span>.  <i>Different formulations of the
     functional specification can lead to great differences in the
-    difficulty of the correctness proofs_.
+    difficulty of the correctness proofs</i>.
 
 <div class="paragraph"> </div>
 
-   Suppose someone required you to prove <span class="inlinecode"><span class="id" type="var">sort_sorted'</span></span>, and never
-   mentioned the <span class="inlinecode"><span class="id" type="var">sorted</span></span> predicate to you.  Instead of proving
-   <span class="inlinecode"><span class="id" type="var">sort_sorted'</span></span> directly, it would be much easier to design a new
-   predicate (<span class="inlinecode"><span class="id" type="var">sorted</span></span>), and then prove <span class="inlinecode"><span class="id" type="var">sort_sorted</span></span> and
-   <span class="inlinecode"><span class="id" type="var">sorted_sorted'</span></span>. 
+   Suppose someone required you to prove <span class="inlinecode"><span class="id" title="var">sort_sorted'</span></span>, and never
+   mentioned the <span class="inlinecode"><span class="id" title="var">sorted</span></span> predicate to you.  Instead of proving
+   <span class="inlinecode"><span class="id" title="var">sort_sorted'</span></span> directly, it would be much easier to design a new
+   predicate (<span class="inlinecode"><span class="id" title="var">sorted</span></span>), and then prove <span class="inlinecode"><span class="id" title="var">sort_sorted</span></span> and
+   <span class="inlinecode"><span class="id" title="var">sorted_sorted'</span></span>. 
 </div>
-<div class="code code-tight">
+<div class="code">
 
-<span class="comment">(*&nbsp;Sun&nbsp;Jan&nbsp;5&nbsp;03:20:53&nbsp;UTC&nbsp;2020&nbsp;*)</span><br/>
+<br/>
+<span class="comment">(*&nbsp;2020年1月16日&nbsp;*)</span><br/>
 </div>
 </div>
 
-
+<div id="footer">
+<hr/><a href="coqindex.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
 
 </div>
 

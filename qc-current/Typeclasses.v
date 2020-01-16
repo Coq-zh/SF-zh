@@ -147,11 +147,11 @@ Instance showNat : Show nat :=
 
 Compute (show 42).
 
-(** **** 练习：1 星, standard (showNatBool)  
+(** **** 练习：1 星, standard (showNatBool) 
 
     Write a [Show] instance for pairs of a nat and a bool. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -188,11 +188,11 @@ Compute (showTwo Red Green).
     instance of [show] determines which of the implicitly supplied
     show functions (for [A] or [B]) gets invoked. *)
 
-(** **** 练习：1 星, standard (missingConstraint)  
+(** **** 练习：1 星, standard (missingConstraint) 
 
     What happens if we forget the class constraints in the definitions
     of [showOne] or [showTwo]?  Try deleting them and see what
-    happens. 
+    happens.
 
     [] *)    
 
@@ -239,13 +239,13 @@ Instance eqNat : Eq nat :=
     types.  In particular, equality at types like [nat->nat] is
     undecidable. *)
 
-(** **** 练习：3 星, standard, optional (boolArrowBool)  
+(** **** 练习：3 星, standard, optional (boolArrowBool) 
 
     There are some function types, like [bool->bool], for which
     checking equality makes perfect sense.  Write an [Eq] instance for
     this type. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -291,22 +291,22 @@ Instance showList {A : Type} `{Show A} : Show (list A) :=
     show l := append "[" (append (showListAux show l) "]")
   }.
 
-(** **** 练习：3 星, standard (eqEx)  
+(** **** 练习：3 星, standard (eqEx) 
 
     Write an [Eq] instance for lists and [Show] and [Eq] instances for
     the [option] type constructor. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：3 星, standard, optional (boolArrowA)  
+(** **** 练习：3 星, standard, optional (boolArrowA) 
 
     Generalize your solution to the [boolArrowBool] exercise to build
     an equality instance for any type of the form [bool->A], where [A]
     itself is an [Eq] type.  Show that it works for [bool->bool->nat]. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -363,26 +363,26 @@ Instance natOrd : Ord nat :=
 Definition max {A: Type} `{Eq A} `{Ord A} (x y : A) : A :=
   if le x y then y else x.
 
-(** **** 练习：1 星, standard (missingConstraintAgain)  
+(** **** 练习：1 星, standard (missingConstraintAgain) 
 
     What does Coq say if the [Ord] class constraint is left out of the
-    definition of [max]?  What about the [Eq] class constraint? 
+    definition of [max]?  What about the [Eq] class constraint?
 
     [] *)    
 
-(** **** 练习：3 星, standard (ordMisc)  
+(** **** 练习：3 星, standard (ordMisc) 
 
     Define [Ord] instances for options and pairs. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：3 星, standard (ordList)  
+(** **** 练习：3 星, standard (ordList) 
 
     For a little more practice, define an [Ord] instance for lists. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -637,10 +637,10 @@ Check {| lx:=2; ly:=4; label:="hello" |}.
         : LabeledPoint string
 *)
 
-(** **** 练习：1 星, standard (rcdParens)  
+(** **** 练习：1 星, standard (rcdParens) 
 
     Note that the [A] parameter in the definition of [LabeledPoint] is
-    bound with parens, not curly braces. Why is this a better choice? 
+    bound with parens, not curly braces. Why is this a better choice?
 
     [] *)
 
@@ -729,13 +729,13 @@ Unset Printing Implicit.
     value using a variant of the [eauto] proof search procedure that
     refers to a "hint database" called [typeclass_instances]. *)
 
-(** **** 练习：1 星, standard (HintDb)  
+(** **** 练习：1 星, standard (HintDb) 
 
     Uncomment and execute the following command.  Search for "For
     Show" in the output and have a look at the entries for [showNat]
     and [showPair]. *)
 
-(* Print HintDb typeclass_instances. 
+(* Print HintDb typeclass_instances.
 
     [] *)
 
@@ -824,22 +824,11 @@ Instance eqdecNat : EqDec nat :=
   }.
 
 (** If we do not happen to have an appropriate proof already in the
-    environment, we can simply omit it.  If the [Instance] declaration
-    does not give values for all the class members, Coq will enter
+    environment, we can simply omit it. Coq will enter
     proof mode and ask the user to use tactics to construct
-    inhabitants for the remaining fields. *)
+    inhabitants for the fields. *)
 
-Instance eqdecBool' : EqDec bool := 
-  {
-  }.
-Proof.
-  intros x y. destruct x; destruct y; simpl; unfold iff; auto.
-Defined.
-
-(** (If we are omitting _all_ the fields of an instance declaration,
-    we can also omit the [:= {}] if we like.  Note that the proof
-    needs one more line.) *)
-Instance eqdecBool'' : EqDec bool.
+Instance eqdecBool' : EqDec bool.
 Proof.
   constructor.
   intros x y. destruct x; destruct y; simpl; unfold iff; auto.
@@ -957,16 +946,16 @@ Proof.
       right; intro; destruct H; contradiction.
 Defined.
 
-(** **** 练习：3 星, standard (dec_neg_disj)  
+(** **** 练习：3 星, standard (dec_neg_disj) 
 
     Give instance declarations showing that, if [P] and [Q] are
     decidable propositions, then so are [~P] and [P\/Q]. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：4 星, standard (Dec_All)  
+(** **** 练习：4 星, standard (Dec_All) 
 
     The following function converts a list into a proposition claiming
     that every element of that list satiesfies some proposition
@@ -981,7 +970,7 @@ Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop :=
 (** Create an instance of [Dec] for [All P l], given that [P a] is
     decidable for every [a]. *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -1062,9 +1051,9 @@ Open Scope monad_scope.
          ret : forall {T : Type}, T -> M T ;
          bind : forall {T U : Type}, M T -> (T -> M U) -> M U
        }.
-
-    That is, a type family [M] is an instance of the [Monad] class if
-    we can define functions [ret] and [bind] of the appropriate types. 
+*)
+(** That is, a type family [M] is an instance of the [Monad] class if
+    we can define functions [ret] and [bind] of the appropriate types.
 
     (If you [Print] the actual definition, you'll see something more
     complicated, involving [Polymorphic Record bla bla]...  The
@@ -1231,9 +1220,9 @@ Fail Check (foo true).
     The lesson is that it matters a great deal _exactly_ what problems
     are posed to the instance search engine. *)
 
-(** **** 练习：1 星, standard (debugDefaulting)  
+(** **** 练习：1 星, standard (debugDefaulting) 
 
-    Do [Set Typeclasses Debug] and verify that this is what happened. 
+    Do [Set Typeclasses Debug] and verify that this is what happened.
 
     [] *)
 
@@ -1470,7 +1459,7 @@ Compute e3.
 Definition e4 : list nat := mymap false.
 *)
 
-(** **** 练习：1 星, standard (nonterm)  
+(** **** 练习：1 星, standard (nonterm) 
 
     Why, exactly, did the search diverge?  Enable typeclass debugging,
     uncomment the above [Definition], and see what gets printed.  (You
@@ -1771,4 +1760,4 @@ Definition e4 : list nat := mymap false.
        http://learnyouahaskell.com/making-our-own-types-and-typeclasses
 *)
 
-(* Sun Jan 5 03:22:15 UTC 2020 *)
+(* 2020年1月16日 *)

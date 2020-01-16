@@ -62,7 +62,7 @@ Proof.
   intros st. simpl. omega.
 Qed.
 
-Theorem bequiv_example: bequiv (X - X = 0)%imp true.
+Theorem bequiv_example: bequiv (X - X = 0) true.
 Proof.
   intros st. unfold beval.
   rewrite aequiv_example. reflexivity.
@@ -102,7 +102,7 @@ Proof.
     assumption.
 Qed.
 
-(** **** 练习：2 星, standard (skip_right)  
+(** **** 练习：2 星, standard (skip_right) 
 
     请证明在某条指令之后添加 [SKIP] 后，两程序会等价 *)
 
@@ -129,9 +129,9 @@ Proof.
     apply E_IfTrue. reflexivity. assumption.  Qed.
 
 (** 当然，人类程序员是不会写把断言（guard）直接写成 [true] 的条件分支的。
-    不过当断言_'等价于真'_的情况时就会写出来： 
+    不过当断言_'等价于真'_的情况时就会写出来：
 
-    _'定理'_：若 [b] 等价于 [BTrue]，则 [TEST b THEN c1 ELSE c2 FI] 等价于 [c1]。 
+    _'定理'_：若 [b] 等价于 [BTrue]，则 [TEST b THEN c1 ELSE c2 FI] 等价于 [c1]。
    _'证明'_：
 
      - ([->]) 我们必须证明，对于所有的 [st] 和 [st']，若 [st =[
@@ -192,7 +192,7 @@ Proof.
   (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (swap_if_branches)  
+(** **** 练习：3 星, standard (swap_if_branches) 
 
     证明我们可以通过对断言取反来交换 IF 的两个分支 *)
 
@@ -227,13 +227,13 @@ Proof.
     rewrite Hb.
     reflexivity.  Qed.
 
-(** **** 练习：2 星, advanced, optional (WHILE_false_informal)  
+(** **** 练习：2 星, advanced, optional (WHILE_false_informal) 
 
     写出 [WHILE_false] 的非形式化证明。
 
 (* 请在此处解答 *)
-
-    [] *)
+*)
+(** [] *)
 
 (** 为了证明第二个定理，我们需要一个辅助引理：[WHILE] 循环在其断言等价于 [BTrue]
     时不会停机。 *)
@@ -277,15 +277,15 @@ Proof.
   - (* E_WhileTrue *) (* 直接使用 IH *)
     apply IHceval2. reflexivity.  Qed.
 
-(** **** 练习：2 星, standard, optional (WHILE_true_nonterm_informal)  
+(** **** 练习：2 星, standard, optional (WHILE_true_nonterm_informal) 
 
     试解释 [WHILE_true_nonterm] 的含义。
 
 (* 请在此处解答 *)
+*)
+(** [] *)
 
-    [] *)
-
-(** **** 练习：2 星, standard, recommended (WHILE_true)  
+(** **** 练习：2 星, standard, recommended (WHILE_true) 
 
     请证明以下定理。_'提示'_：你可能需要使用 [WHILE_true_nonterm] 。 *)
 
@@ -646,12 +646,12 @@ Proof.
     + apply refl_cequiv.
 Qed.
 
-(** **** 练习：3 星, advanced, optional (not_congr)  
+(** **** 练习：3 星, advanced, optional (not_congr) 
 
     我们已经证明了 [cequiv] 关系对指令同时满足等价关系和一致性。
     你能想出一个对于指令满足等价关系但_'不满足'_一致性的关系吗？ *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -846,7 +846,7 @@ Proof.
          destruct (fold_constants_aexp a2);
          rewrite IHa1; rewrite IHa2; reflexivity). Qed.
 
-(** **** 练习：3 星, standard, optional (fold_bexp_Eq_informal)  
+(** **** 练习：3 星, standard, optional (fold_bexp_Eq_informal) 
 
     下面是布尔表达式常量折叠中 [BEq] 情况的可靠性的证明。
     请认真读完它再和之后的形式化证明作比较，然后补充完 [BLe] 情况的形式化证明
@@ -946,7 +946,6 @@ Proof.
 (** （当存在许多构造子时，使用归纳法会让给变量取名编程一件琐事，
     然而 Coq 并不总是能够选择足够好的变量名。我们可以使用 [rename] 重命名：
     策略 [rename a into a1] 会将当前目标和上下文中的 [a] 重命名为 [a1]。） *)
-
     remember (fold_constants_aexp a1) as a1' eqn:Heqa1'.
     remember (fold_constants_aexp a2) as a2' eqn:Heqa2'.
     replace (aeval st a1) with (aeval st a1') by
@@ -972,7 +971,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：3 星, standard (fold_constants_com_sound)  
+(** **** 练习：3 星, standard (fold_constants_com_sound) 
 
     完成以下证明的 [WHILE] 情况。 *)
 
@@ -1005,7 +1004,7 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** 再论 (0 + n) 优化的可靠性 *)
 
-(** **** 练习：4 星, advanced, optional (optimize_0plus)  
+(** **** 练习：4 星, advanced, optional (optimize_0plus) 
 
     回顾_'逻辑基础'_ [Imp] 一章中 [optimize_0plus] 的定义：
 
@@ -1041,7 +1040,7 @@ Proof.
 
    - 证明此优化程序有可靠性。（这部分应该会_'很简单'_ 。）  *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
@@ -1167,7 +1166,7 @@ Proof.
     by (rewrite Hcontra; reflexivity).
   subst. inversion Hcontra'.  Qed.
 
-(** **** 练习：4 星, standard, optional (better_subst_equiv)  
+(** **** 练习：4 星, standard, optional (better_subst_equiv) 
 
     之前我们思考的等价关系也不全是妄言 -- 只要再增加一个条件，
     即变量 [X] 不在第一个赋值语句的右边出现，它就是正确的了。 *)
@@ -1196,11 +1195,11 @@ Proof.
 
 (** 使用 [var_not_used_in_aexp]，形式化并证明正确版本的 [subst_equiv_property]。 *)
 
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：3 星, standard (inequiv_exercise)  
+(** **** 练习：3 星, standard (inequiv_exercise) 
 
     证明无限循环不等价于 [SKIP] *)
 
@@ -1268,7 +1267,7 @@ Notation "'TEST' e1 'THEN' e2 'ELSE' e3 'FI'" :=
 Notation "'HAVOC' l" :=
   (CHavoc l) (at level 60) : imp_scope.
 
-(** **** 练习：2 星, standard (himp_ceval)  
+(** **** 练习：2 星, standard (himp_ceval) 
 
     现在，我们必须扩展操作语义。前面我们已经提过了 [ceval] 关系的模版，
     指定了大步语义。为了形式化 [HAVOC] 指令的行为，我们还需要在 [ceval]
@@ -1330,7 +1329,7 @@ Definition cequiv (c1 c2 : com) : Prop := forall st st' : state,
 
 (** 我们应用此定义来证明一些非确定性程序是否等价。 *)
 
-(** **** 练习：3 星, standard (havoc_swap)  
+(** **** 练习：3 星, standard (havoc_swap) 
 
     以下两个程序是否等价？ *)
 
@@ -1347,7 +1346,7 @@ Theorem pXY_cequiv_pYX :
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, standard, optional (havoc_copy)  
+(** **** 练习：4 星, standard, optional (havoc_copy) 
 
     以下两个程序是否等价？ *)
 
@@ -1371,7 +1370,7 @@ Proof. (* 请在此处解答 *) Admitted.
     以下练习的最后一部分展示了这种现象。
 *)
 
-(** **** 练习：4 星, advanced (p1_p2_term)  
+(** **** 练习：4 星, advanced (p1_p2_term) 
 
     考虑一下指令： *)
 
@@ -1399,7 +1398,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced (p1_p2_equiv)  
+(** **** 练习：4 星, advanced (p1_p2_equiv) 
 
     使用这两个引理来证明 [p1] 和 [p2] 确实等价。 *)
 
@@ -1407,7 +1406,7 @@ Theorem p1_p2_equiv : cequiv p1 p2.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced (p3_p4_inequiv)  
+(** **** 练习：4 星, advanced (p3_p4_inequiv) 
 
     证明以下程序_'不等价'_（提示：当 [p3] 停机时 [Z] 的值是什么？当
     [p4] 停机时呢？） *)
@@ -1427,7 +1426,7 @@ Theorem p3_p4_inequiv : ~ cequiv p3 p4.
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：5 星, advanced, optional (p5_p6_equiv)  
+(** **** 练习：5 星, advanced, optional (p5_p6_equiv) 
 
     证明以下指令等价。（提示：正如我们之前提到的，我们为 Himp 定义的
     [cequiv] 只考虑了可能的停机配置的集合：对于两个拥有相同起始状态 [st]
@@ -1451,7 +1450,7 @@ End Himp.
 (* ################################################################# *)
 (** * 附加练习 *)
 
-(** **** 练习：4 星, standard, optional (for_while_equiv)  
+(** **** 练习：4 星, standard, optional (for_while_equiv) 
 
     此练习是 [Imp] 一章中可选练习 [add_for_loop] 的扩展，
     就是那个让你扩展出类似 C 风格的 [for] 循环指令的练习。请证明指令：
@@ -1468,11 +1467,11 @@ End Himp.
          c2
        END
 *)
-(* 请在此处解答 
+(* 请在此处解答
 
     [] *)
 
-(** **** 练习：3 星, standard, optional (swap_noninterfering_assignments)  
+(** **** 练习：3 星, standard, optional (swap_noninterfering_assignments) 
 
     （提示：这里你需要 [functional_extensionality]。） *)
 
@@ -1487,7 +1486,7 @@ Proof.
 (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** **** 练习：4 星, advanced, optional (capprox)  
+(** **** 练习：4 星, advanced, optional (capprox) 
 
     在这个练习中我们定义了一个非对称的程序等价变形, 叫做
     _'程序近似（program approximation）'_。 当每个能让 [c1]
@@ -1534,4 +1533,4 @@ Theorem zprop_preserving : forall c c',
 Proof. (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(* Sun Jan 5 03:18:34 UTC 2020 *)
+(* 2020年1月16日 *)

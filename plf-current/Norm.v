@@ -49,7 +49,7 @@ Hint Constructors multi.
     entirely trivial to prove, since each reduction of a term can
     duplicate redexes in subterms. *)
 
-(** **** 练习：2 星, standard (norm_fail)  
+(** **** 练习：2 星, standard (norm_fail) 
 
     Where do we fail if we attempt to prove normalization by a
     straightforward induction on the size of a well-typed term? *)
@@ -60,7 +60,7 @@ Hint Constructors multi.
 Definition manual_grade_for_norm_fail : option (nat*string) := None.
 (** [] *)
 
-(** **** 练习：5 星, standard, recommended (norm)  
+(** **** 练习：5 星, standard, recommended (norm) 
 
     The best ways to understand an intricate proof like this is
     are (1) to help fill it in and (2) to extend it.  We've left out some
@@ -1160,4 +1160,4 @@ Proof.
 Qed.
 
 
-(* Sun Jan 5 03:18:37 UTC 2020 *)
+(* 2020年1月16日 *)

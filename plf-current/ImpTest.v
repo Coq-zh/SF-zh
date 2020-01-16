@@ -64,20 +64,12 @@ idtac " ".
 idtac "#> ceval_example2".
 idtac "Possible points: 2".
 check_type @ceval_example2 (
-(empty_st =[ X ::= 0;; Y ::= 1;; Z ::= 2
+(empty_st =[ X ::= ANum 0;; Y ::= ANum 1;; Z ::= ANum 2
  ]=> @Maps.t_update nat (@Maps.t_update nat (X !-> 0) Y 1) Z 2)).
 idtac "Assumptions:".
 Abort.
 Print Assumptions ceval_example2.
 Goal True.
-idtac " ".
-
-idtac "-------------------  XtimesYinZ_spec  --------------------".
-idtac " ".
-
-idtac "#> Manually graded: XtimesYinZ_spec".
-idtac "Possible points: 3".
-print_manual_grade manual_grade_for_XtimesYinZ_spec.
 idtac " ".
 
 idtac "-------------------  loop_never_stops  --------------------".
@@ -108,7 +100,7 @@ idtac "-------------------  no_whiles_terminating  --------------------".
 idtac " ".
 
 idtac "#> Manually graded: no_whiles_terminating".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 print_manual_grade manual_grade_for_no_whiles_terminating.
 idtac " ".
 
@@ -142,7 +134,7 @@ idtac " ".
 idtac "#> s_compile1".
 idtac "Possible points: 2".
 check_type @s_compile1 (
-(s_compile (X - 2 * Y) =
+(s_compile (AId X - ANum 2 * AId Y) =
  (SLoad X :: SPush 2 :: SLoad Y :: SMult :: SMinus :: @nil sinstr)%list)).
 idtac "Assumptions:".
 Abort.
@@ -155,7 +147,7 @@ idtac " ".
 
 idtac "#> s_compile_correct".
 idtac "Advanced".
-idtac "Possible points: 4".
+idtac "Possible points: 6".
 check_type @s_compile_correct (
 (forall (st : state) (e : aexp),
  s_execute st (@nil nat) (s_compile e) = (aeval st e :: @nil nat)%list)).
@@ -170,7 +162,7 @@ idtac " ".
 
 idtac "#> BreakImp.break_ignore".
 idtac "Advanced".
-idtac "Possible points: 1".
+idtac "Possible points: 1.5".
 check_type @BreakImp.break_ignore (
 (forall (c : BreakImp.com) (st st' : state) (s : BreakImp.result),
  BreakImp.ceval (BreakImp.CSeq BreakImp.CBreak c) st s st' -> st = st')).
@@ -182,7 +174,7 @@ idtac " ".
 
 idtac "#> BreakImp.while_continue".
 idtac "Advanced".
-idtac "Possible points: 1".
+idtac "Possible points: 1.5".
 check_type @BreakImp.while_continue (
 (forall (b : bexp) (c : BreakImp.com) (st st' : state) (s : BreakImp.result),
  BreakImp.ceval (BreakImp.CWhile b c) st s st' -> s = BreakImp.SContinue)).
@@ -194,7 +186,7 @@ idtac " ".
 
 idtac "#> BreakImp.while_stops_on_break".
 idtac "Advanced".
-idtac "Possible points: 2".
+idtac "Possible points: 3".
 check_type @BreakImp.while_stops_on_break (
 (forall (b : bexp) (c : BreakImp.com) (st st' : state),
  beval st b = true ->
@@ -208,10 +200,23 @@ idtac " ".
 
 idtac " ".
 
-idtac "Max points - standard: 24".
-idtac "Max points - advanced: 32".
+idtac "Max points - standard: 23".
+idtac "Max points - advanced: 35".
+idtac "".
+idtac "Allowed Axioms:".
+idtac "functional_extensionality".
+idtac "FunctionalExtensionality.functional_extensionality_dep".
+idtac "".
 idtac "".
 idtac "********** Summary **********".
+idtac "".
+idtac "Below is a summary of the automatically graded exercises that are incomplete.".
+idtac "".
+idtac "The output for each exercise can be any of the following:".
+idtac "  - 'Closed under the global context', if it is complete".
+idtac "  - 'MANUAL', if it is manually graded".
+idtac "  - A list of pending axioms, containing unproven assumptions. In this case".
+idtac "    the exercise is considered complete, if the axioms are all allowed.".
 idtac "".
 idtac "********** Standard **********".
 idtac "---------- AExp.optimize_0plus_b_sound ---------".
@@ -220,8 +225,6 @@ idtac "---------- AExp.beval_iff_bevalR ---------".
 Print Assumptions AExp.beval_iff_bevalR.
 idtac "---------- ceval_example2 ---------".
 Print Assumptions ceval_example2.
-idtac "---------- XtimesYinZ_spec ---------".
-idtac "MANUAL".
 idtac "---------- loop_never_stops ---------".
 Print Assumptions loop_never_stops.
 idtac "---------- no_whiles_eqv ---------".
@@ -246,4 +249,4 @@ idtac "---------- BreakImp.while_stops_on_break ---------".
 Print Assumptions BreakImp.while_stops_on_break.
 Abort.
 
-(* Sun Jan 5 03:18:41 UTC 2020 *)
+(* 2020年1月16日 *)
