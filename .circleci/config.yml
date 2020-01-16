@@ -13,7 +13,6 @@ defaults: &defaults
       command: |
         opam repo add coq-extra-dev https://coq.inria.fr/opam/extra-dev
         opam update
-        opam pin -n coq-ext-lib 0.10.2
         opam install coq-quickchick
   - run:
       name: List installed packages
@@ -43,13 +42,28 @@ defaults: &defaults
         done
 
 jobs:
-  coq.8.9:
+  coq 8_8:
+    <<: *defaults
+    docker:
+    - image: coqorg/coq:8.8
+  coq 8_9:
     <<: *defaults
     docker:
     - image: coqorg/coq:8.9
+  coq 8_10:
+    <<: *defaults
+    docker:
+    - image: coqorg/coq:8.10
+  coq dev:
+    <<: *defaults
+    docker:
+    - image: coqorg/coq:dev
 
 workflows:
   version: 2
   build:
     jobs:
-    - coq.8.9
+    - coq 8_8
+    - coq 8_9
+    - coq 8_10
+    - coq dev
