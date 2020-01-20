@@ -257,4 +257,4 @@ Proof.
   apply same_contents_iff_perm; auto.
 Qed.
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

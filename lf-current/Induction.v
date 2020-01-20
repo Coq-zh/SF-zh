@@ -587,4 +587,4 @@ Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
 Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
 (** [] *)
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

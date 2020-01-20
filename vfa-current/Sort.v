@@ -249,4 +249,4 @@ Theorem sort_sorted': forall l, sorted' (sort l).
    [sorted_sorted']. *)
 
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

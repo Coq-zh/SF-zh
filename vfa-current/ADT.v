@@ -412,4 +412,4 @@ Proof.  (* No induction needed in this proof! *)
 
 
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

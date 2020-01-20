@@ -234,4 +234,4 @@ idtac "---------- compiler_is_correct ---------".
 Print Assumptions compiler_is_correct.
 Abort.
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

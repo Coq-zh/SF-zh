@@ -43,4 +43,4 @@
       https://lemonidas.github.io/pdf/Leo-PhD-Thesis.pdf
  *)
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

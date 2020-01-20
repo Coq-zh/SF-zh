@@ -204,4 +204,4 @@ idtac "---------- prog_pres_bigstep ---------".
 idtac "MANUAL".
 Abort.
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

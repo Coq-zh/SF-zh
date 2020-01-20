@@ -180,4 +180,4 @@ idtac "---------- binary_inverse_c ---------".
 idtac "MANUAL".
 Abort.
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

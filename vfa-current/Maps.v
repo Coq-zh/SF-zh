@@ -281,4 +281,4 @@ Proof.
   apply t_update_permute.
 Qed.
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

@@ -842,4 +842,4 @@ Qed.
     the ordinary variants don't do the job. *)
 
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

@@ -161,4 +161,4 @@ idtac "---------- STLCProp.progress' ---------".
 Print Assumptions STLCProp.progress'.
 Abort.
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)

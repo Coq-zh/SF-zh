@@ -713,4 +713,4 @@ End QcDoNotation.
 
 End QuickChickSig.
 
-(* 2020年1月16日 *)
+(* 2020年1月20日 *)
