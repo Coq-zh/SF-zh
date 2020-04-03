@@ -44,7 +44,7 @@ CAMLFLAGS         := $(COQMF_CAMLFLAGS)
 HASNATDYNLINK     := $(COQMF_HASNATDYNLINK)
 
 Makefile.coq.conf: 
-	coq_makefile -Q . QC -o Makefile.coq Preface.v Introduction.v Typeclasses.v QC.v TImp.v QuickChickTool.v QuickChickInterface.v PostScript.v Bib.v
+	coq_makefile -Q . QC -o Makefile.coq Preface.v Introduction.v Typeclasses.v QC.v TImp.v QuickChickTool.v QuickChickInterface.v Postscript.v Bib.v
 
 # This file can be created by the user to hook into double colon rules or
 # add any other Makefile code he may need

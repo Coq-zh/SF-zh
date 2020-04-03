@@ -1049,7 +1049,7 @@ Ltac build_app_hnts t vs final :=
              | forall _:?A, _ => first [ app_evar t A cont' | fail 3 ]
              end
            | _ =>
-             match T with  (* should test T for unifiability *)
+             match T with  ( * should test T for unifiability * )
              | U -> ?Q => first [ app_assert t U cont' | fail 3 ]
              | forall _:U, _ => first [ app_evar t U cont' | fail 3 ]
              | ?P -> ?Q => first [ app_assert t P cont | fail 3 ]
@@ -4840,4 +4840,4 @@ End LibTacticsCompatibility.
 Open Scope nat_scope.
 
 
-(* 2020年1月20日 *)
+(* 2020-04-03 05:22:14 (UTC+00) *)

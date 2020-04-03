@@ -1,7 +1,7 @@
 -include CONFIGURE
 COQMFFLAGS := -Q . QC 
 
-ALLVFILES := Preface.v Introduction.v Typeclasses.v QC.v TImp.v QuickChickTool.v QuickChickInterface.v PostScript.v Bib.v 
+ALLVFILES := Preface.v Introduction.v Typeclasses.v QC.v TImp.v QuickChickTool.v QuickChickInterface.v Postscript.v Bib.v 
 
 build: Makefile.coq
 	$(MAKE) -f Makefile.coq

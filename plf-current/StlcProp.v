@@ -900,4 +900,4 @@ Definition manual_grade_for_stlc_arith : option (nat*string) := None.
 
 End STLCArith.
 
-(* 2020年1月20日 *)
+(* 2020-04-03 05:22:11 (UTC+00) *)

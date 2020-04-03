@@ -12,7 +12,7 @@ QuickChickTool.vo QuickChickTool.glob QuickChickTool.v.beautified: QuickChickToo
 QuickChickTool.vio: QuickChickTool.v
 QuickChickInterface.vo QuickChickInterface.glob QuickChickInterface.v.beautified: QuickChickInterface.v
 QuickChickInterface.vio: QuickChickInterface.v
-PostScript.vo PostScript.glob PostScript.v.beautified: PostScript.v
-PostScript.vio: PostScript.v
+Postscript.vo Postscript.glob Postscript.v.beautified: Postscript.v
+Postscript.vio: Postscript.v
 Bib.vo Bib.glob Bib.v.beautified: Bib.v
 Bib.vio: Bib.v

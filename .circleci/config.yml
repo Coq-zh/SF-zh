@@ -1,8 +1,10 @@
 defaults: &defaults
   environment:
+    OPAMJOBS: 2
     OPAMVERBOSE: 1
     OPAMYES: true
     TERM: xterm
+  resource_class: medium
   steps:
   - checkout
   - run:
@@ -38,7 +40,7 @@ defaults: &defaults
       command: |
         for v in lf plf vfa qc
         do tar -xf $v-current/$v.tgz
-           make -C $v -j > /dev/null
+           make -C $v -j`nproc` > /dev/null
         done
 
 jobs:
@@ -57,11 +59,11 @@ jobs:
   coq 8_11:
     <<: *defaults
     docker:
-    - image: coqorg/coq:8.11
+    - image: coqorg/coq:8.11-ocaml-4.09.0-flambda
   coq dev:
     <<: *defaults
     docker:
-    - image: coqorg/coq:dev
+    - image: coqorg/coq:dev-ocaml-4.09.0-flambda
 
 workflows:
   version: 2

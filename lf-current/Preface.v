@@ -209,7 +209,16 @@
 
        - 四或五星：更加困难的习题（半小时以上）。
 
-    此外，有些习题标注为“进阶”，有些习题标注为“可选”。
+    Those using SF in a classroom setting should note that the autograder
+    assigns extra points to harder exercises:
+
+      1 star  = 1 point
+      2 stars = 2 points
+      3 stars = 3 points
+      4 stars = 6 points
+      5 stars = 10 points
+
+    有些习题标注为“进阶”，有些习题标注为“可选”。
     只做非进阶、非可选的习题已经能将核心概念掌握得很不错了。
     可选习题会对一些关键概念提供额外的练习，还有一些读者可能会感兴趣的次级主题。
     进阶练习则留给想要更多挑战和更深理解的读者。
@@ -318,4 +327,4 @@
     （National Science Foundation）在 NSF 科研赞助 1521523 号
     _'深度规范科学'_ 下提供支持。 *)
 
-(* 2020年1月20日 *)
+(* 2020-04-03 05:20:49 (UTC+00) *)

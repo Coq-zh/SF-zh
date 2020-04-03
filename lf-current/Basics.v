@@ -496,6 +496,11 @@ Definition pred (n : nat) : nat :=
 (** 第二个分支可以读作：“如果 [n] 对于某个 [n'] 的形式为 [S n']，
     那么就返回 [n']。” *)
 
+(** The following [End] command closes the current module,
+    so [nat] will refer back to the type from the standard library.
+    As mentioned earlier, it comes with special notation (as decimal
+    numbers) unlike the above redefinition of [nat]. *)
+
 End NatPlayground.
 
 (** 为了让自然数使用起来更加自然，Coq 内建了一小部分解析打印功能：
@@ -1259,4 +1264,4 @@ Example test_bin_incr6 :
 
 (** [] *)
 
-(* 2020年1月20日 *)
+(* 2020-04-03 05:20:49 (UTC+00) *)

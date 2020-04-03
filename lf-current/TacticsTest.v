@@ -232,4 +232,4 @@ idtac "---------- existsb_existsb' ---------".
 Print Assumptions existsb_existsb'.
 Abort.
 
-(* 2020年1月20日 *)
+(* 2020-04-03 05:20:59 (UTC+00) *)
