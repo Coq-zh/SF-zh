@@ -47,12 +47,10 @@ Inductive list (X:Type) : Type :=
 
 Check list : Type -> Type.
 
-(** The parameter [X] in the definition of [list] automatically
-    becomes a parameter to the constructors [nil] and [cons] -- that
-    is, [nil] and [cons] are now polymorphic constructors; when we use
-    them, we must now provide a first argument that is the type of the
-    list they are building. For example, [nil nat] constructs the
-    empty list of type [nat]. *)
+(** [list] 的定义中的参数 [X] 自动
+    成为构造子 [nil] 和 [cons] 的参数 —— 也就是说，[nil] 和 [cons] 在这里是多态
+    的构造子；现在我们调用它们的时候必须要提供一个参数，就是它们要构造的列表的具
+    体类型。例如，[nil nat] 构造的是 [nat] 类型的空列表。 *)
 
 Check (nil nat) : list nat.
 
@@ -61,15 +59,16 @@ Check (nil nat) : list nat.
 
 Check (cons nat 3 (nil nat)) : list nat.
 
-(** [nil] 的类型可能是什么？我们可以从定义中看到 [list X] 的类型，
-    它忽略了 [list] 的形参 [X] 的绑定。[Type -> list X] 并没有解释
-    [X] 的含义，[(X : Type) -> list X] 则比较接近。Coq 对这种情况的记法为
-    [forall X : Type, list X]： *)
+(** [nil] 的类型会是什么呢？也许我们可以（根据定义）说它是 [list X]，
+    不过这样它就不是接受 [X] 返回 [list] 的函数了。再提出一种：[Type -> list X]
+    并没有解释 [X] 是什么，[(X : Type) -> list X] 则比较接近。
+    Coq 对这种情况的记法为 [forall X : Type, list X]： *)
 
 Check nil : forall X : Type, list X.
 
-(** 类似地，定义中 [cons] 看起来像 [X -> list X -> list X]
-    然而以此约定来解释 [X] 的含义则是类型 [forall X, X -> list X -> list X]。 *)
+(** 类似地，定义中 [cons] 的类型看起来像 [X -> list X -> list X]
+    然而以上述约定来解释 [X] 的含义则可以得到类型
+    [forall X, X -> list X -> list X]。 *)
 
 Check cons : forall X : Type, X -> list X -> list X.
 
@@ -151,7 +150,7 @@ Fixpoint repeat' X x count : list X :=
   | S count' => cons X x (repeat' X x count')
   end.
 
-(** 当然会。我们来看看 Coq 赋予了 [repeat'] 什么类型： *)
+(** 确实会。我们来看看 Coq 赋予了 [repeat'] 什么类型： *)
 
 Check repeat'
   : forall X : Type, X -> nat -> list X.
@@ -177,14 +176,11 @@ Check repeat
     [repeat] 的第二个参数为 [X] 类型的元素，第一个参数明显只能是 [X]，
     既然如此，我们何必显式地写出它呢？
 
-    Fortunately, Coq permits us to avoid this kind of redundancy.  In
-    place of any type argument we can write a "hole" [_], which can be
-    read as "Please try to figure out for yourself what belongs here."
-    More precisely, when Coq encounters a [_], it will attempt to
-    _unify_ all locally available information -- the type of the
-    function being applied, the types of the other arguments, and the
-    type expected by the context in which the application appears --
-    to determine what concrete type should replace the [_].
+    幸运的是，Coq 允许我们避免这种冗余。在任何我们可以写类型参数的地方，我们都可
+    以将类型参数写为 “洞” [_]，可以看做是说 “请 Coq 自行找出这里应该填什么。”
+    更确切地说，当 Coq 遇到 [_] 时，它会尝试_'统一'_所有的局部变量信息，
+    包括函数应当应用到的类型，其它参数的类型，以及应用函数的上下文中期望的类型，
+    以此来确定 [_] 处应当填入的具体类型。
 
     这听起来很像类型标注推断。实际上，这两种个过程依赖于同样的底层机制。
     除了简单地忽略函数中某些参数的类型：
@@ -212,7 +208,7 @@ Fixpoint repeat'' X x count : list X :=
 Definition list123 :=
   cons nat 1 (cons nat 2 (cons nat 3 (nil nat))).
 
-(** ...we can use holes to write this: *)
+(** ……我们可以用洞来这样写： *)
 
 Definition list123' :=
   cons _ 1 (cons _ 2 (cons _ 3 (nil _))).
@@ -220,7 +216,8 @@ Definition list123' :=
 (* ----------------------------------------------------------------- *)
 (** *** 隐式参数 *)
 
-(** 我们甚至可以通过告诉 Coq _'总是'_推断给定函数的类型参数来避免 [_]。
+(** 我们甚至可以通过告诉 Coq _'总是'_推断给定函数的类型参数来在大多数情况下
+    直接避免写 [_]。
 
     [Arguments] 用于指令指定函数或构造子的名字并列出其参数名，
     花括号中的任何参数都会被视作隐式参数。（如果定义中的某个参数没有名字，
@@ -230,12 +227,12 @@ Arguments nil {X}.
 Arguments cons {X} _ _.
 Arguments repeat {X} x count.
 
-(** 现在我们再也不必提供类型参数了： *)
+(** 现在我们完全不用提供类型参数了： *)
 
 Definition list123'' := cons 1 (cons 2 (cons 3 nil)).
 
-(** 此外，我们还可以在定义函数时声明隐式参数，
-    只是需要将它放在花括号内而非圆括号中。例如： *)
+(** 此外，我们还可以在定义函数时就声明隐式参数，
+    只需要将某个参数两边的圆括号换成花括号。例如： *)
 
 Fixpoint repeat''' {X : Type} (x : X) (count : nat) : list X :=
   match count with
@@ -257,7 +254,7 @@ Inductive list' {X:Type} : Type :=
 
 (** 由于 [X] 在包括 [list'] 本身的_'整个'_归纳定义中都是隐式声明的，
     因此当我们讨论数值、布尔值或其它任何类型的列表时，都只能写 [list']，
-    而写不了 [list' nat]、[list' bool] 或其它的了，这样就跑得有点太远了。 *)
+    而写不了 [list' nat]、[list' bool] 等等，这样就有点过分了。 *)
 
 (** 作为本节的收尾，我们为新的多态列表重新实现几个其它的标准列表函数... *)
 
@@ -705,8 +702,7 @@ Example test_flat_map1:
  (* 请在此处解答 *) Admitted.
 (** [] *)
 
-(** Lists are not the only inductive type for which [map] makes sense.
-    Here is a [map] for the [option] type: *)
+(** [map] 这个函数不止对列表有意义，以下是一个在 [option] 上的 [map]：*)
 
 Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
                       : option Y :=
@@ -834,7 +830,8 @@ Definition fold_length {X : Type} (l : list X) : nat :=
 Example test_fold_length1 : fold_length [4;7;0] = 3.
 Proof. reflexivity. Qed.
 
-(** 请证明 [fold_length] 的正确性。（提示：知道 [reflexivity] 的化简力度比 [simpl]
+(** 请证明 [fold_length] 的正确性。
+    （提示：知道 [reflexivity] 的化简力度比 [simpl]
     更大或许会有所帮助。也就是说，你或许会遇到 [simpl] 无法解决但 [reflexivity]
     可以解决的目标。） *)
 
@@ -890,7 +887,8 @@ Definition prod_uncurry {X Y Z : Type}
 Example test_map1': map (plus 3) [2;0;2] = [5;3;5].
 Proof. reflexivity. Qed.
 
-(** 思考练习：在运行以下指令之前，你能计算出 [prod_curry] 和 [prod_uncurry] 的类型吗？ *)
+(** 思考练习：在运行以下指令之前，你能计算出 [prod_curry] 和 [prod_uncurry] 
+    的类型吗？ *)
 
 Check @prod_curry.
 Check @prod_uncurry.
@@ -929,11 +927,9 @@ Proof.
 Definition manual_grade_for_informal_proof : option (nat*string) := None.
 (** [] *)
 
-(** The following exercises explore an alternative way of defining
-    natural numbers, using the so-called _Church numerals_, named
-    after mathematician Alonzo Church.  We can represent a natural
-    number [n] as a function that takes a function [f] as a parameter
-    and returns [f] iterated [n] times. *)
+(** 本练习使用_'邱奇数（Church numerals）'_探讨了另一种定义自然数的方式，
+    它以数学家 Alonzo Church 命名。我们可以将自然数 [n] 表示为一个函数，
+    它接受一个函数 [f] 作为参数并返回迭代了 [n] 次的 [f]。 *)
 
 Module Church.
 Definition cnat := forall X : Type, (X -> X) -> X -> X.
@@ -965,9 +961,8 @@ Definition three : cnat := @doit3times.
 
 (** **** 练习：1 星, advanced (church_succ)  *)
 
-(** Successor of a natural number: given a Church numeral [n],
-    the successor [succ n] is a function that iterates its
-    argument once more than [n]. *)
+(** 自然数的后继：给定一个邱奇数 [n]，它的后继 [succ n] 是一个把它的参数比 [n]
+    还多迭代一次的函数。 *)
 Definition succ (n : cnat) : cnat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
@@ -984,7 +979,7 @@ Proof. (* 请在此处解答 *) Admitted.
 
 (** **** 练习：1 星, advanced (church_plus)  *)
 
-(** Addition of two natural numbers: *)
+(** 两邱奇数相加： *)
 Definition plus (n m : cnat) : cnat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
@@ -1002,7 +997,7 @@ Proof. (* 请在此处解答 *) Admitted.
 
 (** **** 练习：2 星, advanced (church_mult)  *)
 
-(** Multiplication: *)
+(** 乘法： *)
 Definition mult (n m : cnat) : cnat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
 
@@ -1019,12 +1014,11 @@ Proof. (* 请在此处解答 *) Admitted.
 
 (** **** 练习：2 星, advanced (church_exp)  *)
 
-(** Exponentiation: *)
+(** 乘方： *)
 
-(** (_Hint_: Polymorphism plays a crucial role here.  However,
-    choosing the right type to iterate over can be tricky.  If you hit
-    a "Universe inconsistency" error, try iterating over a different
-    type.  Iterating over [cnat] itself is usually problematic.) *)
+(** （_'提示'_：多态在这里起到了关键的作用。然而，棘手之处在于选择正确的类型来迭代。
+    如果你遇到了「Universe inconsistency，全域不一致」错误，请在不同的类型上迭
+    代。在 [cnat] 本身上迭代通常会有问题。） *)
 
 Definition exp (n m : cnat) : cnat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -1045,4 +1039,4 @@ End Church.
 End Exercises.
 
 
-(* 2020-05-20 01:25:14 (UTC+00) *)
+(* 2020-06-02 03:36:27 (UTC+00) *)
