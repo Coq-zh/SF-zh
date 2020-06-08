@@ -800,4 +800,4 @@ Qed.
     scratch.  Only lemmas whose proofs pass the type-checker can be
     used in further proof developments.  *)
 
-(* 2020-06-02 03:36:29 (UTC+00) *)
+(* 2020-06-08 10:47:37 (UTC+00) *)

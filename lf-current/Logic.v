@@ -1411,4 +1411,4 @@ Definition implies_to_or := forall P Q:Prop,
 
     [] *)
 
-(* 2020-06-02 03:36:27 (UTC+00) *)
+(* 2020-06-08 10:47:35 (UTC+00) *)

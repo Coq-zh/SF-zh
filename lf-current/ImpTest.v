@@ -249,4 +249,4 @@ idtac "---------- BreakImp.while_stops_on_break ---------".
 Print Assumptions BreakImp.while_stops_on_break.
 Abort.
 
-(* 2020-06-02 03:36:55 (UTC+00) *)
+(* 2020-06-08 10:48:04 (UTC+00) *)
