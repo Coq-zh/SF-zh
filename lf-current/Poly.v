@@ -866,7 +866,7 @@ Definition manual_grade_for_fold_map : option (nat*string) := None.
     用返回函数的函数处理参数列表的方式被称为_'柯里化（Currying）'_，
     它是为了纪念逻辑学家 Haskell Curry。
 
-    反正，我们也可以将 [A -> B -> C] 解释为 [(A * B) -> C]。这叫做
+    反之，我们也可以将 [A -> B -> C] 解释为 [(A * B) -> C]。这叫做
     _'反柯里化（Uncurrying）'_。对于反柯里化的二元函数，
     两个参数必须作为序对一次给出，此时它不会偏应用。 *)
 
@@ -1039,4 +1039,4 @@ End Church.
 End Exercises.
 
 
-(* 2020-07-21 18:37:03 (UTC+00) *)
+(* 2020-07-21 18:45:03 (UTC+00) *)
