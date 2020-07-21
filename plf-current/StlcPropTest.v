@@ -161,4 +161,4 @@ idtac "---------- STLCProp.progress' ---------".
 Print Assumptions STLCProp.progress'.
 Abort.
 
-(* 2020-06-08 10:50:06 (UTC+00) *)
+(* 2020-07-21 18:38:56 (UTC+00) *)

@@ -327,7 +327,7 @@ Inductive color : Type :=
          [red]、[true]、[primary]、[primary red]、[red primary]、[red true]、
          [primary (primary primary)] 等等
 
-    - 每个 [Inductive] 定义都刻画了一个构造子表达式的的子集并赋予了它们名字，如
+    - 每个 [Inductive] 定义都刻画了一个构造子表达式的子集并赋予了它们名字，如
       [bool]、[rgb] 或 [color]。
 *)
 
@@ -527,7 +527,7 @@ Check pred     : nat->nat.
 Check minustwo : nat->nat.
 
 (** 以上三个函数均可作用于自然数，并产生自然数结果，但第一个 [S]
-    与后两者有本质区别：[pred] 和 [minustwo] 这类函是通过给定的_'计算规则'_定义的——
+    与后两者有本质区别：[pred] 和 [minustwo] 这类函数是通过给定的_'计算规则'_定义的——
     例如 [pred] 的定义表明 [pred 2] 可化简为 [1]——但 [S] 的定义不表征此类行为。
     虽然 [S] 可以作用于参数这点与函数_'相似'_，但其作用仅限于构造数字。
 
@@ -1264,4 +1264,4 @@ Example test_bin_incr6 :
 
 (** [] *)
 
-(* 2020-06-08 10:47:33 (UTC+00) *)
+(* 2020-07-21 18:37:02 (UTC+00) *)
