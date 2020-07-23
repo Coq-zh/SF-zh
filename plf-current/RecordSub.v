@@ -975,4 +975,4 @@ Proof with eauto.
        for [tr]'s typing derivation, [T_RCons], and a use of the
        [step_preserves_record_tm] lemma. *)
 
-(* 2020-07-21 18:54:11 (UTC+00) *)
+(* 2020-07-23 21:49:35 (UTC+00) *)
