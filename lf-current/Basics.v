@@ -272,9 +272,7 @@ Example test_andb34:                 (andb3 true true false) = false.
 Check true.
 (* ===> true : bool *)
 
-(** If the expression after [Check] is followed by a colon and a type,
-    Coq will verify that the type of the expression matches the given
-    type and halt with an error if not. *)
+(** 如果 [Check] 之后的表达式后面跟着冒号和类型， Coq 将验证表达式的类型是否与给定类型匹配，如果不是，则会中止并报错。*)
 
 Check true
     : bool.
@@ -364,15 +362,11 @@ Definition isred (c : color) : bool :=
     [monochrome] 定义中的哑（dummy）模式变量 [q] 相同。） *)
 
 (* ================================================================= *)
-(** ** Tuples *)
-
-(** A single constructor with multiple parameters can be used
-    to create a tuple type. As an example, consider representing
-    the four bits in a nybble (half a byte). We first define
-    a datatype [bit] that resembles [bool] (using the
-    constructors [B0] and [B1] for the two possible bit values)
-    and then define the datatype [nybble], which is essentially
-    a tuple of four bits. *)
+(** ** 元组 *)
+(** 带多个参数的单构造子可以用来创建元祖类型。比如，为了表示一个半字节 (nybble) 中的
+    4个比特位 [bit] ，我们可以先定义一个类似于布尔类型 [bool] 的字节类型 [bit] （使用
+    构造子 [B0] 和 [B1] 来构造比特位的2个值），随后再定义半字节 (nybble) 类型，这正好
+    是4个比特位构成的元组。*)
 
 Inductive bit : Type :=
   | B0
@@ -384,11 +378,8 @@ Inductive nybble : Type :=
 Check (bits B1 B0 B1 B0)
     : nybble.
 
-(** The [bits] constructor acts as a wrapper for its contents.
-    Unwrapping can be done by pattern-matching, as in the [all_zero]
-    function which tests a nybble to see if all its bits are [B0].  We
-    use underscore (_) as a _wildcard pattern_ to avoid inventing
-    variable names that will not be used. *)
+(** [bits] 构造子用来充当它参数的包装器。解包可以通过模式匹配来完成，[all_zero] 函数用来测试一个半字节中
+    所有的比特位是否都为 [B0]，我们使用下划线 (_) 来作为通配符模式，避免声明没有使用的变量名字。*)
 
 Definition all_zero (nb : nybble) : bool :=
   match nb with
