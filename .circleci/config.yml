@@ -1,81 +1,81 @@
-defaults: &defaults
-  environment:
-    OPAMJOBS: 2
-    OPAMVERBOSE: 1
-    OPAMYES: true
-    TERM: xterm
-  resource_class: medium
-  steps:
-  - checkout
-  - run:
-      name: Configure environment
-      command: echo . ~/.profile >> $BASH_ENV
-  - run:
-      name: Install QuickChick
-      command: |
-        opam repo add coq-extra-dev https://coq.inria.fr/opam/extra-dev
-        opam update
-        opam install coq-quickchick
-  - run:
-      name: List installed packages
-      command: opam list
-  - run:
-      name: 编译《逻辑基础》
-      command: make
-      working_directory: lf-current
-  - run:
-      name: 编译《程序语言基础》
-      command: make
-      working_directory: plf-current
-  - run:
-      name: 编译《函数式算法验证》
-      command: make
-      working_directory: vfa-current
-  - run:
-      name: 编译《QuickChick：软件特性测试》
-      command: make
-      working_directory: qc-current
-  - run:
-      name: 检查压缩包
-      command: |
-        for v in lf plf vfa qc
-        do tar -xf $v-current/$v.tgz
-           make -C $v > /dev/null
-        done
-
+---
+version: 2.1
 jobs:
-  coq 8_8:
-    <<: *defaults
+  test:
+    parameters:
+      coq:
+        type: string
     docker:
-    - image: coqorg/coq:8.8
-  coq 8_9:
-    <<: *defaults
-    docker:
-    - image: coqorg/coq:8.9
-  coq 8_10:
-    <<: *defaults
-    docker:
-    - image: coqorg/coq:8.10
-  coq 8_11:
-    <<: *defaults
-    docker:
-    - image: coqorg/coq:8.11-ocaml-4.09-flambda
-  coq 8_12:
-    <<: *defaults
-    docker:
-    - image: coqorg/coq:8.12-ocaml-4.09-flambda
-  coq dev:
-    <<: *defaults
-    docker:
-    - image: coqorg/coq:dev-ocaml-4.09-flambda
+      - image: coqorg/coq:<<parameters.coq>>
+    environment:
+      OPAMJOBS: 2
+      OPAMVERBOSE: 1
+      OPAMYES: true
+      TERM: xterm
+    resource_class: medium
+    steps:
+      - checkout
+      - run:
+          name: Configure environment
+          command: echo . ~/.profile >> $BASH_ENV
+      - run:
+          name: Install QuickChick
+          command: |
+            opam repo add coq-extra-dev https://coq.inria.fr/opam/extra-dev
+            opam update
+            opam install coq-quickchick
+      - run:
+          name: List installed packages
+          command: opam list
+      - run:
+          name: 编译《逻辑基础》
+          command: make
+          working_directory: lf-current
+      - run:
+          name: 编译《程序语言基础》
+          command: make
+          working_directory: plf-current
+      - run:
+          name: 编译《函数式算法验证》
+          command: make
+          working_directory: vfa-current
+      - run:
+          name: 编译《QuickChick：软件特性测试》
+          command: make
+          working_directory: qc-current
+      - run:
+          name: 检查压缩包
+          command: |
+            for v in lf plf vfa qc
+            do tar -xf $v-current/$v.tgz
+            make -C $v > /dev/null
+            done
 
 workflows:
   version: 2
   build:
     jobs:
-    - coq 8_8
-    - coq 8_9
-    - coq 8_10
-    - coq 8_11
-    - coq 8_12
-    - coq dev
+      - test:
+          name: 'Coq 8.8'
+          coq: '8.8'
+      - test:
+          name: 'Coq 8.9'
+          coq: '8.9'
+      - test:
+          name: 'Coq 8.10'
+          coq: '8.10'
+      - test:
+          name: 'Coq 8.11'
+          coq: '8.11-ocaml-4.11-flambda'
+      - test:
+          name: 'Coq 8.12'
+          coq: '8.12-ocaml-4.11-flambda'
+      - test:
+          name: 'Coq 8.13'
+          coq: '8.13-ocaml-4.12-flambda'
+      - test:
+          name: 'Coq 8.14'
+          coq: '8.14-ocaml-4.12-flambda'
+      - test:
+          name: 'Coq dev'
+          coq: 'dev-ocaml-4.12-flambda'
