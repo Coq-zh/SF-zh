@@ -41,7 +41,7 @@
 <div class="paragraph"> </div>
 
  函数式编程风格建立在简单的、日常的数学直觉之上：若一个过程或方法没有副作用，
-    那么在忽略效率的前提下，我们需要理解的一切便只剩下如何将输入映射到输出了
+    那么在忽略效率的前提下，我们需要理解的一切便只剩下它如何将输入映射到输出了
     —— 也就是说，我们只需将它视作一种计算数学函数的具体方法即可。这也是
     “函数式编程”中“函数式”一词的含义之一。程序与简单数学对象之间这种直接的联系，
     同时支撑了对程序行为进行形式化证明的正确性以及非形式化论证的可靠性。
@@ -49,21 +49,21 @@
 <div class="paragraph"> </div>
 
     函数式编程中“函数式”一词的另一个含义是它强调把函数作为<i>'一等'</i>的值
-    —— 即，这类值可以作为参数传递给其它函数，可以作为结果返回，
+    —— 这类值可以作为参数传递给其它函数，可以作为结果返回，
     也可以包含在数据结构中等等。这种将函数当做数据的方式，
     产生了大量强大而有用的编程习语（Idiom）。
 
 <div class="paragraph"> </div>
 
-    其它常见的函数式语言特性包括<i>'代数数据类型（Algebraic Data Type）'</i>，
-    能让构造和处理丰富数据结构更加简单的<i>'模式匹配（Pattern Matching）'</i>，
+    其它常见的函数式语言特性包括能让构造和处理丰富数据结构更加简单的
+    <i>'代数数据类型（Algebraic Data Type）'</i>和<i>'模式匹配（Pattern Matching）'</i>，
     以及用来支持抽象和代码复用的<i>'多态类型系统（Polymorphic Type System）'</i>。
     Coq 提供了所有这些特性。
 
 <div class="paragraph"> </div>
 
     本章的前半部分介绍了 Coq 原生的函数式编程语言 <i>'Gallina'</i> 中最基本的元素，
-    后半部分则介绍了一些基本<i>'策略（Tactic）'</i>，它可用于证明 Gallina 程序的简单属性。 
+    后半部分则介绍了一些基本<i>'策略（Tactic）'</i>，它可用于证明 Gallina 程序的简单性质。 
 </div>
 
 <div class="doc">
@@ -75,16 +75,16 @@
 
 <div class="paragraph"> </div>
 
- Coq 的一个不同寻常之处在于它内建了<i>'极小'</i>的特性集合。比如，
-    Coq 并未提供通常的原子数据类型（如布尔、整数、字符串等），
+ Coq 的一个不同寻常之处在于它<i>'极小'</i>的内建特性集合。
+    比如，Coq 并未提供通常的原语（atomic）类型（如布尔、整数、字符串等），
     而是提供了一种极为强大的，可以从头定义新的数据类型的机制
-    —— 强大到所有常见的类型都是由它定义而产生的实例。
+    —— 上面所有常见的类型都是由它定义而产生的实例。
 
 <div class="paragraph"> </div>
 
     当然，Coq 发行版同时也提供了内容丰富的标准库，其中定义了布尔值、
     数值，以及如列表、散列表等许多通用的数据结构。
-    不过这些库中的定义并没有任何神秘之处，也没有原语（Primitive）中独有的地方。
+    不过这些库中的定义并没有任何神秘之处，也没有原语（Primitive）的特点。
     为了说明这一点，我们并未在本课程中直接使用标准库中的数据类型，
     而是在整个教程中重新定义了其中的绝大部分。 
 </div>
@@ -138,8 +138,8 @@
     <i>'类型推断（Type Inference）'</i> 得出。不过我们会标上类型使其更加易读。 
 <div class="paragraph"> </div>
 
- 定义了函数之后，我们要用一些例子来检验它。实际上，在 Coq
-    中，检验的方式一共有三种：第一，我们可以用 <span class="inlinecode"><span class="id" title="keyword">Compute</span></span>
+ 定义了函数之后，我们接下来应该用一些例子来检验它。
+    实际上，在 Coq 中，一共有三种不同的检验方式：第一，我们可以用 <span class="inlinecode"><span class="id" title="keyword">Compute</span></span>
     指令来计算包含 <span class="inlinecode"><span class="id" title="var">next_weekday</span></span> 的复合表达式： 
 </div>
 <div class="code">
@@ -179,7 +179,7 @@
 </div>
 
 <div class="doc">
-具体细节并不重要，不过这段代码基本上可以读作
+具体细节目前并不重要，不过这段代码基本上可以读作
     “若等式两边的求值结果相同，该断言即可得证。”
 
 <div class="paragraph"> </div>
@@ -215,35 +215,39 @@
         你可以将它们放在练习的头部和你要证明的定理之间。
 
 </li>
+<li> 如果你为了证明某定理而需要引入一个额外引理，且未能证明该引理，
+        请确保该引理与使用它的原定理都以 <span class="inlinecode"><span class="id" title="var">Admitted</span></span> 而非 <span class="inlinecode"><span class="id" title="keyword">Qed</span></span> 结尾。
+        这样能使在你利用原定理解决其他练习时得到部分分数。
+
+</li>
 </ul>
 
 <div class="paragraph"> </div>
 
-    You will also notice that each chapter (like <span class="inlinecode"><span class="id" title="var">Basics.v</span></span>) is
-    accompanied by a <i>test script</i> (<span class="inlinecode"><span class="id" title="var">BasicsTest.v</span></span>) that automatically
-    calculates points for the finished homework problems in the
-    chapter.  These scripts are mostly for the auto-grading
-    tools, but you may also want to use them to double-check
-    that your file is well formatted before handing it in.  In a
-    terminal window, either type "<span class="inlinecode"><span class="id" title="var">make</span></span> <span class="inlinecode"><span class="id" title="var">BasicsTest.vo</span></span>" or do the
-    following:
+    你或许注意到每一章都附带有一个_“测试脚本”_来自动计算该章节已完成
+    的作业的分数。这些脚本一般只作为自动评分工具，但你也可以用它们在提交前
+    再一次确认作业格式的正确性。
+    你可以在一个终端窗口中输入 "<span class="inlinecode"><span class="id" title="var">make</span></span> <span class="inlinecode"><span class="id" title="var">BasicsTest.vo</span></span>" 或下面的命令来运行这些
+    测试脚本
 <br/>
 <span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">coqc</span> -<span class="id" title="var">Q</span> . <span class="id" title="var">LF</span> <span class="id" title="var">Basics.v</span><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">coqc</span> -<span class="id" title="var">Q</span> . <span class="id" title="var">LF</span> <span class="id" title="var">BasicsTest.v</span>
 <div class="paragraph"> </div>
 
-</span>    There is no need to hand in <span class="inlinecode"><span class="id" title="var">BasicsTest.v</span></span> itself (or <span class="inlinecode"><span class="id" title="var">Preface.v</span></span>).
+</span>    你并不需要提交 <span class="inlinecode"><span class="id" title="var">BasicsTest.v</span></span> 这种测试脚本（也不需要提交前言 <span class="inlinecode"><span class="id" title="var">Preface.v</span></span>）。
 
 <div class="paragraph"> </div>
 
-    If your class is using the Canvas system to hand in assignments...
+    如果你的班级使用 Canvas 系统来提交作业。
 <ul class="doclist">
-<li> If you submit multiple versions of the assignment, you may
-        notice that they are given different names.  This is fine: The
-        most recent submission is the one that will be graded.
+<li> 如果你提交了多个不同版本的作业，你可能会注意到它们在系统中有着
+        不同的名字。这是正常情况，只有最新的提交会被评分。
 
 </li>
-<li> To hand in multiple files at the same time (if more than one
+<li> 如果你需要同时提交多个文件（例如一次作业中包含多个不同的章节），
+        你需要创建一个一次性包含所有文件的提交。
+       （译者注：关于多文件提交细节请查看英文原文。）
+        To hand in multiple files at the same time (if more than one
         chapter is assigned in the same week), you need to make a
         single submission with all the files at once using the button
         "Add another file" just above the comment box. 
@@ -266,7 +270,7 @@
 
 <div class="paragraph"> </div>
 
- 通过类似的方式，我们可以为布尔值定义标准类型 <span class="inlinecode"><span class="id" title="var">bool</span></span>，它包括
+ 通过类似的方式，我们可以为布尔值定义常见的 <span class="inlinecode"><span class="id" title="var">bool</span></span> 类型，它包括
     <span class="inlinecode"><span class="id" title="var">true</span></span> 和 <span class="inlinecode"><span class="id" title="var">false</span></span> 两个成员。 
 </div>
 <div class="code">
@@ -301,12 +305,13 @@
 </div>
 
 <div class="doc">
-（当然，Coq 的标准库中提供了布尔类型的默认实现，以及大量有用的函数和引理。
+（虽然我们正尝试从零开始定义布尔类型，
+    但由于 Coq 的标准库中也提供了布尔类型的默认实现，以及大量有用的函数和引理。
     我们会尽量让自己的定义和定理的名字与标准库保持一致。） 
 <div class="paragraph"> </div>
 
- 其中后两段演示了定义多参数函数的语法。
-    以下四个“单元测试”则演示了多参数应用的语法，
+ 其中 <span class="inlinecode"><span class="id" title="var">andb</span></span> 和 <span class="inlinecode"><span class="id" title="var">orb</span></span> 演示了如何定义多参函数。
+    以下四个“单元测试”则演示了如何应用这些函数，
     它们构成了 <span class="inlinecode"><span class="id" title="var">orb</span></span> 函数的完整规范（Specification），即真值表： 
 </div>
 <div class="code">
@@ -324,7 +329,7 @@
 
 <div class="doc">
 我们也可以为刚定义的布尔运算引入更加熟悉的中缀语法。
-    <span class="inlinecode"><span class="id" title="keyword">Notation</span></span> 指令能为既有的定义赋予新的中缀记法。 
+    <span class="inlinecode"><span class="id" title="keyword">Notation</span></span> 指令能为既有的定义赋予新的符号记法。 
 </div>
 <div class="code">
 
@@ -342,16 +347,46 @@
     在 HTML 版的文件中，这部分文本会以<i>'不同的字体'</i>显示。 
 <div class="paragraph"> </div>
 
+ 下面的例子展示了 Coq 的另一个特性: 条件表达式... 
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a name="negb'"><span class="id" title="definition">negb'</span></a> (<span class="id" title="var">b</span>:<a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a>) : <a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">if</span> <a class="idref" href="Basics.html#b"><span class="id" title="variable">b</span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Basics.html#false"><span class="id" title="constructor">false</span></a><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="Basics.html#true"><span class="id" title="constructor">true</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="andb'"><span class="id" title="definition">andb'</span></a> (<span class="id" title="var">b<sub>1</sub></span>:<a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a>) (<span class="id" title="var">b<sub>2</sub></span>:<a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a>) : <a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">if</span> <a class="idref" href="Basics.html#b<sub>1</sub>"><span class="id" title="variable">b<sub>1</sub></span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Basics.html#b<sub>2</sub>"><span class="id" title="variable">b<sub>2</sub></span></a><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="Basics.html#false"><span class="id" title="constructor">false</span></a>.<br/><hr class='doublespaceincode'/>
+<span class="id" title="keyword">Definition</span> <a name="orb'"><span class="id" title="definition">orb'</span></a> (<span class="id" title="var">b<sub>1</sub></span>:<a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a>) (<span class="id" title="var">b<sub>2</sub></span>:<a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a>) : <a class="idref" href="Basics.html#bool"><span class="id" title="inductive">bool</span></a> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">if</span> <a class="idref" href="Basics.html#b<sub>1</sub>"><span class="id" title="variable">b<sub>1</sub></span></a> <span class="id" title="keyword">then</span> <a class="idref" href="Basics.html#true"><span class="id" title="constructor">true</span></a><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">else</span> <a class="idref" href="Basics.html#b<sub>2</sub>"><span class="id" title="variable">b<sub>2</sub></span></a>.<br/>
+</div>
+
+<div class="doc">
+Coq 的条件表达式相较于其他语言的，只有一点小小的扩展。由于 <span class="inlinecode"><span class="id" title="var">bool</span></span> 类型
+    并不是内建类型，Coq 实际上支持对_任何_归纳定义的双子句表达式使用 "if" 表达式
+   （不过恰巧在这里该表达式被称为 <span class="inlinecode"><span class="id" title="var">bool</span></span>）。当条件求值后得到的是第一个
+    子句的 “构造子” (constructor)，那么条件就会被认为是 “真” <span class="inlinecode"><span class="id" title="var">true</span></span>（不过恰巧
+    在这里第一个分支的构造子被称为 “真” <span class="inlinecode"><span class="id" title="var">true</span></span>，并且如果求值后得到的是第二个子句，
+    那么条件就被认为是 “假” <span class="inlinecode"><span class="id" title="var">false</span></span>）。 
+<div class="paragraph"> </div>
+
 <a name="lab25"></a><h4 class="section">练习：1 星, standard (nandb)</h4>
  指令 <span class="inlinecode"><span class="id" title="var">Admitted</span></span> 被用作不完整证明的占位符。
-    我们会在练习中用它来表示留给你的部分。你的练习作业就是将 <span class="inlinecode"><span class="id" title="var">Admitted</span></span>
+    我们会在练习中用它来表示你需要完成的部分。你的任务就是将 <span class="inlinecode"><span class="id" title="var">Admitted</span></span>
     替换为具体的证明。
 
 <div class="paragraph"> </div>
 
     移除“<span class="inlinecode"><span class="id" title="var">Admitted</span>.</span>”并补完以下函数的定义，然后确保下列每一个 <span class="inlinecode"><span class="id" title="keyword">Example</span></span>
-    中的断言都能被 Coq 验证通过。（即仿照上文 <span class="inlinecode"><span class="id" title="var">orb</span></span> 测试的模式补充证明，
-    并确保 Coq 接受它。）此函数应在两个输入中包含 <span class="inlinecode"><span class="id" title="var">false</span></span> 时返回 <span class="inlinecode"><span class="id" title="var">true</span></span> 。 
+    中的断言都能被 Coq 验证通过。（即仿照上文 <span class="inlinecode"><span class="id" title="var">orb</span></span> 测试的格式补充证明，
+    并确保 Coq 接受它。）此函数应在两个输入中的任意一个（或者都）包含
+    <span class="inlinecode"><span class="id" title="var">false</span></span> 时返回 <span class="inlinecode"><span class="id" title="var">true</span></span> 。 
+    提示：如果 <span class="inlinecode"><span class="id" title="tactic">simpl</span></span> 在你的证明中未能化简目标，那是因为你可能并未使用
+    <span class="inlinecode"><span class="id" title="keyword">match</span></span> 表达式定义你的 <span class="inlinecode"><span class="id" title="var">nandb</span></span>。尝试使用另一种 <span class="inlinecode"><span class="id" title="var">nandb</span></span> 的定义方式，
+    或者直接跳过 <span class="inlinecode"><span class="id" title="tactic">simpl</span></span> 直接使用 <span class="inlinecode"><span class="id" title="tactic">reflexivity</span></span>。我们后面会解释为什么
+    会发生这种情况。 
 </div>
 <div class="code">
 
@@ -409,9 +444,8 @@
 </div>
 
 <div class="doc">
-If the expression after <span class="inlinecode"><span class="id" title="keyword">Check</span></span> is followed by a colon and a type,
-    Coq will verify that the type of the expression matches the given
-    type and halt with an error if not. 
+如果在被 <span class="inlinecode"><span class="id" title="keyword">Check</span></span> 的表达式后加上一个分号和你想验证的类型，那么 Coq 会
+    验证该表达式是否属于你提供的类型。当两者不一致时，Coq 会报错并终止执行。 
 </div>
 <div class="code">
 
@@ -560,17 +594,14 @@ If the expression after <span class="inlinecode"><span class="id" title="keyword
 </div>
 
 <div class="doc">
-<a name="lab29"></a><h2 class="section">Tuples</h2>
+<a name="lab29"></a><h2 class="section">元组</h2>
 
 <div class="paragraph"> </div>
 
- A single constructor with multiple parameters can be used
-    to create a tuple type. As an example, consider representing
-    the four bits in a nybble (half a byte). We first define
-    a datatype <span class="inlinecode"><span class="id" title="var">bit</span></span> that resembles <span class="inlinecode"><span class="id" title="var">bool</span></span> (using the
-    constructors <span class="inlinecode"><span class="id" title="var">B<sub>0</sub></span></span> and <span class="inlinecode"><span class="id" title="var">B<sub>1</sub></span></span> for the two possible bit values)
-    and then define the datatype <span class="inlinecode"><span class="id" title="var">nybble</span></span>, which is essentially
-    a tuple of four bits. 
+ 一个多参数的单构造子可以用来创建元组类型。例如，为了让一个
+    半字节（nybble）表示四个比特。我们首先定义一个 <span class="inlinecode"><span class="id" title="var">bit</span></span> 数据类型
+    来类比 <span class="inlinecode"><span class="id" title="var">bool</span></span> 数据。并且使用 <span class="inlinecode"><span class="id" title="var">B<sub>0</sub></span></span> 和 <span class="inlinecode"><span class="id" title="var">B<sub>1</sub></span></span> 两种构造子来表示其可能的取值。
+    最后定义 <span class="inlinecode"><span class="id" title="var">nybble</span></span> 这种数据类型，也就是一个四比特的元组。
 </div>
 <div class="code">
 
@@ -585,11 +616,10 @@ If the expression after <span class="inlinecode"><span class="id" title="keyword
 </div>
 
 <div class="doc">
-The <span class="inlinecode"><span class="id" title="var">bits</span></span> constructor acts as a wrapper for its contents.
-    Unwrapping can be done by pattern-matching, as in the <span class="inlinecode"><span class="id" title="var">all_zero</span></span>
-    function which tests a nybble to see if all its bits are <span class="inlinecode"><span class="id" title="var">B<sub>0</sub></span></span>.  We
-    use underscore (_) as a <i>wildcard pattern</i> to avoid inventing
-    variable names that will not be used. 
+这里的 <span class="inlinecode"><span class="id" title="var">bit</span></span> 构造子起到了对它内容的包装作用。
+    解包可以通过模式匹配来实现，就如同下面的 <span class="inlinecode"><span class="id" title="var">all_zero</span></span> 函数一样，
+    其通过解包来验证一个半字节的所有比特是否都为 <span class="inlinecode"><span class="id" title="var">B<sub>0</sub></span></span>。
+    我们用<i>'通配符'</i> <span class="inlinecode"><span class="id" title="var">_</span></span> 来避免创建不需要的变量名。 
 </div>
 <div class="code">
 
@@ -629,42 +659,33 @@ The <span class="inlinecode"><span class="id" title="var">bits</span></span> con
 
 <div class="paragraph"> </div>
 
- All the types we have defined so far -- both "enumerated
-    types" such as <span class="inlinecode"><span class="id" title="var">day</span></span>, <span class="inlinecode"><span class="id" title="var">bool</span></span>, and <span class="inlinecode"><span class="id" title="var">bit</span></span> and tuple types such as
-    <span class="inlinecode"><span class="id" title="var">nybble</span></span> built from them -- are finite.  The natural numbers, on
-    the other hand, are an infinite set, so we'll need to use a
-    slightly richer form of type declaration to represent them.
+ 目前我们定义的所有类型都是有限的。无论是像 <span class="inlinecode"><span class="id" title="var">day</span></span>, <span class="inlinecode"><span class="id" title="var">bool</span></span> 和 <span class="inlinecode"><span class="id" title="var">bit</span></span> 
+    这样的“枚举类型”，抑或是像 <span class="inlinecode"><span class="id" title="var">nybble</span></span> 这样基于“枚举类型”的元组类型，
+    本质上都是有限的集合。而自然数（natural numbers）是一个无限集合，
+    因此我们需要一种更强大的类型声明方式来表示它们。
 
 <div class="paragraph"> </div>
 
-    There are many representations of numbers to choose from. We are
-    most familiar with decimal notation (base 10), using the digits 0
-    through 9, for example, to form the number 123.  You may have
-    encountered hexadecimal notation (base 16), in which the same
-    number is represented as 7B, or octal (base 8), where it is 173,
-    or binary (base 2), where it is 1111011. Using an enumerated type
-    to represent digits, we could use any of these as our
-    representation natural numbers. Indeed, there are circumstances
-    where each of these choices would be useful.
+    数字的表示方法有许多种。我们最为熟悉的便是十进制（base 10），利用
+    0～9 十个数字来表示一个数，例如用 1，2 和 3 来表示 123 （一百二十三）。
+    你或许也接触过十六进制（base 16），在十六进制中，它被表示为 7B。类似的还有
+    173 （八进制表示）和 111011（二进制表示）。我们可以使用枚举类型
+    来定义以上任何一种数字表示方式。它们在不同的场景下有着不同的用途。
 
 <div class="paragraph"> </div>
 
-    The binary representation is valuable in computer hardware because
-    the digits can be represented with just two distinct voltage
-    levels, resulting in simple circuitry. Analogously, we wish here
-    to choose a representation that makes <i>proofs</i> simpler.
+    二进制表示在计算机硬件中起着举足轻重的作用。它只需要两种不同的电平
+    来表示，因此它的硬件电路可以被设计十分简单。同样的，
+    我们也希望选择一种自然数的表示方式，来让我们的_证明_变得更加简单。
 
 <div class="paragraph"> </div>
 
-    In fact, there is a representation of numbers that is even simpler
-    than binary, namely unary (base 1), in which only a single digit
-    is used (as one might do to count days in prison by scratching on
-    the walls). To represent unary numbers with a Coq datatype, we use
-    two constructors. The capital-letter <span class="inlinecode"><span class="id" title="var">O</span></span> constructor represents
-    zero.  When the <span class="inlinecode"><span class="id" title="var">S</span></span> constructor is applied to the representation
-    of the natural number n, the result is the representation of
-    n+1, where <span class="inlinecode"><span class="id" title="var">S</span></span> stands for "successor" (or "scratch" if one is in
-    prison).  Here is the complete datatype definition. 
+    实际上，比起二进制，还有一种更加简单的数字表示方式，一进制（base 1），
+    也就是只使用单个数字的表示方式（就如同我们的祖先山顶洞人在洞穴上
+    刻“痕迹”计算日子一般）。为了在 Coq 中表示一进制数，我们使用两个构造子。
+    大写的 <span class="inlinecode"><span class="id" title="var">O</span></span> 构造子用来表示“零”，而大写的 <span class="inlinecode"><span class="id" title="var">S</span></span> 构造子用来表示“后继”
+    （或者洞穴上的“痕迹”）。当 <span class="inlinecode"><span class="id" title="var">S</span></span> 构造子被应用于一个自然数 n 的表示上时，
+    结果会是自然数 n + 1 的表示。下面是完整的数据类型定义。 
 </div>
 <div class="code">
 
@@ -675,16 +696,16 @@ The <span class="inlinecode"><span class="id" title="var">bits</span></span> con
 </div>
 
 <div class="doc">
-With this definition, 0 is represented by <span class="inlinecode"><span class="id" title="var">O</span></span>, 1 by <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span></span>,
-    2 by <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>)</span>, and so on. 
+在这种定义下， 0 被表示为 <span class="inlinecode"><span class="id" title="var">O</span></span>, 1 则被表示为 <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span></span>,
+    2 则是 <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>)</span>，以此类推 
 <div class="paragraph"> </div>
 
- 非形式化地说，此定义中的从句可读作：
+ 非形式化地说，此定义中的子句可读作：
 <ul class="doclist">
 <li> <span class="inlinecode"><span class="id" title="var">O</span></span> 是一个自然数（注意这里是字母“<span class="inlinecode"><span class="id" title="var">O</span></span>”，不是数字“<span class="inlinecode">0</span>”）。
 
 </li>
-<li> <span class="inlinecode"><span class="id" title="var">S</span></span> 可被放在一个自然数之前产生另一个自然数 ——
+<li> <span class="inlinecode"><span class="id" title="var">S</span></span> 可被放在一个自然数之前来产生另一个自然数 ——
         也就是说，如果 <span class="inlinecode"><span class="id" title="var">n</span></span> 是一个自然数，那么 <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span> 也是。 
 </li>
 </ul>
@@ -710,7 +731,7 @@ With this definition, 0 is represented by <span class="inlinecode"><span class="
 
 <div class="paragraph"> </div>
 
- 这些条件精确刻画了 <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> 的声明。它们蕴含的构造子表达式 <span class="inlinecode"><span class="id" title="var">O</span></span>、
+ 这些条件精确刻画了这个“归纳” <span class="inlinecode"><span class="id" title="keyword">Inductive</span></span> 声明。它们意味着，构造子表达式 <span class="inlinecode"><span class="id" title="var">O</span></span>、
     <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span></span>、<span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>)</span>、<span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>))</span> 等等都属于集合 <span class="inlinecode"><span class="id" title="var">nat</span></span>，而其它的构造子表达式，如
     <span class="inlinecode"><span class="id" title="var">true</span></span>、<span class="inlinecode"><span class="id" title="var">andb</span></span> <span class="inlinecode"><span class="id" title="var">true</span></span> <span class="inlinecode"><span class="id" title="var">false</span></span>、<span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">false</span>)</span> 以及 <span class="inlinecode"><span class="id" title="var">O</span></span> <span class="inlinecode">(<span class="id" title="var">O</span></span> <span class="inlinecode">(<span class="id" title="var">O</span></span> <span class="inlinecode"><span class="id" title="var">S</span>))</span> 等则不属于 <span class="inlinecode"><span class="id" title="var">nat</span></span>。
 
@@ -752,10 +773,8 @@ With this definition, 0 is represented by <span class="inlinecode"><span class="
     那么就返回 <span class="inlinecode"><span class="id" title="var">n'</span></span>。” 
 <div class="paragraph"> </div>
 
- The following <span class="inlinecode"><span class="id" title="keyword">End</span></span> command closes the current module,
-    so <span class="inlinecode"><span class="id" title="var">nat</span></span> will refer back to the type from the standard library.
-    As mentioned earlier, it comes with special notation (as decimal
-    numbers) unlike the above redefinition of <span class="inlinecode"><span class="id" title="var">nat</span></span>. 
+ 下面的 <span class="inlinecode"><span class="id" title="keyword">End</span></span> 指令会关闭当前的模块，所以 <span class="inlinecode"><span class="id" title="var">nat</span></span> 会重新代表标准库中的类型而非我们
+    自己定义的 <span class="inlinecode"><span class="id" title="var">nat</span></span>。 
 </div>
 <div class="code">
 
@@ -795,10 +814,10 @@ With this definition, 0 is represented by <span class="inlinecode"><span class="
 </div>
 
 <div class="doc">
-以上三个函数均可作用于自然数，并产生自然数结果，但第一个 <span class="inlinecode"><span class="id" title="var">S</span></span>
+以上三个东西均可作用于自然数，并产生自然数结果，但第一个 <span class="inlinecode"><span class="id" title="var">S</span></span>
     与后两者有本质区别：<span class="inlinecode"><span class="id" title="var">pred</span></span> 和 <span class="inlinecode"><span class="id" title="var">minustwo</span></span> 这类函数是通过给定的<i>'计算规则'</i>定义的——
-    例如 <span class="inlinecode"><span class="id" title="var">pred</span></span> 的定义表明 <span class="inlinecode"><span class="id" title="var">pred</span></span> <span class="inlinecode">2</span> 可化简为 <span class="inlinecode">1</span>——但 <span class="inlinecode"><span class="id" title="var">S</span></span> 的定义不表征此类行为。
-    虽然 <span class="inlinecode"><span class="id" title="var">S</span></span> 可以作用于参数这点与函数<i>'相似'</i>，但其作用仅限于构造数字。
+    例如 <span class="inlinecode"><span class="id" title="var">pred</span></span> 的定义表明 <span class="inlinecode"><span class="id" title="var">pred</span></span> <span class="inlinecode">2</span> 可化简为 <span class="inlinecode">1</span>——但 <span class="inlinecode"><span class="id" title="var">S</span></span> 的定义不包含此类行为。
+    虽然 <span class="inlinecode"><span class="id" title="var">S</span></span> 可以作用于参数这点与函数<i>'相似'</i>，但其作用仅限于构造数字，而并不用于计算。
 
 <div class="paragraph"> </div>
 
@@ -861,7 +880,7 @@ With this definition, 0 is represented by <span class="inlinecode"><span class="
 </div>
 
 <div class="doc">
-三加二等于五，正如所料。 
+三加二等于五，不出意料。 
 </div>
 <div class="code">
 
@@ -879,13 +898,13 @@ Coq 所执行的化简步骤如下所示：
 <span class="comment">(*&nbsp;&nbsp;&nbsp;<span class="inlinecode"><span class="id" title="var">plus</span></span> <span class="inlinecode">3</span> <span class="inlinecode">2</span><br/>
 i.e.&nbsp;<span class="inlinecode"><span class="id" title="var">plus</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>)))</span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>))</span><br/>
 &nbsp;==&gt;&nbsp;<span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">plus</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>))</span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>)))</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（根据第二个&nbsp;<span class="inlinecode"><span class="id" title="keyword">match</span></span>&nbsp;从句）<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（根据第二个&nbsp;<span class="inlinecode"><span class="id" title="keyword">match</span></span>&nbsp;子句）<br/>
 &nbsp;==&gt;&nbsp;<span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">plus</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>)</span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>))))</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（根据第二个&nbsp;<span class="inlinecode"><span class="id" title="keyword">match</span></span>&nbsp;从句）<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（根据第二个&nbsp;<span class="inlinecode"><span class="id" title="keyword">match</span></span>&nbsp;子句）<br/>
 &nbsp;==&gt;&nbsp;<span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">plus</span></span> <span class="inlinecode"><span class="id" title="var">O</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>)))))</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（根据第二个&nbsp;<span class="inlinecode"><span class="id" title="keyword">match</span></span>&nbsp;从句）<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（根据第二个&nbsp;<span class="inlinecode"><span class="id" title="keyword">match</span></span>&nbsp;子句）<br/>
 &nbsp;==&gt;&nbsp;<span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode">(<span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">O</span>))))</span><br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（根据第一个&nbsp;<span class="inlinecode"><span class="id" title="keyword">match</span></span>&nbsp;从句）<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;（根据第一个&nbsp;<span class="inlinecode"><span class="id" title="keyword">match</span></span>&nbsp;子句）<br/>
 i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
 </div>
 
@@ -932,7 +951,7 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
        factorial(0)  =  1
        factorial(n)  =  n * factorial(n-1)     (if n&gt;0)
 </pre>
-    把它翻译成 Coq 语言。 
+    把它翻译成 Coq 代码。 
 </div>
 <div class="code">
 
@@ -978,8 +997,8 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
     显示为 <span class="inlinecode"><span class="id" title="var">x</span></span> <span class="inlinecode">+</span> <span class="inlinecode"><span class="id" title="var">y</span></span>。 
 <div class="paragraph"> </div>
 
- Coq 不包含任何内置定义，以至于数值间相等关系的测试也是由用户来实现。
-    <span class="inlinecode"><span class="id" title="var">eqb</span></span> 函数定义如下：该函数测试自然数 <span class="inlinecode"><span class="id" title="var">nat</span></span> 间相等关系 <span class="inlinecode"><span class="id" title="var">eq</span></span>，
+ Coq 几乎不包含任何内置定义，甚至连数值间的相等关系都是由用户来实现。
+    <span class="inlinecode"><span class="id" title="var">eqb</span></span> 函数定义如下：该函数检验自然数 <span class="inlinecode"><span class="id" title="var">nat</span></span> 间是否满足相等关系 <span class="inlinecode"><span class="id" title="var">eq</span></span>，
     并以布尔值 <span class="inlinecode"><span class="id" title="var">bool</span></span> 表示。注意该定义使用嵌套匹配 <span class="inlinecode"><span class="id" title="keyword">match</span></span>
     （亦可仿照 <span class="inlinecode"><span class="id" title="var">minus</span></span> 使用并列匹配）。 
 </div>
@@ -1000,7 +1019,7 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-类似地，<span class="inlinecode"><span class="id" title="var">leb</span></span> 函数检查其第一个参数是否小于等于第二个参数，以布尔值表示。 
+类似地，<span class="inlinecode"><span class="id" title="var">leb</span></span> 函数检验其第一个参数是否小于等于第二个参数，以布尔值表示。 
 </div>
 <div class="code">
 
@@ -1036,9 +1055,9 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
 
 <div class="doc">
 <a name="lab33"></a><h4 class="section">练习：1 星, standard (ltb)</h4>
- <span class="inlinecode"><span class="id" title="var">ltb</span></span> 函数检查自然数间的小于关系，以布尔值表示。
+ <span class="inlinecode"><span class="id" title="var">ltb</span></span> 函数检验自然数间的小于关系，以布尔值表示。
     请利用前文定义的函数写出该定义，不要使用 <span class="inlinecode"><span class="id" title="keyword">Fixpoint</span></span> 构造新的递归。
-    （只需前文中的一个函数即可实现定义，但亦可两者皆用。） 
+    （只需前文中的一个函数即可实现该定义，不过也可两者皆用。） 
 </div>
 <div class="code">
 
@@ -1105,7 +1124,7 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
     比如它会尝试“展开”已定义的项，将它们替换为该定义右侧的值。
     了解这一点会很有帮助。产生这种差别的原因是，当自反性成立时，
     整个证明目标就完成了，我们不必再关心 <span class="inlinecode"><span class="id" title="tactic">reflexivity</span></span> 化简和展开了什么；
-    而当我们必须去观察和理解新产生的证明目标时，我们并不希望它盲目地展开定义，
+    而当我们必须去观察和理解新产生的证明目标时，我们并不希望盲目地展开定义，
     将证明目标留在混乱的声明中。这种情况下就要用到 <span class="inlinecode"><span class="id" title="tactic">simpl</span></span> 了。
 
 <div class="paragraph"> </div>
@@ -1125,7 +1144,7 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
     存在一个任意自然数 <span class="inlinecode"><span class="id" title="var">n</span></span>...”。而在形式化证明中，这是用 <span class="inlinecode"><span class="id" title="tactic">intros</span></span> <span class="inlinecode"><span class="id" title="var">n</span></span>
     来实现的，它会将量词从证明目标转移到当前假设的<i>'上下文'</i>中。
     注意在 <span class="inlinecode"><span class="id" title="tactic">intros</span></span> 从句中，我们可以使用别的标识符来代替 <span class="inlinecode"><span class="id" title="var">n</span></span>
-    （当然这也会让阅读证明人感到困惑）：
+    （当然这可能会让阅读证明的人感到困惑）：
 
 </div>
 <div class="code">
@@ -1242,8 +1261,8 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
     这在开发较长的证明时很有用。在进行一些较大的命题论证时，我们能够声明一些附加的事实。
     既然我们认为这些事实对论证是有用的，就可以用 <span class="inlinecode"><span class="id" title="var">Admitted</span></span> 先不加怀疑地接受这些事实，
     然后继续思考大命题的论证。直到确认了该命题确实是有意义的，
-    再回过头去证明刚才跳过的证明。但是要小心：每次使用 <span class="inlinecode"><span class="id" title="var">Admitted</span></span> 或者 <span class="inlinecode"><span class="id" title="var">admit</span></span>，
-    你就为 Coq 这个完好、严密、形式化且封闭的世界开了一个毫无道理的后门。 
+    再回过头去证明刚才跳过的证明。但是要小心：每次你使用 <span class="inlinecode"><span class="id" title="var">Admitted</span></span>，
+    你就为 Coq 这个完好、严密、形式化且封闭的世界开了一个毫无逻辑的后门。 
 <div class="paragraph"> </div>
 
  <span class="inlinecode"><span class="id" title="keyword">Check</span></span> 命令也可用来检查以前声明的引理和定理。下面两个关于乘法引理来自于标准库。
@@ -1289,7 +1308,7 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
 
 
 <div class="doc">
-<a name="lab38"></a><h1 class="section">利用情况分析来证明</h1>
+<a name="lab38"></a><h1 class="section">利用分类讨论来证明</h1>
 
 <div class="paragraph"> </div>
 
@@ -1312,7 +1331,7 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
 <div class="doc">
 原因在于：根据 <span class="inlinecode"><span class="id" title="var">eqb</span></span> 和 <span class="inlinecode">+</span> 的定义，其第一个参数先被 <span class="inlinecode"><span class="id" title="keyword">match</span></span> 匹配。
     但此处 <span class="inlinecode">+</span> 的第一个参数 <span class="inlinecode"><span class="id" title="var">n</span></span> 未知，而 <span class="inlinecode"><span class="id" title="var">eqb</span></span> 的第一个参数 <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">+</span> <span class="inlinecode">1</span>
-    是复杂表达式，二者均无法化简。
+    是复合表达式，二者均无法化简。
 
 <div class="paragraph"> </div>
 
@@ -1337,30 +1356,24 @@ i.e.&nbsp;<span class="inlinecode">5</span>&nbsp;&nbsp;*)</span><br/>
 </div>
 
 <div class="doc">
-The <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> generates <i>two</i> subgoals, which we must then
-    prove, separately, in order to get Coq to accept the theorem.
+<span class="inlinecode"><span class="id" title="tactic">destruct</span></span> 策略会生成_两个_子目标，为了让 Coq 认可这个定理，
+    我们必须接下来证明这两个子目标。
 
 <div class="paragraph"> </div>
 
-    The annotation "<span class="inlinecode"><span class="id" title="keyword">as</span></span> <span class="inlinecode">[|</span> <span class="inlinecode"><span class="id" title="var">n'</span>]</span>" is called an <i>intro pattern</i>.  It
-    tells Coq what variable names to introduce in each subgoal.  In
-    general, what goes between the square brackets is a <i>list of
-    lists</i> of names, separated by <span class="inlinecode">|</span>.  In this case, the first
-    component is empty, since the <span class="inlinecode"><span class="id" title="var">O</span></span> constructor is nullary (it
-    doesn't have any arguments).  The second component gives a single
-    name, <span class="inlinecode"><span class="id" title="var">n'</span></span>, since <span class="inlinecode"><span class="id" title="var">S</span></span> is a unary constructor.
+    <span class="inlinecode"><span class="id" title="keyword">as</span></span> <span class="inlinecode">[|</span> <span class="inlinecode"><span class="id" title="var">n'</span>]</span> 这种标注被称为 _引入模式_。它告诉 Coq 应当在每个子目标中
+    使用什么样的变量名。总体而言，在方括号之间的是一个由 <span class="inlinecode">|</span> 隔开的
+    _“列表的列表”_（译者注：list of lists）。在上面的例子中，第一个元素是
+    一个空列表，因为 <span class="inlinecode"><span class="id" title="var">O</span></span> 构造子是一个空构造子（它没有任何参数）。
+    第二个元素提供了包含单个变量名 <span class="inlinecode"><span class="id" title="var">n'</span></span> 的列表，因为 <span class="inlinecode"><span class="id" title="var">S</span></span> 是一个单构造子。
 
 <div class="paragraph"> </div>
 
-    In each subgoal, Coq remembers the assumption about <span class="inlinecode"><span class="id" title="var">n</span></span> that is
-    relevant for this subgoal -- either <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span> or <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span> for some
-    n'.  The <span class="inlinecode"><span class="id" title="var">eqn</span>:<span class="id" title="var">E</span></span> annotation tells <span class="inlinecode"><span class="id" title="tactic">destruct</span></span> to give the name <span class="inlinecode"><span class="id" title="var">E</span></span>
-    to this equation.  Leaving off the <span class="inlinecode"><span class="id" title="var">eqn</span>:<span class="id" title="var">E</span></span> annotation causes Coq
-    to elide these assumptions in the subgoals.  This slightly
-    streamlines proofs where the assumptions are not explicitly used,
-    but it is better practice to keep them for the sake of
-    documentation, as they can help keep you oriented when working
-    with the subgoals.
+    在每个子目标中，Coq 会记录这个子目标中关于 <span class="inlinecode"><span class="id" title="var">n</span></span> 的假设，<span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode">0</span> 还是
+    对于某个 n', <span class="inlinecode"><span class="id" title="var">n</span></span> <span class="inlinecode">=</span> <span class="inlinecode"><span class="id" title="var">S</span></span> <span class="inlinecode"><span class="id" title="var">n'</span></span>。而 <span class="inlinecode"><span class="id" title="var">eqn</span>:<span class="id" title="var">E</span></span> 记号则告知 Coq 以 <span class="inlinecode"><span class="id" title="var">E</span></span> 来命名这些
+    假设。省略 <span class="inlinecode"><span class="id" title="var">eqn</span>:<span class="id" title="var">E</span></span> 会导致 Coq 省略这些假设。这种省略能够使得一些不需要
+    显式用到这类假设的证明显得更加流畅。但在实践中最好还是保留他们，
+    因为他们可以作为一种说明文档来在证明过程中指引你。
 
 <div class="paragraph"> </div>
 
@@ -1488,19 +1501,17 @@ The <span class="inlinecode"><span class="id" title="tactic">destruct</span></sp
 </div>
 
 <div class="doc">
-在本章结束之前，我们最后说一种简便写法。或许你已经注意到了，
+在本章结束之前，我们最后再说一种简便写法。或许你已经注意到了，
     很多证明在引入变量之后会立即对它进行情况分析：
 <br/>
 <span class="inlinecode">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>. <span class="id" title="tactic">destruct</span> <span class="id" title="var">y</span> <span class="id" title="keyword">as</span> [|<span class="id" title="var">y</span>] <span class="id" title="var">eqn</span>:<span class="id" title="var">E</span>.
 <div class="paragraph"> </div>
 
-</span>    This pattern is so common that Coq provides a shorthand for it: we
-    can perform case analysis on a variable when introducing it by
-    using an intro pattern instead of a variable name. For instance,
-    here is a shorter proof of the <span class="inlinecode"><span class="id" title="var">plus_1_neq_0</span></span> theorem
-    above.  (You'll also note one downside of this shorthand: we lose
-    the equation recording the assumption we are making in each
-    subgoal, which we previously got from the <span class="inlinecode"><span class="id" title="var">eqn</span>:<span class="id" title="var">E</span></span> annotation.) 
+</span>    这种写法是如此的常见以至于 Coq 为它提供了一种简写：我们可以在引入
+    一个变量的同时对他使用_引入模式_来进行分类讨论。例如，下面是一个对
+    <span class="inlinecode"><span class="id" title="var">plus_1_neq_0</span></span> 的更简短证明。（这种简写的缺点也显而易见，
+    我们无法再记录在每个子目标中所使用的假设，而之前我们可以通过
+    <span class="inlinecode"><span class="id" title="var">eqn</span>:<span class="id" title="var">E</span></span> 将它们标注出来。） 
 </div>
 <div class="code">
 
@@ -1636,13 +1647,9 @@ The <span class="inlinecode"><span class="id" title="tactic">destruct</span></sp
 <div class="paragraph"> </div>
 
 <a name="lab43"></a><h4 class="section">练习：2 星, standard, optional (decreasing)</h4>
- To get a concrete sense of this, find a way to write a sensible
-    <span class="inlinecode"><span class="id" title="keyword">Fixpoint</span></span> definition (of a simple function on numbers, say) that
-    <i>does</i> terminate on all inputs, but that Coq will reject because
-    of this restriction.  (If you choose to turn in this optional
-    exercise as part of a homework assignment, make sure you comment
-    out your solution so that it doesn't cause Coq to reject the whole
-    file!) 
+ 为了更好的理解这一点，请尝试写一个对于所有输入都_的确_终止的 <span class="inlinecode"><span class="id" title="keyword">Fixpoint</span></span>
+    定义。但这个定义需要违背上述的限制，以此来让 Coq 拒绝。（如果您决定将这个可选
+    练习作为作业，请确保您将您的解答注释掉以防止 Coq 拒绝执行整个文件。） 
 </div>
 <div class="code">
 
@@ -1717,12 +1724,14 @@ The <span class="inlinecode"><span class="id" title="tactic">destruct</span></sp
 <div class="paragraph"> </div>
 
 <a name="lab48"></a><h4 class="section">练习：3 星, standard (binary)</h4>
- We can generalize our unary representation of natural numbers to
-    the more efficient binary representation by treating a binary
-    number as a sequence of constructors <span class="inlinecode"><span class="id" title="var">A</span></span> and <span class="inlinecode"><span class="id" title="var">B</span></span> (representing 0s
-    and 1s), terminated by a <span class="inlinecode"><span class="id" title="var">Z</span></span>. For comparison, in the unary
-    representation, a number is a sequence of <span class="inlinecode"><span class="id" title="var">S</span></span> constructors terminated
-    by an <span class="inlinecode"><span class="id" title="var">O</span></span>.
+
+<div class="paragraph"> </div>
+
+    我们可以将对于自然数的一进制表示推广成更高效的二进制数表达方式。
+    对于一个二进制数，我们可以将它看成一个由 <span class="inlinecode"><span class="id" title="var">A</span></span> 构造子和 <span class="inlinecode"><span class="id" title="var">B</span></span> 构造子
+    组成的序列（它们分别表示 0 和 1），而这个序列的结束符为 <span class="inlinecode"><span class="id" title="var">Z</span></span>。
+    类似的，一个数的一进制表示可以看成一个由 <span class="inlinecode"><span class="id" title="var">S</span></span> 构造子组成，并由 <span class="inlinecode"><span class="id" title="var">O</span></span> 
+    构造子结束的序列。 * )
 
 <div class="paragraph"> </div>
 
@@ -1740,9 +1749,8 @@ The <span class="inlinecode"><span class="id" title="tactic">destruct</span></sp
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8        <span class="id" title="var">A</span> (<span class="id" title="var">A</span> (<span class="id" title="var">A</span> (<span class="id" title="var">B</span> <span class="id" title="var">Z</span>)))    <span class="id" title="var">S</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> (<span class="id" title="var">S</span> <span class="id" title="var">O</span>)))))))
 <div class="paragraph"> </div>
 
-</span>    Note that the low-order bit is on the left and the high-order bit
-    is on the right -- the opposite of the way binary numbers are
-    usually written.  This choice makes them easier to manipulate. 
+</span>    注意到在上面的表示中，二进制数的低位被写在左边而高位写在右边。
+   （与通常的二进制写法相反，这种写法可以让我们在证明中更好的操作他们。） 
 </div>
 <div class="code">
 
@@ -1754,9 +1762,8 @@ The <span class="inlinecode"><span class="id" title="tactic">destruct</span></sp
 </div>
 
 <div class="doc">
-Complete the definitions below of an increment function <span class="inlinecode"><span class="id" title="var">incr</span></span>
-    for binary numbers, and a function <span class="inlinecode"><span class="id" title="var">bin_to_nat</span></span> to convert
-    binary numbers to unary numbers. 
+补全下面二进制自增函数 <span class="inlinecode"><span class="id" title="var">incr</span></span> 的定义。并且补全二进制数与一进制自然数转换的
+    函数 <span class="inlinecode"><span class="id" title="var">bin_to_nat</span></span>。 
 </div>
 <div class="code">
 
@@ -1768,11 +1775,9 @@ Complete the definitions below of an increment function <span class="inlinecode"
 </div>
 
 <div class="doc">
-The following "unit tests" of your increment and binary-to-unary
-    functions should pass after you have defined those functions correctly.
-    Of course, unit tests don't fully demonstrate the correctness of
-    your functions!  We'll return to that thought at the end of the
-    next chapter. 
+下面这些针对单增函数和二进制转换函数的“单元测试”可以验算你的定义的正确性。
+    当然，这些单元测试并不能确保你的定义在所有输入下都是正确的！我们在下一章的
+    末尾会重新回到这个话题。 
 </div>
 <div class="code">
 
@@ -1797,7 +1802,7 @@ The following "unit tests" of your increment and binary-to-unary
 <div class="code">
 
 <br/>
-<span class="comment">(*&nbsp;2021-11-01&nbsp;18:56:27&nbsp;(UTC+00)&nbsp;*)</span><br/>
+<span class="comment">(*&nbsp;2022-02-08&nbsp;06:42:43&nbsp;(UTC+00)&nbsp;*)</span><br/>
 </div>
 </div>
 
