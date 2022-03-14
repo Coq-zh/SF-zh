@@ -740,4 +740,4 @@ Insert and lookup 20000 consecutive integers in 0. seconds.
      consecutive insertions (0.015 seconds) as on the random (0.016 seconds).
 *)
 
-(* 2022-02-09 16:26:21 (UTC+00) *)
+(* 2022-03-14 05:31:24 (UTC+00) *)
